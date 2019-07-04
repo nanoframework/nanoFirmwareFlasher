@@ -313,8 +313,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             try
             {
                 Process stLinkCli = new Process();
-                stLinkCli.StartInfo = new ProcessStartInfo(@"stlink\ST-LINK_CLI", arguments)
+                stLinkCli.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stlink", "ST-LINK_CLI.exe"), arguments)
                 {
+                    WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink"),
                     UseShellExecute = false,
                     RedirectStandardOutput = true
                 };

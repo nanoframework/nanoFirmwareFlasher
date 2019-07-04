@@ -11,6 +11,7 @@ using nanoFramework.Tools.FirmwareFlasher.Extensions;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using CommandLine.Text;
+using System.IO;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -22,6 +23,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private static AssemblyInformationalVersionAttribute informationalVersionAttribute;
         private static string headerInfo;
         private static CopyrightInfo copyrightInfo;
+
+        internal static string ExecutingPath;
 
         public static async Task<int> Main(string[] args)
         {
@@ -35,6 +38,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2019);
 
+            // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
+            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            UriBuilder uri = new UriBuilder(codeBase);
+            var fullPath = Uri.UnescapeDataString(uri.Path);
+            ExecutingPath = Path.GetDirectoryName(fullPath);
+            
             // check for empty argument collection
             if (!args.Any())
             {

@@ -394,8 +394,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // prepare the process start of the esptool
             Process espTool = new Process();
             string parameter = $"--port {_serialPort} {baudRateParameter} --chip esp32 {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
-            espTool.StartInfo = new ProcessStartInfo(@"esptool\esptool.exe", parameter)
+            espTool.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "esptool", "esptool.exe"), parameter)
             {
+                WorkingDirectory = Path.Combine(Program.ExecutingPath, "esptool"),
                 UseShellExecute = false,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true
