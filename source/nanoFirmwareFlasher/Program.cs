@@ -73,10 +73,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
         {
-            Console.WriteLine(headerInfo);
-            Console.WriteLine(copyrightInfo);
-            Console.WriteLine();
-
             #region parse verbosity option
 
             switch (o.Verbosity)
@@ -117,6 +113,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
+            if (verbosityLevel > VerbosityLevel.Quiet)
+            {
+                Console.WriteLine(headerInfo);
+                Console.WriteLine(copyrightInfo);
+                Console.WriteLine();
+            }
 
             #region target processing
 
