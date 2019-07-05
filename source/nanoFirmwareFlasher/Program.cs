@@ -528,7 +528,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static void OutputError(ExitCodes errorCode, bool outputMessage, string extraMessage = null)
         {
-            Console.Write($"error {errorCode.ToString()}");
+            if (errorCode != ExitCodes.OK)
+            {
+                Console.Write($"error {errorCode.ToString()}");
+            }
+
             if (outputMessage)
             {
                 var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
