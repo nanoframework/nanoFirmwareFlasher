@@ -122,12 +122,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
-            if (verbosityLevel > VerbosityLevel.Quiet)
-            {
-                Console.WriteLine(headerInfo);
-                Console.WriteLine(copyrightInfo);
-                Console.WriteLine();
-            }
+            Console.WriteLine(headerInfo);
+            Console.WriteLine(copyrightInfo);
+            Console.WriteLine();
 
             #region target processing
 
