@@ -83,7 +83,7 @@ nanoff --update --platform esp32 --serialport COM31 --deployment "c:\eps32-backu
 To update the firmware of the NETDUINO3_WIFI target to the latest available stable version.
 
 ```console
-nanoff --update --target ST_STM32F769I_DISCOVERY --stable
+nanoff --update --target NETDUINO3_WIFI --stable
 ```
 
 ### Update the firmware of a ST_STM32F769I_DISCOVERY along with a managed application
