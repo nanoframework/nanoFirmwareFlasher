@@ -146,6 +146,28 @@ jobs:
     continueOnError: true
     displayName: Push NuGet packages to NuGet
 
+  - powershell: |
+      # get subject and commit message for commit
+      $commitMessage = git log --format='%B' -1
+
+      # need to flatten message by removing new lines
+      $commitMessage = $commitMessage -replace "`r`n", " "
+
+      if($commitMessage -like "*PUBLISH_RELEASE*")
+      {
+        # set variable
+        Write-Host "$("##vso[task.setvariable variable=RELEASE_DRAFT]")false"
+        Write-Host "Release draft: FALSE"
+      }
+      else
+      {
+        # set variable
+        Write-Host "$("##vso[task.setvariable variable=RELEASE_DRAFT]")true"
+        Write-Host "Release draft: TRUE"
+      }
+
+    displayName: set release draft var
+
   # create or update GitHub release
   - task: GitHubReleasePublish@1
     inputs:
@@ -156,11 +178,12 @@ jobs:
       githubReleaseTitle: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       githubReleaseNotes: 'add description here'
       githubTargetCommitsh: $(Build.SourceVersion)
-      githubReleaseDraft: true
-      githubReleasePrerelease: false
+      githubReleaseDraft: $(RELEASE_DRAFT)
+      githubReleasePrerelease: true
       githubReuseDraftOnly: true
       githubReuseRelease: true
       githubEditRelease: true
+      githubDeleteEmptyTag: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     condition: and( succeeded(), not( startsWith(variables['Build.SourceBranch'], 'refs/pull') ), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Create/Update GitHub release
@@ -175,33 +198,32 @@ jobs:
       githubReleaseTitle: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       githubReleaseNotes: 'add description here'
       githubTargetCommitsh: $(Build.SourceVersion)
-      githubReleaseDraft: false
+      githubReleaseDraft: $(RELEASE_DRAFT)
       githubReleasePrerelease: true
       githubReuseDraftOnly: false
       githubReuseRelease: true
       githubEditRelease: true
+      githubDeleteEmptyTag: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     condition: and( succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), contains(variables['Build.SourceBranch'], 'preview') )
     displayName: Create/Update GitHub PREVIEW release 
 
-##################################
-# report build failure to Discord
-- job: Report_Build_Failure
-  dependsOn:
-  - Build_tool
-  condition: failed('Build_tool')
-
-  pool:
-    vmImage: 'VS2017-Win2016'
-
-  steps:
-
-  - checkout: self
-    fetchDepth: 1
-
-  # step from template @ nf-tools repo
-  - template: azure-pipelines-templates/discord-webhook.yml@templates  
-    parameters:
-      status: 'failure'
-      webhookUrl: '$(DiscordWebhook)'
-      message: ''
+  # create or update GitHub release ON tags from release or master branches
+  - task: GitHubReleasePublish@1
+    inputs:
+      githubEndpoint: 'nanoFramework'
+      githubOwner: 'nanoframework'
+      githubRepositoryName: 'nanoFirmwareFlasher '
+      githubTag: v$(MY_NUGET_VERSION)
+      githubReleaseTitle: 'nano firmware flasher v$(MY_NUGET_VERSION)'
+      githubReleaseNotes: 'add description here'
+      githubTargetCommitsh: $(Build.SourceVersion)
+      githubReleaseDraft: false
+      githubReleasePrerelease: false
+      githubReuseDraftOnly: false
+      githubReuseRelease: false
+      githubEditRelease: false
+      githubDeleteEmptyTag: true
+      githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/$(nugetPackageName).$(MY_NUGET_VERSION).nupkg'
+    condition: and( succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), not(contains(variables['Build.SourceBranch'], 'preview') ) )
+    displayName: Create/Update GitHub stable release
