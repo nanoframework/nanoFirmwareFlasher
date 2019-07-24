@@ -238,7 +238,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     Console.WriteLine($"Connected to ESP32 { esp32Device.ChipName } with MAC address { esp32Device.MacAddress }");
                     Console.WriteLine($"features { esp32Device.Features }");
-                    Console.WriteLine($"Flash information: manufacturer 0x{ esp32Device.FlashManufacturerId } device 0x{ esp32Device.FlashDeviceModelId } size { esp32Device.FlashSize }");
+
+                    string flashSize = esp32Device.FlashSize >= 0x10000 ? $"{ esp32Device.FlashSize / 0x100000 }MB" : $"{ esp32Device.FlashSize / 0x400 }kB";
+
+                    Console.WriteLine($"Flash information: manufacturer 0x{ esp32Device.FlashManufacturerId } device 0x{ esp32Device.FlashDeviceModelId } size { flashSize }");
                 }
 
                 // set verbosity

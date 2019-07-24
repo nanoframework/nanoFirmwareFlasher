@@ -123,25 +123,30 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 }
 
-                if (verbosity >= VerbosityLevel.Detailed)
+                if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine($"Erasing flash...");
+                    Console.Write($"Erasing flash...");
                 }
 
                 // erase flash
                 espTool.EraseFlash();
 
-                if (verbosity >= VerbosityLevel.Detailed)
+                if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine($"Flashing firmware...");
+                    Console.WriteLine("OK");
+                }
+
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    Console.Write($"Flashing firmware...");
                 }
 
                 // write to flash
                 espTool.WriteFlash(firmware.FlashPartitions);
 
-                if (verbosity >= VerbosityLevel.Detailed)
+                if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine("ESP32 successfully flashed!");
+                    Console.WriteLine("OK");
                 }
             }
 
