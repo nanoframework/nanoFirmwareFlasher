@@ -112,7 +112,7 @@ jobs:
       # need to flatten message by removing new lines
       $commitMessage = $commitMessage -replace "`r`n", " "
 
-      if($commitMessage -like "*PUBLISH_RELEASE*")
+      if($commitMessage -like "***PUBLISH_RELEASE***")
       {
         # set variable
         Write-Host "$("##vso[task.setvariable variable=RELEASE_DRAFT]")false"
@@ -154,6 +154,7 @@ jobs:
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'MyGet'
     condition: succeeded()
+    continueOnError: true
     displayName: Push NuGet packages to MyGet
 
   # push NuGet class lib package to NuGet (happens on tag builds for any branch)
