@@ -30,14 +30,14 @@ dotnet tool install -g nanoFirmwareFlasher
 In case you're installing a pre-release version of the tool you have to specify the version number and the **nanoFramework** MyGet feed as the source. Like this:
 
 ```console
-dotnet tool install -g nanoFirmwareFlasher --version 1.0.1-preview.1 --add-source https://www.myget.org/F/nanoframework-dev/api/v3/index.json
+dotnet tool install -g nanoFirmwareFlasher --version 9.9.9-preview.100 --add-source https://www.myget.org/F/nanoframework-dev/api/v3/index.json
 ```
 
 After a successful installation a message is displayed showing the command that's to be used to call the tool along with the version installed. Similar to the following example:
 
 ```console
 You can invoke the tool using the following command: nanoff
-Tool 'nanofirmwareflasher' (version '1.0.1-preview.1') was successfully installed.
+Tool 'nanofirmwareflasher' (version '9.9.9-preview.100') was successfully installed.
 ```
 
 To update **nanoFramework** Firmware Flasher tool use the following .NET Core CLI command:
