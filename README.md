@@ -33,7 +33,7 @@ In case you're installing a pre-release version of the tool you have to specify 
 dotnet tool install -g nanoFirmwareFlasher --version 1.0.1-preview.1 --add-source https://www.myget.org/F/nanoframework-dev/api/v3/index.json
 ```
 
-After a successful installation a message is displayed showing the command used to call the tool and the version installed, similar to the following example:
+After a successful installation a message is displayed showing the command that's to be used to call the tool along with the version installed. Similar to the following example:
 
 ```console
 You can invoke the tool using the following command: nanoff
