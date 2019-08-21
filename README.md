@@ -27,10 +27,10 @@ Perform a one-time install of the **nanoFramework** Firmware Flasher tool using 
 dotnet tool install -g nanoFirmwareFlasher
 ```
 
-In case you're installing a pre-release version of the tool you have to specify the version number and the **nanoFramework** MyGet feed as the source. Like this:
+In case you're installing a pre-release version of the tool you have to specify the version number and the **nanoFramework** Azure DevOps NuGet feed as the source. Like this:
 
 ```console
-dotnet tool install -g nanoFirmwareFlasher --version 9.9.9-preview.100 --add-source https://www.myget.org/F/nanoframework-dev/api/v3/index.json
+dotnet tool install -g nanoFirmwareFlasher --version 9.9.9-preview.100 --add-source https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
 ```
 
 After a successful installation a message is displayed showing the command that's to be used to call the tool along with the version installed. Similar to the following example:
