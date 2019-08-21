@@ -371,12 +371,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.5.0" />
+    <PackageReference Include="CommandLineParser" Version="2.6.0" />
     <PackageReference Include="Costura.Fody" Version="3.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="System.IO.Ports" Version="4.5.0" />
     <PackageReference Include="System.Management" Version="4.5.0" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.19-beta" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.25" PrivateAssets="All" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
   </ItemGroup>
 
