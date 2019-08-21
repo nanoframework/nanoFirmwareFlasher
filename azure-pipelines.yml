@@ -146,16 +146,16 @@ jobs:
     condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
     displayName: Publish deployables artifacts
 
-  # push NuGet packages to MyGet feed (always happens except on PR builds)
+  # push NuGet packages to AzureArtifacts feed (always happens except on PR builds)
   - task: NuGetCommand@2
     inputs:
       command: push
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'MyGet'
+      publishFeedCredentials: 'AzureArtifacts'
     condition: succeeded()
     continueOnError: true
-    displayName: Push NuGet packages to MyGet
+    displayName: Push NuGet packages to AzureArtifacts
 
   # push NuGet class lib package to NuGet (happens on tag builds for any branch)
   - task: NuGetCommand@2
