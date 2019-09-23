@@ -150,7 +150,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            return ExitCodes.OK;
+            return operationResult;
         }
     }
 }
