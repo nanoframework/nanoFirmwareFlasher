@@ -12,6 +12,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using CommandLine.Text;
 using System.IO;
+using System.Collections.Generic;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -19,7 +20,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         private static ExitCodes _exitCode;
         private static string _extraMessage;
-        private static VerbosityLevel verbosityLevel;
+        private static VerbosityLevel verbosityLevel = VerbosityLevel.Normal;
         private static AssemblyInformationalVersionAttribute informationalVersionAttribute;
         private static string headerInfo;
         private static CopyrightInfo copyrightInfo;
@@ -70,14 +71,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             var parsedArguments = Parser.Default.ParseArguments<Options>(args);
 
-            await parsedArguments.WithParsedAsync(opts => RunOptionsAndReturnExitCodeAsync(opts));
+            await parsedArguments
+                .WithParsedAsync(opts => RunOptionsAndReturnExitCodeAsync(opts))
+                .WithNotParsedAsync(errors => HandleErrorsAsync(errors));
 
             if (verbosityLevel > VerbosityLevel.Quiet)
             {
-                OutputError(_exitCode, verbosityLevel > VerbosityLevel.Normal, _extraMessage);
+                OutputError(_exitCode, verbosityLevel >= VerbosityLevel.Normal, _extraMessage);
             }
 
             return (int)_exitCode;
+        }
+
+        static async Task HandleErrorsAsync(IEnumerable<Error> errors)
+        {
+            _exitCode = ExitCodes.ArgumentError;
         }
 
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
