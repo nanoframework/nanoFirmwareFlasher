@@ -10,16 +10,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
     public enum ExitCodes : int
     {
         /// <summary>
-        /// Arguments do not parse
-        /// </summary>
-        [Display(Name = "Invalid or missing arguments")]
-        ArgumentError = -1, 
-
-        /// <summary>
         /// Execution terminated without any error
         /// </summary>
         [Display(Name = "")]
         OK = 0,
+
+        ////////////////
+        // DFU Errors //
+        ////////////////
 
         /// <summary>
         /// No DFU device found
@@ -37,13 +35,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// DFU file doesn't exist
         /// </summary>
         [Display(Name = "Couldn't find DFU file. Check the path.")]
-        E2001 = 2001,
+        E1002 = 1002,
 
         /// <summary>
         /// Error flashing DFU dvice
         /// </summary>
         [Display(Name = "Error flashing DFU dvice.")]
-        E2002 = 2002,
+        E1003 = 1003,
+
+        ////////////////////////
+        // ESP32 tools Errors //
+        ////////////////////////
 
         /// <summary>
         /// Error executing esptool command
@@ -74,6 +76,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Failed to read from ESP32 flash.")]
         E4004 = 4004,
+
+
+        ////////////////////
+        // ST Link Errors //
+        ////////////////////
 
         /// <summary>
         /// Error executing ST Link CLI command.
@@ -135,17 +142,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Address count doesn't match BIN files count. An address needs to be specified for each BIN file.")]
         E5009 = 5009,
 
+        ////////////////
+        // COM Errors //
+        ////////////////
+
         /// <summary>
         /// Couldn't open serial device
         /// </summary>
         [Display(Name = "Couldn't open serial device. Make sure the COM port exists, that the device is connected and that it's not being used by another application.")]
-        E9000 = 9000,
+        E6000 = 6000,
 
         /// <summary>
         /// Need to specify a COM port.
         /// </summary>
         [Display(Name = "Need to specify a COM port.")]
-        E9001 = 9001,
+        E6001 = 6001,
+
+        ////////////////////////////////
+        // Application general Errors //
+        ////////////////////////////////
+
+        /// <summary>
+        /// Error parsing arguments.
+        /// </summary>
+        [Display(Name = "Invalid or missing arguments.")]
+        E9000 = 9000,
 
         /// <summary>
         /// Can't access or create backup directory.
@@ -154,7 +175,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         E9002 = 9002,
 
         /// <summary>
-        /// Need to specify a COM port.
+        /// Error when deleting existing backup file.
         /// </summary>
         [Display(Name = "Can't delete existing backup file.")]
         E9003 = 9003,

@@ -85,7 +85,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         static async Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
-            _exitCode = ExitCodes.ArgumentError;
+            _exitCode = ExitCodes.E9000;
         }
 
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
@@ -207,7 +207,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // COM port is mandatory for ESP32
                 if (string.IsNullOrEmpty(o.SerialPort))
                 {
-                    _exitCode = ExitCodes.E9001;
+                    _exitCode = ExitCodes.E6001;
                     return;
                 }
 
@@ -431,7 +431,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     catch (DfuFileDoesNotExistException ex)
                     {
                         // DFU file doesn't exist
-                        _exitCode = ExitCodes.E2001;
+                        _exitCode = ExitCodes.E1002;
                     }
                     catch (Exception ex)
                     {
