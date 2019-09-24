@@ -1,0 +1,383 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ToolCommandName>nanoff</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
+    <AssemblyName>nanoff</AssemblyName>
+    <PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
+    <Authors>nanoFramework project contributors</Authors>
+    <Product>nanoFramework Firmware Flasher</Product>
+    <Copyright>Copyright (c) 2019 nanoFramework project contributors</Copyright>
+    <Company>nanoFramework</Company>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
+    <PackageIconUrl>https://secure.gravatar.com/avatar/97d0e092247f0716db6d4b47b7d1d1ad</PackageIconUrl>
+    <Description>nanoFirmwareFlasher</Description>
+    <!-- need this to allow async Main() -->
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PackGlobalTool)' != true">
+    <TargetFrameworks>netcoreapp2.1;net462</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PackGlobalTool)' == true">
+    <PackAsTool>true</PackAsTool>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <PackageId>nanoFirmwareFlasher</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.1|AnyCPU'">
+    <NoWarn>1701;1702;</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.1|AnyCPU'">
+    <NoWarn>1701;1702;</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
+    <NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="costura32\STDFU.dll" />
+    <None Remove="costura32\STTubeDevice30.dll" />
+    <None Remove="esptool.exe" />
+    <None Remove="esptool\libcrypto-1_1-x64.dll" />
+    <None Remove="esptool\libssl-1_1-x64.dll" />
+    <None Remove="esptool\python37.dll" />
+    <None Remove="FodyWeavers.xml" />
+    <None Remove="esptool\base_library.zip" />
+    <None Remove="esptool\blank.bin" />
+    <None Remove="esptool\esptool.exe" />
+    <None Remove="esptool\esptool.exe.manifest" />
+    <None Remove="esptool\esp_init_data_default.bin" />
+    <None Remove="esptool\pyexpat.pyd" />
+    <None Remove="esptool\python36.dll" />
+    <None Remove="esptool\select.pyd" />
+    <None Remove="esptool\unicodedata.pyd" />
+    <None Remove="esptool\VCRUNTIME140.dll" />
+    <None Remove="esptool\_bz2.pyd" />
+    <None Remove="esptool\_ctypes.pyd" />
+    <None Remove="esptool\_hashlib.pyd" />
+    <None Remove="esptool\_lzma.pyd" />
+    <None Remove="esptool\_socket.pyd" />
+    <None Remove="esptool\_ssl.pyd" />
+    <None Remove="stlink\FlashLoader\0x410.stldr" />
+    <None Remove="stlink\FlashLoader\0x411.stldr" />
+    <None Remove="stlink\FlashLoader\0x412.stldr" />
+    <None Remove="stlink\FlashLoader\0x413.stldr" />
+    <None Remove="stlink\FlashLoader\0x414.stldr" />
+    <None Remove="stlink\FlashLoader\0x415.stldr" />
+    <None Remove="stlink\FlashLoader\0x416.stldr" />
+    <None Remove="stlink\FlashLoader\0x417.stldr" />
+    <None Remove="stlink\FlashLoader\0x418.stldr" />
+    <None Remove="stlink\FlashLoader\0x419.stldr" />
+    <None Remove="stlink\FlashLoader\0x419_DB1M_On.stldr" />
+    <None Remove="stlink\FlashLoader\0x420.stldr" />
+    <None Remove="stlink\FlashLoader\0x421.stldr" />
+    <None Remove="stlink\FlashLoader\0x422.stldr" />
+    <None Remove="stlink\FlashLoader\0x423.stldr" />
+    <None Remove="stlink\FlashLoader\0x425.stldr" />
+    <None Remove="stlink\FlashLoader\0x427.stldr" />
+    <None Remove="stlink\FlashLoader\0x428.stldr" />
+    <None Remove="stlink\FlashLoader\0x429.stldr" />
+    <None Remove="stlink\FlashLoader\0x430.stldr" />
+    <None Remove="stlink\FlashLoader\0x431.stldr" />
+    <None Remove="stlink\FlashLoader\0x432.stldr" />
+    <None Remove="stlink\FlashLoader\0x433.stldr" />
+    <None Remove="stlink\FlashLoader\0x434.stldr" />
+    <None Remove="stlink\FlashLoader\0x434_DB1M_On.stldr" />
+    <None Remove="stlink\FlashLoader\0x435.stldr" />
+    <None Remove="stlink\FlashLoader\0x436.stldr" />
+    <None Remove="stlink\FlashLoader\0x437.stldr" />
+    <None Remove="stlink\FlashLoader\0x438.stldr" />
+    <None Remove="stlink\FlashLoader\0x439.stldr" />
+    <None Remove="stlink\FlashLoader\0x440.stldr" />
+    <None Remove="stlink\FlashLoader\0x441.stldr" />
+    <None Remove="stlink\FlashLoader\0x442.stldr" />
+    <None Remove="stlink\FlashLoader\0x444.stldr" />
+    <None Remove="stlink\FlashLoader\0x445.stldr" />
+    <None Remove="stlink\FlashLoader\0x446.stldr" />
+    <None Remove="stlink\FlashLoader\0x447.stldr" />
+    <None Remove="stlink\FlashLoader\0x448.stldr" />
+    <None Remove="stlink\FlashLoader\0x449.stldr" />
+    <None Remove="stlink\FlashLoader\0x450.stldr" />
+    <None Remove="stlink\FlashLoader\0x451.stldr" />
+    <None Remove="stlink\FlashLoader\0x451_DB_On.stldr" />
+    <None Remove="stlink\FlashLoader\0x452.stldr" />
+    <None Remove="stlink\FlashLoader\0x457.stldr" />
+    <None Remove="stlink\FlashLoader\0x458.stldr" />
+    <None Remove="stlink\FlashLoader\0x460.stldr" />
+    <None Remove="stlink\FlashLoader\0x461.stldr" />
+    <None Remove="stlink\FlashLoader\0x462.stldr" />
+    <None Remove="stlink\FlashLoader\0x463.stldr" />
+    <None Remove="stlink\FlashLoader\0x470.stldr" />
+    <None Remove="stlink\FlashLoader\0x495.stldr" />
+    <None Remove="stlink\FlashLoader\0x9A8.stldr" />
+    <None Remove="stlink\FlashLoader\0x9B0.stldr" />
+    <None Remove="stlink\ST-LINK_CLI.exe" />
+    <None Remove="stlink\STLinkUSBDriver.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="esptool\libcrypto-1_1-x64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\libssl-1_1-x64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\python37.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
+    <Content Include="stlink\FlashLoader\0x410.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x411.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x412.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x413.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x414.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x415.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x416.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x417.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x418.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x419.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x419_DB1M_On.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x420.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x421.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x422.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x423.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x425.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x427.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x428.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x429.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x430.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x431.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x432.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x433.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x434.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x434_DB1M_On.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x435.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x436.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x437.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x438.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x439.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x440.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x441.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x442.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x444.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x445.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x446.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x447.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x448.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x449.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x450.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x451.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x451_DB_On.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x452.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x457.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x458.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x460.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x461.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x462.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x463.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x470.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x495.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x9A8.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\FlashLoader\0x9B0.stldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stlink\STLinkUSBDriver.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="costura32\STDFU.dll" />
+    <EmbeddedResource Include="costura32\STTubeDevice30.dll" />
+    <Content Include="stlink\ST-LINK_CLI.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\base_library.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\blank.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\esptool.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\esptool.exe.manifest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\esp_init_data_default.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\pyexpat.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\select.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\unicodedata.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\VCRUNTIME140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\_bz2.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\_ctypes.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\_hashlib.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\_lzma.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\_socket.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="esptool\_ssl.pyd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Reflection" />
+    <Reference Include="System.Reflection.TypeExtensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.6.0" />
+    <PackageReference Include="Costura.Fody" Version="3.3.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="System.IO.Ports" Version="4.5.0" />
+    <PackageReference Include="System.Management" Version="4.5.0" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.25" PrivateAssets="All" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
+  </ItemGroup>
+
+</Project>
