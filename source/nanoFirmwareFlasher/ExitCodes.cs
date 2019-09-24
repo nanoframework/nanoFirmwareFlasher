@@ -10,6 +10,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
     public enum ExitCodes : int
     {
         /// <summary>
+        /// Arguments do not parse
+        /// </summary>
+        [Display(Name = "Invalid or missing arguments")]
+        ArgumentError = -1, 
+
+        /// <summary>
         /// Execution terminated without any error
         /// </summary>
         [Display(Name = "")]
