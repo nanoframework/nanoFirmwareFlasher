@@ -106,7 +106,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     catch (Exception ex)
                     {
                         // exception
-                        return ExitCodes.E2002;
+                        return ExitCodes.E1003;
                     }
                 }
                 else
