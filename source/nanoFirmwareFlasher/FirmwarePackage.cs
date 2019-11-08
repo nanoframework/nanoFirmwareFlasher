@@ -176,6 +176,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
+            Console.Write($"Update package is {fwFileName.Replace(".zip", "")}...");
+
             // unzip the firmware
             if (Verbosity >= VerbosityLevel.Detailed)
             {
