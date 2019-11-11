@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019 The nanoFramework project contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -176,7 +176,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            Console.Write($"Update package is {fwFileName.Replace(".zip", "")}...");
+            Console.WriteLine($"Updating to {_fwVersion}");
 
             // unzip the firmware
             if (Verbosity >= VerbosityLevel.Detailed)
