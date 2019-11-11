@@ -5,8 +5,6 @@ trigger:
     exclude: [ "doc", "*.md", ".gitignore" ]
 
 pr:
-  branches:
-    include: ["master", "develop", "release*"]
   autoCancel: true
 
 # add nf-tools repo to resources (for Azure Pipelines templates)
