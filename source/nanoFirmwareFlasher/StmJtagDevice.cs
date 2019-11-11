@@ -307,7 +307,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             return jtagMatches.Cast<Match>().Select(i => i.Value).ToList();
         }
-        
+    
+        /// <summary>
+        /// Reset MCU of connected JTAG device.
+        /// </summary>
+        public ExitCodes ResetMcu()
+        {
+            // try to connect to device with RESET
+            var cliOuput = RunStLinkCli($"-c SN={DeviceId} UR");
+
+            if (!cliOuput.Contains("Connected via SWD."))
+            {
+                return ExitCodes.E5002;
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.Write("Reset MCU on device...");
+            }
+
+            cliOuput = RunStLinkCli("-Rst");
+
+            if (!cliOuput.Contains("MCU Reset."))
+            {
+                return ExitCodes.E5010;
+            }
+
+            return ExitCodes.OK;
+        }
+
         private static string RunStLinkCli(string arguments)
         {
             try

@@ -300,6 +300,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
+        /// Erase flash segment on the ESP32 chip.
+        /// </summary>
+        /// <returns>true if successful</returns>
+        internal ExitCodes EraseFlashSegment(uint startAddress, uint length)
+        {
+            // startAddress and length must both be multiples of the SPI flash erase sector size. This is 0x1000 (4096) bytes for supported flash chips.
+            // esptool takes care of validating this so no need to perform any sanity check before executing the command
+
+            // execute erase_flash command and parse the result
+            if (!RunEspTool($"erase_region 0x{startAddress:X} 0x{length:X}", false, false, null, out string messages))
+            {
+                throw new EraseEsp32FlashException(messages);
+            }
+
+            Match match = Regex.Match(messages, "(?<message>Erase completed successfully.*)(.*?\n)*");
+            if (!match.Success)
+            {
+                throw new EraseEsp32FlashException(messages);
+            }
+
+            if (Verbosity >= VerbosityLevel.Detailed)
+            {
+                Console.WriteLine(match.Groups["message"].ToString().Trim());
+            }
+
+            return ExitCodes.OK;
+        }
+
+        /// <summary>
         /// Write to the flash
         /// </summary>
         /// <param name="partsToWrite">dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</param>

@@ -65,12 +65,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "BIN file(s) to be flashed into the device.")]
         public IEnumerable<string> BinFile { get; set; }
 
-        [Option(
-            "address",
-            Required = false,
-            HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with -binfile argument.")]
-        public IEnumerable<string> FlashAddress { get; set; }
-
         #endregion
 
 
@@ -163,9 +157,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Option(
             "update",
             Required = false,
-            Default = true,
+            Default = false,
             HelpText = "Update the device firmware using the other specified options.")]
         public bool Update { get; set; }
+
+        [Option(
+            "deploy",
+            Required = false,
+            Default = false,
+            HelpText = "Flash a deployment image specified with --image.")]
+        public bool Deploy { get; set; }
 
         [Option(
             "stable",
@@ -175,7 +176,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool Stable { get; set; }
 
         [Option(
-            "deployment",
+            "image",
             Required = false,
             Default = null,
             HelpText = "Path to deployment image file to be uploaded to device.")]
@@ -188,7 +189,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Mass erase the device flash before uploading the firmware. If more than one file is specified to be flashed the mass erase will be performed before the first file is flashed.")]
         public bool MassErase { get; set; }
 
+        [Option(
+            "address",
+            Required = false,
+            HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with -binfile argument or flashing a deployment image with -deployment argument.")]
+        public IEnumerable<string> FlashAddress { get; set; }
+
+        [Option(
+            "reset",
+            Required = false,
+            Default = false,
+            HelpText = "Perform reset on connected device after all other requested operations are successfully performed.")]
+        public bool ResetMcu { get; set; }
+
         #endregion
+
 
         [Usage(ApplicationAlias = "nanoff")]
         public static IEnumerable<Example> Examples

@@ -289,9 +289,70 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             espTool,
                             esp32Device,
                             o.TargetName,
+                            true,
                             o.FwVersion,
                             o.Stable,
                             o.DeploymentImage,
+                            null,
+                            verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
+                        }
+
+                        // done here
+                        _exitCode = ExitCodes.OK;
+                        return;
+                    }
+                    catch (ReadEsp32FlashException ex)
+                    {
+                        _exitCode = ExitCodes.E4004;
+                        _extraMessage = ex.Message;
+                    }
+                    catch (WriteEsp32FlashException ex)
+                    {
+                        _exitCode = ExitCodes.E4003;
+                        _extraMessage = ex.Message;
+                    }
+                    catch (EspToolExecutionException ex)
+                    {
+                        _exitCode = ExitCodes.E4000;
+                        _extraMessage = ex.Message;
+                    }
+                }
+
+                // it's OK to deploy after update
+                if (o.Deploy)
+                {
+                    // need to take care of flash address
+                    string appFlashAddress = null;
+
+                    if (o.FlashAddress.Any())
+                    {
+                        // take the first address, it should be the only one valid
+                        appFlashAddress = o.FlashAddress.ElementAt(0);
+                    }
+                    else
+                    {
+                        _exitCode = ExitCodes.E9009;
+                        return;
+                    }
+
+                    // this to flash a deployment image without updating the firmware
+                    try
+                    {
+                        // write flash
+                        _exitCode = await Esp32Operations.UpdateFirmwareAsync(
+                            espTool,
+                            esp32Device,
+                            null,
+                            false,
+                            null,
+                            false,
+                            o.DeploymentImage,
+                            appFlashAddress,
                             verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
@@ -517,6 +578,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.TargetName,
                             o.FwVersion,
                             o.Stable,
+                            true,
                             o.DeploymentImage,
                             appFlashAddress,
                             o.DfuDeviceId,
@@ -526,6 +588,58 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         if (_exitCode != ExitCodes.OK)
                         {
                             // done here
+                            return;
+                        }
+                    }
+
+                    // it's OK to deploy after update
+                    if (o.Deploy)
+                    {
+                        // this to flash a deployment image without updating the firmware
+
+                        // need to take care of flash address
+                        string appFlashAddress = null;
+
+                        if (o.FlashAddress.Any())
+                        {
+                            // take the first address, it should be the only one valid
+                            appFlashAddress = o.FlashAddress.ElementAt(0);
+                        }
+                        else
+                        {
+                            _exitCode = ExitCodes.E9009;
+                            return;
+                        }
+
+                        _exitCode = await Stm32Operations.UpdateFirmwareAsync(
+                                        o.TargetName,
+                                        null,
+                                        false,
+                                        false,
+                                        o.DeploymentImage,
+                                        appFlashAddress,
+                                        o.DfuDeviceId,
+                                        o.JtagDeviceId,
+                                        verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
+                        }
+                    }
+
+                    // reset MCU requested?
+                    if (o.ResetMcu)
+                    {
+                        _exitCode = Stm32Operations.ResetMcu(
+                                        o.JtagDeviceId,
+                                        verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
                         }
                     }
                 }
