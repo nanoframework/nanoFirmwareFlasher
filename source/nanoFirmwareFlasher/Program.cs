@@ -237,7 +237,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // couldn't open COM port
                     // done here, this command has no further processing
-                    _exitCode = ExitCodes.E9000;
+                    _exitCode = ExitCodes.E6000;
 
                     return;
                 }
