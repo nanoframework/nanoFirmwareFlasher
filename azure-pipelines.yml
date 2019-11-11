@@ -17,7 +17,7 @@ resources:
 jobs:
 
 ##############################
-- job: Get_Build_Options
+- job: Check_Build_Options
   pool:
     vmImage: 'VS2017-Win2016'
 
