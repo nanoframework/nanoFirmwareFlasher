@@ -311,7 +311,7 @@ jobs:
       githubReleaseDraft: false
       githubReleasePrerelease: false
       githubReuseDraftOnly: false
-      githubReuseRelease: false
+      githubReuseRelease: true
       githubEditRelease: false
       githubDeleteEmptyTag: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/$(nugetPackageName).$(MY_NUGET_VERSION).nupkg'
