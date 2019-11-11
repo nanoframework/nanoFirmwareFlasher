@@ -22,8 +22,13 @@ jobs:
     vmImage: 'VS2017-Win2016'
 
   steps:
+  
+  - checkout: self
+    condition: eq( variables['StartReleaseCandidate'], true )
+
   - checkout: self
     fetchDepth: 1
+    condition: eq( variables['StartReleaseCandidate'], false )
 
   # get commint message
   - powershell: |
