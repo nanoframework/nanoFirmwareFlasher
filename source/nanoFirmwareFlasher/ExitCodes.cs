@@ -142,6 +142,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Address count doesn't match BIN files count. An address needs to be specified for each BIN file.")]
         E5009 = 5009,
 
+        /// <summary>
+        /// Failed to reset MCU.
+        /// </summary>
+        [Display(Name = "Failed to reset MCU on connected device.")]
+        E5010 = 5010,
+
         ////////////////
         // COM Errors //
         ////////////////
@@ -209,5 +215,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Couldn't find application file. Check the path.")]
         E9008 = 9008,
+
+
+        /// <summary>
+        /// Can't program deployment BIN file without specifying a valid address
+        /// </summary>
+        [Display(Name = "Can't program deployment BIN file without specifying a valid deployment address.")]
+        E9009 = 9009,
+
     }
 }
