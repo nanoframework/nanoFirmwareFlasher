@@ -144,7 +144,7 @@ The list of contributors to this project can be found at [CONTRIBUTORS](https://
 
 ## License
 
-The **nanoFramework** ESP32 firmware flasher tool is licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The **nanoFramework** firmware flasher tool is licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
 ## Code of Conduct
 
