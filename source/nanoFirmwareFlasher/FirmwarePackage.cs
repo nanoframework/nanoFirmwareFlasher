@@ -176,7 +176,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            Console.Write($"Updating to {_fwVersion}");
+            Console.WriteLine($"Updating to {_fwVersion}");
 
             // unzip the firmware
             if (Verbosity >= VerbosityLevel.Detailed)
