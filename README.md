@@ -60,12 +60,22 @@ The tool includes help for all available commands. You can see a list of all ava
 nanoff --help
 ```
 
-### Update the firmware of an ESP32 target
+### Update the firmware of an ESP32_WROOM_32 target
 
-To update the firmware of an ESP32 target connected to COM31, to the latest available development version.
+To update the firmware of an ESP32_WROOM_32 target connected to COM31, to the latest available development version.
 
 ```console
-nanoff --update --platform esp32 --serialport COM31
+nanoff --update --target ESP32_WROOM_32 --serialport COM31
+```
+
+### Deploy a managed application to an ESP32_WROOM_32 target
+
+To deploy a managed application to an ESP32_WROOM_32 target connected to COM31, which has the deployment region at 0x190000 flash address.
+
+>Note: The binary file with the deployment image can be found on the Release or Debug folder of a Visual Studio project after a successful build. This file contains everything that's required to deploy a managed application to a target (meaning application executable and all referenced libraries and assemblies).
+
+```console
+nanoff --target ESP32_WROOM_32 --serialport COM12 --deploy --image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin" --address 0x190000
 ```
 
 ### Update the firmware of an ESP32 target along with a managed application
@@ -75,7 +85,7 @@ You have to specify the path to the managed application.
 This example uses the binary format file that was saved on a previous backup operation.
 
 ```console
-nanoff --update --platform esp32 --serialport COM31 --deployment "c:\eps32-backups\my_awesome_app.bin"
+nanoff --update --target ESP32_WROOM_32 --serialport COM31 --deployment "c:\eps32-backups\my_awesome_app.bin"
 ```
 
 ### Update the firmware of a specific STM32 target
@@ -84,6 +94,16 @@ To update the firmware of the NETDUINO3_WIFI target to the latest available stab
 
 ```console
 nanoff --update --target NETDUINO3_WIFI --stable
+```
+
+### Deploy a managed application to a ST_STM32F769I_DISCOVERY target
+
+To deploy a managed application to a ST_STM32F769I_DISCOVERY target, which has the deployment region at 0x08080000 flash address and reset the MCU after flashing it.
+
+>Note: The binary file with the deployment image can be found on the Release or Debug folder of a Visual Studio project after a successful build. This file contains everything that's required to deploy a managed application to a target (meaning application executable and all referenced libraries and assemblies).
+
+```console
+nanoff --target ST_STM32F769I_DISCOVERY --deploy --image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin" --address 0x08040000 --reset
 ```
 
 ### Update the firmware of a ST_STM32F769I_DISCOVERY along with a managed application
