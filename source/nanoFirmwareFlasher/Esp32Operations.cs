@@ -4,7 +4,9 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -81,14 +83,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             EspTool espTool, 
             EspTool.DeviceInfo esp32Device, 
-            string targetName, 
+            string targetName,
+            bool updateFw,
             string fwVersion, 
             bool stable, 
-            string applicationPath, 
+            string applicationPath,
+            string deploymentAddress,
             VerbosityLevel verbosity)
         {
+            ExitCodes operationResult = ExitCodes.OK;
+            uint address = 0;
+
             // if a target name wasn't specified use the default (and only available) ESP32 target
-            if(string.IsNullOrEmpty(targetName))
+            if (string.IsNullOrEmpty(targetName))
             {
                 targetName = _esp32TargetName;
             }
@@ -101,36 +108,77 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Verbosity = verbosity
             };
 
-            var operationResult = await firmware.DownloadAndExtractAsync(esp32Device.FlashSize);
+            // need to download update package?
+            if (updateFw)
+            {
+                operationResult = await firmware.DownloadAndExtractAsync(esp32Device.FlashSize);
+                if (operationResult != ExitCodes.OK)
+                {
+                    return operationResult;
+                }
+                // download successful
+            }
+
+            // need to include application file?
+            if (!string.IsNullOrEmpty(applicationPath))
+            {
+                // check application file
+                if (File.Exists(applicationPath))
+                {
+                    if (!updateFw)
+                    {
+                        // this is a deployment operation only
+                        // try parsing the deployment address from parameter
+                        // need to remove the leading 0x and to specify that hexadecimal values are allowed
+                        if (!uint.TryParse(deploymentAddress.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out address))
+                        {
+                            return ExitCodes.E9009;
+                        }
+                    }
+
+                    string applicationBinary = new FileInfo(applicationPath).FullName;
+                    firmware.FlashPartitions = new Dictionary<int, string>()
+                    {
+                        {
+                            updateFw ? firmware.DeploymentPartionAddress : (int)address,
+                            applicationBinary
+                        }
+                    };
+                }
+                else
+                {
+                    return ExitCodes.E9008;
+                }
+            }
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                Console.Write($"Erasing flash...");
+            }
+
+            if (updateFw)
+            {
+                // erase flash
+                operationResult = espTool.EraseFlash();
+            }
+            else
+            {
+                // erase flash segment
+
+                // need to get deployment address here
+                // length must both be multiples of the SPI flash erase sector size. This is 0x1000 (4096) bytes for supported flash chips.
+
+                var flashPartition = firmware.FlashPartitions.First();
+
+                var fileStream = File.OpenRead(flashPartition.Value);
+
+                uint fileLength = (uint)Math.Ceiling((decimal)fileStream.Length / 0x1000) * 0x1000;
+
+                operationResult = espTool.EraseFlashSegment(address, fileLength);
+            }
+
             if (operationResult == ExitCodes.OK)
             {
-                // download successful
-
-                // need to include application file?
-                if(!string.IsNullOrEmpty(applicationPath))
-                {
-                    // check application file
-                    if (File.Exists(applicationPath))
-                    {
-                        string applicationBinary = new FileInfo(applicationPath).FullName;
-                        firmware.FlashPartitions.Add(
-                            firmware.DeploymentPartionAddress, 
-                            applicationBinary);
-                    }
-                    else
-                    {
-                        return ExitCodes.E9008;
-                    }
-                }
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.Write($"Erasing flash...");
-                }
-
-                // erase flash
-                espTool.EraseFlash();
-
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     Console.WriteLine("OK");
@@ -142,11 +190,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 // write to flash
-                espTool.WriteFlash(firmware.FlashPartitions);
+                operationResult = espTool.WriteFlash(firmware.FlashPartitions);
 
-                if (verbosity >= VerbosityLevel.Normal)
+                if (operationResult == ExitCodes.OK)
                 {
-                    Console.WriteLine("OK");
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.WriteLine("OK");
+                    }
                 }
             }
 

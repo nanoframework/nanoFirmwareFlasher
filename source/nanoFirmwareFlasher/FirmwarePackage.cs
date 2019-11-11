@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019 The nanoFramework project contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -175,6 +175,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return ExitCodes.E9007;
                 }
             }
+
+            Console.WriteLine($"Updating to {_fwVersion}");
 
             // unzip the firmware
             if (Verbosity >= VerbosityLevel.Detailed)
