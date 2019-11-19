@@ -154,6 +154,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     programResult = jtagDevice.FlashBinFiles(new List<string>() { applicationPath }, new List<string>() { deploymentAddress });
                 }
 
+                if(updateFw)
+                {
+                    // reset MCU
+                    jtagDevice.ResetMcu();
+                }
+
                 return programResult;
             }
         }
