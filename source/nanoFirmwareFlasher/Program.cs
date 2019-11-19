@@ -150,7 +150,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.TargetName.Contains("MBN_QUAIL") ||
                     o.TargetName.Contains("NETDUINO3") ||
                     o.TargetName.Contains("GHI FEZ") ||
-                    o.TargetName.Contains("IngenuityMicro"))
+                    o.TargetName.Contains("IngenuityMicro") ||
+                    o.TargetName.Contains("ORGPAL")
+                )
                 {
                     // candidates for STM32
                     o.Platform = "stm32";
