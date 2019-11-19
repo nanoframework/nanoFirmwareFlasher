@@ -105,7 +105,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         [Option(
             "target",
-            Required = true,
+            Required = false,
             Default = null,
            HelpText = "Target name. This is the target name used in the GitHub and Bintray repositories.")]
         public string TargetName { get; set; }
