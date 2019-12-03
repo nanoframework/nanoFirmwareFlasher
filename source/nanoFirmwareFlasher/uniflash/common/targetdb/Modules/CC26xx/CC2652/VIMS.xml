@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="VIMS" HW_revision="" XML_version="1.0" description="Versatile Instruction Memory System
+Controls memory access to the Flash and encapsulates the following instruction memories:
+- Boot ROM
+- Cache / GPRAM
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="STAT" width="32" description="Status
+Displays current VIMS mode and line buffer status" id="STAT" offset="0x0">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="Icode/Dcode flash line buffer status
+
+0: Enabled or in transition to disabled
+1: Disabled and flushed" id="IDCODE_LB_DIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Sysbus flash line buffer control
+
+0: Enabled or in transition to disabled
+1: Disabled and flushed" id="SYSBUS_LB_DIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="VIMS mode change status
+
+0: VIMS is in the mode defined by MODE
+1: VIMS is in the process of changing to the mode given in CTL.MODE" id="MODE_CHANGING" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="This bit is set when invalidation of the cache memory is active / ongoing" id="INV" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RO" description="Current VIMS mode" id="MODE" resetval="0x0">
+         <bitenum id="OFF" value="3" token="VIMS Off mode" description="VIMS Off mode"/>
+         <bitenum id="CACHE" value="1" token="VIMS Cache mode" description="VIMS Cache mode"/>
+         <bitenum id="GPRAM" value="0" token="VIMS GPRAM mode" description="VIMS GPRAM mode"/>
+      </bitfield>
+   </register>
+   <register acronym="CTL" width="32" description="Control
+Configure VIMS mode and line buffer settings" id="CTL" offset="0x4">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Set this bit to clear statistic counters." id="STATS_CLR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Set this bit to enable statistic counters." id="STATS_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="0: The in-built clock gate functionality is bypassed.
+1: The in-built clock gate functionality is enabled, automatically gating the clock when not needed. " id="DYN_CG_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="23" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Icode/Dcode flash line buffer control
+
+0: Enable
+1: Disable" id="IDCODE_LB_DIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Sysbus flash line buffer control
+
+0: Enable
+1: Disable" id="SYSBUS_LB_DIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Icode/Dcode and sysbus arbitation scheme
+
+0: Static arbitration  (icode/docde &#62; sysbus)
+1: Round-robin arbitration" id="ARB_CFG" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Tag prefetch control
+
+0: Disabled
+1: Enabled" id="PREF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="VIMS mode request.
+Write accesses to this field will be blocked while STAT.MODE_CHANGING is set to 1." id="MODE" resetval="0x0">
+         <bitenum id="OFF" value="3" token="VIMS Off mode" description="VIMS Off mode"/>
+         <bitenum id="CACHE" value="1" token="VIMS Cache mode" description="VIMS Cache mode"/>
+         <bitenum id="GPRAM" value="0" token="VIMS GPRAM mode" description="VIMS GPRAM mode"/>
+      </bitfield>
+   </register>
+</module>

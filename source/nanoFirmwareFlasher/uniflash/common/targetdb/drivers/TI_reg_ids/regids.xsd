@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!-- We have a top level register_ids -->
+
+	<xs:element name="register_ids">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="register_id" type="register_id_type" minOccurs="1" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:attribute name="id" type="xs:string" />
+			<xs:attribute name="XML_version" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+<!-- definition of register -->
+
+	<xs:complexType name="register_id_type">
+		<xs:attribute name="id" type="xs:string" />
+		<xs:attribute name="value" type="xs:string" />
+		<xs:attribute name="address" type="xs:string" />
+		<xs:attribute name="page" type="xs:string" />
+	</xs:complexType>
+
+<!-- fin -->
+
+</xs:schema>

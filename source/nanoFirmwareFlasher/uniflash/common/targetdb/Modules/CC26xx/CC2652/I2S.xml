@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="I2S" HW_revision="" XML_version="1.0" description="I2S Audio DMA module supporting formats I2S, LJF, RJF and DSP
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="AIFWCLKSRC" width="32" description="WCLK Source Selection" id="AIFWCLKSRC" offset="0x0">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Inverts WCLK source (pad or internal) when set.
+
+0: Not inverted
+1: Inverted" id="WCLK_INV" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Selects WCLK source for AIF (should be the same as the BCLK source). The BCLK source is defined in the PRCM:I2SBCLKSEL.SRC
+" id="WCLK_SRC" resetval="0x0">
+         <bitenum id="RESERVED" value="3" token="Not supported. Will give same WCLK as &#39;NONE&#39; (&#39;00&#39;)" description="Not supported. Will give same WCLK as &#39;NONE&#39; (&#39;00&#39;)"/>
+         <bitenum id="INT" value="2" token="Internal WCLK generator, from module PRCM" description="Internal WCLK generator, from module PRCM"/>
+         <bitenum id="EXT" value="1" token="External WCLK generator, from pad" description="External WCLK generator, from pad"/>
+         <bitenum id="NONE" value="0" token="None (&#39;0&#39;)" description="None (&#39;0&#39;)"/>
+      </bitfield>
+   </register>
+   <register acronym="AIFDMACFG" width="32" description="DMA Buffer Size Configuration" id="AIFDMACFG" offset="0x4">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Defines the length of the DMA buffer. Writing a non-zero value to this register field enables and initializes AIF. Note that before doing so, all other configuration must have been done, and AIFINPTRNEXT/AIFOUTPTRNEXT must have been loaded. " id="END_FRAME_IDX" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AIFDIRCFG" width="32" description="Pin Direction" id="AIFDIRCFG" offset="0x8">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="Configures the AD1 audio data pin usage:
+
+0x3: Reserved" id="AD1" resetval="0x0">
+         <bitenum id="OUT" value="2" token="Output mode" description="Output mode"/>
+         <bitenum id="IN" value="1" token="Input mode" description="Input mode"/>
+         <bitenum id="DIS" value="0" token="Not in use (disabled)" description="Not in use (disabled)"/>
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Configures the AD0 audio data pin usage:
+
+0x3: Reserved" id="AD0" resetval="0x0">
+         <bitenum id="OUT" value="2" token="Output mode" description="Output mode"/>
+         <bitenum id="IN" value="1" token="Input mode" description="Input mode"/>
+         <bitenum id="DIS" value="0" token="Not in use (disabled)" description="Not in use (disabled)"/>
+      </bitfield>
+   </register>
+   <register acronym="AIFFMTCFG" width="32" description="Serial Interface Format Configuration" id="AIFFMTCFG" offset="0xc">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="The number of BCLK periods between a WCLK edge and MSB of the first word in a phase:
+
+0x00: LJF and DSP format
+0x01: I2S and DSP format
+0x02: RJF format
+...
+0xFF: RJF format
+
+Note: When 0, MSB of the next word will be output in the idle period between LSB of the previous word and the start of the next word. Otherwise logical 0 will be output until the data delay has expired." id="DATA_DELAY" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="The size of each word stored to or loaded from memory: " id="MEM_LEN_24" resetval="0x0">
+         <bitenum id="24BIT" value="1" token="24-bit (one 8 bit and one 16 bit locked access per sample)" description="24-bit (one 8 bit and one 16 bit locked access per sample)"/>
+         <bitenum id="16BIT" value="0" token="16-bit (one 16 bit access per sample)" description="16-bit (one 16 bit access per sample)"/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="On the serial audio interface, data (and wclk) is sampled and clocked out on opposite edges of BCLK. " id="SMPL_EDGE" resetval="0x1">
+         <bitenum id="POS" value="1" token="Data is sampled on the positive edge and clocked out on the negative edge." description="Data is sampled on the positive edge and clocked out on the negative edge."/>
+         <bitenum id="NEG" value="0" token="Data is sampled on the negative edge and clocked out on the positive edge. " description="Data is sampled on the negative edge and clocked out on the positive edge. "/>
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Selects dual- or single-phase format.
+
+0: Single-phase: DSP format
+1: Dual-phase: I2S, LJF and RJF formats" id="DUAL_PHASE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="5" end="0" rwaccess="RW" description="Number of bits per word (8-24):
+In single-phase format, this is the exact number of bits per word. 
+In dual-phase format, this is the maximum number of bits per word.
+
+Values below 8 and above 24 give undefined behavior. Data written to memory is always aligned to 16 or 24 bits as defined by MEM_LEN_24. Bit widths that differ from this alignment will either be truncated or zero padded.
+" id="WORD_LEN" resetval="0x10">
+      </bitfield>
+   </register>
+   <register acronym="AIFWMASK0" width="32" description="Word Selection Bit Mask for Pin 0" id="AIFWMASK0" offset="0x10">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Bit-mask indicating valid channels in a frame on AD0.
+
+In single-phase mode, each bit represents one channel, starting with LSB for the first word in the frame. A frame can contain up to 8 channels.  Channels that are not included in the mask will not be sampled and stored in memory, and clocked out as &#39;0&#39;.
+
+In dual-phase mode, only the two LSBs are considered. For a stereo configuration, set both bits. For a mono configuration, set bit 0 only. In mono mode, only channel 0 will be sampled and stored to memory, and channel 0 will be repeated when clocked out.
+
+In mono mode, only channel 0 will be sampled and stored to memory, and channel 0 will be repeated in the second phase when clocked out.
+
+If all bits are zero, no input words will be stored to memory, and the output data lines will be constant &#39;0&#39;. This can be utilized when PWM debug output is desired without any actively used output pins.
+" id="MASK" resetval="0x3">
+      </bitfield>
+   </register>
+   <register acronym="AIFWMASK1" width="32" description="Word Selection Bit Mask for Pin 1" id="AIFWMASK1" offset="0x14">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Bit-mask indicating valid channels in a frame on AD1.
+
+In single-phase mode, each bit represents one channel, starting with LSB for the first word in the frame. A frame can contain up to 8 channels.  Channels that are not included in the mask will not be sampled and stored in memory, and clocked out as &#39;0&#39;.
+
+In dual-phase mode, only the two LSBs are considered. For a stereo configuration, set both bits. For a mono configuration, set bit 0 only. In mono mode, only channel 0 will be sampled and stored to memory, and channel 0 will be repeated when clocked out.
+
+In mono mode, only channel 0 will be sampled and stored to memory, and channel 0 will be repeated in the second phase when clocked out.
+
+If all bits are zero, no input words will be stored to memory, and the output data lines will be constant &#39;0&#39;. This can be utilized when PWM debug output is desired without any actively used output pins." id="MASK" resetval="0x3">
+      </bitfield>
+   </register>
+   <register acronym="AIFWMASK2" width="32" description="Internal. Only to be used through TI provided API." id="AIFWMASK2" offset="0x18">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AIFPWMVALUE" width="32" description="Audio Interface PWM Debug Value" id="AIFPWMVALUE" offset="0x1c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="The value written to this register determines the width of the active high PWM pulse (pwm_debug), which starts together with MSB of the first output word in a DMA buffer:
+
+0x0000: Constant low
+0x0001: Width of the pulse (number of BCLK cycles, here 1).
+...
+0xFFFE: Width of the pulse (number of BCLK cycles, here 65534).
+0xFFFF: Constant high 
+
+" id="PULSE_WIDTH" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AIFINPTRNEXT" width="32" description="DMA Input Buffer Next Pointer" id="AIFINPTRNEXT" offset="0x20">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Pointer to the first byte in the next DMA input buffer.
+
+The read value equals the last written value until the currently used DMA input buffer is completed, and then becomes null when the last written value is transferred to the DMA controller to start on the next buffer. This event is signalized by IRQFLAGS.AIF_DMA_IN. 
+
+At startup, the value must be written once before and once after configuring the DMA buffer size in AIFDMACFG.
+
+The next pointer must be written to this register while the DMA function uses the previously written pointer. If not written in time, IRQFLAGS.PTR_ERR will be raised and all input pins will be disabled." id="PTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AIFINPTR" width="32" description="DMA Input Buffer Current Pointer" id="AIFINPTR" offset="0x24">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Value of the DMA input buffer pointer currently used by the DMA controller. Incremented by 1 (byte) or 2 (word) for each AHB access." id="PTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AIFOUTPTRNEXT" width="32" description="DMA Output Buffer Next Pointer" id="AIFOUTPTRNEXT" offset="0x28">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Pointer to the first byte in the next DMA output buffer.
+
+The read value equals the last written value until the currently used DMA output buffer is completed, and then becomes null when the last written value is transferred to the DMA controller to start on the next buffer. This event is signalized by IRQFLAGS.AIF_DMA_OUT. 
+
+At startup, the value must be written once before and once after configuring the DMA buffer size in AIFDMACFG. At this time, the first two samples will be fetched from memory.
+
+The next pointer must be written to this register while the DMA function uses the previously written pointer. If not written in time, IRQFLAGS.PTR_ERR will be raised and all output pins will be disabled." id="PTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AIFOUTPTR" width="32" description="DMA Output Buffer Current Pointer" id="AIFOUTPTR" offset="0x2c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Value of the DMA output buffer pointer currently used by the DMA controller Incremented by 1 (byte) or 2 (word) for each AHB access." id="PTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPCTL" width="32" description="Samplestamp Generator Control Register" id="STMPCTL" offset="0x34">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Low until the output pins are ready to be started by the samplestamp generator. When started (that is STMPOUTTRIG equals the WCLK counter) the bit goes back low." id="OUT_RDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Low until the input pins are ready to be started by the samplestamp generator. When started (that is STMPINTRIG equals the WCLK counter) the bit goes back low." id="IN_RDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Enables the samplestamp generator. The samplestamp generator must only be enabled after it has been properly configured.
+When cleared, all samplestamp generator counters and capture values are cleared.
+" id="STMP_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPXCNTCAPT0" width="32" description="Captured XOSC Counter Value, Capture Channel 0" id="STMPXCNTCAPT0" offset="0x38">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="The value of the samplestamp XOSC counter (STMPXCNT.CURR_VALUE) last time an event was pulsed (event source selected in [EVENT.I2SSTMPSEL0.EV] for channel 0). This number corresponds to the number of 24 MHz clock cycles since the last positive edge of the selected WCLK.
+The value is cleared when STMPCTL.STMP_EN = 0.
+Note: Due to buffering and synchronization, WCLK is delayed by a small number of BCLK periods and clk periods.
+Note: When calculating the fractional part of the sample stamp, STMPXPER may be less than this bit field.
+" id="CAPT_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPXPER" width="32" description="XOSC Period Value" id="STMPXPER" offset="0x3c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="The number of 24 MHz clock cycles in the previous WCLK period (that is -  the next value of the XOSC counter at the positive WCLK edge, had it not been reset to 0).
+The value is cleared when STMPCTL.STMP_EN = 0.
+" id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPWCNTCAPT0" width="32" description="Captured WCLK Counter Value, Capture Channel 0" id="STMPWCNTCAPT0" offset="0x40">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="The value of the samplestamp WCLK counter (STMPWCNT.CURR_VALUE) last time an event was pulsed (event source selected in EVENT:I2SSTMPSEL0.EV for channel 0). This number corresponds to the number of positive WCLK edges since the samplestamp generator was enabled (not taking modification through STMPWADD/STMPWSET into account).
+The value is cleared when STMPCTL.STMP_EN = 0.
+" id="CAPT_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPWPER" width="32" description="WCLK Counter Period Value" id="STMPWPER" offset="0x44">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Used to define when STMPWCNT is to be reset so number of WCLK edges are found for the size of the sample buffer. This is thus a modulo value for the WCLK counter. This number must correspond to the size of the sample buffer used by the system (that is the index of the last sample plus 1)." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPINTRIG" width="32" description="WCLK Counter Trigger Value for Input Pins" id="STMPINTRIG" offset="0x48">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Compare value used to start the incoming audio streams.
+This bit field shall equal the WCLK counter value during the WCLK period in which the first input word(s) are sampled and stored to memory (that is the sample at the start of the very first DMA input buffer).
+
+The value of this register takes effect when the following conditions are met:
+- One or more pins are configured as inputs in AIFDIRCFG.
+- AIFDMACFG has been configured for the correct buffer size, and at least 32 BCLK cycle ticks have happened.
+
+Note: To avoid false triggers, this bit field should be set higher than STMPWPER.VALUE.
+" id="IN_START_WCNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPOUTTRIG" width="32" description="WCLK Counter Trigger Value for Output Pins" id="STMPOUTTRIG" offset="0x4c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Compare value used to start the outgoing audio streams.
+
+This bit field must equal the WCLK counter value during the WCLK period in which the first output word(s) read from memory are clocked out (that is the sample at the start of the very first DMA output buffer).
+
+The value of this register takes effect when the following conditions are met:
+- One or more pins are configured as outputs in AIFDIRCFG.
+- AIFDMACFG has been configured for the correct buffer size, and 32 BCLK cycle ticks have happened.
+- 2 samples have been preloaded from memory (examine the AIFOUTPTR register if necessary). 
+Note: The memory read access is only performed when required, that is channels 0/1 must be selected in AIFWMASK0/AIFWMASK1.
+
+Note: To avoid false triggers, this bit field should be set higher than STMPWPER.VALUE.
+" id="OUT_START_WCNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPWSET" width="32" description="WCLK Counter Set Operation" id="STMPWSET" offset="0x50">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="WCLK counter modification: Sets the running WCLK counter equal to the written value. " id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPWADD" width="32" description="WCLK Counter Add Operation" id="STMPWADD" offset="0x54">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="WCLK counter modification: Adds the written value to the running WCLK counter. If a positive edge of WCLK occurs at the same time as the operation, this will be taken into account.
+To add a negative value, write &#34;STMPWPER.VALUE - value&#34;.
+ " id="VALUE_INC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPXPERMIN" width="32" description="XOSC Minimum Period Value
+Minimum Value of STMPXPER" id="STMPXPERMIN" offset="0x58">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Each time STMPXPER is updated, the value is also loaded into this register, provided that the value is smaller than the current value in this register.
+When written, the register is reset to 0xFFFF (65535), regardless of the value written.
+The minimum value can be used to detect extra WCLK pulses (this registers value will be significantly smaller than STMPXPER.VALUE).
+" id="VALUE" resetval="0xffff">
+      </bitfield>
+   </register>
+   <register acronym="STMPWCNT" width="32" description="Current Value of WCNT" id="STMPWCNT" offset="0x5c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Current value of the WCLK counter" id="CURR_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPXCNT" width="32" description="Current Value of XCNT" id="STMPXCNT" offset="0x60">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Current value of the XOSC counter, latched when reading STMPWCNT." id="CURR_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPXCNTCAPT1" width="32" description="Internal. Only to be used through TI provided API." id="STMPXCNTCAPT1" offset="0x64">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="CAPT_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STMPWCNTCAPT1" width="32" description="Internal. Only to be used through TI provided API." id="STMPWCNTCAPT1" offset="0x68">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="CAPT_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQMASK" width="32" description="Interrupt Mask Register
+
+Selects mask states of the flags in IRQFLAGS that contribute to the I2S_IRQ event." id="IRQMASK" offset="0x70">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="IRQFLAGS.AIF_DMA_IN interrupt mask
+
+0: Disable
+1: Enable" id="AIF_DMA_IN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="IRQFLAGS.AIF_DMA_OUT interrupt mask
+
+0: Disable
+1: Enable" id="AIF_DMA_OUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="IRQFLAGS.WCLK_TIMEOUT interrupt mask
+
+0: Disable
+1: Enable" id="WCLK_TIMEOUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="IRQFLAGS.BUS_ERR interrupt mask
+
+0: Disable
+1: Enable" id="BUS_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="IRQFLAGS.WCLK_ERR interrupt mask
+
+0: Disable
+1: Enable" id="WCLK_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="IRQFLAGS.PTR_ERR interrupt mask.
+
+0: Disable
+1: Enable" id="PTR_ERR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQFLAGS" width="32" description="Raw Interrupt Status Register" id="IRQFLAGS" offset="0x74">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="Set when condition for this bit field event occurs (auto cleared when input pointer is updated - AIFINPTRNEXT), see description of AIFINPTRNEXT register for details." id="AIF_DMA_IN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Set when condition for this bit field event occurs (auto cleared when output pointer is updated - AIFOUTPTRNEXT), see description of AIFOUTPTRNEXT register for details" id="AIF_DMA_OUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Set when the sample stamp generator does not detect a positive WCLK edge for  65535 clk periods. This signalizes that the internal or external BCLK and WCLK generator source has been disabled.
+
+The bit is sticky and may only be cleared by software (by writing &#39;1&#39; to IRQCLR.WCLK_TIMEOUT)." id="WCLK_TIMEOUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Set when a DMA operation is not completed in time (that is audio output buffer underflow, or audio input buffer overflow). 
+This error requires a complete restart since word synchronization has been lost. The bit is sticky and may only be cleared by software (by writing &#39;1&#39; to IRQCLR.BUS_ERR).
+
+Note that DMA initiated transactions to illegal addresses will not trigger an interrupt. The response to such transactions is undefined.
+
+" id="BUS_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Set when: 
+- An unexpected WCLK edge occurs during the data delay period of a phase.  Note unexpected WCLK edges during the word and idle periods of the phase are not detected.
+-  In dual-phase mode, when two WCLK edges are less than 4 BCLK cycles apart.
+-  In single-phase mode, when a WCLK pulse occurs before the last channel.
+This error requires a complete restart since word synchronization has been lost. The bit is sticky and may only be cleared by software (by writing &#39;1&#39; to IRQCLR.WCLK_ERR)." id="WCLK_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Set when AIFINPTRNEXT or AIFOUTPTRNEXT has not been loaded with the next block address in time. 
+This error requires a complete restart since word synchronization has been lost. The bit is sticky and may only be cleared by software (by writing &#39;1&#39; to IRQCLR.PTR_ERR).
+" id="PTR_ERR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQSET" width="32" description="Interrupt Set Register" id="IRQSET" offset="0x78">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="WO" description="1: Sets the interrupt of IRQFLAGS.AIF_DMA_IN (unless a auto clear criteria was given at the same time, in which the set will be ignored)" id="AIF_DMA_IN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="WO" description="1: Sets the interrupt of IRQFLAGS.AIF_DMA_OUT (unless a auto clear criteria was given at the same time, in which the set will be ignored)" id="AIF_DMA_OUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="1: Sets the interrupt of IRQFLAGS.WCLK_TIMEOUT" id="WCLK_TIMEOUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="1: Sets the interrupt of IRQFLAGS.BUS_ERR" id="BUS_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="1: Sets the interrupt of IRQFLAGS.WCLK_ERR" id="WCLK_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="1: Sets the interrupt of IRQFLAGS.PTR_ERR" id="PTR_ERR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQCLR" width="32" description="Interrupt Clear Register" id="IRQCLR" offset="0x7c">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="WO" description="1: Clears the interrupt of IRQFLAGS.AIF_DMA_IN (unless a set criteria was given at the same time in which the clear will be ignored)" id="AIF_DMA_IN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="WO" description="1: Clears the interrupt of IRQFLAGS.AIF_DMA_OUT (unless a set criteria was given at the same time in which the clear will be ignored)" id="AIF_DMA_OUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="1: Clears the interrupt of IRQFLAGS.WCLK_TIMEOUT (unless a set criteria was given at the same time in which the clear will be ignored)" id="WCLK_TIMEOUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="1: Clears the interrupt of IRQFLAGS.BUS_ERR (unless a set criteria was given at the same time in which the clear will be ignored)" id="BUS_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="1: Clears the interrupt of IRQFLAGS.WCLK_ERR (unless a set criteria was given at the same time in which the clear will be ignored)" id="WCLK_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="1: Clears the interrupt of IRQFLAGS.PTR_ERR (unless a set criteria was given at the same time in which the clear will be ignored)" id="PTR_ERR" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

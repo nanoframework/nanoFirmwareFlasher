@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="CPU_ITM" HW_revision="" XML_version="1.0" description="Cortex-M&#39;s Instrumentation Trace Macrocell (ITM)
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="STIM0" width="32" description="Stimulus Port 0" id="STIM0" offset="0x0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA0 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM1" width="32" description="Stimulus Port 1" id="STIM1" offset="0x4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA1 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM1" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM2" width="32" description="Stimulus Port 2" id="STIM2" offset="0x8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA2 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM2" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM3" width="32" description="Stimulus Port 3" id="STIM3" offset="0xc">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA3 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM3" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM4" width="32" description="Stimulus Port 4" id="STIM4" offset="0x10">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA4 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM4" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM5" width="32" description="Stimulus Port 5" id="STIM5" offset="0x14">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA5 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM5" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM6" width="32" description="Stimulus Port 6" id="STIM6" offset="0x18">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA6 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM6" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM7" width="32" description="Stimulus Port 7" id="STIM7" offset="0x1c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA7 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM7" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM8" width="32" description="Stimulus Port 8" id="STIM8" offset="0x20">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA8 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM8" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM9" width="32" description="Stimulus Port 9" id="STIM9" offset="0x24">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA9 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM9" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM10" width="32" description="Stimulus Port 10" id="STIM10" offset="0x28">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA10 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM10" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM11" width="32" description="Stimulus Port 11" id="STIM11" offset="0x2c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA11 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM11" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM12" width="32" description="Stimulus Port 12" id="STIM12" offset="0x30">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA12 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM12" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM13" width="32" description="Stimulus Port 13" id="STIM13" offset="0x34">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA13 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM13" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM14" width="32" description="Stimulus Port 14" id="STIM14" offset="0x38">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA14 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM14" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM15" width="32" description="Stimulus Port 15" id="STIM15" offset="0x3c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA15 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM15" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM16" width="32" description="Stimulus Port 16" id="STIM16" offset="0x40">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA16 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM16" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM17" width="32" description="Stimulus Port 17" id="STIM17" offset="0x44">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA17 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM17" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM18" width="32" description="Stimulus Port 18" id="STIM18" offset="0x48">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA18 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM18" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM19" width="32" description="Stimulus Port 19" id="STIM19" offset="0x4c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA19 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM19" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM20" width="32" description="Stimulus Port 20" id="STIM20" offset="0x50">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA20 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM20" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM21" width="32" description="Stimulus Port 21" id="STIM21" offset="0x54">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA21 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM21" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM22" width="32" description="Stimulus Port 22" id="STIM22" offset="0x58">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA22 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM22" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM23" width="32" description="Stimulus Port 23" id="STIM23" offset="0x5c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA23 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM23" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM24" width="32" description="Stimulus Port 24" id="STIM24" offset="0x60">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA24 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM24" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM25" width="32" description="Stimulus Port 25" id="STIM25" offset="0x64">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA25 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM25" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM26" width="32" description="Stimulus Port 26" id="STIM26" offset="0x68">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA26 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM26" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM27" width="32" description="Stimulus Port 27" id="STIM27" offset="0x6c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA27 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM27" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM28" width="32" description="Stimulus Port 28" id="STIM28" offset="0x70">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA28 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM28" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM29" width="32" description="Stimulus Port 29" id="STIM29" offset="0x74">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA29 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM29" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM30" width="32" description="Stimulus Port 30" id="STIM30" offset="0x78">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA30 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM30" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIM31" width="32" description="Stimulus Port 31" id="STIM31" offset="0x7c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="A write to this location causes data to be written into the FIFO if TER.STIMENA31 is set. Reading from the stimulus port returns the FIFO status in bit [0]: 0 = full, 1 = not full. The polled FIFO interface does not provide an atomic read-modify-write, so it&#39;s users responsibility to ensure exclusive read-modify-write if this ITM port is used concurrently by interrupts or other threads." id="STIM31" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TER" width="32" description="Trace Enable
+Use the Trace Enable Register to generate trace data by writing to the corresponding stimulus port. Note: Privileged writes are accepted to this register if TCR.ITMENA is set. User writes are accepted to this register if TCR.ITMENA is set and the appropriate privilege mask is cleared. Privileged access to the stimulus ports enables an RTOS kernel to guarantee instrumentation slots or bandwidth as required." id="TER" offset="0xe00">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 31." id="STIMENA31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 30." id="STIMENA30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 29." id="STIMENA29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 28." id="STIMENA28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 27." id="STIMENA27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 26." id="STIMENA26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 25." id="STIMENA25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 24." id="STIMENA24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 23." id="STIMENA23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 22." id="STIMENA22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 21." id="STIMENA21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 20." id="STIMENA20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 19." id="STIMENA19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 18." id="STIMENA18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 17." id="STIMENA17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 16." id="STIMENA16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 15." id="STIMENA15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 14." id="STIMENA14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 13." id="STIMENA13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 12." id="STIMENA12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 11." id="STIMENA11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 10." id="STIMENA10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 9." id="STIMENA9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 8." id="STIMENA8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 7." id="STIMENA7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 6." id="STIMENA6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 5." id="STIMENA5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 4." id="STIMENA4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 3." id="STIMENA3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 2." id="STIMENA2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 1." id="STIMENA1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Bit mask to enable tracing on ITM stimulus port 0." id="STIMENA0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TPR" width="32" description="Trace Privilege
+This register is used to enable an operating system to control which stimulus ports are accessible by user code. This register can only be used in privileged mode." id="TPR" offset="0xe40">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Bit mask to enable unprivileged (User) access to ITM stimulus ports:
+
+Bit [0] enables stimulus ports 0, 1, ..., and 7.
+Bit [1] enables stimulus ports 8, 9, ..., and 15.
+Bit [2] enables stimulus ports 16, 17, ..., and 23.
+Bit [3] enables stimulus ports 24, 25, ..., and 31.
+
+0: User access allowed to stimulus ports
+1: Privileged access only to stimulus ports" id="PRIVMASK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TCR" width="32" description="Trace Control
+Use this register to configure and control ITM transfers. This register can only be written in privilege mode. DWT is not enabled in the ITM block. However, DWT stimulus entry into the FIFO is controlled by DWTENA. If DWT requires timestamping, the TSENA bit must be set." id="TCR" offset="0xe80">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Set when ITM events present and being drained." id="BUSY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="7" end="16" rwaccess="RW" description="Trace Bus ID for CoreSight system. Optional identifier for multi-source trace stream formatting. If multi-source trace is in use, this field must be written with a non-zero value." id="ATBID" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="6" end="10" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="2" end="8" rwaccess="RW" description="Timestamp prescaler" id="TSPRESCALE" resetval="0x0">
+         <bitenum id="DIV64" value="3" token="Divide by 64" description="Divide by 64"/>
+         <bitenum id="DIV16" value="2" token="Divide by 16" description="Divide by 16"/>
+         <bitenum id="DIV4" value="1" token="Divide by 4" description="Divide by 4"/>
+         <bitenum id="NOPRESCALING" value="0" token="No prescaling" description="No prescaling"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="3" end="5" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Enables asynchronous clocking of the timestamp counter (when TSENA = 1). If TSENA = 0, writing this bit to 1 does not enable asynchronous clocking of the timestamp counter.
+
+0x0: Mode disabled. Timestamp counter uses system clock from the core and counts continuously.
+0x1: Timestamp counter uses lineout (data related) clock from TPIU interface. The timestamp counter is held in reset while the output line is idle." id="SWOENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Enables the DWT stimulus (hardware event packet emission to the TPIU from the DWT)" id="DWTENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Enables synchronization packet transmission for a synchronous TPIU.
+CPU_DWT:CTRL.SYNCTAP must be configured for the correct synchronization speed." id="SYNCENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Enables differential timestamps. Differential timestamps are emitted when a packet is written to the FIFO with a non-zero timestamp counter, and when the timestamp counter overflows. Timestamps are emitted during idle times after a fixed number of two million cycles. This provides a time reference for packets and inter-packet gaps. If SWOENA (bit [4]) is set, timestamps are triggered by activity on the internal trace bus only. In this case there is no regular timestamp output when the ITM is idle." id="TSENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Enables ITM. This is the master enable, and must be set before ITM Stimulus and Trace Enable registers can be written." id="ITMENA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LAR" width="32" description="Lock Access 
+This register is used to prevent write accesses to the Control Registers: TER, TPR and TCR. 
+
+" id="LAR" offset="0xfb0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="A privileged write of 0xC5ACCE55 enables more write access to Control Registers TER, TPR and TCR. An invalid write removes write access.
+
+" id="LOCK_ACCESS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LSR" width="32" description="Lock Status
+Use this register to enable write accesses to the Control Register." id="LSR" offset="0xfb4">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Reads 0 which means 8-bit lock access is not be implemented." id="BYTEACC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Write access to component is blocked. All writes are ignored, reads are permitted." id="ACCESS" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Indicates that a lock mechanism exists for this component." id="PRESENT" resetval="0x1">
+      </bitfield>
+   </register>
+</module>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<register_ids id="ICEPICK?" XML_version="2.0">
+
+	<register_id id="PC" value="0" address="0" page="0"/>
+	<register_id id="FP" value="0" address="0" page="0"/>
+	<register_id id="IP_TAPID" value="1" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_0" value="2" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_1" value="3" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_2" value="4" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_3" value="5" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_4" value="6" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_5" value="7" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_6" value="8" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_7" value="9" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_8" value="10" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_9" value="11" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_10" value="12" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_11" value="13" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_12" value="14" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_13" value="15" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_14" value="16" address="0" page="0"/>
+	<register_id id="IP_TAP_CNTL_15" value="17" address="0" page="0"/>
+	<register_id id="IP_CNTL" value="18" address="0" page="0"/>
+	<register_id id="IP_SYS_CNTL" value="19" address="0" page="0"/>
+	<register_id id="IP_PIN_CFG" value="20" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_0" value="21" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_1" value="22" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_2" value="23" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_3" value="24" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_4" value="25" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_5" value="26" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_6" value="27" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_7" value="28" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_8" value="29" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_9" value="30" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_10" value="31" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_11" value="32" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_12" value="33" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_13" value="34" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_14" value="35" address="0" page="0"/>
+	<register_id id="IP_TST_TAP_CNTL_15" value="36" address="0" page="0"/>
+	<register_id id="IP_IPCODE" value="37" address="0" page="0"/>
+	<register_id id="IP_USERCODE" value="46" address="0" page="0"/>
+	<register_id id="IP_CONNECT" value="38" address="0" page="0"/>
+	<register_id id="IP_LINKMODE" value="39" address="0" page="0"/>
+	<register_id id="IP_GLOBALSTART" value="40" address="0" page="0"/>
+	<register_id id="IP_CC2538_MASSERASE" value="41" address="0" page="0"/>
+	<register_id id="IP_CC26xx_CHIPRESET" value="42" address="0" page="0"/>
+	<register_id id="IP_CC26xx_TMSSTRENGTH" value="43" address="0" page="0"/>
+	<register_id id="IP_CC26xx_CHIPERASE" value="44" address="0" page="0"/>
+	<register_id id="IP_CC26xx_WAKEUPMCU" value="45" address="0" page="0"/>
+
+</register_ids>

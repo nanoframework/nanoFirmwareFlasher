@@ -1,0 +1,1361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="CRYPTO" HW_revision="" XML_version="1.0" description="DMA Crypto Core is a low power low gate count crypto core with DMA capability and local key storage.
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="DMACH0CTL" width="32" description="Channel 0 Control
+This register is used for channel enabling and priority selection. When a channel is disabled, it becomes inactive only when all ongoing requests are finished." id="DMACH0CTL" offset="0x0">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Channel priority
+0: Low
+1: High
+If both channels have the same priority, access of the channels to the external port is arbitrated using the round robin scheme. If one channel has a high priority and another one low, the channel with the high priority is served first, in case of simultaneous access requests." id="PRIO" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Channel enable
+0: Disabled
+1: Enable
+Note: Disabling an active channel interrupts the DMA operation. The ongoing block transfer completes, but no new transfers are requested." id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMACH0EXTADDR" width="32" description="Channel 0 External Address" id="DMACH0EXTADDR" offset="0x4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Channel external address value
+When read during operation, it holds the last updated external address after being sent to the master interface.  Note: The crypto DMA copies out upto 3 bytes until it hits a word boundary, thus the address need not be word aligned." id="ADDR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMACH0LEN" width="32" description="Channel 0 DMA Length" id="DMACH0LEN" offset="0xc">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Channel DMA length in bytes
+During configuration, this register contains the DMA transfer length in bytes. During operation, it contains the last updated value of the DMA transfer length after being sent to the master interface.
+Note: Setting this register to a nonzero value starts the transfer if the channel is enabled. Therefore, this register must be written last when setting up a DMA channel." id="DMALEN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMASTAT" width="32" description="DMAC Status
+This register provides the actual state of each DMA channel. It also reports port errors in case these were received by the master interface module during the data transfer." id="DMASTAT" offset="0x18">
+      <bitfield range="" begin="31" width="14" end="18" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="Reflects possible transfer errors on the AHB port." id="PORT_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="15" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="A value of 1 indicates that channel 1 is active (DMA transfer on-going)." id="CH1_ACT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="A value of 1 indicates that channel 0 is active (DMA transfer on-going)." id="CH0_ACT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMASWRESET" width="32" description="DMAC Software Reset
+Software reset is used to reset the DMAC to stop all transfers and clears the port error status register. After the software reset is performed, all the channels are disabled and no new requests are performed by the channels. The DMAC waits for the existing (active) requests to finish and accordingly sets the DMASTAT." id="DMASWRESET" offset="0x1c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Software reset enable
+0 : Disabled
+1 :  Enabled (self-cleared to 0)
+Completion of the software reset must be checked through the DMASTAT" id="SWRES" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMACH1CTL" width="32" description="Channel 1 Control
+This register is used for channel enabling and priority selection. When a channel is disabled, it becomes inactive only when all ongoing requests are finished." id="DMACH1CTL" offset="0x20">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Channel priority
+0: Low
+1: High
+If both channels have the same priority, access of the channels to the external port is arbitrated using the round robin scheme. If one channel has a high priority and another one low, the channel with the high priority is served first, in case of simultaneous access requests." id="PRIO" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Channel enable
+0: Disabled
+1: Enable
+Note: Disabling an active channel interrupts the DMA operation. The ongoing block transfer completes, but no new transfers are requested." id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMACH1EXTADDR" width="32" description="Channel 1 External Address" id="DMACH1EXTADDR" offset="0x24">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Channel external address value.
+When read during operation, it holds the last updated external address after being sent to the master interface.   Note: The crypto DMA copies out upto 3 bytes until it hits a word boundary, thus the address need not be word aligned." id="ADDR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMACH1LEN" width="32" description="Channel 1 DMA Length" id="DMACH1LEN" offset="0x2c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Channel DMA length in bytes.
+During configuration, this register contains the DMA transfer length in bytes. During operation, it contains the last updated value of the DMA transfer length after being sent to the master interface.
+Note: Setting this register to a nonzero value starts the transfer if the channel is enabled. Therefore, this register must be written last when setting up a DMA channel." id="DMALEN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMABUSCFG" width="32" description="DMAC Master Run-time Parameters
+This register defines all the run-time parameters for the AHB master interface port. These parameters are required for the proper functioning of the EIP-101m AHB master adapter." id="DMABUSCFG" offset="0x78">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="4" end="12" rwaccess="RW" description="Maximum burst size that can be performed on the AHB bus
+" id="AHB_MST1_BURST_SIZE" resetval="0x2">
+         <bitenum id="64_BYTE" value="6" token="64 bytes " description="64 bytes "/>
+         <bitenum id="32_BYTE" value="5" token="32 bytes " description="32 bytes "/>
+         <bitenum id="16_BYTE" value="4" token="16 bytes " description="16 bytes "/>
+         <bitenum id="8_BYTE" value="3" token="8 bytes " description="8 bytes "/>
+         <bitenum id="4_BYTE" value="2" token="4 bytes" description="4 bytes"/>
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Idle insertion between consecutive burst transfers on AHB
+" id="AHB_MST1_IDLE_EN" resetval="0x0">
+         <bitenum id="IDLE" value="1" token="Idle transfer insertion enabled" description="Idle transfer insertion enabled"/>
+         <bitenum id="NO_IDLE" value="0" token="Do not insert idle transfers." description="Do not insert idle transfers."/>
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Burst length type of AHB transfer
+" id="AHB_MST1_INCR_EN" resetval="0x1">
+         <bitenum id="SPECIFIED" value="1" token="Fixed length bursts or single transfers" description="Fixed length bursts or single transfers"/>
+         <bitenum id="UNSPECIFIED" value="0" token="Unspecified length burst transfers" description="Unspecified length burst transfers"/>
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Locked transform on AHB
+" id="AHB_MST1_LOCK_EN" resetval="0x0">
+         <bitenum id="LOCKED" value="1" token="Transfers are locked" description="Transfers are locked"/>
+         <bitenum id="NOT_LOCKED" value="0" token="Transfers are not locked" description="Transfers are not locked"/>
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Endianess for the AHB master
+" id="AHB_MST1_BIGEND" resetval="0x0">
+         <bitenum id="BIG_ENDIAN" value="1" token="Big Endian" description="Big Endian"/>
+         <bitenum id="LITTLE_ENDIAN" value="0" token="Little Endian" description="Little Endian"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMAPORTERR" width="32" description="DMAC Port Error Raw Status
+This register provides the actual status of individual port errors. It also indicates which channel is serviced by an external AHB port (which is frozen by a port error). A port error aborts operations on all serviced channels (channel enable bit is forced to 0) and prevents further transfers via that port until the error is cleared by writing to the DMASWRESET register." id="DMAPORTERR" offset="0x7c">
+      <bitfield range="" begin="31" width="19" end="13" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="A value of 1 indicates that the EIP-101 has detected an AHB bus error" id="PORT1_AHB_ERROR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="2" end="10" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="Indicates which channel has serviced last (channel 0 or channel 1) by AHB master port." id="PORT1_CHANNEL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="9" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMAHWVER" width="32" description="DMAC Version
+This register contains an indication (or signature) of the EIP type of this DMAC, as well as the hardware version/patch numbers." id="DMAHWVER" offset="0xfc">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="4" end="24" rwaccess="RO" description="Major version number" id="HW_MAJOR_VERSION" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="Minor version number" id="HW_MINOR_VERSION" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="Patch level
+Starts at 0 at first delivery of this version" id="HW_PATCH_LEVEL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Bit-by-bit complement of the EIP_NUMBER field bits." id="EIP_NUMBER_COMPL" resetval="0x2e">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Binary encoding of the EIP-number of this DMA controller (209)" id="EIP_NUMBER" resetval="0xd1">
+      </bitfield>
+   </register>
+   <register acronym="KEYWRITEAREA" width="32" description="Key Store Write Area
+This register defines where the keys should be written in the key store RAM. After writing this register, the key store module is ready to receive the keys through a DMA operation. In case the key data transfer triggered an error in the key store, the error will be available in the interrupt status register after the DMA is finished. The key store write-error is asserted when the programmed/selected area is not completely written. This error is also asserted when the DMA operation writes to ram areas that are not selected.
+The key store RAM is divided into 8 areas of 128 bits.
+192-bit keys written in the key store RAM should start on boundaries of 256 bits. This means that writing a 192-bit key to the key store RAM must be done by writing 256 bits of data with the 64 most-significant bits set to 0. These bits are ignored by the AES engine." id="KEYWRITEAREA" offset="0x400">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Each RAM_AREAx represents an area of 128 bits.
+Select the key store RAM area(s) where the key(s) needs to be written
+0: RAM_AREA7 is not selected to be written.
+1: RAM_AREA7 is selected to be written.
+Writing to multiple RAM locations is possible only when the selected RAM areas are sequential.
+Keys that require more than one RAM locations (key size is 192 or 256 bits), must start at one of the following areas: RAM_AREA0, RAM_AREA2, RAM_AREA4, or RAM_AREA6." id="RAM_AREA7" resetval="0x0">
+         <bitenum id="SEL" value="1" token="This RAM area is selected to be written" description="This RAM area is selected to be written"/>
+         <bitenum id="NOT_SEL" value="0" token="This RAM area is not selected to be written" description="This RAM area is not selected to be written"/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Each RAM_AREAx represents an area of 128 bits.
+Select the key store RAM area(s) where the key(s) needs to be written
+0: RAM_AREA6 is not selected to be written.
+1: RAM_AREA6 is selected to be written.
+Writing to multiple RAM locations is possible only when the selected RAM areas are sequential.
+Keys that require more than one RAM locations (key size is 192 or 256 bits), must start at one of the following areas: RAM_AREA0, RAM_AREA2, RAM_AREA4, or RAM_AREA6." id="RAM_AREA6" resetval="0x0">
+         <bitenum id="SEL" value="1" token="This RAM area is selected to be written" description="This RAM area is selected to be written"/>
+         <bitenum id="NOT_SEL" value="0" token="This RAM area is not selected to be written" description="This RAM area is not selected to be written"/>
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Each RAM_AREAx represents an area of 128 bits.
+Select the key store RAM area(s) where the key(s) needs to be written
+0: RAM_AREA5 is not selected to be written.
+1: RAM_AREA5 is selected to be written.
+Writing to multiple RAM locations is possible only when the selected RAM areas are sequential.
+Keys that require more than one RAM locations (key size is 192 or 256 bits), must start at one of the following areas: RAM_AREA0, RAM_AREA2, RAM_AREA4, or RAM_AREA6." id="RAM_AREA5" resetval="0x0">
+         <bitenum id="SEL" value="1" token="This RAM area is selected to be written" description="This RAM area is selected to be written"/>
+         <bitenum id="NOT_SEL" value="0" token="This RAM area is not selected to be written" description="This RAM area is not selected to be written"/>
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Each RAM_AREAx represents an area of 128 bits.
+Select the key store RAM area(s) where the key(s) needs to be written
+0: RAM_AREA4 is not selected to be written.
+1: RAM_AREA4 is selected to be written.
+Writing to multiple RAM locations is possible only when the selected RAM areas are sequential.
+Keys that require more than one RAM locations (key size is 192 or 256 bits), must start at one of the following areas: RAM_AREA0, RAM_AREA2, RAM_AREA4, or RAM_AREA6." id="RAM_AREA4" resetval="0x0">
+         <bitenum id="SEL" value="1" token="This RAM area is selected to be written" description="This RAM area is selected to be written"/>
+         <bitenum id="NOT_SEL" value="0" token="This RAM area is not selected to be written" description="This RAM area is not selected to be written"/>
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Each RAM_AREAx represents an area of 128 bits.
+Select the key store RAM area(s) where the key(s) needs to be written
+0: RAM_AREA3 is not selected to be written.
+1: RAM_AREA3 is selected to be written.
+Writing to multiple RAM locations is possible only when the selected RAM areas are sequential.
+Keys that require more than one RAM locations (key size is 192 or 256 bits), must start at one of the following areas: RAM_AREA0, RAM_AREA2, RAM_AREA4, or RAM_AREA6." id="RAM_AREA3" resetval="0x0">
+         <bitenum id="SEL" value="1" token="This RAM area is selected to be written" description="This RAM area is selected to be written"/>
+         <bitenum id="NOT_SEL" value="0" token="This RAM area is not selected to be written" description="This RAM area is not selected to be written"/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Each RAM_AREAx represents an area of 128 bits.
+Select the key store RAM area(s) where the key(s) needs to be written
+0: RAM_AREA2 is not selected to be written.
+1: RAM_AREA2 is selected to be written.
+Writing to multiple RAM locations is possible only when the selected RAM areas are sequential.
+Keys that require more than one RAM locations (key size is 192 or 256 bits), must start at one of the following areas: RAM_AREA0, RAM_AREA2, RAM_AREA4, or RAM_AREA6." id="RAM_AREA2" resetval="0x0">
+         <bitenum id="SEL" value="1" token="This RAM area is selected to be written" description="This RAM area is selected to be written"/>
+         <bitenum id="NOT_SEL" value="0" token="This RAM area is not selected to be written" description="This RAM area is not selected to be written"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Each RAM_AREAx represents an area of 128 bits.
+Select the key store RAM area(s) where the key(s) needs to be written
+0: RAM_AREA1 is not selected to be written.
+1: RAM_AREA1 is selected to be written.
+Writing to multiple RAM locations is possible only when the selected RAM areas are sequential.
+Keys that require more than one RAM locations (key size is 192 or 256 bits), must start at one of the following areas: RAM_AREA0, RAM_AREA2, RAM_AREA4, or RAM_AREA6." id="RAM_AREA1" resetval="0x0">
+         <bitenum id="SEL" value="1" token="This RAM area is selected to be written" description="This RAM area is selected to be written"/>
+         <bitenum id="NOT_SEL" value="0" token="This RAM area is not selected to be written" description="This RAM area is not selected to be written"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Each RAM_AREAx represents an area of 128 bits.
+Select the key store RAM area(s) where the key(s) needs to be written
+0: RAM_AREA0 is not selected to be written.
+1: RAM_AREA0 is selected to be written.
+Writing to multiple RAM locations is possible only when the selected RAM areas are sequential.
+Keys that require more than one RAM locations (key size is 192 or 256 bits), must start at one of the following areas: RAM_AREA0, RAM_AREA2, RAM_AREA4, or RAM_AREA6." id="RAM_AREA0" resetval="0x0">
+         <bitenum id="SEL" value="1" token="This RAM area is selected to be written" description="This RAM area is selected to be written"/>
+         <bitenum id="NOT_SEL" value="0" token="This RAM area is not selected to be written" description="This RAM area is not selected to be written"/>
+      </bitfield>
+   </register>
+   <register acronym="KEYWRITTENAREA" width="32" description="Key Store Written Area
+This register shows which areas of the key store RAM contain valid written keys.
+When a new key needs to be written to the key store, on a location that is already occupied by a valid key, this key area must be cleared first. This can be done by writing this register before the new key is written to the key store memory.
+Attempting to write to a key area that already contains a valid key is not allowed and results in an error." id="KEYWRITTENAREA" offset="0x404">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="On read this bit returns the key area written status.
+
+This bit can be reset by writing a 1.
+
+Note: This register will be reset on a soft reset initiated by writing to DMASWRESET.SWRES. After a soft reset, all keys must be rewritten to the key store memory." id="RAM_AREA_WRITTEN7" resetval="0x0">
+         <bitenum id="WRITTEN" value="1" token="This RAM area is written with valid key information" description="This RAM area is written with valid key information"/>
+         <bitenum id="NOT_WRITTEN" value="0" token="This RAM area is not written with valid key information" description="This RAM area is not written with valid key information"/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="On read this bit returns the key area written status.
+
+This bit can be reset by writing a 1.
+
+Note: This register will be reset on a soft reset initiated by writing to DMASWRESET.SWRES. After a soft reset, all keys must be rewritten to the key store memory." id="RAM_AREA_WRITTEN6" resetval="0x0">
+         <bitenum id="WRITTEN" value="1" token="This RAM area is written with valid key information" description="This RAM area is written with valid key information"/>
+         <bitenum id="NOT_WRITTEN" value="0" token="This RAM area is not written with valid key information" description="This RAM area is not written with valid key information"/>
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="On read this bit returns the key area written status.
+
+This bit can be reset by writing a 1.
+
+Note: This register will be reset on a soft reset initiated by writing to DMASWRESET.SWRES. After a soft reset, all keys must be rewritten to the key store memory." id="RAM_AREA_WRITTEN5" resetval="0x0">
+         <bitenum id="WRITTEN" value="1" token="This RAM area is written with valid key information" description="This RAM area is written with valid key information"/>
+         <bitenum id="NOT_WRITTEN" value="0" token="This RAM area is not written with valid key information" description="This RAM area is not written with valid key information"/>
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="On read this bit returns the key area written status.
+
+This bit can be reset by writing a 1.
+
+Note: This register will be reset on a soft reset initiated by writing to DMASWRESET.SWRES. After a soft reset, all keys must be rewritten to the key store memory." id="RAM_AREA_WRITTEN4" resetval="0x0">
+         <bitenum id="WRITTEN" value="1" token="This RAM area is written with valid key information" description="This RAM area is written with valid key information"/>
+         <bitenum id="NOT_WRITTEN" value="0" token="This RAM area is not written with valid key information" description="This RAM area is not written with valid key information"/>
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="On read this bit returns the key area written status.
+
+This bit can be reset by writing a 1.
+
+Note: This register will be reset on a soft reset initiated by writing to DMASWRESET.SWRES. After a soft reset, all keys must be rewritten to the key store memory." id="RAM_AREA_WRITTEN3" resetval="0x0">
+         <bitenum id="WRITTEN" value="1" token="This RAM area is written with valid key information" description="This RAM area is written with valid key information"/>
+         <bitenum id="NOT_WRITTEN" value="0" token="This RAM area is not written with valid key information" description="This RAM area is not written with valid key information"/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="On read this bit returns the key area written status.
+
+This bit can be reset by writing a 1.
+
+Note: This register will be reset on a soft reset initiated by writing to DMASWRESET.SWRES. After a soft reset, all keys must be rewritten to the key store memory." id="RAM_AREA_WRITTEN2" resetval="0x0">
+         <bitenum id="WRITTEN" value="1" token="This RAM area is written with valid key information" description="This RAM area is written with valid key information"/>
+         <bitenum id="NOT_WRITTEN" value="0" token="This RAM area is not written with valid key information" description="This RAM area is not written with valid key information"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="On read this bit returns the key area written status.
+
+This bit can be reset by writing a 1.
+
+Note: This register will be reset on a soft reset initiated by writing to DMASWRESET.SWRES. After a soft reset, all keys must be rewritten to the key store memory." id="RAM_AREA_WRITTEN1" resetval="0x0">
+         <bitenum id="WRITTEN" value="1" token="This RAM area is written with valid key information" description="This RAM area is written with valid key information"/>
+         <bitenum id="NOT_WRITTEN" value="0" token="This RAM area is not written with valid key information" description="This RAM area is not written with valid key information"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="On read this bit returns the key area written status.
+
+This bit can be reset by writing a 1.
+
+Note: This register will be reset on a soft reset initiated by writing to DMASWRESET.SWRES. After a soft reset, all keys must be rewritten to the key store memory." id="RAM_AREA_WRITTEN0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="KEYSIZE" width="32" description="Key Store Size
+This register defines the size of the keys that are written with DMA. This register should be configured before writing to the KEY_STORE_WRITE_AREA register." id="KEYSIZE" offset="0x408">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Key size:
+00: Reserved
+When writing this to this register, the KEY_STORE_WRITTEN_AREA register is reset." id="SIZE" resetval="0x1">
+         <bitenum id="256_BIT" value="3" token="256 bits" description="256 bits"/>
+         <bitenum id="192_BIT" value="2" token="192 bits" description="192 bits"/>
+         <bitenum id="128_BIT" value="1" token="128 bits" description="128 bits"/>
+      </bitfield>
+   </register>
+   <register acronym="KEYREADAREA" width="32" description="Key Store Read Area
+This register selects the key store RAM area from where the key needs to be read that will be used for an AES operation. The operation directly starts after writing this register. When the operation is finished, the status of the key store read operation is available in the interrupt status register. Key store read error is asserted when a RAM area is selected which does not contain valid written key." id="KEYREADAREA" offset="0x40c">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="Key store operation busy status flag (read only):
+0: Operation is complete.
+1: Operation is not completed and the key store is busy." id="BUSY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="27" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Selects the area of the key store RAM from where the key needs to be read that will be writen to the AES engine
+RAM_AREA:
+
+RAM areas RAM_AREA0, RAM_AREA2, RAM_AREA4 and RAM_AREA6 are the only valid read areas for 192 and 256 bits key sizes.
+Only RAM areas that contain valid written keys can be selected." id="RAM_AREA" resetval="0x8">
+         <bitenum id="NO_RAM" value="8" token="No RAM" description="No RAM"/>
+         <bitenum id="RAM_AREA7" value="7" token="RAM Area 7" description="RAM Area 7"/>
+         <bitenum id="RAM_AREA6" value="6" token="RAM Area 6" description="RAM Area 6"/>
+         <bitenum id="RAM_AREA5" value="5" token="RAM Area 5" description="RAM Area 5"/>
+         <bitenum id="RAM_AREA4" value="4" token="RAM Area 4" description="RAM Area 4"/>
+         <bitenum id="RAM_AREA3" value="3" token="RAM Area 3" description="RAM Area 3"/>
+         <bitenum id="RAM_AREA2" value="2" token="RAM Area 2" description="RAM Area 2"/>
+         <bitenum id="RAM_AREA1" value="1" token="RAM Area 1" description="RAM Area 1"/>
+         <bitenum id="RAM_AREA0" value="0" token="RAM Area 0" description="RAM Area 0"/>
+      </bitfield>
+   </register>
+   <register acronym="AESKEY2" width="32" description="AES_KEY2_0 / AES_GHASH_H_IN_0
+Second Key / GHASH Key (internal, but clearable)
+The following registers are not accessible through the host for reading and writing. They are used to store internally calculated key information and intermediate results. However, when the host performs a write to the any of the respective AES_KEY2_n or AES_KEY3_n addresses, respectively the whole 128-bit AES_KEY2_n or AES_KEY3_n register is cleared to 0s.
+The AES_GHASH_H_IN_n registers (required for GHASH, which is part of GCM) are mapped to the AES_KEY2_n registers. The (intermediate) authentication result for GCM and CCM is stored in the AES_KEY3_n register.                                                                                                                  " id="AESKEY2" offset="0x500">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="AES_KEY2/AES_GHASH_H[31:0]
+
+For GCM:
+-[127:0] - GHASH_H - The internally calculated GHASH key is stored in these registers. Only used for modes that use the GHASH function (GCM).
+-[255:128] - This register is used to store intermediate values and is initialized with 0s when loading a new key.
+
+For CCM:
+-[255:0] - This register is used to store intermediate values.
+
+For CBC-MAC:
+-[255:0] - ZEROES - This register must remain 0." id="AES_KEY2" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESKEY3" width="32" description="AES_KEY3_0 / AES_KEY2_4
+Third Key / Second Key (internal, but clearable)
+The following registers are not accessible through the host for reading and writing. They are used to store internally calculated key information and intermediate results. However, when the host performs a write to the any of the respective AES_KEY2_n or AES_KEY3_n addresses, respectively the whole 128-bit AES_KEY2_n or AES_KEY3_n register is cleared to 0s.
+The AES_GHASH_H_IN_n registers (required for GHASH, which is part of GCM) are mapped to the AES_KEY2_n registers. The (intermediate) authentication result for GCM and CCM is stored in the AES_KEY3_n register.                                                                                                                                       " id="AESKEY3" offset="0x510">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="AES_KEY3[31:0]/AES_KEY2[159:128]
+
+For GCM:
+-[127:0] - GHASH_H - The internally calculated GHASH key is stored in these registers. Only used for modes that use the GHASH function (GCM).
+-[255:128] - This register is used to store intermediate values and is initialized with 0s when loading a new key.
+
+For CCM:
+-[255:0] - This register is used to store intermediate values.
+
+For CBC-MAC:
+-[255:0] - ZEROES - This register must remain 0." id="AES_KEY3" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESIV" width="32" description="AES initialization vector registers
+These registers are used to provide and read the IV from the AES engine." id="AESIV" offset="0x540">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="AES_IV[31:0]
+
+Initialization vector
+Used for regular non-ECB modes (CBC/CTR):
+-[127:0] - AES_IV - For regular AES operations (CBC and CTR) these registers must be written with a new 128-bit IV. After an operation, these registers contain the latest 128-bit result IV, generated by the EIP-120t. If CTR mode is selected, this value is incremented with 0x1: After first use - When a new data block is submitted to the engine
+
+For GCM:
+-[127:0] - AES_IV - For GCM operations, these registers must be written with a new 128-bit IV.
+After an operation, these registers contain the updated 128-bit result IV, generated by the EIP-120t. Note that bits [127:96] of the IV represent the initial counter value (which is 1 for GCM) and must therefore be initialized to 0x01000000. This value is incremented with 0x1: After first use - When a new data block is submitted to the engine.
+
+For CCM:
+-[127:0] - A0: For CCM this field must be written with value A0, this value is the concatenation of: A0-flags (5-bits of 0 and 3-bits &#39;L&#39;), Nonce and counter value. &#39;L&#39; must be a copy from the &#39;L&#39; value of the AES_CTRL register. This &#39;L&#39; indicates the width of the Nonce and counter. The loaded counter must be initialized to 0. The total width of A0 is 128-bit.
+
+For CBC-MAC:
+-[127:0] - Zeroes - For CBC-MAC this register must be written with 0s at the start of each operation. After an operation, these registers contain the 128-bit TAG output, generated by the EIP-120t." id="AES_IV" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESCTL" width="32" description="AES Control
+
+AES input/output buffer control and mode register
+This register specifies the AES mode of operation for the EIP-120t.
+Electronic codebook (ECB) mode is automatically selected if bits [28:5] of this register are all 0." id="AESCTL" offset="0x550">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="If 1, this read-only status bit indicates that the context data registers can be overwritten and the host is permitted to write the next context." id="CONTEXT_READY" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="If 1, this status bit indicates that an AES authentication TAG and/or IV block(s) is/are available for the host to retrieve. This bit is only asserted if the save_context bit is set to 1. The bit is mutual exclusive with the context_ready bit.
+Writing one clears the bit to 0, indicating the AES core can start its next operation. This bit is also cleared when the 4th word of the output TAG and/or IV is read.
+Note: All other mode bit writes are ignored when this mode bit is written with 1.
+Note: This bit is controlled automatically by the EIP-120t for TAG read DMA operations." id="SAVED_CONTEXT_RDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="This bit indicates that an authentication TAG or result IV needs to be stored as a result context.
+Typically this bit must be set for authentication modes returning a TAG (CBC-MAC, GCM and CCM), or for basic encryption modes that require future continuation with the current result IV.
+If this bit is set, the engine retains its full context until the TAG and/or IV registers are read.
+The TAG or IV must be read before the AES engine can start a new operation." id="SAVE_CONTEXT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="4" end="25" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="3" end="22" rwaccess="RW" description="Defines M, which indicates the length of the authentication field for CCM operations; the authentication field length equals two times (the value of CCM-M plus one).
+Note: The EIP-120t always returns a 128-bit authentication field, of which the M least significant bytes are valid. All values are supported." id="CCM_M" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="3" end="19" rwaccess="RW" description="Defines L, which indicates the width of the length field for CCM operations; the length field in bytes equals the value of CMM-L plus one. All values are supported." id="CCM_L" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="If set to 1, AES-CCM is selected
+AES-CCM is a combined mode, using AES for authentication and encryption.
+Note: Selecting AES-CCM mode requires writing of the AAD length register after all other registers.
+Note: The CTR mode bit in this register must also be set to 1 to enable AES-CTR; selecting other AES modes than CTR mode is invalid." id="CCM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="2" end="16" rwaccess="RW" description="Set these bits to 11 to select AES-GCM mode.
+AES-GCM is a combined mode, using the Galois field multiplier GF(2 to the power of 128) for authentication and AES-CTR mode for encryption.
+Note: The CTR mode bit in this register must also be set to 1 to enable AES-CTR
+Bit combination description:
+00 = No GCM mode
+01 = Reserved, do not select
+10 = Reserved, do not select
+11 = Autonomous GHASH (both H- and Y0-encrypted calculated internally)
+Note: The EIP-120t-1 configuration only supports mode 11 (autonomous GHASH), other GCM modes are not allowed." id="GCM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Set to 1 to select AES-CBC MAC mode.
+The direction bit must be set to 1 for this mode.
+Selecting this mode requires writing the length register after all other registers." id="CBC_MAC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="6" end="9" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="2" end="7" rwaccess="RW" description="Specifies the counter width for AES-CTR mode
+00 = 32-bit counter
+01 = 64-bit counter
+10 = 96-bit counter
+11 = 128-bit counter" id="CTR_WIDTH" resetval="0x0">
+         <bitenum id="128_BIT" value="3" token="128 bits" description="128 bits"/>
+         <bitenum id="96_BIT" value="2" token="96 bits" description="96 bits"/>
+         <bitenum id="64_BIT" value="1" token="64 bits" description="64 bits"/>
+         <bitenum id="32_BIT" value="0" token="32 bits" description="32 bits"/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="If set to 1, AES counter mode (CTR) is selected.
+Note: This bit must also be set for GCM and CCM, when encryption/decryption is required." id="CTR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="If set to 1, cipher-block-chaining (CBC) mode is selected." id="CBC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="2" end="3" rwaccess="RO" description="This read-only field specifies the key size.
+The key size is automatically configured when a new key is loaded through the key store module.
+00 = N/A - Reserved
+01 = 128-bit
+10 = 192-bit
+11 = 256-bit" id="KEY_SIZE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="If set to 1 an encrypt operation is performed.
+If set to 0 a decrypt operation is performed.
+This bit must be written with a 1 when CBC-MAC is selected." id="DIR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="If 1, this status bit indicates that the 16-byte AES input buffer is empty. The host is permitted to write the next block of data.
+Writing 0 clears the bit to 0 and indicates that the AES core can use the provided input data block.
+Writing 1 to this bit is ignored.
+Note: For DMA operations, this bit is automatically controlled by the EIP-120t.
+After reset, this bit is 0. After writing a context, this bit becomes 1." id="INPUT_READY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="If 1, this status bit indicates that an AES output block is available to be retrieved by the host.
+Writing 0 clears the bit to 0 and indicates that output data is read by the host. The AES core can provide a next output data block.
+Writing 1 to this bit is ignored.
+Note: For DMA operations, this bit is automatically controlled by the EIP-120t." id="OUTPUT_READY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATALEN0" width="32" description="AES Crypto Length 0 (LSW)
+These registers are used to write the Length values to the EIP-120t. While processing, the length values decrement to 0. If both lengths are 0, the data stream is finished and a new context is requested. For basic AES modes (ECB, CBC, and CTR), a crypto length of 0 can be written if multiple streams need to be processed with the same key. Writing 0 length results in continued data requests until a new context is written. For the other modes (CBC-MAC, GCM, and CCM) no (new) data requests are done if the length decrements to or equals 0.
+It is advised to write a new length per packet. If the length registers decrement to 0, no new data is processed until a new context or length value is written.
+When writing a new mode without writing the length registers, the length register values from the previous context is reused." id="AESDATALEN0" offset="0x554">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="C_LENGTH[31:0]
+Bits [60:0] of the crypto length registers (LSW and MSW) store the cryptographic data length in bytes for all modes. Once processing with this context is started, this length decrements to 0. Data lengths up to (261: 1) bytes are allowed.
+For GCM, any value up to 236 - 32 bytes can be used. This is because a 32-bit counter mode is used; the maximum number of 128-bit blocks is 232 - 2, resulting in a maximum number of bytes of 236 - 32.
+A write to this register triggers the engine to start using this context. This is valid for all modes except GCM and CCM.
+Note: For the combined modes (GCM and CCM), this length does not include the authentication only data; the authentication length is specified in the AESAUTHLEN register
+All modes must have a length greater than 0. For the combined modes, it is allowed to have one of the lengths equal to 0.
+For the basic encryption modes (ECB, CBC, and CTR) it is allowed to program zero to the length field; in that case the length is assumed infinite.
+All data must be byte (8-bit) aligned for stream cipher modes; bit aligned data streams are not supported by the EIP-120t. For block cipher modes, the data length must be programmed in multiples of the block cipher size, 16 bytes.
+For a host read operation, these registers return all-0s." id="C_LENGTH" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATALEN1" width="32" description="AES Crypto Length 1 (MSW)
+These registers are used to write the Length values to the EIP-120t. While processing, the length values decrement to 0. If both lengths are 0, the data stream is finished and a new context is requested. For basic AES modes (ECB, CBC, and CTR), a crypto length of 0 can be written if multiple streams need to be processed with the same key. Writing 0 length results in continued data requests until a new context is written. For the other modes (CBC-MAC, GCM and CCM) no (new) data requests are done if the length decrements to or equals 0.
+It is advised to write a new length per packet. If the length registers decrement to 0, no new data is processed until a new context or length value is written.
+When writing a new mode without writing the length registers, the length register values from the previous context is reused." id="AESDATALEN1" offset="0x558">
+      <bitfield range="" begin="31" width="3" end="29" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="29" end="0" rwaccess="WO" description="C_LENGTH[60:32]
+Bits [60:0] of the crypto length registers (LSW and MSW) store the cryptographic data length in bytes for all modes. Once processing with this context is started, this length decrements to 0. Data lengths up to (261: 1) bytes are allowed.
+For GCM, any value up to 236 - 32 bytes can be used. This is because a 32-bit counter mode is used; the maximum number of 128-bit blocks is 232 - 2, resulting in a maximum number of bytes of 236 - 32.
+A write to this register triggers the engine to start using this context. This is valid for all modes except GCM and CCM.
+Note: For the combined modes (GCM and CCM), this length does not include the authentication only data; the authentication length is specified in the AESAUTHLEN register
+All modes must have a length greater than 0. For the combined modes, it is allowed to have one of the lengths equal to 0.
+For the basic encryption modes (ECB, CBC, and CTR) it is allowed to program zero to the length field; in that case the length is assumed infinite.
+All data must be byte (8-bit) aligned for stream cipher modes; bit aligned data streams are not supported by the EIP-120t. For block cipher modes, the data length must be programmed in multiples of the block cipher size, 16 bytes.
+For a host read operation, these registers return all-0s." id="C_LENGTH" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESAUTHLEN" width="32" description="AES Authentication Length " id="AESAUTHLEN" offset="0x55c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="Bits [31:0] of the authentication length register store the authentication data length in bytes for combined modes only (GCM or CCM).
+Supported AAD-lengths for CCM are from 0 to (2^16 - 2^8) bytes. For GCM any value up to (2^32 - 1) bytes can be used. Once processing with this context is started, this length decrements to 0.
+A write to this register triggers the engine to start using this context for GCM and CCM.
+For a host read operation, these registers return all-0s." id="AUTH_LENGTH" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATAOUT0" width="32" description="Data Input/Output" id="AESDATAOUT0" offset="0x560">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Data register 0 for output block data from the Crypto peripheral.
+These bits = AES Output Data[31:0] of {127:0]
+
+For normal operations, this register is not used, since data input and output is transferred from and to the AES engine via DMA.
+
+For a Host read operation, these registers contain the 128-bit output block from the latest AES operation. Reading from a word-aligned offset within this address range will read one word (4 bytes) of data out the 4-word deep (16 bytes = 128-bits AES block) data output buffer. The words (4 words, one full block) should be read before the core will move the next block to the data output buffer. To empty the data output buffer, AESCTL.OUTPUT_READY must be written.
+For the modes with authentication (CBC-MAC, GCM and CCM), the invalid (message) bytes/words can be written with any data.
+
+Note: The AAD / authentication only data is not copied to the output buffer but only used for authentication." id="DATA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATAIN0" width="32" description="AES Data Input_Output 0
+The data registers are typically accessed through the DMA and not with host writes and/or reads. However, for debugging purposes the data input/output registers can be accessed via host write and read operations. The registers are used to buffer the input/output data blocks to/from the EIP-120t.
+Note: The data input buffer (AES_DATA_IN_n) and data output buffer (AES_DATA_OUT_n) are mapped to the same address locations.
+Writes (both DMA and host) to these addresses load the Input Buffer while reads pull from the Output Buffer. Therefore, for write access, the data input buffer is written; for read access, the data output buffer is read. The data input buffer must be written before starting an operation. The data output buffer contains valid data on completion of an operation. Therefore, any 128-bit data block can be split over multiple 32-bit word transfers; these can be mixed with other host transfers over the external interface." id="AESDATAIN0" offset="0x560">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="AES input data[31:0] / AES output data[31:0]
+Data registers for input/output block data to/from the EIP-120t.
+For normal operations, this register is not used, since data input and output is transferred from and to the AES core via DMA. For a host write operation, these registers must be written with the 128-bit input block for the next AES operation. Writing at a word-aligned offset within this address range stores the word (4 bytes) of data into the corresponding position of 4-word deep (16 bytes = 128-bit AES block) data input buffer. This buffer is used for the next AES operation. If the last data block is not completely filled with valid data (see notes below), it is allowed to write only the words with valid data. Next AES operation is triggered by writing to the input_ready flag of the AES_CTRL register.
+For a host read operation, these registers contain the 128-bit output block from the latest AES operation. Reading from a word-aligned offset within this address range reads one word (4 bytes) of data out the 4-word deep (16 bytes = 128-bits AES block) data output buffer. The words (4 words, one full block) should be read before the core will move the next block to the data output buffer. To empty the data output buffer, the output_ready flag of the AES_CTRL register must be written.
+For the modes with authentication (CBC-MAC, GCM and CCM), the invalid (message) bytes/words can be written with any data.
+Note: AES typically operates on 128 bits block multiple input data. The CTR, GCM and CCM modes form an exception. The last block of a CTR-mode message may contain less than 128 bits (refer to [NIST 800-38A]). For GCM/CCM, the last block of both AAD and message data may contain less than 128 bits (refer to [NIST 800-38D]). The EIP-120t automatically pads or masks misaligned ending data blocks with 0s for GCM, CCM and CBC-MAC. For CTR mode, the remaining data in an unaligned data block is ignored.
+Note: The AAD / authentication only data is not copied to the output buffer but only used for authentication." id="AES_DATA_IN_OUT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATAOUT1" width="32" description="Data Input/Output" id="AESDATAOUT1" offset="0x564">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Data register 0 for output block data from the Crypto peripheral.
+These bits = AES Output Data[31:0] of {127:0]
+
+For normal operations, this register is not used, since data input and output is transferred from and to the AES engine via DMA.
+
+For a Host read operation, these registers contain the 128-bit output block from the latest AES operation. Reading from a word-aligned offset within this address range will read one word (4 bytes) of data out the 4-word deep (16 bytes = 128-bits AES block) data output buffer. The words (4 words, one full block) should be read before the core will move the next block to the data output buffer. To empty the data output buffer, AESCTL.OUTPUT_READY must be written.
+For the modes with authentication (CBC-MAC, GCM and CCM), the invalid (message) bytes/words can be written with any data.
+
+Note: The AAD / authentication only data is not copied to the output buffer but only used for authentication." id="DATA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATAIN1" width="32" description="AES Data Input_Output 0
+The data registers are typically accessed through the DMA and not with host writes and/or reads. However, for debugging purposes the data input/output registers can be accessed via host write and read operations. The registers are used to buffer the input/output data blocks to/from the EIP-120t.
+Note: The data input buffer (AES_DATA_IN_n) and data output buffer (AES_DATA_OUT_n) are mapped to the same address locations.
+Writes (both DMA and host) to these addresses load the Input Buffer while reads pull from the Output Buffer. Therefore, for write access, the data input buffer is written; for read access, the data output buffer is read. The data input buffer must be written before starting an operation. The data output buffer contains valid data on completion of an operation. Therefore, any 128-bit data block can be split over multiple 32-bit word transfers; these can be mixed with other host transfers over the external interface." id="AESDATAIN1" offset="0x564">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="AES input data[31:0] / AES output data[63:32]
+Data registers for input/output block data to/from the EIP-120t.
+For normal operations, this register is not used, since data input and output is transferred from and to the AES core via DMA. For a host write operation, these registers must be written with the 128-bit input block for the next AES operation. Writing at a word-aligned offset within this address range stores the word (4 bytes) of data into the corresponding position of 4-word deep (16 bytes = 128-bit AES block) data input buffer. This buffer is used for the next AES operation. If the last data block is not completely filled with valid data (see notes below), it is allowed to write only the words with valid data. Next AES operation is triggered by writing to the input_ready flag of the AES_CTRL register.
+For a host read operation, these registers contain the 128-bit output block from the latest AES operation. Reading from a word-aligned offset within this address range reads one word (4 bytes) of data out the 4-word deep (16 bytes = 128-bits AES block) data output buffer. The words (4 words, one full block) should be read before the core will move the next block to the data output buffer. To empty the data output buffer, the output_ready flag of the AES_CTRL register must be written.
+For the modes with authentication (CBC-MAC, GCM and CCM), the invalid (message) bytes/words can be written with any data.
+Note: AES typically operates on 128 bits block multiple input data. The CTR, GCM and CCM modes form an exception. The last block of a CTR-mode message may contain less than 128 bits (refer to [NIST 800-38A]). For GCM/CCM, the last block of both AAD and message data may contain less than 128 bits (refer to [NIST 800-38D]). The EIP-120t automatically pads or masks misaligned ending data blocks with 0s for GCM, CCM and CBC-MAC. For CTR mode, the remaining data in an unaligned data block is ignored.
+Note: The AAD / authentication only data is not copied to the output buffer but only used for authentication." id="AES_DATA_IN_OUT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATAOUT2" width="32" description="Data Input/Output" id="AESDATAOUT2" offset="0x568">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Data register 0 for output block data from the Crypto peripheral.
+These bits = AES Output Data[31:0] of {127:0]
+
+For normal operations, this register is not used, since data input and output is transferred from and to the AES engine via DMA.
+
+For a Host read operation, these registers contain the 128-bit output block from the latest AES operation. Reading from a word-aligned offset within this address range will read one word (4 bytes) of data out the 4-word deep (16 bytes = 128-bits AES block) data output buffer. The words (4 words, one full block) should be read before the core will move the next block to the data output buffer. To empty the data output buffer, AESCTL.OUTPUT_READY must be written.
+For the modes with authentication (CBC-MAC, GCM and CCM), the invalid (message) bytes/words can be written with any data.
+
+Note: The AAD / authentication only data is not copied to the output buffer but only used for authentication." id="DATA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATAIN2" width="32" description="AES Data Input_Output 2
+The data registers are typically accessed via DMA and not with host writes and/or reads. However, for debugging purposes the Data Input/Output Registers can be accessed via host write and read operations. The registers are used to buffer the input/output data blocks to/from the EIP-120t.
+Note: The data input buffer (AES_DATA_IN_n) and data output buffer (AES_DATA_OUT_n) are mapped to the same address locations.
+Writes (both DMA and host) to these addresses load the Input Buffer while reads pull from the Output Buffer. Therefore, for write access, the data input buffer is written; for read access, the data output buffer is read. The data input buffer must be written before starting an operation. The data output buffer contains valid data on completion of an operation. Therefore, any 128-bit data block can be split over multiple 32-bit word transfers; these can be mixed with other host transfers over the external interface." id="AESDATAIN2" offset="0x568">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="AES input data[95:64] / AES output data[95:64]
+Data registers for input/output block data to/from the EIP-120t.
+For normal operations, this register is not used, since data input and output is transferred from and to the AES core via DMA. For a host write operation, these registers must be written with the 128-bit input block for the next AES operation. Writing at a word-aligned offset within this address range stores the word (4 bytes) of data into the corresponding position of 4-word deep (16 bytes = 128-bit AES block) data input buffer. This buffer is used for the next AES operation. If the last data block is not completely filled with valid data (see notes below), it is allowed to write only the words with valid data. Next AES operation is triggered by writing to the input_ready flag of the AES_CTRL register.
+For a host read operation, these registers contain the 128-bit output block from the latest AES operation. Reading from a word-aligned offset within this address range reads one word (4 bytes) of data out the 4-word deep (16 bytes = 128-bits AES block) data output buffer. The words (4 words, one full block) should be read before the core will move the next block to the data output buffer. To empty the data output buffer, the output_ready flag of the AES_CTRL register must be written.
+For the modes with authentication (CBC-MAC, GCM and CCM), the invalid (message) bytes/words can be written with any data.
+Note: AES typically operates on 128 bits block multiple input data. The CTR, GCM and CCM modes form an exception. The last block of a CTR-mode message may contain less than 128 bits (refer to [NIST 800-38A]). For GCM/CCM, the last block of both AAD and message data may contain less than 128 bits (refer to [NIST 800-38D]). The EIP-120t automatically pads or masks misaligned ending data blocks with 0s for GCM, CCM and CBC-MAC. For CTR mode, the remaining data in an unaligned data block is ignored.
+Note: The AAD / authentication only data is not copied to the output buffer but only used for authentication." id="AES_DATA_IN_OUT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATAOUT3" width="32" description="Data Input/Output" id="AESDATAOUT3" offset="0x56c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Data register 0 for output block data from the Crypto peripheral.
+These bits = AES Output Data[31:0] of {127:0]
+
+For normal operations, this register is not used, since data input and output is transferred from and to the AES engine via DMA.
+
+For a Host read operation, these registers contain the 128-bit output block from the latest AES operation. Reading from a word-aligned offset within this address range will read one word (4 bytes) of data out the 4-word deep (16 bytes = 128-bits AES block) data output buffer. The words (4 words, one full block) should be read before the core will move the next block to the data output buffer. To empty the data output buffer, AESCTL.OUTPUT_READY must be written.
+For the modes with authentication (CBC-MAC, GCM and CCM), the invalid (message) bytes/words can be written with any data.
+
+Note: The AAD / authentication only data is not copied to the output buffer but only used for authentication." id="DATA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESDATAIN3" width="32" description="AES Data Input_Output 3
+The data registers are typically accessed via DMA and not with host writes and/or reads. However, for debugging purposes the Data Input/Output Registers can be accessed via host write and read operations. The registers are used to buffer the input/output data blocks to/from the EIP-120t.
+Note: The data input buffer (AES_DATA_IN_n) and data output buffer (AES_DATA_OUT_n) are mapped to the same address locations.
+Writes (both DMA and host) to these addresses load the Input Buffer while reads pull from the Output Buffer. Therefore, for write access, the data input buffer is written; for read access, the data output buffer is read. The data input buffer must be written before starting an operation. The data output buffer contains valid data on completion of an operation. Therefore, any 128-bit data block can be split over multiple 32-bit word transfers; these can be mixed with other host transfers over the external interface." id="AESDATAIN3" offset="0x56c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="AES input data[127:96] / AES output data[127:96]
+Data registers for input/output block data to/from the EIP-120t.
+For normal operations, this register is not used, since data input and output is transferred from and to the AES core via DMA. For a host write operation, these registers must be written with the 128-bit input block for the next AES operation. Writing at a word-aligned offset within this address range stores the word (4 bytes) of data into the corresponding position of 4-word deep (16 bytes = 128-bit AES block) data input buffer. This buffer is used for the next AES operation. If the last data block is not completely filled with valid data (see notes below), it is allowed to write only the words with valid data. Next AES operation is triggered by writing to the input_ready flag of the AES_CTRL register.
+For a host read operation, these registers contain the 128-bit output block from the latest AES operation. Reading from a word-aligned offset within this address range reads one word (4 bytes) of data out the 4-word deep (16 bytes = 128-bits AES block) data output buffer. The words (4 words, one full block) should be read before the core will move the next block to the data output buffer. To empty the data output buffer, the output_ready flag of the AES_CTRL register must be written.
+For the modes with authentication (CBC-MAC, GCM and CCM), the invalid (message) bytes/words can be written with any data.
+Note: AES typically operates on 128 bits block multiple input data. The CTR, GCM and CCM modes form an exception. The last block of a CTR-mode message may contain less than 128 bits (refer to [NIST 800-38A]). For GCM/CCM, the last block of both AAD and message data may contain less than 128 bits (refer to [NIST 800-38D]). The EIP-120t automatically pads or masks misaligned ending data blocks with 0s for GCM, CCM and CBC-MAC. For CTR mode, the remaining data in an unaligned data block is ignored.
+Note: The AAD / authentication only data is not copied to the output buffer but only used for authentication." id="AES_DATA_IN_OUT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AESTAGOUT" width="32" description="AES Tag Out 0
+The tag registers can be accessed via DMA or directly with host reads.
+These registers buffer the TAG from the EIP-120t. The registers are shared with the intermediate authentication result registers, but cannot be read until the processing is finished. While processing, a read from these registers returns 0s. If an operation does not return a TAG, reading from these registers returns an IV. If an operation returns a TAG plus an IV and both need to be read by the host, the host must first read the TAG followed by the IV. Reading these in reverse order will return the IV twice." id="AESTAGOUT" offset="0x570">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="AES_TAG[31:0]
+Bits [31:0] of this register stores the authentication value for the combined and authentication only modes.
+For a host read operation, these registers contain the last 128-bit TAG output of the EIP-120t; the TAG is available until the next context is written.
+This register will only contain valid data if the TAG is available and when the AESCTL.SAVED_CONTEXT_RDY register is set. During processing or for operations/modes that do not return a TAG, reads from this register return data from the IV register." id="AES_TAG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN1" width="32" description="HASH Data Input 1
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN1" offset="0x604">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[63:32]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN is 1. If the HASHIOBUFCTRL.RFD_IN is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN2" width="32" description="HASH Data Input 2
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN2" offset="0x608">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[95:64]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when  HASHIOBUFCTRL.RFD_IN is 1. If the HASHIOBUFCTRL.RFD_IN is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN3" width="32" description="HASH Data Input 3
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN3" offset="0x60c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[127:96]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when the rfd_in bit of the HASH_IO_BUF_CTRL register is high. If the rfd_in bit is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASH_IO_BUF_CTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN4" width="32" description="HASH Data Input 4
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN4" offset="0x610">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[159:128]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when  HASHIOBUFCTRL.RFD_IN  is &#39;1&#39;. If the HASHIOBUFCTRL.RFD_IN  is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN5" width="32" description="HASH Data Input 5
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN5" offset="0x614">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[191:160]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN6" width="32" description="HASH Data Input 6
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN6" offset="0x618">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[223:192]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN7" width="32" description="HASH Data Input 7
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN7" offset="0x61c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[255:224]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN8" width="32" description="HASH Data Input 8
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN8" offset="0x620">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[287:256]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN9" width="32" description="HASH Data Input 9
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN9" offset="0x624">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[319:288]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN10" width="32" description="HASH Data Input 10
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN10" offset="0x628">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[351:320]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN11" width="32" description="HASH Data Input 11
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN11" offset="0x62c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[383:352]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN12" width="32" description="HASH Data Input 12
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN12" offset="0x630">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[415:384]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN13" width="32" description="HASH Data Input 13
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN13" offset="0x634">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[447:416]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN14" width="32" description="HASH Data Input 14
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN14" offset="0x638">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[479:448]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN15" width="32" description="HASH Data Input 15
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN15" offset="0x63c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[511:480]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN16" width="32" description="HASH Data Input 16
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN16" offset="0x640">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[543:512]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN17" width="32" description="HASH Data Input 17
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN17" offset="0x644">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[575:544]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN18" width="32" description="HASH Data Input 18
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN18" offset="0x648">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[607:576]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN19" width="32" description="HASH Data Input 19
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN19" offset="0x64c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[639:608]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN20" width="32" description="HASH Data Input 20
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN20" offset="0x650">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[671:640]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN21" width="32" description="HASH Data Input 21
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN21" offset="0x654">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[703:672]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN22" width="32" description="HASH Data Input 22
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN22" offset="0x658">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[735:704]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN23" width="32" description="HASH Data Input 23
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN23" offset="0x65c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[767:736]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN24" width="32" description="HASH Data Input 24
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN24" offset="0x660">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[799:768]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN25" width="32" description="HASH Data Input 25
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN25" offset="0x664">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[831:800]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN26" width="32" description="HASH Data Input 26
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN26" offset="0x668">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[863:832]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN27" width="32" description="HASH Data Input 27
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN27" offset="0x66c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[895:864]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN28" width="32" description="HASH Data Input 28
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN28" offset="0x670">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[923:896]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN29" width="32" description="HASH Data Input 29
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN29" offset="0x674">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[959:924]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN30" width="32" description="HASH Data Input 30
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN30" offset="0x678">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[991:960]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDATAIN31" width="32" description="HASH Data Input 31
+The data input registers should be used to provide input data to the hash module through the slave interface." id="HASHDATAIN31" offset="0x67c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="HASH_DATA_IN[1023:992]
+These registers must be written with the 512-bit input data. The data lines are connected directly to the data input of the hash module and hence into the engine&#39;s internal data buffer. Writing to each of the registers triggers a corresponding 32-bit write enable to the internal buffer.
+Note: The host may only write the input data buffer when HASHIOBUFCTRL.RFD_IN  is 1. If the HASHIOBUFCTRL.RFD_IN   is 0, the engine is busy with processing. During processing, it is not allowed to write new input data.
+For message lengths larger than 64 bytes, multiple blocks of data are written to this input buffer using a handshake through flags of the HASHIOBUFCTRL register. All blocks except the last are required to be 512 bits in size. If the last block is not 512 bits long, only the least significant bits of data must be written, but they must be padded with 0s to the next 32-bit boundary.
+Host read operations from these register addresses return 0s." id="HASH_DATA_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHIOBUFCTRL" width="32" description="HASH Input_Output Buffer Control
+This register pair shares a single address location and contains bits that control and monitor the data flow between the host and the hash engine." id="HASHIOBUFCTRL" offset="0x680">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Note: This bit must only be used when data is supplied through the DMA. It should not be used when data is supplied through the slave interface.
+This bit indicates whether the hash engine has to pad the message, received through the DMA and finalize the hash.
+When set to 1, the hash engine pads the last block using the programmed length. After padding, the final hash result is calculated.
+When set to 0, the hash engine treats the last written block as block-size aligned and calculates the intermediate digest.
+This bit is automatically cleared when the last DMA data block is arrived in the hash engine." id="PAD_DMA_MESSAGE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Note: The bit description below is only applicable when data is sent through the slave interface. This bit must be set to 0 when data is received through the DMA.
+This bit indicates whether the hash engine should provide the hash digest.
+When provided simultaneously with data_in_av, the hash digest is provided after processing the data that is currently in the HASHDATAINn register. When provided without data_in_av, the current internal digest buffer value is copied to the HASHDIGESTn registers.
+The host must write a 1 to this bit to make the intermediate hash digest available.
+Writing 0 to this bit has no effect.
+This bit is automatically cleared (that is, reads 0) when the hash engine has processed the contents of the HASHDATAINn register. In the period between this bit is set by the host and the actual HASHDATAINn processing, this bit reads 1." id="GET_DIGEST" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Note: The bit description below is only applicable when data is sent through the slave interface. This bit must be set to 0 when data is received through the DMA.
+This bit indicates that the HASHDATAINn registers hold the last data of the message and hash padding must be applied.
+The host must write this bit to 1 in order to indicate to the hash engine that the HASHDATAINn register currently holds the last data of the message. When pad_message is set to 1, the hash engine will add padding bits to the data currently in the HASHDATAINn register.
+When the last message block is smaller than 512 bits, the pad_message bit must be set to 1 together with the data_in_av bit.
+When the last message block is equal to 512 bits, pad_message may be set together with data_in_av. In this case the pad_message bit may also be set after the last data block has been written to the hash engine (so when the rfd_in bit has become 1 again after writing the last data block).
+Writing 0 to this bit has no effect.
+This bit is automatically cleared (i.e. reads 0) by the hash engine. This bit reads 1 between the time it was set by the host and the hash engine interpreted its value." id="PAD_MESSAGE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="2" end="3" rwaccess="RW" description="Write 0s and ignore on reading" id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Note: The bit description below is only applicable when data is sent through the slave interface. This bit can be ignored when data is received through the DMA.
+Read-only status of the input buffer of the hash engine.
+When 1, the input buffer of the hash engine can accept new data; the HASHDATAINn registers can safely be populated with new data.
+When 0, the input buffer of the hash engine is processing the data that is currently in HASHDATAINn; writing new data to these registers is not allowed." id="RFD_IN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Note: The bit description below is only applicable when data is sent through the slave interface. This bit must be set to 0 when data is received through the DMA.
+This bit indicates that the HASHDATAINn registers contain new input data for processing.
+The host must write a 1 to this bit to start processing the data in HASHDATAINn; the hash engine will process the new data as soon as it is ready for it (rfd_in bit is 1).
+Writing 0 to this bit has no effect.
+This bit is automatically cleared (i.e. reads as 0) when the hash engine starts processing the HASHDATAINn contents. This bit reads 1 between the time it was set by the host and the hash engine actually starts processing the input data block." id="DATA_IN_AV" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Indicates that the output buffer registers (HASHDIGESTn) are available for reading by the host.
+When this bit reads 0, the output buffer registers are released; the hash engine is allowed to write new data to it. In this case, the registers should not be read by the host.
+When this bit reads 1, the hash engine has stored the result of the latest hash operation in the output buffer registers. As long as this bit reads 1, the host may read output buffer registers and the hash engine is prevented from writing new data to the output buffer.
+After retrieving the hash result data from the output buffer, the host must write a 1 to this bit to clear it. This makes the digest output buffer available for the hash engine to store new hash results.
+Writing 0 to this bit has no effect.
+Note: If this bit is asserted (1) no new operation should be started before the digest is retrieved from the hash engine and this bit is cleared (0)." id="OUTPUT_FULL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHMODE" width="32" description="HASH Mode " id="HASHMODE" offset="0x684">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="WO" description="Write 0s and ignore on reading" id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="WO" description="The host must write this bit with 1  prior to  processing a SHA 384 session." id="SHA384_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="WO" description="The host must write this bit with 1  prior to  processing a SHA 512 session." id="SHA512_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="WO" description="The host must write this bit with 1  prior to  processing a SHA 224 session." id="SHA224_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="The host must write this bit with 1  prior to  processing a SHA 256 session." id="SHA256_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="2" end="1" rwaccess="WO" description="Write 0s and ignore on reading" id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="When set to 1, it indicates that the hash engine must start processing a new hash session. The [HASHDIGESTn.* ] registers will automatically be loaded with the initial hash algorithm constants of the selected hash algorithm.
+When this bit is 0 while the hash processing is started, the initial hash algorithm constants are not loaded in the HASHDIGESTn registers. The hash engine will start processing with the digest that is currently in its internal HASHDIGESTn registers.
+This bit is automatically cleared when hash processing is started." id="NEW_HASH" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHINLENL" width="32" description="HASH Input Length LSB" id="HASHINLENL" offset="0x688">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="LENGTH_IN[31:0]
+Message length registers. The content of these registers is used by the hash engine during the message padding phase of the hash session. The data lines of this registers are directly connected to the interface of the hash engine.
+For a write operation by the host, these registers should be written with the message length in bits.
+
+Final hash operations:
+The total input data length must be programmed for new hash operations that require finalization (padding). The input data must be provided through the slave or DMA interface.
+
+Continued hash operations (finalized):
+For continued hash operations that require finalization, the total message length must be programmed, including the length of previously hashed data that corresponds to the written input digest.
+
+Non-final hash operations:
+For hash operations that do not require finalization (input data length is multiple of 512-bits which is SHA-256 data block size), the length field does not need to be programmed since not used by the operation.
+
+If the message length in bits is below (2^32-1), then only this register needs to be written. The hardware automatically sets HASH_LENGTH_IN_H to 0s in this case.
+The host may write the length register at any time during the hash session when the HASHIOBUFCTRL.RFD_IN is high. The length register must be written before the last data of the active hash session is written into the hash engine.
+host read operations from these register locations will return 0s.
+Note: When getting data from DMA, this register must be programmed before DMA is programmed to start." id="LENGTH_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHINLENH" width="32" description="HASH Input Length MSB" id="HASHINLENH" offset="0x68c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="LENGTH_IN[63:32]
+Message length registers. The content of these registers is used by the hash engine during the message padding phase of the hash session. The data lines of this registers are directly connected to the interface of the hash engine.
+For a write operation by the host, these registers should be written with the message length in bits.
+
+Final hash operations:
+The total input data length must be programmed for new hash operations that require finalization (padding). The input data must be provided through the slave or DMA interface.
+
+Continued hash operations (finalized):
+For continued hash operations that require finalization, the total message length must be programmed, including the length of previously hashed data that corresponds to the written input digest.
+
+Non-final hash operations:
+For hash operations that do not require finalization (input data length is multiple of 512-bits which is SHA-256 data block size), the length field does not need to be programmed since not used by the operation.
+
+If the message length in bits is below (2^32-1), then only HASHINLENL needs to be written. The hardware automatically sets HASH_LENGTH_IN_H to 0s in this case.
+The host may write the length register at any time during the hash session when the HASHIOBUFCTRL.RFD_IN is high. The length register must be written before the last data of the active hash session is written into the hash engine.
+host read operations from these register locations will return 0s.
+Note: When getting data from DMA, this register must be programmed before DMA is programmed to start." id="LENGTH_IN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTA" width="32" description="HASH Digest A
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTA" offset="0x6c0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[31:0]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTB" width="32" description="HASH Digest B
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTB" offset="0x6c4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[63:32]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTC" width="32" description="HASH Digest C
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTC" offset="0x6c8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[95:64]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTD" width="32" description="HASH Digest D
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTD" offset="0x6cc">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[127:96]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTE" width="32" description="HASH Digest E
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTE" offset="0x6d0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[159:128]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTF" width="32" description="HASH Digest F
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTF" offset="0x6d4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[191:160]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTG" width="32" description="HASH Digest G
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTG" offset="0x6d8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[223:192]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTH" width="32" description="HASH Digest H
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTH" offset="0x6dc">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[255:224]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTI" width="32" description="HASH Digest I
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTI" offset="0x6e0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[287:256]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTJ" width="32" description="HASH Digest J
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTJ" offset="0x6e4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[319:288]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTK" width="32" description="HASH Digest K
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTK" offset="0x6e8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[351:320]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTL" width="32" description="HASH Digest L
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTL" offset="0x6ec">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[383:352]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTM" width="32" description="HASH Digest M
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTM" offset="0x6f0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[415:384]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTN" width="32" description="HASH Digest N
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTN" offset="0x6f4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[447:416]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTO" width="32" description="HASH Digest 0
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTO" offset="0x6f8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[479:448]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HASHDIGESTP" width="32" description="HASH Digest P
+The hash digest registers consist of eight 32-bit registers, named HASH_DIGEST_A to HASH_DIGEST_H. After processing a message, the output digest can be read from these registers. These registers can be written with an intermediate hash result for continued hash operations." id="HASHDIGESTP" offset="0x6fc">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="HASH_DIGEST[511:480]
+Hash digest registers
+Write operation:
+
+Continued hash:
+These registers should be written with the context data, before the start of a resumed hash session (the HASHMODE.NEW_HASH bit is 0 when starting a hash session).
+
+New hash:
+When initiating a new hash session (theHASHMODE.NEW_HASH bit is 1), the internal digest registers are automatically set to the SHA-256 algorithm constant and these register should not be written.
+
+Reading from these registers provides the intermediate hash result (non-final hash operation) or the final hash result (final hash operation) after data processing." id="HASH_DIGEST" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ALGSEL" width="32" description="Algorithm Select
+This algorithm selection register configures the internal destination of the DMA controller." id="ALGSEL" offset="0x700">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="If this bit is cleared to 0, the DMA operation involves only data.
+If this bit is set, the DMA operation includes a TAG (Authentication Result / Digest).
+For SHA-256 operation, a DMA must be set up for both input data and TAG. For any other selected module, setting this bit only allows a DMA that reads the TAG. No data allowed to be transferred to or from the selected module via the DMA." id="TAG" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="27" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="If set to one, selects the hash engine in 256B mode as destination for the DMA
+The maximum transfer size to DMA engine is set to 64 bytes for reading and 32 bytes for writing (the latter is only applicable if the hash result is written out through the DMA)." id="HASH_SHA_256" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="If set to one, selects the AES engine as source/destination for the DMA
+The read and write maximum transfer size to the DMA engine is set to 16 bytes." id="AES" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="If set to one, selects the Key Store as destination for the DMA
+The maximum transfer size to DMA engine is set to 32 bytes (however transfers of 16, 24 and 32 bytes are allowed)" id="KEY_STORE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMAPROTCTL" width="32" description="DMA Protection Control
+
+Master PROT privileged access enable
+This register enables the second bit (bit [1]) of the AHB HPROT bus of the AHB master interface when a read action of key(s) is performed on the AHB master interface for writing keys into the store module." id="DMAPROTCTL" offset="0x704">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Select AHB transfer protection control for DMA transfers using the key store area as destination.
+0 : transfers use &#39;USER&#39; type access.
+1 : transfers use &#39;PRIVILEGED&#39; type access." id="PROT_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SWRESET" width="32" description="Software Reset" id="SWRESET" offset="0x740">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="If this bit is set to 1, the following modules are reset:
+- Master control internal state is reset. That includes interrupt, error status register, and result available interrupt generation FSM.
+- Key store module state is reset. That includes clearing the written area flags; therefore, the keys must be reloaded to the key store module.
+Writing 0 has no effect.
+The bit is self cleared after executing the reset." id="SW_RESET" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQTYPE" width="32" description="Control Interrupt Configuration" id="IRQTYPE" offset="0x780">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="If this bit is 0, the interrupt output is a pulse.
+If this bit is set to 1, the interrupt is a level interrupt that must be cleared by writing the interrupt clear register.
+This bit is applicable for both interrupt output signals." id="LEVEL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQEN" width="32" description="Control Interrupt Enable" id="IRQEN" offset="0x784">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="If this bit is set to 0, the DMA input done (irq_dma_in_done) interrupt output is disabled and remains 0.
+If this bit is set to 1, the DMA input done interrupt output is enabled." id="DMA_IN_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="If this bit is set to 0, the result available (irq_result_av) interrupt output is disabled and remains 0.
+If this bit is set to 1, the result available interrupt output is enabled." id="RESULT_AVAIL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQCLR" width="32" description="Control Interrupt Clear" id="IRQCLR" offset="0x788">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="WO" description="If 1 is written to this bit, the DMA bus error status is cleared.
+Writing 0 has no effect." id="DMA_BUS_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="WO" description="If 1 is written to this bit, the key store write error status is cleared.
+Writing 0 has no effect." id="KEY_ST_WR_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="WO" description="If 1 is written to this bit, the key store read error status is cleared.
+Writing 0 has no effect." id="KEY_ST_RD_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="If 1 is written to this bit, the DMA in done (irq_dma_in_done) interrupt output is cleared.
+Writing 0 has no effect.
+Note that clearing an interrupt makes sense only if the interrupt output is programmed as level (refer to IRQTYPE)." id="DMA_IN_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="If 1 is written to this bit, the result available (irq_result_av) interrupt output is cleared.
+Writing 0 has no effect.
+Note that clearing an interrupt makes sense only if the interrupt output is programmed as level (refer to IRQTYPE)." id="RESULT_AVAIL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQSET" width="32" description="Control Interrupt Set" id="IRQSET" offset="0x78c">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="If 1 is written to this bit, the DMA data in done (irq_dma_in_done) interrupt output is set to one.
+Writing 0 has no effect.
+If the interrupt configuration register is programmed to pulse, clearing the DMA data in done (irq_dma_in_done) interrupt is not needed. If it is programmed to level, clearing the interrupt output should be done by writing the interrupt clear register (IRQCLR.DMA_IN_DONE)." id="DMA_IN_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="If 1 is written to this bit, the result available (irq_result_av) interrupt output is set to one.
+Writing 0 has no effect.
+If the interrupt configuration register is programmed to pulse, clearing the result available (irq_result_av) interrupt is not needed. If it is programmed to level, clearing the interrupt output should be done by writing the interrupt clear register (IRQCLR.RESULT_AVAIL)." id="RESULT_AVAIL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQSTAT" width="32" description="Control Interrupt Status" id="IRQSTAT" offset="0x790">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="This bit is set when a DMA bus error is detected during a DMA operation. The value of this register is held until it is cleared through the IRQCLR.DMA_BUS_ERR
+Note: This error is asserted if an error is detected on the AHB master interface during a DMA operation." id="DMA_BUS_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RO" description="This bit is set when a write error is detected during the DMA write operation to the key store memory. The value of this register is held until it is cleared through the IRQCLR.KEY_ST_WR_ERR register.
+Note: This error is asserted if a DMA operation does not cover a full key area or more areas are written than expected." id="KEY_ST_WR_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RO" description="This bit is set when a read error is detected during the read of a key from the key store, while copying it to the AES core. The value of this register is held until it is cleared through the IRQCLR.KEY_ST_RD_ERR register.
+Note: This error is asserted if a key location is selected in the key store that is not available." id="KEY_ST_RD_ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="This read only bit returns the actual DMA data in done (irq_data_in_done) interrupt status of the DMA data in done interrupt output pin (irq_data_in_done)." id="DMA_IN_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="This read only bit returns the actual result available (irq_result_av) interrupt status of the result available interrupt output pin (irq_result_av)." id="RESULT_AVAIL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HWVER" width="32" description="Hardware Version " id="HWVER" offset="0x7fc">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED28" resetval="0x9">
+      </bitfield>
+      <bitfield range="" begin="27" width="4" end="24" rwaccess="RO" description="Major version number" id="HW_MAJOR_VER" resetval="0x2">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="Minor version number" id="HW_MINOR_VER" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="Patch level
+Starts at 0 at first delivery of this version" id="HW_PATCH_LVL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="These bits simply contain the complement of bits [7:0] (0x87), used by a driver to ascertain that the EIP-120t register is indeed read." id="VER_NUM_COMPL" resetval="0x87">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="These bits encode the EIP number for the EIP-120t, this field contains the value 120 (decimal) or 0x78." id="VER_NUM" resetval="0x78">
+      </bitfield>
+   </register>
+</module>

@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AON_EVENT" HW_revision="" XML_version="1.0" description="This module configures the event fabric located in the AON domain.
+
+Note: This module is only supporting 32 bit ReadWrite access from MCU
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="MCUWUSEL" width="32" description="Wake-up Selector For MCU
+
+This register contains pointers to 4 of 8 events (events 0 to 3) which are routed to AON_PMCTRL as wakeup sources for MCU. AON_PMCTRL will start a wakeup sequence for the MCU domain when either of the 8 selected events are asserted. A wakeup sequence will guarantee that the MCU power switches are turned on, LDO resources are available and SCLK_HF is available and selected as clock source for MCU.
+
+Note: It is required to setup a wakeup event in AON_EVENT before MCU is requesting powerdown ( PRCM requests uLDO, see conditions in PRCM:VDCTL.ULDO ).
+
+" id="MCUWUSEL" offset="0x0">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="6" end="24" rwaccess="RW" description="MCU Wakeup Source #3
+
+AON Event Source selecting 1 of 8 events routed to AON_PMCTRL for waking up the MCU domain from Power Off or Power Down.
+Note:  
+" id="WU3_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_MCU_WU" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]"/>
+      </bitfield>
+      <bitfield range="" begin="23" width="2" end="22" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="6" end="16" rwaccess="RW" description="MCU Wakeup Source #2
+
+AON Event Source selecting 1 of 8 events routed to AON_PMCTRL for waking up the MCU domain from Power Off or Power Down.
+Note:  
+" id="WU2_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_MCU_WU" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]"/>
+      </bitfield>
+      <bitfield range="" begin="15" width="2" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="6" end="8" rwaccess="RW" description="MCU Wakeup Source #1
+
+AON Event Source selecting 1 of 8 events routed to AON_PMCTRL for waking up the MCU domain from Power Off or Power Down.
+Note:  
+" id="WU1_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_MCU_WU" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="MCU Wakeup Source #0
+
+AON Event Source selecting 1 of 8 events routed to AON_PMCTRL for waking up the MCU domain from Power Off or Power Down.
+Note:  
+" id="WU0_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_MCU_WU" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]"/>
+      </bitfield>
+   </register>
+   <register acronym="MCUWUSEL1" width="32" description="Wake-up Selector For MCU
+
+This register contains pointers to 4 of 8 events (events 4 to 7) which are routed to AON_PMCTRL as wakeup sources for MCU. AON_PMCTRL will start a wakeup sequence for the MCU domain when either of the 8 selected events are asserted. A wakeup sequence will guarantee that the MCU power switches are turned on, LDO resources are available and SCLK_HF is available and selected as clock source for MCU.
+
+Note: It is required to setup a wakeup event in AON_EVENT before MCU is requesting powerdown ( PRCM requests uLDO, see conditions in PRCM:VDCTL.ULDO ).
+
+" id="MCUWUSEL1" offset="0x4">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="6" end="24" rwaccess="RW" description="MCU Wakeup Source #7
+
+AON Event Source selecting 1 of 8 events routed to AON_PMCTRL for waking up the MCU domain from Power Off or Power Down.
+Note:  
+" id="WU7_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_MCU_WU" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]"/>
+      </bitfield>
+      <bitfield range="" begin="23" width="2" end="22" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="6" end="16" rwaccess="RW" description="MCU Wakeup Source #6
+
+AON Event Source selecting 1 of 8 events routed to AON_PMCTRL for waking up the MCU domain from Power Off or Power Down.
+Note:  
+" id="WU6_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_MCU_WU" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]"/>
+      </bitfield>
+      <bitfield range="" begin="15" width="2" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="6" end="8" rwaccess="RW" description="MCU Wakeup Source #5
+
+AON Event Source selecting 1 of 8 events routed to AON_PMCTRL for waking up the MCU domain from Power Off or Power Down.
+Note:  
+" id="WU5_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_MCU_WU" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="MCU Wakeup Source #4
+
+AON Event Source selecting 1 of 8 events routed to AON_PMCTRL for waking up the MCU domain from Power Off or Power Down.
+Note:  
+" id="WU4_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_MCU_WU" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_MCU_WU in [MCU_IOC:IOCFGx.IOEV_MCU_WU_EN]"/>
+      </bitfield>
+   </register>
+   <register acronym="EVTOMCUSEL" width="32" description="Event Selector For MCU Event Fabric 
+
+This register contains pointers for 3 AON events that are routed to the MCU Event Fabric EVENT
+" id="EVTOMCUSEL" offset="0x8">
+      <bitfield range="" begin="31" width="10" end="22" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="6" end="16" rwaccess="RW" description="Event selector for AON_PROG2 event.
+
+AON Event Source id# selecting event routed to EVENT as AON_PROG2 event.
+" id="AON_PROG2_EV" resetval="0x2b">
+         <bitenum id="NONE" value="63" token="No event, always low" description="No event, always low"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B not triggered. Asynchronous signal directly from AUX Comparator B (inverted) as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX" description="Comparator B triggered. Asynchronous signal directly from the AUX Comparator B as opposed to AUX_COMPB which is synchronized in AUX"/>
+         <bitenum id="BATMON_VOLT" value="54" token="BATMON voltage update event" description="BATMON voltage update event"/>
+         <bitenum id="BATMON_TEMP" value="53" token="BATMON temperature update event" description="BATMON temperature update event"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="AUX Timer 1 Event" description="AUX Timer 1 Event"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="AUX Timer 0 Event" description="AUX Timer 0 Event"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="TDC completed or timed out" description="TDC completed or timed out"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="ADC conversion completed" description="ADC conversion completed"/>
+         <bitenum id="AUX_COMPB" value="48" token="Comparator B triggered" description="Comparator B triggered"/>
+         <bitenum id="AUX_COMPA" value="47" token="Comparator A triggered" description="Comparator A triggered"/>
+         <bitenum id="AUX_SWEV2" value="46" token="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2" description="AUX Software triggered event #2. Triggered by AUX_EVCTL:SWEVSET.SWEV2"/>
+         <bitenum id="AUX_SWEV1" value="45" token="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1" description="AUX Software triggered event #1. Triggered by AUX_EVCTL:SWEVSET.SWEV1"/>
+         <bitenum id="AUX_SWEV0" value="44" token="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0" description="AUX Software triggered event #0. Triggered by AUX_EVCTL:SWEVSET.SWEV0"/>
+         <bitenum id="JTAG" value="43" token="JTAG generated event" description="JTAG generated event"/>
+         <bitenum id="RTC_UPD" value="42" token="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)" description="RTC Update Tick (16 kHz signal, i.e. event line toggles value every 32 kHz clock period)"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="RTC combined delayed event" description="RTC combined delayed event"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="RTC channel 2 - delayed event" description="RTC channel 2 - delayed event"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="RTC channel 1 - delayed event" description="RTC channel 1 - delayed event"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_AON_PROG2" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_AON_PROG2 in [MCU_IOC:IOCFGx.IOEV_AON_PROG2_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_AON_PROG2 in [MCU_IOC:IOCFGx.IOEV_AON_PROG2_EN]"/>
+      </bitfield>
+      <bitfield range="" begin="15" width="2" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="6" end="8" rwaccess="RW" description="Event selector for AON_PROG1 event.
+
+AON Event Source id# selecting event routed to EVENT as AON_PROG1 event.
+" id="AON_PROG1_EV" resetval="0x2b">
+         <bitenum id="NONE" value="63" token="0" description="0"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="0" description="0"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="0" description="0"/>
+         <bitenum id="BATMON_VOLT" value="54" token="0" description="0"/>
+         <bitenum id="BATMON_TEMP" value="53" token="0" description="0"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="0" description="0"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="0" description="0"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="0" description="0"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="0" description="0"/>
+         <bitenum id="AUX_COMPB" value="48" token="0" description="0"/>
+         <bitenum id="AUX_COMPA" value="47" token="0" description="0"/>
+         <bitenum id="AUX_SWEV2" value="46" token="0" description="0"/>
+         <bitenum id="AUX_SWEV1" value="45" token="0" description="0"/>
+         <bitenum id="AUX_SWEV0" value="44" token="0" description="0"/>
+         <bitenum id="JTAG" value="43" token="0" description="0"/>
+         <bitenum id="RTC_UPD" value="42" token="0" description="0"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="0" description="0"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="0" description="0"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="0" description="0"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="RTC channel 0 - delayed event" description="RTC channel 0 - delayed event"/>
+         <bitenum id="RTC_CH2" value="37" token="RTC channel 2 event" description="RTC channel 2 event"/>
+         <bitenum id="RTC_CH1" value="36" token="RTC channel 1 event" description="RTC channel 1 event"/>
+         <bitenum id="RTC_CH0" value="35" token="RTC channel 0 event" description="RTC channel 0 event"/>
+         <bitenum id="PAD" value="32" token="Edge detect on any PAD" description="Edge detect on any PAD"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="Combined event from BATMON" description="Combined event from BATMON"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="BATMON event: Temperature level below lower limit" description="BATMON event: Temperature level below lower limit"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="BATMON event: Temperature level above upper limit" description="BATMON event: Temperature level above upper limit"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="BATMON event: Battery level below lower limit" description="BATMON event: Battery level below lower limit"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="BATMON event: Battery level above upper limit" description="BATMON event: Battery level above upper limit"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="Event 3 from AUX TImer2" description="Event 3 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="Event 2 from AUX TImer2" description="Event 2 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="Event 1 from AUX TImer2" description="Event 1 from AUX TImer2"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="Event 0 from AUX TImer2" description="Event 0 from AUX TImer2"/>
+         <bitenum id="IOEV_AON_PROG1" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_AON_PROG1 in [MCU_IOC:IOCFGx.IOEV_AON_PROG1_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_AON_PROG1 in [MCU_IOC:IOCFGx.IOEV_AON_PROG1_EN]"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Event selector for AON_PROG0 event.
+
+AON Event Source id# selecting event routed to EVENT as AON_PROG0 event.
+" id="AON_PROG0_EV" resetval="0x2b">
+         <bitenum id="NONE" value="63" token="0" description="0"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="0" description="0"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="0" description="0"/>
+         <bitenum id="BATMON_VOLT" value="54" token="0" description="0"/>
+         <bitenum id="BATMON_TEMP" value="53" token="0" description="0"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="0" description="0"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="0" description="0"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="0" description="0"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="0" description="0"/>
+         <bitenum id="AUX_COMPB" value="48" token="0" description="0"/>
+         <bitenum id="AUX_COMPA" value="47" token="0" description="0"/>
+         <bitenum id="AUX_SWEV2" value="46" token="0" description="0"/>
+         <bitenum id="AUX_SWEV1" value="45" token="0" description="0"/>
+         <bitenum id="AUX_SWEV0" value="44" token="0" description="0"/>
+         <bitenum id="JTAG" value="43" token="0" description="0"/>
+         <bitenum id="RTC_UPD" value="42" token="0" description="0"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="0" description="0"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="0" description="0"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="0" description="0"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="0" description="0"/>
+         <bitenum id="RTC_CH2" value="37" token="0" description="0"/>
+         <bitenum id="RTC_CH1" value="36" token="0" description="0"/>
+         <bitenum id="RTC_CH0" value="35" token="0" description="0"/>
+         <bitenum id="PAD" value="32" token="0" description="0"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="0" description="0"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="0" description="0"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="0" description="0"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="0" description="0"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="0" description="0"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="0" description="0"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="0" description="0"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="0" description="0"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="0" description="0"/>
+         <bitenum id="IOEV_AON_PROG0" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_AON_PROG0 in [MCU_IOC:IOCFGx.IOEV_AON_PROG0_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_AON_PROG0 in [MCU_IOC:IOCFGx.IOEV_AON_PROG0_EN]"/>
+      </bitfield>
+   </register>
+   <register acronym="RTCSEL" width="32" description="RTC Capture Event Selector For AON_RTC
+
+This register contains a pointer to select an AON event for RTC capture. Please refer to AON_RTC:CH1CAPT
+" id="RTCSEL" offset="0xc">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="AON Event Source id# for RTCSEL event which is fed to AON_RTC. Please refer to AON_RTC:CH1CAPT
+" id="RTC_CH1_CAPT_EV" resetval="0x3f">
+         <bitenum id="NONE" value="63" token="0" description="0"/>
+         <bitenum id="AUX_COMPB_ASYNC_N" value="56" token="0" description="0"/>
+         <bitenum id="AUX_COMPB_ASYNC" value="55" token="0" description="0"/>
+         <bitenum id="BATMON_VOLT" value="54" token="0" description="0"/>
+         <bitenum id="BATMON_TEMP" value="53" token="0" description="0"/>
+         <bitenum id="AUX_TIMER1_EV" value="52" token="0" description="0"/>
+         <bitenum id="AUX_TIMER0_EV" value="51" token="0" description="0"/>
+         <bitenum id="AUX_TDC_DONE" value="50" token="0" description="0"/>
+         <bitenum id="AUX_ADC_DONE" value="49" token="0" description="0"/>
+         <bitenum id="AUX_COMPB" value="48" token="0" description="0"/>
+         <bitenum id="AUX_COMPA" value="47" token="0" description="0"/>
+         <bitenum id="AUX_SWEV2" value="46" token="0" description="0"/>
+         <bitenum id="AUX_SWEV1" value="45" token="0" description="0"/>
+         <bitenum id="AUX_SWEV0" value="44" token="0" description="0"/>
+         <bitenum id="JTAG" value="43" token="0" description="0"/>
+         <bitenum id="RTC_UPD" value="42" token="0" description="0"/>
+         <bitenum id="RTC_COMB_DLY" value="41" token="0" description="0"/>
+         <bitenum id="RTC_CH2_DLY" value="40" token="0" description="0"/>
+         <bitenum id="RTC_CH1_DLY" value="39" token="0" description="0"/>
+         <bitenum id="RTC_CH0_DLY" value="38" token="0" description="0"/>
+         <bitenum id="RTC_CH2" value="37" token="0" description="0"/>
+         <bitenum id="RTC_CH1" value="36" token="0" description="0"/>
+         <bitenum id="RTC_CH0" value="35" token="0" description="0"/>
+         <bitenum id="PAD" value="32" token="0" description="0"/>
+         <bitenum id="BATMON_COMBINED" value="9" token="0" description="0"/>
+         <bitenum id="BATMON_TEMP_LL" value="8" token="0" description="0"/>
+         <bitenum id="BATMON_TEMP_UL" value="7" token="0" description="0"/>
+         <bitenum id="BATMON_BATT_LL" value="6" token="0" description="0"/>
+         <bitenum id="BATMON_BATT_UL" value="5" token="0" description="0"/>
+         <bitenum id="AUX_TIMER2_EV3" value="4" token="0" description="0"/>
+         <bitenum id="AUX_TIMER2_EV2" value="3" token="0" description="0"/>
+         <bitenum id="AUX_TIMER2_EV1" value="2" token="0" description="0"/>
+         <bitenum id="AUX_TIMER2_EV0" value="1" token="0" description="0"/>
+         <bitenum id="IOEV_RTC" value="0" token="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_RTC in [MCU_IOC:IOCFGx.IOEV_RTC_EN]" description="Edge detect IO event from the DIO(s) which have enabled contribution to IOEV_RTC in [MCU_IOC:IOCFGx.IOEV_RTC_EN]"/>
+      </bitfield>
+   </register>
+</module>

@@ -13,11 +13,13 @@ Is part of **nanoFramework** toolbox, along with other various tools that are re
 It makes use of several 3rd party tools:
 
 - Espressif esptool.
-    You can find the esptool and licensing information on the repository [here](http://github.com/espressif/esptool).
+   You can find the esptool and licensing information on the repository [here](http://github.com/espressif/esptool).
 - ST DfuSe USB.
    You can find the source, licensing information and documentation [here](https://www.st.com/en/development-tools/stsw-stm32080.html).
 - ST-LINK Utility.
    You can find the source, licensing information and documentation [here](https://www.st.com/content/st_com/en/products/development-tools/software-development-tools/stm32-software-development-tools/stm32-programmers/stsw-link004.html).
+- Texas Instruments Uniflash
+   You can find the Uniflash tool and licensing information [here](http://www.ti.com/tool/download/UNIFLASH).
 
 ## Install **nanoFramework** Firmware Flasher
 
@@ -130,6 +132,22 @@ This useful to list all STM32 devices that are connected through DFU.
 
 ```console
 nanoff --listdfu
+```
+
+### Update the firmware of a specific TI CC13x2 target
+
+To update the firmware of the TI_CC1352R1_LAUNCHXL target to the latest available stable version.
+
+```console
+nanoff --update --target TI_CC1352R1_LAUNCHXL --stable
+```
+
+### Install the XDS110 USB drivers required by TI LaunchPad targets
+
+To install the XDS110 USB drivers.
+
+```console
+nanoff --platform cc13x2 --installdrivers
 ```
 
 ### Tool output verbosity

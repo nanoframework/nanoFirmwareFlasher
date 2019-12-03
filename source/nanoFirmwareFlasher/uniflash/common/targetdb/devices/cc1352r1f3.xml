@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<device id="CC1352R1F3" partnum="CC1352R1F3" HW_revision="1" XML_version="2" desc="CC1352R1F3" description="Next generation CC1350 device, the SimpleLink(TM) dual-band CC1352R wireless MCU">
+    <property Type="stringfield" Value="SimpleLink Wireless MCU" id="FilterString" />
+    <property Type="stringfield" Value="TIXDS110_Connection.xml" id="DefaultConnection" />
+    <jtag>
+        <!-- XDS100 Settings -->
+        <property Type="choicelist" Value="2" id="The Converter Usage">
+            <choice Name="Generate 1149.7 2-pin advanced modes">
+                <property Type="choicelist" Value="1" id="The Converter 1149.7 Frequency">
+                    <choice Name="Overclock with user specified value">
+                        <property Type="choicelist" Value="5" id="-- Choose a value from 1.0MHz to 50.0MHz"/>
+                    </choice>
+                </property>
+                <property Type="choicelist" Value="5" id="The Target Scan Format"/>
+            </choice>
+        </property>
+        <!-- XDS110 Settings -->
+        <property Type="choicelist" Value="4" id="SWD Mode Settings">
+            <choice Name="cJTAG (1149.7) 2-pin advanced modes">
+                <property Type="choicelist" Value="1" id="XDS110 Aux Port" />
+            </choice>
+        </property>
+        <!-- XDS110 EnergyTrace settings -->
+        <property Type="choicelist" Value="1" id="Power Selection">
+            <choice Name="Probe supplied power" value="1">
+                <property Type="stringfield" Value="3.3" id="Voltage Level"/>
+            </choice>
+            <choice Name="Target supplied power" value="0">
+                <property Type="choicelist" Value="1" id="Voltage Selection">
+                    <choice Name="User specified value" value="1">
+                        <property Type="stringfield" Value="3.3" id="Voltage Level"/>
+                    </choice>
+                </property>
+            </choice>
+        </property>
+        <property Type="choicelist" Value="0" id="JTAG Signal Isolation" />
+        <!-- END: XDS110 EnergyTrace settings -->
+        <!-- XDS200 Settings -->
+        <property Type="choicelist" Value="2" id="The cJTAG / SWD Features">
+            <choice Name="cJTAG (1149.7) 2-pin advanced modes">
+                <property Type="choicelist" Value="5" id="The Target Scan Format"/>
+            </choice>
+        </property>
+    </jtag>
+    <instance XML_version="1.2" desc="IcePick_C" href="routers/icepick_c.xml" id="IcePick_C_0" xml="icepick_c.xml" xmlpath="routers" />
+    <router HW_revision="1.0" XML_version="1.2" description="ICEPick_C Router" id="IcePick_C_0" isa="ICEPICK_C">
+        <property Type="filepathfield" Value="../../../emulation/gel/cc26xx_icepick.gel" id="GEL File"/>
+        <property Type="hiddenfield" Value="1" id="Use Board Reset" />
+        <property Type="hiddenfield" Value="1" id="Block Target Access on Free Run" />
+        <subpath desc="subpath_0" id="subpath_0">
+            <property Type="numericfield" Value="0x10" id="Port Number" />
+            <property Type="choicelist" Value="0" id="Custom Configuration"/>
+            <property Type="hiddenstring" Value="0x1" id="Cancel Reset" />
+            <instance XML_version="1.2" desc="CS_DAP_0" href="routers/cs_dap.xml" id="CS_DAP_0" xml="cs_dap.xml" xmlpath="routers" />
+            <router HW_revision="1.0" XML_version="1.2" description="CS_DAP Router" id="CS_DAP_0" isa="CS_DAP">
+                <property Type="filepathfield" Value="../../../emulation/gel/cc26xx_connect_util.gel" id="GEL File"/>
+                <property Type="numericfield" Value="0x4ba00477" id="DAP TAP ID" />
+                <property Type="hiddenfield" Value="1" id="Block Target Access on Free Run" />
+                <subpath desc="subpath_1" id="subpath_1">
+                    <property Type="numericfield" Value="0x0" id="Port Number" />
+                    <property Type="choicelist" Value="0" id="Type" />
+                    <property Type="choicelist" Value="1" id="Pseudo" />
+                    <property Type="choicelist" Value="0" id="Custom Configuration"/>
+                    <instance XML_version="1.2" desc="Cortex_M4_0" href="cpus/cortex_m4.xml" id="Cortex_M4_0" xml="cortex_m4.xml" xmlpath="cpus" />
+                    <cpu HW_revision="1.0" XML_version="1.2" desc="Cortex_M4_0" description="Cortex_M4 CPU" deviceSim="false" id="Cortex_M4_0" isa="Cortex_M4">
+                        <!-- Project Wizard Settings -->
+                        <property Type="filepathfield" Value="../../../emulation/gel/cc26x2.gel" id="GEL File"/>
+                        <property Type="numericfield" Value="0x02000000" id="Access Port Designator" />
+                        <property Type="stringfield" Value="cc13x2r1f3.cmd" id="LinkerCmd"/>
+                        <property Type="stringfield" Value=" --silicon_version=7M4 --code_state=16 --abi=eabi" id="CompilerBuildOptions"/>
+                        <property Type="stringfield" Value=" -stack=256 -heap=0" id="LinkerBuildOptions"/>
+                        <property Type="stringfield" Value="--romwidth=8 --memwidth=8 --intel" id="HexBuildOptions" />
+                        <property Type="stringfield" Value="libc.a" id="RTSlib"/>
+                        <property Type="stringfield" Value="true" id="IsElfDefault"/>
+                        <property Type="stringfield" Value="little" id="Endianness"/>
+                        <property Type="stringfield" Value="5.1.2" id="MinCodegenVersion"/>
+                        <property Type="hiddenfield" Value="1" id="Use Board Reset" />
+                        <property Type="hiddenfield" Value="1" id="Use Board Reset Free Run" />
+                        <property Type="hiddenfield" Value="1" id="Block Target Access on Free Run" />
+                        <!-- GNU options -->
+                        <property Type="stringfield" Value="cc13x2r1f3.lds" id="GNULinkerCmd"/>
+                        <property Type="stringfield" Value=" -mthumb -mcpu=cortex-m4 -Os -Wall -fno-strict-aliasing -ffunction-sections -fdata-sections -std=c99 -c --asm -g" id="GNUCompilerBuildOptions"/>
+                        <property Type="stringfield" Value=" " id="GNULinkerBuildOptions"/>
+                        <property Type="stringfield" Value="" id="GNUFilesToCopy"/>
+                        <!-- END GNU options -->
+                        <!-- END Project Wizard Settings -->
+                        <!-- Device peripherals -->
+                        <instance href="../Modules/CC26xx/CC2652/ADI_4_AUX.xml" xml="ADI_4_AUX" id="AUX_ADI4" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400CB000" endaddr="0x400CB1FF" size="0x200" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AON_BATMON.xml" xml="AON_BATMON.xml" id="AON_BATMON" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40095000" endaddr="0x400953FF" size="0x400" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AON_EVENT.xml" xml="AON_EVENT.xml" id="AON_EVENT" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40093000" endaddr="0x400933FF" size="0x400" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AON_IOC.xml" xml="AON_IOC.xml" id="AON_IOC" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40094000" endaddr="0x400943FF" size="0x400" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AON_PMCTL.xml" xml="AON_PMCTL.xml" id="AON_PMCTL" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40090000" endaddr="0x40090FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AON_RTC.xml" xml="AON_RTC.xml" id="AON_RTC" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40092000" endaddr="0x400923FF" size="0x400" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_AIODIO.xml" xml="AUX_AIODIO.xml" id="AUX_AIODIO0" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400CC000" endaddr="0x400CCFFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_AIODIO.xml" xml="AUX_AIODIO.xml" id="AUX_AIODIO1" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400CD000" endaddr="0x400CDFFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_AIODIO.xml" xml="AUX_AIODIO.xml" id="AUX_AIODIO2" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400CE000" endaddr="0x400CEFFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_AIODIO.xml" xml="AUX_AIODIO.xml" id="AUX_AIODIO3" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400CF000" endaddr="0x400CFFFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_ANAIF.xml" xml="AUX_ANAIF.xml" id="AUX_ANAIF" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C9000" endaddr="0x400C9FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_EVCTL.xml" xml="AUX_EVCTL.xml" id="AUX_EVCTL" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C5000" endaddr="0x400C5FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_MAC.xml" xml="AUX_MAC.xml" id="AUX_MAC" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C2000" endaddr="0x400C2FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_SCE.xml" xml="AUX_SCE.xml" id="AUX_SCE" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400E1000" endaddr="0x400E1FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_SMPH.xml" xml="AUX_SMPH.xml" id="AUX_SMPH" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C8000" endaddr="0x400C8FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_SPIM.xml" xml="AUX_SPIM.xml" id="AUX_SPIM" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C1000" endaddr="0x400C1FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_SYSIF.xml" xml="AUX_SYSIF.xml" id="AUX_SYSIF" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C6000" endaddr="0x400C6FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_TDC.xml" xml="AUX_TDC.xml" id="AUX_TDC" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C4000" endaddr="0x400C4FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_TIMER01.xml" xml="AUX_TIMER01.xml" id="AUX_TIMER01" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C7000" endaddr="0x400C7FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/AUX_TIMER2.xml" xml="AUX_TIMER2.xml" id="AUX_TIMER2" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400C3000" endaddr="0x400C3FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/CCFG.xml" xml="CCFG.xml" id="CCFG" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x50003000" endaddr="0x50004FFF" size="0x2000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/CPU_DWT.xml" xml="CPU_DWT.xml" id="CPU_DWT" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0xE0001000" endaddr="0xE0001FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/CPU_FPB.xml" xml="CPU_FPB.xml" id="CPU_FPB" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0xE0002000" endaddr="0xE0002FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/CPU_ITM.xml" xml="CPU_ITM.xml" id="CPU_ITM" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0xE0000000" endaddr="0xE0000FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/CPU_SCS.xml" xml="CPU_SCS.xml" id="CPU_SCS" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0xE000E000" endaddr="0xE000EFFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/CPU_TIPROP.xml" xml="CPU_TIPROP.xml" id="CPU_TIPROP" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0xE00FE000" endaddr="0xE00FEFFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/CPU_TPIU.xml" xml="CPU_TPIU.xml" id="CPU_TPIU" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0xE0040000" endaddr="0xE0040FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/CRYPTO.xml" xml="CRYPTO.xml" id="CRYPTO" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40024000" endaddr="0x400247FF" size="0x800" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/DDI_0_OSC.xml" xml="DDI_0_OSC.xml" id="AUX_DDI0_OSC" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x400CA000" endaddr="0x400CAFFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/EVENT.xml" xml="EVENT.xml" id="EVENT" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40083000" endaddr="0x40083FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/FCFG1.xml" xml="FCFG1.xml" id="FCFG1" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x50001000" endaddr="0x500017FF" size="0x800" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/FLASH.xml" xml="FLASH.xml" id="FLASH" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40030000" endaddr="0x40033FFF" size="0x4000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/GPIO.xml" xml="GPIO.xml" id="GPIO" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40022000" endaddr="0x400223FF" size="0x400" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/GPT.xml" xml="GPT.xml" id="GPT0" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40010000" endaddr="0x40010FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/GPT.xml" xml="GPT.xml" id="GPT1" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40011000" endaddr="0x40011FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/GPT.xml" xml="GPT.xml" id="GPT2" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40012000" endaddr="0x40012FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/GPT.xml" xml="GPT.xml" id="GPT3" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40013000" endaddr="0x40013FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/I2C.xml" xml="I2C.xml" id="I2C0" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40002000" endaddr="0x40002FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/I2S.xml" xml="I2S.xml" id="I2S0" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40021000" endaddr="0x40021FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/IOC.xml" xml="IOC.xml" id="IOC" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40081000" endaddr="0x40081FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/PKA.xml" xml="PKA.xml" id="PKA" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40025000" endaddr="0x40025FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/PKA_INT.xml" xml="PKA_INT.xml" id="PKA_INT" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40027000" endaddr="0x40027FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/PRCM.xml" xml="PRCM.xml" id="PRCM" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40082000" endaddr="0x40082FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/RFC_DBELL.xml" xml="RFC_DBELL.xml" id="RFC_DBELL" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40041000" endaddr="0x4004103F" size="0x40" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/RFC_PWR.xml" xml="RFC_PWR.xml" id="RFC_PWR" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40040000" endaddr="0x40040003" size="0x4" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/RFC_RAT.xml" xml="RFC_RAT.xml" id="RFC_RAT" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40043000" endaddr="0x400430FF" size="0x100" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/SMPH.xml" xml="SMPH.xml" id="SMPH" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40084000" endaddr="0x40084FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/SRAM_MMR.xml" xml="SRAM_MMR.xml" id="SRAM_MMR" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40035000" endaddr="0x40039FFF" size="0x5000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/SSI.xml" xml="SSI.xml" id="SSI0" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40000000" endaddr="0x40000FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/SSI.xml" xml="SSI.xml" id="SSI1" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40008000" endaddr="0x40008FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/TRNG.xml" xml="TRNG.xml" id="TRNG" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40028000" endaddr="0x40029FFF" size="0x2000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/UART.xml" xml="UART.xml" id="UART0" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40001000" endaddr="0x40001FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/UART.xml" xml="UART.xml" id="UART1" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x4000B000" endaddr="0x4000BFFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/UDMA.xml" xml="UDMA.xml" id="UDMA0" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40020000" endaddr="0x40020FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/VIMS.xml" xml="VIMS.xml" id="VIMS" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40034000" endaddr="0x400343FF" size="0x400" accessnumbytes="4" permissions="p" />
+                        <instance href="../Modules/CC26xx/CC2652/WDT.xml" xml="WDT.xml" id="WDT" xmlpath="../Modules/CC26xx/CC2652" baseaddr="0x40080000" endaddr="0x40080FFF" size="0x1000" accessnumbytes="4" permissions="p" />
+                        <!-- END Device peripherals -->
+                        <!-- EnergyTrace register definitions -->
+                        <instance href="../Modules/CC26xx/CC2652/CC26x2_JSTATE_2_NotVisible.xml" xml="CC26x2_JSTATE_2_NotVisible.xml" id="" xmlpath="../Modules/CC26xx/CC2652" accessnumbytes="4" baseaddr="0x0000" description="" permissions="p" size="00" />
+                        <!-- END: EnergyTrace register definitions -->
+                    </cpu>
+                </subpath>
+            </router>
+        </subpath>
+        <!-- EnergyTrace -->
+        <subpath id="subpath_2">
+            <property Type="numericfield" Value="0x0" id="Port Number"/>
+            <cpu HW_revision="1.0" XML_version="1.2" description="Bypass Cpu" deviceSim="false" id="bypass_0" isa="BYPASS04"/>
+            <property Type="choicelist" Value="0" id="Custom Configuration"/>
+            <property Type="hiddenstring" Value="0x1" id="Cancel Reset" />
+        </subpath>
+        <!-- END: EnergyTrace -->
+    </router>
+</device>

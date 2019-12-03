@@ -1,0 +1,1821 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<!-- Node definitions.  These appear as a tree in eclipse -->
+	
+	<!-- Generic Nodes -->	
+	<node id="ProgramMemmoryLoadNode">
+		<name>Program/Memory Load Options</name>
+		<children>
+			<child>ProgramLoadGroup</child>
+			<child>ConnectGroup</child>
+			<child>DisableInterrupts</child>
+			<child>ResetOnRestart</child>
+			<child>RestartOnSymbolLoad</child>
+		</children>
+	</node>
+	
+	<node id="AutoRunAndLaunchNode">
+		<name>Auto Run and Launch Options</name>
+		<children>
+			<child>RealtimeGroup</child>
+			<child>RunToGroup</child>
+			<child>LaunchGroup</child>
+		</children>
+	</node>
+	
+	<node id="MiscOtherNode">
+		<name>Misc/Other Options</name>
+		<children>
+			<child>OSDebugGroup</child>
+			<child>PreventStepIntoAsm</child>
+			<child>LowPowerRunMode</child>
+			<child>CIOTimestamp</child>
+			<child>EnableSoftwareBreakpoints</child>
+			<child>FileIODefaultDirectory</child>
+			<child>SyncBreakpointsAndSymbols</child>
+		</children>
+	</node>
+	
+	<!-- End Generic Nodes -->
+
+	<!-- ISA specific nodes for general options -->
+	<!-- MSP430 Nodes -->
+	<node id="MSP430PropertiesNode">
+		<name>MSP43x Options</name>
+		<children>
+			<child>ClockControlNode</child>
+			<child>DisableBreakpointsOnFreeRun</child>
+			<child>DefaultBreakpointType</child>
+			<child>MSP430ConnectOptionsGroup</child>
+			<child>LowPowerModeGroup</child>
+		</children>
+	</node>
+	
+	<node id="ClockControlNode">
+		<name>Clock Control</name>
+		<children>
+			<child>ClockDesc</child>
+			<child>GeneralClockControlGroup</child>
+			<child>ModuleClockControlGroup</child>
+		</children>
+	</node>
+	<!-- End MSP430 Nodes -->
+	
+	<!-- Disassembly options, which are all ISA specific -->
+	<!-- TMS320C28XX Nodes-->
+	<node id="TMS320C28XX_DisassemblyStyleNode">
+		<name>C28xx Disassembly Style Options</name>
+		<children>
+			<child>TMS320C28XX_RegisterAddrModeGroup</child>
+			<child>TMS320C28XX_AddrModeOffset</child>
+			<child>TMS320C28XX_ImmediateValue</child>
+			<child>TMS320C28XX_CallsAndBranchesGroup</child>
+		</children>
+	</node>
+	<!-- End TMS320C28XX Nodes-->
+	
+	<!-- TMS320C54XX Nodes-->
+	<!-- Not sure if C54x will be supported
+	<node id="TMS320C54XX_DisassemblyStyleNode">
+		<name>C54xx Disassembly Style Options</name>
+		<children>
+			<child>TMS320C54XX_DisassemblyStyle</child>
+			<child>TMS320C54XX_DirectAddrRadix</child>
+			<child>TMS320C54XX_ImmediateAddrRadix</child>
+		</children>
+	</node>
+	-->
+	<!-- End TMS320C54XX Nodes-->
+	
+	<!-- TMS320C55XX Nodes-->
+	<node id="TMS320C55XX_DisassemblyStyleNode">
+		<name>C55xx Disassembly Style Options</name>
+		<children>
+			<child>TMS320C55XX_DisassemblyStyle</child>
+			<child>TMS320C55XX_ImmediateValueGroup</child>
+		</children>
+	</node>
+	<!-- End TMS320C55XX Nodes-->
+	
+	<!-- TMS320C56XX Nodes-->
+	<node id="TMS320C56XX_DisassemblyStyleNode">
+		<name>C55X+ Disassembly Style Options</name>
+		<children>
+			<child>TMS320C56XX_DisassemblyStyle</child>
+			<child>TMS320C56XX_ImmediateValueGroup</child>
+			<child>TMS320C56XX_OpcodeDisplayWidth</child>
+		</children>
+	</node>
+	<!-- End TMS320C56XX Nodes-->
+	
+	<!-- TMS320C62XX Nodes-->
+	<node id="TMS320C62XX_DisassemblyStyleNode">
+		<name>C62XX Disassembly Style Options</name>
+		<children>
+			<child>TMS320C62XX_AddrRadix</child>
+			<child>TMS320C62XX_Immedradix</child>
+			<child>TMS320C62XX_DisplayControlGroup</child>
+			<child>TMS320C62XX_AliasRegisterGroup</child>
+		</children>
+	</node>
+	<!-- End TMS320C62XX Nodes-->
+	
+	<!-- TMS320C64XX Nodes-->
+	<node id="TMS320C64XX_DisassemblyStyleNode">
+		<name>C64XX Disassembly Style Options</name>
+		<children>
+			<child>TMS320C64XX_AddrRadix</child>
+			<child>TMS320C64XX_Immedradix</child>
+			<child>TMS320C64XX_DisplayControlGroup</child>
+			<child>TMS320C64XX_AliasRegisterGroup</child>
+		</children>
+	</node>
+	<!-- End TMS320C64XX Nodes-->
+	
+	<!-- TMS320C67XX Nodes-->
+	<node id="TMS320C67XX_DisassemblyStyleNode">
+		<name>C67XX Disassembly Style Options</name>
+		<children>
+			<child>TMS320C67XX_AddrRadix</child>
+			<child>TMS320C67XX_Immedradix</child>
+			<child>TMS320C67XX_DisplayControlGroup</child>
+			<child>TMS320C67XX_AliasRegisterGroup</child>
+		</children>
+	</node>
+	<!-- End TMS320C67XX Nodes-->
+	
+	<!-- TMS470R1X Nodes -->
+	<node id="TMS470R1X_DisassemblyStyleNode">
+		<name>ARM 7 Disassembly Style Options</name>
+		<children>
+			<child>TMS470R1X_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470R1X Nodes-->
+	
+	<!-- TMS470R2X Nodes -->
+	<node id="TMS470R2X_DisassemblyStyleNode">
+		<name>ARM 9 Disassembly Style Options</name>
+		<children>
+			<child>TMS470R2X_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470R2X-->
+	
+	<!-- TMS470R3X Nodes -->
+	<node id="TMS470R3X_DisassemblyStyleNode">
+		<name>ARM 11 Disassembly Style Options</name>
+		<children>
+			<child>TMS470R3X_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470R3X-->
+	
+	<!-- TMS470RCX Nodes -->
+	<node id="TMS470RCX_DisassemblyStyleNode">
+		<name>Cortex A8 Disassembly Style Options</name>
+		<children>
+			<child>TMS470RCX_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470RCX-->
+	
+	<!-- TMS470R9X Nodes -->
+	<node id="TMS470R9X_DisassemblyStyleNode">
+		<name>Cortex A9 Disassembly Style Options</name>
+		<children>
+			<child>TMS470R9X_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470R9X-->
+	
+	<!-- TMS470R15X Nodes -->
+	<node id="TMS470R15X_DisassemblyStyleNode">
+		<name>Cortex A15 Disassembly Style Options</name>
+		<children>
+			<child>TMS470R15X_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470R15X-->
+	
+	<!-- TMS470R53X Nodes -->
+	<node id="TMS470R53X_DisassemblyStyleNode">
+		<name>Cortex A53 Disassembly Style Options</name>
+		<children>
+			<child>TMS470R53X_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470R53X-->
+
+	
+	<!-- TMS470RDX Nodes -->
+	<node id="TMS470RDX_DisassemblyStyleNode">
+		<name>Cortex R Disassembly Style Options</name>
+		<children>
+			<child>TMS470RDX_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470RDX-->
+	
+	<!-- TMS470REX Nodes -->
+	<node id="TMS470REX_DisassemblyStyleNode">
+		<name>Cortex M Disassembly Style Options</name>
+		<children>
+			<child>TMS470REX_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470REX-->
+	
+	<!-- TMS470RAX Nodes -->
+	<node id="TMS470RAX_DisassemblyStyleNode">
+		<name>Cortex M0 Disassembly Style Options</name>
+		<children>
+			<child>TMS470RAX_DisassMode</child>
+		</children>
+	</node>
+	<!-- End TMS470RAX-->
+	
+	<!-- Group definitions.  These appear as a dotted box grouping related option -->
+	
+	<!-- Generic Groups -->
+	<group id="ProgramLoadGroup">
+		<name>Program/Memory Load Options</name>
+		<children>
+			<child>ClearBreakpointsOnLoad</child>
+			<child>AddCEXITbreakpointAfterLoad</child>
+			<child>AddCIOBreakpointAfterLoad</child>
+			<child>AddSemiHostingBreakpointAfterLoad</child>
+			<child>VerifyAfterProgramLoad</child>
+		</children>
+	</group>
+
+	<group id="RealtimeGroup">
+		<name>Realtime Options</name>
+		<children>
+			<child>UseLegacyStopMode</child>
+			<child>AllowInterruptsWhenHalted</child>
+			<child>PoliteRealtimeMode</child>
+		</children>
+	</group>
+
+	<group id="OSDebugGroup">
+		<name>OS Aware Debug Options</name>
+		<children>
+      <child>ModuleDebuggingEnabled</child>
+      <child>ModuleNameList</child>
+      <child>ModuleSearchPath</child>
+    </children>
+	</group>
+
+	<group id="RunToGroup">
+		<name>Auto Run Options</name>
+		<children>
+			<child>AutoRunToLabelName</child>
+			<child>AutoRunToLabelOnRestart</child>
+			<child>AutoRunToLabelOnReset</child>
+		</children>
+	</group>
+	
+	<group id="LaunchGroup">
+		<name>Launch Options</name>
+		<children>
+			<child>ConnectOnStartup</child>
+			<child>EnableInstalledBreakpoint</child>
+			<child>IgnoreSoftLaunchFailures</child>
+		</children>
+	</group>
+	
+	<group id="ConnectGroup">
+		<name>Connection Options</name>
+		<children>
+			<child>HaltOnConnect</child>
+			<child>AutoResetOnConnect</child>
+			<child>AutoConnectIfChildConnects</child>
+		</children>
+	</group>
+	<!-- End Generic Groups -->
+		
+	<!-- MSP430 Groups -->
+	<group id="MSP430ConnectOptionsGroup">
+		<name>Connection Options</name>
+		<children>
+			<child>IPEraseOnConnect</child>
+			<child>UserCodeEraseOnConnect</child>
+			<child>FactoryResetOnConnect</child>
+		</children>
+	</group>
+	
+	<group id="GeneralClockControlGroup">
+		<name>General</name>
+		<children>
+			<!-- Generic ID naming of the module clock controls; the name fields will be updated to the supported clocks when we connect to the MSP device, but the IDs will remain the same. -->
+			<child>GeneralClockDesc</child>
+			<child>GeneralClockControl0</child>
+			<child>GeneralClockControl1</child>
+			<child>GeneralClockControl2</child>
+			<child>GeneralClockControl3</child>
+			<child>GeneralClockControl4</child>
+			<child>GeneralClockControl5</child>
+			<child>GeneralClockControl6</child>
+			<child>GeneralClockControl7</child>
+			<child>GeneralClockControl8</child>
+			<child>GeneralClockControl9</child>
+			<child>GeneralClockControlA</child>
+			<child>GeneralClockControlB</child>
+			<child>GeneralClockControlC</child>
+			<child>GeneralClockControlD</child>
+			<child>GeneralClockControlE</child>
+			<child>GeneralClockControlF</child>
+		</children>
+	</group>
+	
+	<group id="ModuleClockControlGroup">
+		<name>Extended</name>
+		<children>
+			<!-- Generic ID naming of the module clock controls; the name fields will be updated to the supported clocks when we connect to the MSP device, but the IDs will remain the same. -->
+			<child>ModuleClockDesc</child>
+			<child>ModuleClockControl0</child>
+			<child>ModuleClockControl1</child>
+			<child>ModuleClockControl2</child>
+			<child>ModuleClockControl3</child>
+			<child>ModuleClockControl4</child>
+			<child>ModuleClockControl5</child>
+			<child>ModuleClockControl6</child>
+			<child>ModuleClockControl7</child>
+			<child>ModuleClockControl8</child>
+			<child>ModuleClockControl9</child>
+			<child>ModuleClockControlA</child>
+			<child>ModuleClockControlB</child>
+			<child>ModuleClockControlC</child>
+			<child>ModuleClockControlD</child>
+			<child>ModuleClockControlE</child>
+			<child>ModuleClockControlF</child>
+			<child>ModuleClockControl10</child>
+			<child>ModuleClockControl11</child>
+			<child>ModuleClockControl12</child>
+			<child>ModuleClockControl13</child>
+			<child>ModuleClockControl14</child>
+			<child>ModuleClockControl15</child>
+			<child>ModuleClockControl16</child>
+			<child>ModuleClockControl17</child>
+			<child>ModuleClockControl18</child>
+			<child>ModuleClockControl19</child>
+			<child>ModuleClockControl1A</child>
+			<child>ModuleClockControl1B</child>
+			<child>ModuleClockControl1C</child>
+			<child>ModuleClockControl1D</child>
+			<child>ModuleClockControl1E</child>
+			<child>ModuleClockControl1F</child>
+		</children>
+	</group>
+	
+	<group id="LowPowerModeGroup">
+		<name>Low Power Mode Settings</name>
+		<children>
+			<child>MSP430LPMx5Mode</child>
+		</children>
+	</group>
+	
+	<!-- End MSP430 Groups -->
+	
+	<!-- TMS320C28XX Groups -->
+	<group id="TMS320C28XX_RegisterAddrModeGroup">
+		<name>Register Addressing Mode</name>
+		<children>
+			<child>TMS320C28XX_DisplayAtOperand</child>
+		</children>
+	</group>
+	
+	<group id="TMS320C28XX_CallsAndBranchesGroup">
+		<name>Calls and Branches</name>
+		<children>
+			<child>TMS320C28XX_DisplaySymbolically</child>
+		</children>
+	</group>
+	<!-- End TMS320C28XX Groups -->
+	
+	<!-- TMS320C55XX Groups -->
+	<group id="TMS320C55XX_ImmediateValueGroup">
+		<name>Immediate Values</name>
+		<children>
+			<child>TMS320C55XX_HexDisplay</child>
+		</children>
+	</group>
+	<!-- End TMS320C55XX Groups -->
+	
+	<!-- TMS320C56XX Groups -->
+	<group id="TMS320C56XX_ImmediateValueGroup">
+		<name>Immediate Values</name>
+		<children>
+			<child>TMS320C56XX_HexDisplay</child>
+		</children>
+	</group>
+	<!-- End TMS320C56XX Groups -->
+	
+	<!-- TMS320C62XX Groups -->
+	<group id="TMS320C62XX_DisplayControlGroup">
+		<name>Display Control</name>
+		<children>
+			<child>TMS320C62XX_DisplayAddress</child>
+			<child>TMS320C62XX_DisplayCondCode</child>
+			<child>TMS320C62XX_DisplayDelaySlot</child>
+			<child>TMS320C62XX_DisplayOpCode</child>
+			<child>TMS320C62XX_DisplayFuncUnit</child>
+		</children>
+	</group>
+	
+	<group id="TMS320C62XX_AliasRegisterGroup">
+		<name>Alias Register</name>
+		<children>
+			<child>TMS320C62XX_AliasRegSP</child>
+			<child>TMS320C62XX_AliasRegDP</child>
+			<child>TMS320C62XX_AliasRegFP</child>
+		</children>
+	</group>
+	<!-- End TMS320C62XX Groups -->
+	
+	<!-- TMS320C64XX Groups -->
+	<group id="TMS320C64XX_DisplayControlGroup">
+		<name>Display Control</name>
+		<children>
+			<child>TMS320C64XX_DisplayAddress</child>
+			<child>TMS320C64XX_DisplayCondCode</child>
+			<child>TMS320C64XX_DisplayDelaySlot</child>
+			<child>TMS320C64XX_DisplayOpCode</child>
+			<child>TMS320C64XX_DisplayFuncUnit</child>
+		</children>
+	</group>
+	
+	<group id="TMS320C64XX_AliasRegisterGroup">
+		<name>Alias Register</name>
+		<children>
+			<child>TMS320C64XX_AliasRegSP</child>
+			<child>TMS320C64XX_AliasRegDP</child>
+			<child>TMS320C64XX_AliasRegFP</child>
+		</children>
+	</group>
+	<!-- End TMS320C64XX Groups -->
+	
+	<!-- TMS320C67XX Groups -->
+	<group id="TMS320C67XX_DisplayControlGroup">
+		<name>Display Control</name>
+		<children>
+			<child>TMS320C67XX_DisplayAddress</child>
+			<child>TMS320C67XX_DisplayCondCode</child>
+			<child>TMS320C67XX_DisplayDelaySlot</child>
+			<child>TMS320C67XX_DisplayOpCode</child>
+			<child>TMS320C67XX_DisplayFuncUnit</child>
+		</children>
+	</group>
+	
+	<group id="TMS320C67XX_AliasRegisterGroup">
+		<name>Alias Register</name>
+		<children>
+			<child>TMS320C67XX_AliasRegSP</child>
+			<child>TMS320C67XX_AliasRegDP</child>
+			<child>TMS320C67XX_AliasRegFP</child>
+		</children>
+	</group>
+	<!-- End TMS320C67XX Groups -->
+	
+	<!-- Group containing properties for disabling interrupts while stepping/running etc -->
+	
+	<group id="DisableInterrupts">
+		<name>Disable interrupts</name>
+		<children>
+			<child>DisableIntWhileAsmStepping</child>
+			<child>DisableIntWhileSrcStepping</child>
+			<child>DisableIntWhileRunning</child>
+		</children>
+	</group>
+	
+	<categories>
+		<category>Connection</category>
+		<category>Download</category>
+		<category>Erase</category>
+		<category>Security</category>
+		<category read="true">Device Info</category>
+	</categories>
+	
+	<!-- Property definitions -->
+
+	<!-- Generic Property Definitions -->
+	<property id="ClearBreakpointsOnLoad">
+		<target>generic</target>
+		<name>Disable all breakpoints when loading a different program</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="AddCEXITbreakpointAfterLoad">
+		<target>generic</target>
+		<name>Halt at program exit for TI compilers (requires a breakpoint)</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<uniqueDefault value="0">
+			<target>MSP430</target>
+			<target>TMS320C28XX</target>
+			<target>TMS192C20XX</target>
+			<noSystemBreakpoints>true</noSystemBreakpoints>
+		</uniqueDefault>
+	</property>
+	
+	<property id="AddCIOBreakpointAfterLoad">
+		<target>generic</target>
+		<name>Enable CIO function use (requires setting a breakpoint)</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<uniqueDefault value="0">
+			<target>TMS192C20XX</target>
+			<noSystemBreakpoints>true</noSystemBreakpoints>
+		</uniqueDefault>
+	</property>
+	
+	<property id="AddSemiHostingBreakpointAfterLoad">
+		<target>TMS470R1X</target>
+		<target>TMS470R2X</target>
+		<target>TMS470R3X</target>
+		<target>TMS470RCX</target>
+		<target>TMS470R9X</target>
+		<target>TMS470R15X</target>
+		<target>TMS470R53X</target>
+		<target>TMS470RDX</target>
+		<target>TMS470REX</target>
+		<name>Enable Semihosting (requires setting a breakpoint at SVC_Handler )</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<uniqueDefault value="0">
+			<noSystemBreakpoints>true</noSystemBreakpoints>
+		</uniqueDefault>
+	</property>
+	
+	<property id="PreventStepIntoAsm">
+		<target>generic</target>
+		<name>Automatically step over functions without debug information when source stepping</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="ResetOnRestart">
+		<target>generic</target>
+		<name>Reset the target on a program load or restart</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<uniqueDefault value="1">
+			<target>MSP430</target>
+			<msp432fet>true</msp432fet>
+		</uniqueDefault>
+	</property>
+	
+	<property id="RestartOnSymbolLoad">
+		<target>generic</target>
+		<name>Restart the target on a symbol load as well as a program load</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<uniqueDefault value="1">
+			<msp432fet>true</msp432fet>
+		</uniqueDefault>
+	</property>
+
+	<!-- MSP devices ALWAYS do a low power run - there's no other way.  As
+		 such, the option is set to "checked", but disabled so it can't be 
+		 unchecked. -->
+	<property id="LowPowerRunMode">
+		<target>generic</target>
+		<name>Allow power transitions while running if supported (low power running)</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<uniqueDefault value="1">
+			<lowPowerRunByDefault>true</lowPowerRunByDefault>
+			<target>MSP430</target>
+		</uniqueDefault>
+		<disableIf>
+			<target>MSP430</target>
+		</disableIf>
+	</property>
+	
+	<property id="CIOTimestamp">
+		<target>generic</target>
+		<name>Add timestamp information to target output</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<property id="EnableSoftwareBreakpoints">
+		<target>generic</target>
+		<name>Allow software breakpoints to be used</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<uniqueDefault value="0">
+			<eem>EMEX_HIGH</eem>
+			<disableSoftwareBreakpoint>true</disableSoftwareBreakpoint>
+		</uniqueDefault>
+		<disableIf>
+			<disableSoftwareBreakpoint>true</disableSoftwareBreakpoint>
+		</disableIf>
+	</property>
+	
+	<property id="FileIODefaultDirectory">
+		<target>generic</target>
+		<name>Default directory for File IO: </name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+	</property>
+	
+	<property id="SyncBreakpointsAndSymbols">
+		<target>generic</target>
+		<name>When added to a sync group:</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Synchronize execution only</value>
+			<value>Synchronize breakpoints and symbols (with like cores), as well as execution</value>
+		</values>
+		<defaultValue>Synchronize breakpoints and symbols (with like cores), as well as execution</defaultValue>
+	</property>
+	
+	<property id="VerifyAfterProgramLoad">
+		<target>generic</target>
+		<name>Verification Options</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Full verification</value>
+			<value>Fast verification</value>
+			<value>No verification</value>
+		</values>
+		<defaultValue>Fast verification</defaultValue>
+		<uniqueDefault value="Full verification">
+			<target>MSP430</target>
+		</uniqueDefault>
+	</property>
+	
+	<property id="UseLegacyStopMode">
+		<target>generic</target>
+		<name>Halt the target before any debugger access (will impact servicing of interrupts)</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+			
+	<property id="AllowInterruptsWhenHalted">
+		<target>generic</target>
+		<name>Enable realtime mode (critical interrupts serviced when halted, rude/polite mode...)</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<realtimeEnabled>true</realtimeEnabled>
+			<supportsAdvancedRealtime>true</supportsAdvancedRealtime>
+		</enableIf>
+	</property>
+	
+	<property id="PoliteRealtimeMode">
+		<target>generic</target>
+		<name>Enable polite mode (respect HPI, DBGM and FRAMEID)</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<uniqueDefault value="0">
+			<supportsAdvancedRealtime>true</supportsAdvancedRealtime>
+		</uniqueDefault>
+		<enableIf>
+			<supportsAdvancedRealtime>true</supportsAdvancedRealtime>
+			<property id="AllowInterruptsWhenHalted">1</property>
+		</enableIf>
+	</property>
+	
+	<property id="ModuleDebuggingEnabled">
+		<target>generic</target>
+		<name>Automatically load module symbols</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Never</value>
+			<value>When modules are loaded and unloaded (intrusive on target execution, and requires a patched kernel)</value>
+			<value>Whenever halted in the module load/unload routines (you must manually set breakpoints in the appropriate routines for this to work)</value>
+		</values>
+		<defaultValue>Never</defaultValue>
+	</property>
+
+  <property id="ModuleNameList">
+    <target>generic</target>
+    <name>Module name list</name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+    <disableIf>
+      <property id="ModuleDebuggingEnabled">Never</property>
+    </disableIf>
+  </property>
+
+  <property id="ModuleSearchPath">
+    <target>generic</target>
+    <name>Module symbol search path</name>
+    <valueType>String</valueType>
+    <defaultValue></defaultValue>
+    <disableIf>
+      <property id="ModuleDebuggingEnabled">Never</property>
+    </disableIf>
+  </property>
+
+  <property id="AutoRunToLabelName">
+		<target>generic</target>
+		<name>Run to symbol</name>
+		<valueType>String</valueType>
+		<defaultValue>main</defaultValue>
+	</property>
+	
+	<property id="AutoRunToLabelOnRestart">
+		<target>generic</target>
+		<name>On a program load or restart</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="AutoRunToLabelOnReset">
+		<target>generic</target>
+		<name>On a reset</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<uniqueDefault value="1">
+			<target>MSP430</target>
+		</uniqueDefault>
+	</property>
+	
+	<property id="ConnectOnStartup">
+		<target>generic</target>
+		<name>Connect to the target on debugger startup</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<property id="HaltOnConnect">
+		<target>generic</target>
+		<name>Halt the target on a connect</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<uniqueDefault value="1">
+			<haltOnConnectByDefault>true</haltOnConnectByDefault>
+			<target>MSP430</target>
+		</uniqueDefault>
+		<enableIf>
+			<supportsNonIntrusiveConnect>true</supportsNonIntrusiveConnect>
+			<target>MSP430</target>
+		</enableIf>
+	</property>
+	
+	<property id="AutoResetOnConnect">
+		<target>generic</target>
+		<name>Reset the target on a connect</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<uniqueDefault value="1">
+			<msp432fet>true</msp432fet>
+		</uniqueDefault>
+	</property>
+	
+	<property id="EnableInstalledBreakpoint">
+		<target>generic</target>
+		<name>Restore breakpoints from previous session</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+
+	<property id="IgnoreSoftLaunchFailures">
+		<target>generic</target>
+		<name>Continue debug launch if target connection or program load fails</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<uniqueDefault value="0">
+			<target>MSP430</target>
+			<disableSoftLaunch>true</disableSoftLaunch>
+		</uniqueDefault>
+		<disableIf>
+			<disableSoftLaunch>true</disableSoftLaunch>
+		</disableIf>
+	</property>
+	
+	<property id="AutoConnectIfChildConnects">
+		<target>generic</target>
+		<name>Auto connect if a child connects</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<enableIf>
+			<target>ICEPICK_B</target>
+ 			<target>ICEPick_C</target>
+			<target>CS_DAP</target>
+			<target>CS_DAP_PC</target>
+		</enableIf>
+	</property>
+	<!-- End Generic Property Definitions -->
+	
+	<!-- MSP430 Property Definitions -->
+	<property id="DisableBreakpointsOnFreeRun">
+		<target>MSP430</target>
+		<name>Disable breakpoints on a free run</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="DefaultBreakpointType">
+		<target>MSP430</target>
+		<name>Default breakpoint type</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Software</value>
+			<value>Hardware</value>
+		</values>
+		<defaultValue>Hardware</defaultValue>
+		<enableIf>
+			<property id="EnableSoftwareBreakpoints">1</property>
+		</enableIf>
+	</property>
+
+	<property id="IPEraseOnConnect">
+		<target>MSP430</target>
+		<name>On connect, erase main, information, and IP protected area</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<FilterString>MSP430FRxxx Family</FilterString>
+		</enableIf>
+		<categories>
+			<category>Connection</category>
+		</categories>
+	</property>
+	
+	<property id="UserCodeEraseOnConnect">
+		<target>MSP430</target>
+		<name>On connect, erase user code and unlock the device</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<supportUserCodeErase>true</supportUserCodeErase>
+		</enableIf>
+		<categories>
+			<category>Connection</category>
+		</categories>
+	</property>
+
+	<property id="FactoryResetOnConnect">
+		<target>TMS470REX</target>
+		<name>On connect, perform Factory Reset</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<categories>
+			<category>Connection</category>
+		</categories>
+	</property>
+	
+	<property id="ClockDesc">
+		<target>MSP430</target>
+		<name>Connect to a MSP430 device to see the list of available clock controls.
+Note: only available under "Tools->Debugger Options->MSP430 Debugger Options"</name>
+		<valueType>Text</valueType>
+	</property>
+
+	<property id="GeneralClockDesc">
+		<target>MSP430</target>
+		<name>Connect to device to see list of available General Clock Controls.</name>
+		<valueType>Text</valueType>
+	</property>
+	
+	<property id="GeneralClockControl0">
+		<target>MSP430</target>
+		<name>General Clock 0</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl1">
+		<target>MSP430</target>
+		<name>General Clock 1</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl2">
+		<target>MSP430</target>
+		<name>General Clock 2</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl3">
+		<target>MSP430</target>
+		<name>General Clock 3</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl4">
+		<target>MSP430</target>
+		<name>General Clock 4</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl5">
+		<target>MSP430</target>
+		<name>General Clock 5</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl6">
+		<target>MSP430</target>
+		<name>General Clock 6</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl7">
+		<target>MSP430</target>
+		<name>General Clock 7</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl8">
+		<target>MSP430</target>
+		<name>General Clock 8</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControl9">
+		<target>MSP430</target>
+		<name>General Clock 9</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControlA">
+		<target>MSP430</target>
+		<name>General Clock A</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControlB">
+		<target>MSP430</target>
+		<name>General Clock B</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControlC">
+		<target>MSP430</target>
+		<name>General Clock C</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControlD">
+		<target>MSP430</target>
+		<name>General Clock 0</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControlE">
+		<target>MSP430</target>
+		<name>General Clock E</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="GeneralClockControlF">
+		<target>MSP430</target>
+		<name>General Clock F</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+
+	<property id="ModuleClockDesc">
+		<target>MSP430</target>
+		<name>Connect to device to see list of available Module Clock Controls.</name>
+		<valueType>Text</valueType>
+	</property>
+	
+	<property id="ModuleClockControl0">
+		<target>MSP430</target>
+		<name>Module Clock 0</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl1">
+		<target>MSP430</target>
+		<name>Module Clock 1</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl2">
+		<target>MSP430</target>
+		<name>Module Clock 2</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl3">
+		<target>MSP430</target>
+		<name>Module Clock 3</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl4">
+		<target>MSP430</target>
+		<name>Module Clock 4</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl5">
+		<target>MSP430</target>
+		<name>Module Clock 5</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl6">
+		<target>MSP430</target>
+		<name>Module Clock 6</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl7">
+		<target>MSP430</target>
+		<name>Module Clock 7</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl8">
+		<target>MSP430</target>
+		<name>Module Clock 8</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl9">
+		<target>MSP430</target>
+		<name>Module Clock 9</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControlA">
+		<target>MSP430</target>
+		<name>Module Clock A</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControlB">
+		<target>MSP430</target>
+		<name>Module Clock B</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControlC">
+		<target>MSP430</target>
+		<name>Module Clock C</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControlD">
+		<target>MSP430</target>
+		<name>Module Clock D</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControlE">
+		<target>MSP430</target>
+		<name>Module Clock E</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControlF">
+		<target>MSP430</target>
+		<name>Module Clock F</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+
+	<property id="ModuleClockControl10">
+		<target>MSP430</target>
+		<name>Module Clock 10</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl11">
+		<target>MSP430</target>
+		<name>Module Clock 11</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl12">
+		<target>MSP430</target>
+		<name>Module Clock 12</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl13">
+		<target>MSP430</target>
+		<name>Module Clock 13</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl14">
+		<target>MSP430</target>
+		<name>Module Clock 14</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl15">
+		<target>MSP430</target>
+		<name>Module Clock 15</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl16">
+		<target>MSP430</target>
+		<name>Module Clock 16</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl17">
+		<target>MSP430</target>
+		<name>Module Clock 17</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl18">
+		<target>MSP430</target>
+		<name>Module Clock 18</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl19">
+		<target>MSP430</target>
+		<name>Module Clock 19</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl1A">
+		<target>MSP430</target>
+		<name>Module Clock 1A</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl1B">
+		<target>MSP430</target>
+		<name>Module Clock 1B</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl1C">
+		<target>MSP430</target>
+		<name>Module Clock 1C</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl1D">
+		<target>MSP430</target>
+		<name>Module Clock 1D</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl1E">
+		<target>MSP430</target>
+		<name>Module Clock 1E</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="ModuleClockControl1F">
+		<target>MSP430</target>
+		<name>Module Clock 1F</name>
+		<valueType>Boolean</valueType>
+		<noDefault />
+		<hidden />
+	</property>
+	
+	<property id="MSP430LPMx5Mode">
+		<target>MSP430</target>
+		<name>Enable Ultra Low Power debug / LPMx.5 debug</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<uniqueDefault value="1">
+			<supportLPMx5>true</supportLPMx5>
+		</uniqueDefault>
+		<enableIf>
+			<supportLPMx5>true</supportLPMx5>
+		</enableIf>
+	</property>
+	
+	<!-- End MSP430 Property Definitions -->
+	
+	<!-- TMS320C28XX Property Definitions -->
+	<property id="TMS320C28XX_DisplayAtOperand">
+		<target>TMS320C28XX</target>
+		<name>Display @ operand</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C28XX_AddrModeOffset">
+		<target>TMS320C28XX</target>
+		<name>Addressing Mode Offset</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hexadecimal</value>
+			<value>Decimal (default)</value>
+		</values>
+		<defaultValue>Decimal (default)</defaultValue>
+	</property>
+
+	<property id="TMS320C28XX_ImmediateValue">
+		<target>TMS320C28XX</target>
+		<name>Immediate Value</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hexadecimal</value>
+			<value>Decimal</value>
+			<value>Default (refer to spec)</value>
+		</values>
+		<defaultValue>Default (refer to spec)</defaultValue>
+	</property>
+	
+	<property id="TMS320C28XX_DisplaySymbolically">
+		<target>TMS320C28XX</target>
+		<name>Display Symbolically</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	<!-- End TMS320C28XX Property Definitions -->
+	
+	<!-- TMS320C54XX Property Definitions -->
+	<!-- Not sure if C54x will be supported
+	<property id="TMS320C54XX_DisassemblyStyle">
+		<target>TMS320C54XX</target>
+		<name>Disassembly Style</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Algebraic</value>
+			<value>Mnemonic</value>
+		</values>
+		<defaultValue>Mnemonic</defaultValue>
+	</property>
+	
+	<property id="TMS320C54XX_DirectAddrRadix">
+		<target>TMS320C54XX</target>
+		<name>Direct Addessing Radix</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hex</value>
+			<value>Decimal</value>
+		</values>
+		<defaultValue>Hex</defaultValue>
+	</property>
+	
+	<property id="TMS320C54XX_ImmediateAddrRadix">
+		<target>TMS320C54XX</target>
+		<name>Immediate Addressing Radix</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hex</value>
+			<value>Decimal</value>
+			<value>Binary</value>
+		</values>
+		<defaultValue>Hex</defaultValue>
+	</property>
+	-->
+	<!-- End TMS320C54XX Property Definitions -->
+	
+	<!-- TMS320C55XX Property Definitions -->
+	<property id="TMS320C55XX_DisassemblyStyle">
+		<target>TMS320C55XX</target>
+		<name>Disassembly Style</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Algebraic</value>
+			<value>Mnemonic</value>
+		</values>
+		<defaultValue>Mnemonic</defaultValue>
+	</property>
+	
+	<property id="TMS320C55XX_HexDisplay">
+		<target>TMS320C55XX</target>
+		<name>Hexadecimal Display</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	<!-- End TMS320C55XX Property Definitions -->
+	
+	<!-- TMS320C56XX Property Definitions -->
+	<property id="TMS320C56XX_DisassemblyStyle">
+		<target>TMS320C56XX</target>
+		<name>Disassembly Style</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Algebraic</value>
+			<value>Mnemonic</value>
+		</values>
+		<defaultValue>Algebraic</defaultValue>
+	</property>
+	
+	<property id="TMS320C56XX_HexDisplay">
+		<target>TMS320C56XX</target>
+		<name>Hexadecimal Display</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<property id="TMS320C56XX_OpcodeDisplayWidth">
+		<target>TMS320C56XX</target>
+		<name>Opcode Display Width</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Show all bytes</value>
+			<value>Truncate to 12 bytes</value>
+			<value>Truncate to 6 bytes</value>
+			<value>Hide</value>
+		</values>
+		<defaultValue>Show all bytes</defaultValue>
+	</property>
+	<!-- End TMS320C56XX Property Definitions -->
+	
+	<!-- TMS320C62XX Property Definitions -->
+	<property id="TMS320C62XX_AddrRadix">
+		<target>TMS320C62XX</target>
+		<name>Addressing Radix</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hex</value>
+			<value>Dec</value>
+		</values>
+		<defaultValue>Hex</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_Immedradix">
+		<target>TMS320C62XX</target>
+		<name>Immediate Radix</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hex</value>
+			<value>Dec</value>
+		</values>
+		<defaultValue>Hex</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_DisplayAddress">
+		<target>TMS320C62XX</target>
+		<name>Address</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_DisplayCondCode">
+		<target>TMS320C62XX</target>
+		<name>Cond. Code</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_DisplayDelaySlot">
+		<target>TMS320C62XX</target>
+		<name>Delay Slot</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_DisplayOpCode">
+		<target>TMS320C62XX</target>
+		<name>Op. Code</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_DisplayFuncUnit">
+		<target>TMS320C62XX</target>
+		<name>Functional Unit</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_AliasRegSP">
+		<target>TMS320C62XX</target>
+		<name>SP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_AliasRegDP">
+		<target>TMS320C62XX</target>
+		<name>DP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C62XX_AliasRegFP">
+		<target>TMS320C62XX</target>
+		<name>FP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	<!-- End TMS320C62XX Property Definitions -->
+	
+	<!-- TMS320C64XX Property Definitions -->
+	<property id="TMS320C64XX_AddrRadix">
+		<target>TMS320C64XX</target>
+		<name>Addressing Radix</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hex</value>
+			<value>Dec</value>
+		</values>
+		<defaultValue>Hex</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_Immedradix">
+		<target>TMS320C64XX</target>
+		<name>Immediate Radix</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hex</value>
+			<value>Dec</value>
+		</values>
+		<defaultValue>Hex</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_DisplayAddress">
+		<target>TMS320C64XX</target>
+		<name>Address</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_DisplayCondCode">
+		<target>TMS320C64XX</target>
+		<name>Cond. Code</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_DisplayDelaySlot">
+		<target>TMS320C64XX</target>
+		<name>Delay Slot</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_DisplayOpCode">
+		<target>TMS320C64XX</target>
+		<name>Op. Code</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_DisplayFuncUnit">
+		<target>TMS320C64XX</target>
+		<name>Functional Unit</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_AliasRegSP">
+		<target>TMS320C64XX</target>
+		<name>SP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_AliasRegDP">
+		<target>TMS320C64XX</target>
+		<name>DP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C64XX_AliasRegFP">
+		<target>TMS320C64XX</target>
+		<name>FP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	<!-- End TMS320C64XX Property Definitions -->
+	
+	<!-- TMS320C67XX Property Definitions -->
+	<property id="TMS320C67XX_AddrRadix">
+		<target>TMS320C67XX</target>
+		<name>Addressing Radix</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hex</value>
+			<value>Dec</value>
+		</values>
+		<defaultValue>Hex</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_Immedradix">
+		<target>TMS320C67XX</target>
+		<name>Immediate Radix</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Hex</value>
+			<value>Dec</value>
+		</values>
+		<defaultValue>Hex</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_DisplayAddress">
+		<target>TMS320C67XX</target>
+		<name>Address</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_DisplayCondCode">
+		<target>TMS320C67XX</target>
+		<name>Cond. Code</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_DisplayDelaySlot">
+		<target>TMS320C67XX</target>
+		<name>Delay Slot</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_DisplayOpCode">
+		<target>TMS320C67XX</target>
+		<name>Op. Code</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_DisplayFuncUnit">
+		<target>TMS320C67XX</target>
+		<name>Functional Unit</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_AliasRegSP">
+		<target>TMS320C67XX</target>
+		<name>SP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_AliasRegDP">
+		<target>TMS320C67XX</target>
+		<name>DP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	
+	<property id="TMS320C67XX_AliasRegFP">
+		<target>TMS320C67XX</target>
+		<name>FP</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+	</property>
+	<!-- End TMS320C64XX Property Definitions -->
+	
+	<!-- TMS470R1X Property Definitions -->
+	<property id="TMS470R1X_DisassMode">
+		<target>TMS470R1X</target>
+		<name>Disassembly Mode</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Mixed ARM/Thumb</value>
+			<value>ARM Only</value>
+			<value>Thumb Only</value>
+		</values>
+		<defaultValue>Mixed ARM/Thumb</defaultValue>
+	</property>
+	<!-- EndTMS470R1X Property Definitions -->
+	
+	<!-- TMS470R2X Property Definitions -->
+	<property id="TMS470R2X_DisassMode">
+		<target>TMS470R2X</target>
+		<name>Disassembly Mode</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Mixed ARM/Thumb</value>
+			<value>ARM Only</value>
+			<value>Thumb Only</value>
+		</values>
+		<defaultValue>Mixed ARM/Thumb</defaultValue>
+	</property>
+	<!-- EndTMS470R2X Property Definitions -->
+	
+	<!-- TMS470R3X Property Definitions -->
+	<property id="TMS470R3X_DisassMode">
+		<target>TMS470R3X</target>
+		<name>Disassembly Mode</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Mixed ARM/Thumb</value>
+			<value>ARM Only</value>
+			<value>Thumb Only</value>
+		</values>
+		<defaultValue>Mixed ARM/Thumb</defaultValue>
+	</property>
+	<!-- EndTMS470R3X Property Definitions -->
+	
+	<!-- TMS470R9X Property Definitions -->
+	<property id="TMS470R9X_DisassMode">
+		<target>TMS470R9X</target>
+		<name>Disassembly Mode</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Mixed ARM/Thumb</value>
+			<value>ARM Only</value>
+			<value>Thumb Only</value>
+		</values>
+		<defaultValue>Mixed ARM/Thumb</defaultValue>
+	</property>
+	<!-- EndTMS470R9X Property Definitions -->
+	
+	<!-- TMS470R15X Property Definitions -->
+	<property id="TMS470R15X_DisassMode">
+		<target>TMS470R15X</target>
+		<name>Disassembly Mode</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Mixed ARM/Thumb</value>
+			<value>ARM Only</value>
+			<value>Thumb Only</value>
+		</values>
+		<defaultValue>Mixed ARM/Thumb</defaultValue>
+	</property>
+	<!-- EndTMS470R15X Property Definitions -->
+	
+	<!-- TMS470RCX Property Definitions -->
+	<property id="TMS470RCX_DisassMode">
+		<target>TMS470RCX</target>
+		<name>Disassembly Mode</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Mixed ARM/Thumb</value>
+			<value>ARM Only</value>
+			<value>Thumb Only</value>
+		</values>
+		<defaultValue>Mixed ARM/Thumb</defaultValue>
+	</property>
+	<!-- EndTMS470RCX Property Definitions -->
+	
+	<!-- TMS470R53X Property Definitions -->
+	<property id="TMS470R53X_DisassMode">
+		<target>TMS470R53X</target>
+		<name>Disassembly Mode</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Mixed A32/A64</value>
+			<value>A64 Only</value>
+			<value>A32 ARM Only</value>
+			<value>A32 Thumb Only</value>
+		</values>
+		<defaultValue>Mixed A32/A64</defaultValue>
+	</property>
+	<!-- EndTMS470R53X Property Definitions -->
+	
+	<!-- TMS470RDX Property Definitions -->
+	<property id="TMS470RDX_DisassMode">
+		<target>TMS470RDX</target>
+		<name>Disassembly Mode</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Mixed ARM/Thumb</value>
+			<value>ARM Only</value>
+			<value>Thumb Only</value>
+		</values>
+		<defaultValue>Mixed ARM/Thumb</defaultValue>
+	</property>
+	<!-- EndTMS470RDX Property Definitions -->
+	
+	<!-- ISA specific properties for disabling interrupts while stepping/running etc -->
+	<!-- MSP430 has a different option as it has to muck with a control register, so changing it would prevent stepping thru code that alters that register -->
+	
+	<property id="DisableIntWhileAsmStepping">
+		<target>generic</target>
+		<name>When assembly stepping</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<uniqueDefault value="0">
+			<target>MSP430</target>
+		</uniqueDefault>
+	</property>
+	
+	<property id="DisableIntWhileSrcStepping">
+		<target>generic</target>
+		<name>When source stepping</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<uniqueDefault value="0">
+			<target>MSP430</target>
+			<target>TMS470R.*</target>
+		</uniqueDefault>
+	</property>
+	
+	<property id="DisableIntWhileRunning">
+		<target>generic</target>
+		<name>When running</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<!-- Test props, used for interface testing only -->
+	<property id="TestBoolean">
+		<target>generic</target>
+		<name>test use boolean prop</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<property id="TestNumeric">
+		<target>generic</target>
+		<name>test use int prop</name>
+		<valueType>Numeric</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<property id="TestString">
+		<target>generic</target>
+		<name>test use string prop</name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+	</property>
+	<!-- END: Test props, used for interface testing only -->
+	<!-- fin -->
+</PropertyList>

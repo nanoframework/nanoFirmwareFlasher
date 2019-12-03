@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<!-- Top Nodes-->
+	<node id="FlashProgrammerNode">
+		<name>Flash Settings</name>
+		<children>
+			<child>FlashSettings</child>
+			<child>FlashProgramGroup</child>
+			<child>FlashEraseGroup</child>
+			<child>FlashBlankCheckGroup</child>
+			<child>FlashICDIFirmwareUpdateGroup</child>
+		</children>
+	</node>
+
+	<!-- TMS470REX Groups -->
+	<group id="FlashSettings">
+		<name>Device Configuration</name>
+		<children>
+			<child>FlashDFUDeviceDisplayButton</child>
+			<child>FlashDFUDeviceIndexSelect</child>
+		</children>
+	</group>
+	
+	<group id="FlashProgramGroup">
+		<name>Load Settings</name>
+		<children>
+			<child>FlashVerifyAfterProgram</child>
+			<child>FlashResetAfterProgram</child>
+		</children>
+	</group>
+	
+	<group id="FlashEraseGroup">
+		<name>Erase</name>
+		<children>
+			<child>FlashEraseType</child>
+			<child>FlashEraseStartAddr</child>
+			<child>FlashEraseEndAddr</child>
+			<child>FlashEraseButton</child>
+		</children>
+	</group>
+	
+	<group id="FlashBlankCheckGroup">
+		<name>Blank Check</name>
+		<children>
+			<child>FlashBlankCheckSelection</child>
+			<child>FlashBlankCheckStartAddr</child>
+			<child>FlashBlankCheckEndAddr</child>
+			<child>FlashBlankCheckButton</child>
+		</children>
+	</group>
+	
+	<group id="FlashICDIFirmwareUpdateGroup">
+		<name>ICDI Firmware Update</name>
+		<children>
+			<child>FlashICDIFirmwareUpdateButton</child>
+		</children>
+	</group>
+
+	<!-- Property Definitions -->
+	<property id="FlashDFUDeviceDisplayButton">
+		<target>generic</target>
+		<name>Display DFU devices</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("DisplayDFUDevices")</action>
+	</property>
+	
+	<property id="FlashDFUDeviceIndexSelect">
+		<target>generic</target>
+		<name>Select Device (index):</name>
+		<valueType>Numeric</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<property id="FlashVerifyAfterProgram">
+		<target>generic</target>
+		<name>Verify After Program</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<property id="FlashResetAfterProgram">
+		<target>generic</target>
+		<name>Reset MCU After Program</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+	</property>
+	
+	<property id="FlashEraseType">
+		<target>generic</target>
+		<name></name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Entire Flash</value>
+			<value>By Address Range</value>
+		</values>
+		<defaultValue>Entire Flash</defaultValue>
+	</property>
+
+	<property id="FlashEraseStartAddr">
+		<target>generic</target>
+		<name>Start Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashEraseType">By Address Range</property>
+		</enableIf>
+	</property>
+
+	<property id="FlashEraseEndAddr">
+		<target>generic</target>
+		<name>End Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashEraseType">By Address Range</property>
+		</enableIf>
+	</property>
+
+	<property id="FlashEraseButton">
+		<target>generic</target>
+		<name>Erase Flash</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("Erase")</action>
+	</property>
+
+	<property id="FlashEraseStartAddr">
+		<target>generic</target>
+		<name>Start Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashEraseType">By Address Range</property>
+		</enableIf>
+	</property>
+
+	<property id="FlashEraseEndAddr">
+		<target>generic</target>
+		<name>End Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashEraseType">By Address Range</property>
+		</enableIf>
+	</property>
+	
+	<property id="FlashBlankCheckSelection">
+		<target>generic</target>
+		<name></name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Entire Flash</value>
+			<value>By Address Range</value>
+		</values>
+		<defaultValue>Entire Flash</defaultValue>
+	</property>
+	
+	<property id="FlashBlankCheckStartAddr">
+		<target>generic</target>
+		<name>Start Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashBlankCheckSelection">By Address Range</property>
+		</enableIf>
+	</property>
+
+	<property id="FlashBlankCheckEndAddr">
+		<target>generic</target>
+		<name>End Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashBlankCheckSelection">By Address Range</property>
+		</enableIf>
+	</property>
+	
+	<property id="FlashBlankCheckButton">
+		<target>generic</target>
+		<name>Blank Check</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("BlankCheck")</action>
+	</property>
+	
+	<property id="FlashChecksumSelection">
+		<target>generic</target>
+		<name></name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Entire Flash</value>
+			<value>By Address Range</value>
+		</values>
+		<defaultValue>Entire Flash</defaultValue>
+	</property>
+	
+	<property id="FlashChecksumStartAddr">
+		<target>generic</target>
+		<name>Start Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashChecksumSelection">By Address Range</property>
+		</enableIf>
+	</property>
+
+	<property id="FlashChecksumEndAddr">
+		<target>generic</target>
+		<name>End Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashChecksumSelection">By Address Range</property>
+		</enableIf>
+	</property>
+	
+	<property id="FlashChecksumValue">
+		<target>generic</target>
+		<name>CRC32 Value:</name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+		<readOnly>1</readOnly>
+	</property>
+	
+	<property id="FlashChecksumButton">
+		<target>generic</target>
+		<name>Calculate</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("CalculateChecksum")</action>
+	</property>
+	
+	<property id="FlashICDIFirmwareUpdateButton">
+		<target>generic</target>
+		<name>Update</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("NCO_ICDIFirmwareUpdate")</action>
+	</property>
+	
+	<!-- fin -->
+</PropertyList>

@@ -160,7 +160,7 @@ jobs:
       workingDirectory: source
     displayName: Restore NuGet packages
 
-  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack"
+  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
     workingDirectory: source
     displayName: Build NuGet package
 

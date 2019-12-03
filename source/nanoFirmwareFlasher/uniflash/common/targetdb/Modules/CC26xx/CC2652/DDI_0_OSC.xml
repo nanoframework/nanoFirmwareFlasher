@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AUX_DDI0_OSC" HW_revision="" XML_version="1.0" description="This is the DDI for the digital block that controls all the analog clock oscillators  (OSC_DIG) and performs qualification of the clocks generated." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="CTL0" width="32" description="Control 0
+Controls clock source selects" id="CTL0" offset="0x0">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Set based on the accurate high frequency XTAL." id="XTAL_IS_24M" resetval="0x0">
+         <bitenum id="24M" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="48M" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="BYPASS_XOSC_LF_CLK_QUAL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="BYPASS_RCOSC_LF_CLK_QUAL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="2" end="26" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="DOUBLER_START_DURATION" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="DOUBLER_RESET_DURATION" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Select DCDC clock source.
+
+0: CLK_DCDC is 48 MHz clock from RCOSC or XOSC / HPOSC
+1: CLK_DCDC is always 48 MHz clock from RCOSC" id="CLK_DCDC_SRC_SEL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="9" end="15" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="HPOSC_MODE_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RCOSC_LF_TRIMMED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="XOSC_HF_POWER_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Bypass XOSC_LF and use the digital input clock from AON for the xosc_lf clock.
+
+0: Use 32kHz XOSC as xosc_lf clock source
+1: Use digital input (from AON) as xosc_lf clock source.
+
+This bit will only have effect when SCLK_LF_SRC_SEL is selecting the xosc_lf as the sclk_lf source. The muxing performed by this bit is not glitch free. The following procedure must be followed when changing this field to avoid glitches on sclk_lf.
+
+1) Set SCLK_LF_SRC_SEL to select any source other than the xosc_lf clock source.
+2) Set or clear this bit to bypass or not bypass the xosc_lf.
+3) Set SCLK_LF_SRC_SEL to use xosc_lf.
+
+It is recommended that either the rcosc_hf or xosc_hf (whichever is currently active) be selected as the source in step 1 above. This provides a faster clock change." id="XOSC_LF_DIG_BYPASS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Enable clock loss detection and hence the indicators to the system controller.  Checks both SCLK_HF, SCLK_MF and SCLK_LF clock loss indicators.
+
+0: Disable
+1: Enable
+
+Clock loss detection must be disabled when changing the sclk_lf source. STAT0.SCLK_LF_SRC can be polled to determine when a change to a new sclk_lf source has completed." id="CLK_LOSS_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="2" end="7" rwaccess="RW" description="Source select for aclk_tdc.
+
+00: RCOSC_HF (48MHz)
+01: RCOSC_HF (24MHz)
+10: XOSC_HF (24MHz)
+11: Not used" id="ACLK_TDC_SRC_SEL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="3" end="4" rwaccess="RW" description="Source select for aclk_ref
+
+000: RCOSC_HF derived (31.25kHz)
+001: XOSC_HF derived (31.25kHz)
+010: RCOSC_LF (32kHz)
+011: XOSC_LF (32.768kHz)
+100: RCOSC_MF (2MHz)
+101-111: Not used" id="ACLK_REF_SRC_SEL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RW" description="Source select for sclk_lf" id="SCLK_LF_SRC_SEL" resetval="0x0">
+         <bitenum id="XOSCLF" value="3" token="Low frequency XOSC" description="Low frequency XOSC"/>
+         <bitenum id="RCOSCLF" value="2" token="Low frequency RCOSC" description="Low frequency RCOSC"/>
+         <bitenum id="XOSCHFDLF" value="1" token="Low frequency clock derived from High Frequency XOSC" description="Low frequency clock derived from High Frequency XOSC"/>
+         <bitenum id="RCOSCHFDLF" value="0" token="Low frequency clock derived from High Frequency RCOSC" description="Low frequency clock derived from High Frequency RCOSC"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Source select for sclk_hf." id="SCLK_HF_SRC_SEL" resetval="0x0">
+         <bitenum id="XOSC" value="1" token="High frequency XOSC clock" description="High frequency XOSC clock"/>
+         <bitenum id="RCOSC" value="0" token="High frequency RCOSC clock" description="High frequency RCOSC clock"/>
+      </bitfield>
+   </register>
+   <register acronym="CTL1" width="32" description="Control 1
+This register contains OSC_DIG configuration" id="CTL1" offset="0x4">
+      <bitfield range="" begin="31" width="9" end="23" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="5" end="18" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RCOSCHFCTRIMFRACT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RCOSCHFCTRIMFRACT_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="15" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="XOSC_HF_FAST_START" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RADCEXTCFG" width="32" description="RADC External Configuration
+
+" id="RADCEXTCFG" offset="0x8">
+      <bitfield range="" begin="31" width="10" end="22" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="HPM_IBIAS_WAIT_CNT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="6" end="16" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="LPM_IBIAS_WAIT_CNT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="4" end="12" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="IDAC_STEP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="6" end="6" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RADC_DAC_TH" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RADC_MODE_IS_SAR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="5" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AMPCOMPCTL" width="32" description="Amplitude Compensation Control
+
+" id="AMPCOMPCTL" offset="0xc">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="AMPCOMP_REQ_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="2" end="28" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="AMPCOMP_FSM_UPDATE_RATE" resetval="0x0">
+         <bitenum id="250KHZ" value="3" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="500KHZ" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="1MHZ" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="2MHZ" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="AMPCOMP_SW_CTRL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="AMPCOMP_SW_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="2" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="IBIAS_OFFSET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="IBIAS_INIT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="LPM_IBIAS_WAIT_CNT_FINAL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CAP_STEP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="IBIASCAP_HPTOLP_OL_CNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AMPCOMPTH1" width="32" description="Amplitude Compensation Threshold 1
+This register contains threshold values for amplitude compensation algorithm
+
+" id="AMPCOMPTH1" offset="0x10">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="6" end="18" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="HPMRAMP3_LTH" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="2" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="6" end="10" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="HPMRAMP3_HTH" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="4" end="6" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="IBIASCAP_LPTOHP_OL_CNT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="HPMRAMP1_TH" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AMPCOMPTH2" width="32" description="Amplitude Compensation Threshold 2
+This register contains threshold values for amplitude compensation algorithm.
+
+" id="AMPCOMPTH2" offset="0x14">
+      <bitfield range="" begin="31" width="6" end="26" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="LPMUPDATE_LTH" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="2" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="6" end="18" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="LPMUPDATE_HTH" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="2" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="6" end="10" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="ADC_COMP_AMPTH_LPM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="2" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="6" end="2" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="ADC_COMP_AMPTH_HPM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ANABYPASSVAL1" width="32" description="Analog Bypass Values 1
+" id="ANABYPASSVAL1" offset="0x18">
+      <bitfield range="" begin="31" width="12" end="20" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="XOSC_HF_ROW_Q12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="XOSC_HF_COLUMN_Q12" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ANABYPASSVAL2" width="32" description="Internal. Only to be used through TI provided API." id="ANABYPASSVAL2" offset="0x1c">
+      <bitfield range="" begin="31" width="18" end="14" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="14" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="XOSC_HF_IBIASTHERM" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ATESTCTL" width="32" description="Analog Test Control
+
+" id="ATESTCTL" offset="0x20">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Enable 32 kHz clock to AUX_COMPB.
+
+" id="SCLK_LF_AUX_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="15" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="2" end="14" rwaccess="RW" description="Test mode control for RCOSC_MF
+
+0x0:  test modes disabled
+0x1:  boosted bias current into self biased inverter
+0x2:  clock qualification disabled
+0x3:  boosted bias current into self biased inverter + clock qualification disabled
+
+" id="TEST_RCOSCMF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="2" end="12" rwaccess="RW" description="ATEST control for RCOSC_MF
+
+0x0:  ATEST disabled
+0x1:  ATEST enabled, VDD_LOCAL connected,  ATEST internal to **RCOSC_MF* enabled to send out 2MHz clock.
+0x2:  ATEST disabled
+0x3:  ATEST enabled, bias current connected, ATEST internal to **RCOSC_MF* enabled to send out 2MHz clock.
+" id="ATEST_RCOSCMF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="12" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ADCDOUBLERNANOAMPCTL" width="32" description="ADC Doubler Nanoamp Control
+
+" id="ADCDOUBLERNANOAMPCTL" offset="0x24">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="NANOAMP_BIAS_ENABLE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior" id="SPARE23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="17" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="ADC_SH_MODE_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="ADC_SH_VBUF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="ADC_IREF_CTRL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="XOSCHFCTL" width="32" description="XOSCHF Control
+
+" id="XOSCHFCTL" offset="0x28">
+      <bitfield range="" begin="31" width="18" end="14" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="If this register  is 1 when TCXO_MODE  is 1, then the XOSC_HF is enabled, turning on the XOSC_HF bias current allowing a DC bias point to be provided to the clipped-sine wave clock signal on external input." id="TCXO_MODE_XOSC_HF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="If this register  is 1  when BYPASS is  1, this will enable clock qualification on the TCXO clock on external input.  This register has no effect when BYPASS is 0." id="TCXO_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="2" end="10" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="2" end="8" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="PEAK_DET_ITRIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="BYPASS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="3" end="2" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="HP_BUF_ITRIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="LP_BUF_ITRIM" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LFOSCCTL" width="32" description="Low Frequency Oscillator Control
+
+" id="LFOSCCTL" offset="0x2c">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="2" end="22" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="XOSCLF_REGULATOR_TRIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="4" end="18" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="XOSCLF_CMIRRWR_RATIO" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="8" end="10" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="2" end="8" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RCOSCLF_RTUNE_TRIM" resetval="0x0">
+         <bitenum id="6P0MEG" value="3" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="6P5MEG" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="7P0MEG" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="7P5MEG" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RCOSCLF_CTUNE_TRIM" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RCOSCHFCTL" width="32" description="RCOSCHF Control
+
+" id="RCOSCHFCTL" offset="0x30">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RCOSCHF_CTRIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RCOSCMFCTL" width="32" description="RCOSC_MF Control
+
+" id="RCOSCMFCTL" offset="0x34">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RW" description="Adjust RCOSC_MF capacitor array.
+
+0x0:  nominal frequency, 0.625pF
+0x40:  highest frequency, 0.125pF
+0x3F:  lowest frequency, 1.125pF
+
+" id="RCOSC_MF_CAP_ARRAY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Choose regulator type.
+
+0:  default
+1:  alternate
+
+" id="RCOSC_MF_REG_SEL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="Select coarse resistor for frequency adjustment.
+
+0x0:  400kohms, default
+0x1:  300kohms, min
+0x2:  600kohms, max
+0x3:  500kohms
+
+" id="RCOSC_MF_RES_COARSE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="Select fine resistor for frequency adjustment.
+
+0x0:  11kohms, minimum resistance, max freq
+0x1:  13kohms
+0x2:  16kohms
+0x3:  20kohms, max resistance, min freq
+
+" id="RCOSC_MF_RES_FINE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Adjusts bias current to RCOSC_MF.
+
+0x8 minimum current
+0x0 default current
+0x7 maximum current
+
+" id="RCOSC_MF_BIAS_ADJ" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STAT0" width="32" description="Status 0
+This register contains status signals from OSC_DIG
+
+" id="STAT0" offset="0x3c">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="2" end="29" rwaccess="RO" description="Indicates source for the sclk_lf
+" id="SCLK_LF_SRC" resetval="0x0">
+         <bitenum id="XOSCLF" value="3" token="Low frequency XOSC" description="Low frequency XOSC"/>
+         <bitenum id="RCOSCLF" value="2" token="Low frequency RCOSC" description="Low frequency RCOSC"/>
+         <bitenum id="XOSCHFDLF" value="1" token="Low frequency clock derived from High Frequency XOSC" description="Low frequency clock derived from High Frequency XOSC"/>
+         <bitenum id="RCOSCHFDLF" value="0" token="Low frequency clock derived from High Frequency RCOSC" description="Low frequency clock derived from High Frequency RCOSC"/>
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RO" description="Indicates source for the sclk_hf
+" id="SCLK_HF_SRC" resetval="0x0">
+         <bitenum id="XOSC" value="1" token="High frequency XOSC" description="High frequency XOSC"/>
+         <bitenum id="RCOSC" value="0" token="High frequency RCOSC clock" description="High frequency RCOSC clock"/>
+      </bitfield>
+      <bitfield range="" begin="27" width="5" end="23" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RO" description="RCOSC_HF_EN" id="RCOSC_HF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RO" description="RCOSC_LF_EN" id="RCOSC_LF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RO" description="XOSC_LF_EN" id="XOSC_LF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RO" description="CLK_DCDC_RDY" id="CLK_DCDC_RDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RO" description="CLK_DCDC_RDY_ACK" id="CLK_DCDC_RDY_ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="Indicates sclk_hf is lost" id="SCLK_HF_LOSS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="Indicates sclk_lf is lost" id="SCLK_LF_LOSS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="Indicates that XOSC_HF is enabled." id="XOSC_HF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="Indicates that the 48MHz clock from the  DOUBLER is enabled.
+
+It will be enabled if 24 or 48 MHz crystal is used (enabled in doubler bypass for the 48MHz crystal)." id="XB_48M_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="XOSC_HF_LP_BUF_EN" id="XOSC_HF_LP_BUF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="XOSC_HF_HP_BUF_EN" id="XOSC_HF_HP_BUF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="ADC_THMET" id="ADC_THMET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="indicates when adc_data is ready. " id="ADC_DATA_READY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="6" end="1" rwaccess="RO" description="adc_data" id="ADC_DATA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Indicates when SCLK_HF clock source is ready to be switched" id="PENDINGSCLKHFSWITCHING" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STAT1" width="32" description="Status 1
+This register contains status signals from OSC_DIG
+
+" id="STAT1" offset="0x40">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="AMPCOMP FSM State" id="RAMPSTATE" resetval="0x0">
+         <bitenum id="FAST_START_SETTLE" value="14" token="FAST_START_SETTLE" description="FAST_START_SETTLE"/>
+         <bitenum id="FAST_START" value="13" token="FAST_START" description="FAST_START"/>
+         <bitenum id="DUMMY_TO_INIT_1" value="12" token="DUMMY_TO_INIT_1" description="DUMMY_TO_INIT_1"/>
+         <bitenum id="IDAC_DEC_W_MEASURE" value="11" token="IDAC_DECREMENT_WITH_MEASURE" description="IDAC_DECREMENT_WITH_MEASURE"/>
+         <bitenum id="IBIAS_INC" value="10" token="IBIAS_INCREMENT" description="IBIAS_INCREMENT"/>
+         <bitenum id="LPM_UPDATE" value="9" token="LPM_UPDATE" description="LPM_UPDATE"/>
+         <bitenum id="IBIAS_DEC_W_MEASURE" value="8" token="IBIAS_DECREMENT_WITH_MEASURE" description="IBIAS_DECREMENT_WITH_MEASURE"/>
+         <bitenum id="IBIAS_CAP_UPDATE" value="7" token="IBIAS_CAP_UPDATE" description="IBIAS_CAP_UPDATE"/>
+         <bitenum id="IDAC_INCREMENT" value="6" token="IDAC_INCREMENT" description="IDAC_INCREMENT"/>
+         <bitenum id="HPM_UPDATE" value="5" token="HPM_UPDATE" description="HPM_UPDATE"/>
+         <bitenum id="HPM_RAMP3" value="4" token="HPM_RAMP3" description="HPM_RAMP3"/>
+         <bitenum id="HPM_RAMP2" value="3" token="HPM_RAMP2" description="HPM_RAMP2"/>
+         <bitenum id="HPM_RAMP1" value="2" token="HPM_RAMP1" description="HPM_RAMP1"/>
+         <bitenum id="INITIALIZATION" value="1" token="INITIALIZATION" description="INITIALIZATION"/>
+         <bitenum id="RESET" value="0" token="RESET" description="RESET"/>
+      </bitfield>
+      <bitfield range="" begin="27" width="6" end="22" rwaccess="RO" description="XOSC_HF amplitude during HPM_UPDATE state.
+When amplitude compensation of XOSC_HF is enabled in high performance mode, this value is the amplitude of the crystal oscillations measured by the on-chip oscillator ADC, divided by 15 mV.  For example, a value of 0x20 would indicate that the amplitude of the crystal is approximately 480 mV.  To enable amplitude compensation, AON_WUC OSCCFG must be set to a non-zero value.
+
+" id="HPM_UPDATE_AMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="6" end="16" rwaccess="RO" description="XOSC_HF amplitude during LPM_UPDATE state
+When amplitude compensation of XOSC_HF is enabled in low power  mode, this value is the amplitude of the crystal oscillations measured by the on-chip oscillator ADC, divided by 15 mV.  For example, a value of 0x20 would indicate that the amplitude of the crystal is approximately 480 mV.  To enable amplitude compensation, AON_WUC OSCCFG must be set to a non-zero value.
+
+" id="LPM_UPDATE_AMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="force_rcosc_hf" id="FORCE_RCOSC_HF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="SCLK_HF_EN" id="SCLK_HF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="SCLK_MF_EN" id="SCLK_MF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="ACLK_ADC_EN" id="ACLK_ADC_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="ACLK_TDC_EN" id="ACLK_TDC_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="ACLK_REF_EN" id="ACLK_REF_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="CLK_CHP_EN" id="CLK_CHP_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="CLK_DCDC_EN" id="CLK_DCDC_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="SCLK_HF_GOOD" id="SCLK_HF_GOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="SCLK_MF_GOOD" id="SCLK_MF_GOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="SCLK_LF_GOOD" id="SCLK_LF_GOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="ACLK_ADC_GOOD" id="ACLK_ADC_GOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="ACLK_TDC_GOOD" id="ACLK_TDC_GOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="ACLK_REF_GOOD. " id="ACLK_REF_GOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="CLK_CHP_GOOD" id="CLK_CHP_GOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="CLK_DCDC_GOOD" id="CLK_DCDC_GOOD" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STAT2" width="32" description="Status 2
+This register contains status signals from AMPCOMP FSM
+
+" id="STAT2" offset="0x44">
+      <bitfield range="" begin="31" width="6" end="26" rwaccess="RO" description="DC Bias read by RADC during SAR mode
+The value is an unsigned integer. It is used for debug only.
+
+" id="ADC_DCBIAS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RO" description="Indication of threshold is met for hpm_ramp1" id="HPM_RAMP1_THMET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="Indication of threshold is met for hpm_ramp2" id="HPM_RAMP2_THMET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RO" description="Indication of threshold is met for hpm_ramp3" id="HPM_RAMP3_THMET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="7" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="4" end="12" rwaccess="RO" description="xosc_hf amplitude compensation FSM
+
+This is identical to STAT1.RAMPSTATE. See that description for encoding.
+" id="RAMPSTATE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="8" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="ampcomp_req" id="AMPCOMP_REQ" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="amplitude of xosc_hf is within the required threshold (set by DDI). Not used for anything just for debug/status" id="XOSC_HF_AMPGOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="frequency of xosc_hf is good to use for the digital clocks" id="XOSC_HF_FREQGOOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="frequency of xosc_hf is within +/- 20 ppm and xosc_hf is good for radio operations. Used for SW to start synthesizer. " id="XOSC_HF_RF_FREQGOOD" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

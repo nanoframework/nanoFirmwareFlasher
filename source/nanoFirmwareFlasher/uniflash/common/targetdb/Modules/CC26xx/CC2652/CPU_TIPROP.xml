@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="CPU_TIPROP" HW_revision="" XML_version="1.0" description="Cortex-M&#39;s TI proprietary registers
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="RESERVED000" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED000" offset="0x0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TRACECLKMUX" width="32" description="Internal. Only to be used through TI provided API." id="TRACECLKMUX" offset="0xff8">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="TRACECLK_N_SWV" resetval="0x0">
+         <bitenum id="TRACECLK" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="SWV" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+</module>

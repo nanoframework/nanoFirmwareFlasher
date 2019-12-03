@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<device description="SimpleLink(TM) CC3220S wireless MCU" id="CC3220S" partnum="CC3220S" HW_revision="1" desc="CC3220S" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <!-- Filter to list device under in project wizard -->
+    <property Type="stringfield" Value="Wireless Connectivity MCU" id="FilterString" />
+    <instance XML_version="1.2" desc="IcePick_C" href="routers/icepick_c.xml" id="IcePick_C_0" xml="icepick_c.xml" xmlpath="routers" />
+    <router HW_revision="1.0" XML_version="1.2" description="ICEPick_C Router" id="IcePick_C_0" isa="ICEPICK_C">
+        <subpath id="subpath_0">
+            <instance XML_version="1.2" desc="CS_DAP" href="routers/cs_dap.xml" id="CS_DAP_0" xml="cs_dap.xml" xmlpath="routers" />
+            <router HW_revision="1.0" XML_version="1.2" description="CS_DAP Router" id="CS_DAP_0" isa="CS_DAP">
+                <subpath id="subpath_1">
+                    <instance XML_version="1.2" desc="Cortex_M4_0" href="cpus/cortex_m4.xml" id="Cortex_M4_0" xml="cortex_m4.xml" xmlpath="cpus"/>
+                    <cpu HW_revision="1.0" XML_version="1.2" desc="Cortex_M4_0" description="Cortex_M4 CPU" deviceSim="false" id="Cortex_M4_0" isa="CORTEX_M4_CC">
+                        <property Type="filepathfield" Value="../../../emulation/gel/cc3220.gel" id="GEL File"/>
+                        <property Type="numericfield" Value="0x02000000" id="Access Port Designator"/>
+                        <!-- Project Wizard Settings -->
+                        <property Type="stringfield" Value="cc3220s.cmd" id="LinkerCmd"/>
+                        <property Type="stringfield" Value="-D=cc3220s --silicon_version=7M4 --code_state=16 --abi=eabi --float_support=vfplib"  id="CompilerBuildOptions"/>
+                        <property Type="stringfield" Value="--stack_size=0x512 --heap_size=0x0" id="LinkerBuildOptions"/>
+                        <property Type="stringfield" Value="cc3220s_startup_ccs.c" id="FilesToCopy"/>
+                        <property Type="stringfield" Value="true" id="IsElfDefault"/>
+                        <property Type="stringfield" Value="little" id="Endianness"/>
+                        <property Type="stringfield" Value="4.9.0" id="MinCodegenVersion"/>
+                        <!-- GCC options -->
+                        <property Type="stringfield" Value="cc3220s.lds" id="GNULinkerCmd"/>
+                        <property Type="stringfield" Value="-mthumb -march=armv7e-m -mcpu=cortex-m4 -mfloat-abi=soft -ffunction-sections -fdata-sections -DPART_CC3220S" id="GNUCompilerBuildOptions"/>
+                        <property Type="stringfield" Value="--gc-sections" id="GNULinkerBuildOptions"/>
+                        <property Type="stringfield" Value="cc3220s_startup_ccs_gcc.c" id="GNUFilesToCopy"/>
+                        <!-- END Project Wizard Settings -->
+                    </cpu>
+                </subpath>
+            </router>
+        </subpath>
+    </router>   
+</device>

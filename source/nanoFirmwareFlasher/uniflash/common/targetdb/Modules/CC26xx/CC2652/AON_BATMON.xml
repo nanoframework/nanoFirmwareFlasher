@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AON_BATMON" HW_revision="" XML_version="1.0" description="Always On (AON) Battery And Temperature MONitor (BATMON) residing in the AON domain  Note: This module only supports 32 bit Read/Write access from MCU.  " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="CTL" width="32" description="Internal. Only to be used through TI provided API." id="CTL" offset="0x0">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CALC_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="MEAS_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MEASCFG" width="32" description="Internal. Only to be used through TI provided API." id="MEASCFG" offset="0x4">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="PER" resetval="0x0">
+         <bitenum id="32CYC" value="3" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="16CYC" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="8CYC" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="CONT" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="TEMPP0" width="32" description="Internal. Only to be used through TI provided API." id="TEMPP0" offset="0xc">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CFG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TEMPP1" width="32" description="Internal. Only to be used through TI provided API." id="TEMPP1" offset="0x10">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CFG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TEMPP2" width="32" description="Internal. Only to be used through TI provided API." id="TEMPP2" offset="0x14">
+      <bitfield range="" begin="31" width="27" end="5" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="5" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CFG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BATMONP0" width="32" description="Internal. Only to be used through TI provided API." id="BATMONP0" offset="0x18">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="7" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CFG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BATMONP1" width="32" description="Internal. Only to be used through TI provided API." id="BATMONP1" offset="0x1c">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CFG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IOSTRP0" width="32" description="Internal. Only to be used through TI provided API." id="IOSTRP0" offset="0x20">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CFG2" resetval="0x2">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CFG1" resetval="0x8">
+      </bitfield>
+   </register>
+   <register acronym="FLASHPUMPP0" width="32" description="Internal. Only to be used through TI provided API." id="FLASHPUMPP0" offset="0x24">
+      <bitfield range="" begin="31" width="22" end="10" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="DIS_NOISE_FILTER" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="FALLB" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="HIGHLIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="LOWLIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="OVR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="CFG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BAT" width="32" description="Last Measured Battery Voltage
+
+This register may be read while BATUPD.STAT = 1
+
+" id="BAT" offset="0x28">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="3" end="8" rwaccess="RO" description="Integer part:
+
+0x0: 0V + fractional part
+...
+0x3: 3V + fractional part
+0x4: 4V + fractional part
+
+" id="INT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Fractional part, standard binary fractional encoding.
+
+0x00: .0V
+...
+0x20: 1/8 = .125V
+0x40: 1/4 = .25V
+0x80: 1/2 = .5V
+...
+0xA0: 1/2 + 1/8 = .625V
+...
+0xFF: Max
+
+" id="FRAC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BATUPD" width="32" description="Battery Update
+
+Indicates BAT Updates
+
+" id="BATUPD" offset="0x2c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: No update since last clear
+1: New battery voltage is present.
+
+Write 1 to clear the status.
+" id="STAT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TEMP" width="32" description="Temperature
+
+Last Measured Temperature in Degrees Celsius
+
+This register may be read while TEMPUPD.STAT = 1.
+
+" id="TEMP" offset="0x30">
+      <bitfield range="" begin="31" width="15" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="9" end="8" rwaccess="RO" description="Integer part (signed) of temperature value. 
+Total value = INTEGER + FRACTIONAL
+2&#39;s complement encoding
+
+0x100: Min value
+0x1D8: -40C
+0x1FF: -1C
+0x00: 0C
+0x1B: 27C
+0x55: 85C
+0xFF: Max value
+
+" id="INT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TEMPUPD" width="32" description="Temperature Update
+
+Indicates TEMP Updates
+
+" id="TEMPUPD" offset="0x34">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: No update since last clear
+1: New temperature is present.
+
+Write 1 to clear the status.
+" id="STAT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="EVENTMASK" width="32" description="Event Mask" id="EVENTMASK" offset="0x48">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="1: EVENT.TEMP_UPDATE contributes to combined event from BATMON
+0: EVENT.TEMP_UPDATE does not contribute to combined event from BATMON
+
+" id="TEMP_UPDATE_MASK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="1: EVENT.BATT_UPDATE contributes to combined event from BATMON
+0: EVENT.BATT_UPDATE does not contribute to combined event from BATMON
+
+" id="BATT_UPDATE_MASK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="1: EVENT.TEMP_BELOW_LL contributes to combined event from BATMON
+0: EVENT.TEMP_BELOW_LL does not contribute to combined event from BATMON
+
+" id="TEMP_BELOW_LL_MASK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="1: EVENT.TEMP_OVER_UL contributes to combined event from BATMON
+0: EVENT.TEMP_OVER_UL does not contribute to combined event from BATMON
+
+" id="TEMP_OVER_UL_MASK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="1: EVENT.BATT_BELOW_LL contributes to combined event from BATMON
+0: EVENT.BATT_BELOW_LL does not contribute to combined event from BATMON
+
+" id="BATT_BELOW_LL_MASK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="1: EVENT.BATT_OVER_UL contributes to combined event from BATMON
+0: EVENT.BATT_OVER_UL does not contribute to combined event from BATMON
+
+" id="BATT_OVER_UL_MASK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="EVENT" width="32" description="Event" id="EVENT" offset="0x4c">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Alias to TEMPUPD.STAT
+
+" id="TEMP_UPDATE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Alias to BATUPD.STAT
+
+" id="BATT_UPDATE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Read:
+1: Temperature level is below the lower limit set by TEMPLL.
+0: Temperature level is not below the lower limit set by TEMPLL.
+Write:
+1: Clears the flag
+0: No change in the flag
+
+" id="TEMP_BELOW_LL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Read:
+1: Temperature level is above the upper limit set by TEMPUL.
+0: Temperature level is not above the upper limit set by TEMPUL.
+Write:
+1: Clears the flag
+0: No change in the flag
+
+" id="TEMP_OVER_UL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Read:
+1: Battery level is below the lower limit set by BATTLL.
+0: Battery level is not below the lower limit set by BATTLL.
+Write:
+1: Clears the flag
+0: No change in the flag
+
+" id="BATT_BELOW_LL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Read:
+1: Battery level is above the upper limit set by BATTUL.
+0: Battery level is not above the upper limit set by BATTUL.
+Write:
+1: Clears the flag
+0: No change in the flag
+
+" id="BATT_OVER_UL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BATTUL" width="32" description="Battery Upper Limit" id="BATTUL" offset="0x50">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="3" end="8" rwaccess="RW" description="Integer part:
+
+0x0: 0V + fractional part
+...
+0x3: 3V + fractional part
+0x4: 4V + fractional part
+
+" id="INT" resetval="0x7">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Fractional part, standard binary fractional encoding.
+
+0x00: .0V
+...
+0x20: 1/8 = .125V
+0x40: 1/4 = .25V
+0x80: 1/2 = .5V
+...
+0xA0: 1/2 + 1/8 = .625V
+...
+0xFF: Max
+
+" id="FRAC" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="BATTLL" width="32" description="Battery Lower Limit" id="BATTLL" offset="0x54">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="3" end="8" rwaccess="RW" description="Integer part:
+
+0x0: 0V + fractional part
+...
+0x3: 3V + fractional part
+0x4: 4V + fractional part
+
+" id="INT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Fractional part, standard binary fractional encoding.
+
+0x00: .0V
+...
+0x20: 1/8 = .125V
+0x40: 1/4 = .25V
+0x80: 1/2 = .5V
+...
+0xA0: 1/2 + 1/8 = .625V
+...
+0xFF: Max
+
+" id="FRAC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TEMPUL" width="32" description="Temperature Upper Limit" id="TEMPUL" offset="0x58">
+      <bitfield range="" begin="31" width="15" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="9" end="8" rwaccess="RW" description="Integer part (signed) of temperature upper limit. 
+Total value = INTEGER + FRACTIONAL
+2&#39;s complement encoding
+
+0x100: Min value
+0x1D8: -40C
+0x1FF: -1C
+0x00: 0C
+0x1B: 27C
+0x55: 85C
+0xFF: Max value
+
+" id="INT" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="Fractional part of temperature upper limit.
+Total value = INTEGER + FRACTIONAL
+The encoding is an extension of the 2&#39;s complement encoding.
+
+00: 0.0C
+01: 0.25C
+10: 0.5C
+11: 0.75C
+
+For example:
+000000001,00 = ( 1+0,00) =  1,00
+000000000,11 = ( 0+0,75) =  0,75
+000000000,10 = ( 0+0,50) =  0,50
+000000000,01 = ( 0+0,25) =  0,25
+000000000,00 = ( 0+0,00) =  0,00
+111111111,11 = (-1+0,75) = -0,25
+111111111,10 = (-1+0,50) = -0,50
+111111111,01 = (-1+0,25) = -0,75
+111111111,00 = (-1+0,00) = -1,00
+111111110,11 = (-2+0,75) = -1,25
+
+" id="FRAC" resetval="0x3">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TEMPLL" width="32" description="Temperature Lower Limit" id="TEMPLL" offset="0x5c">
+      <bitfield range="" begin="31" width="15" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="9" end="8" rwaccess="RW" description="Integer part (signed) of temperature lower limit. 
+Total value = INTEGER + FRACTIONAL
+2&#39;s complement encoding
+
+0x100: Min value
+0x1D8: -40C
+0x1FF: -1C
+0x00: 0C
+0x1B: 27C
+0x55: 85C
+0xFF: Max value
+
+" id="INT" resetval="0x100">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="Fractional part of temperature lower limit.
+Total value = INTEGER + FRACTIONAL
+The encoding is an extension of the 2&#39;s complement encoding.
+
+00: 0.0C
+01: 0.25C
+10: 0.5C
+11: 0.75C
+
+For example:
+000000001,00 = ( 1+0,00) =  1,00
+000000000,11 = ( 0+0,75) =  0,75
+000000000,10 = ( 0+0,50) =  0,50
+000000000,01 = ( 0+0,25) =  0,25
+000000000,00 = ( 0+0,00) =  0,00
+111111111,11 = (-1+0,75) = -0,25
+111111111,10 = (-1+0,50) = -0,50
+111111111,01 = (-1+0,25) = -0,75
+111111111,00 = (-1+0,00) = -1,00
+111111110,11 = (-2+0,75) = -1,25
+
+" id="FRAC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

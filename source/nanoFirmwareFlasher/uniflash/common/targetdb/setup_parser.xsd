@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- cc_setup.xsd version 1.2-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:element name="configurations">
+		<xs:annotation>
+			<xs:documentation>Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="configuration" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="XML_version" type="xs:string" use="optional"/>
+			<xs:attribute name="id" type="xs:string" use="optional"/>
+			<xs:attribute name="desc" type="xs:string" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="configuration">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="connection" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id_XMLVer"/>
+			<xs:attribute name="description" type="xs:string" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="connection">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="connectionType" minOccurs="0"/>
+				<xs:group ref="properties"/>
+				<xs:element ref="drivers" minOccurs="0"/>
+				<xs:element ref="platform" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id_XMLVer"/>
+			<xs:attribute name="class" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="drivers">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="isa" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="driverProperties" type="driverProperties_t" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id_XMLVer"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="platform">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="board" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="device" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="router" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="core" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="cpu" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:choice>
+			<xs:attributeGroup ref="id_XMLVer"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="board">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:group ref="properties"/>
+				<xs:element ref="device" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="router" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="core" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="cpu" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="memory" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="jtag" minOccurs="0"/>
+			</xs:choice>
+			<xs:attributeGroup ref="id_XMLVer"/>
+			<xs:attribute name="description" type="xs:string" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="device">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:group ref="properties"/>
+				<xs:element ref="router" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="core" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="cpu" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="memory" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="module" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="jtag" minOccurs="0"/>
+				<xs:element ref="processors" minOccurs="0"/>
+			</xs:choice>
+			<xs:attributeGroup ref="id_deviceDescr"/>
+			<xs:attribute name="simulation" use="optional" default="no">
+				<xs:simpleType>
+					<xs:restriction base="xs:NMTOKEN">
+						<xs:enumeration value="yes"/>
+						<xs:enumeration value="no"/>
+						<xs:enumeration value="only"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="processors">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="router">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:group ref="properties"/>
+				<xs:element ref="memory" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="address_space" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="register" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="module" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="subpath" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:choice minOccurs="0" maxOccurs="unbounded">
+							<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:group ref="properties"/>
+							<xs:element ref="device" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element ref="router" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element ref="core" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element ref="cpu" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:choice>
+						<xs:attributeGroup ref="id"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+			<xs:attributeGroup ref="id_Acronym_XMLVer_HWRev"/>
+			<xs:anyAttribute namespace="##any"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="core">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:group ref="properties"/>
+				<xs:element ref="core" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="cpu" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="module" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="memory" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="processors" minOccurs="0"/>
+			</xs:choice>
+			<xs:attributeGroup ref="id_HW_XML_Desc"/>
+			<xs:anyAttribute namespace="##any" processContents="skip"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="cpu">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="instance" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:group ref="properties"/>
+				<xs:element ref="address_space" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="register" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="module" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="memory"/>
+				<xs:element ref="jtag" minOccurs="0"/>
+			</xs:choice>
+			<xs:attributeGroup ref="id_Acronym_XMLVer_HWRev"/>
+			<xs:attribute name="deviceSim" use="optional" type="xs:boolean" default="false"/>
+			<xs:anyAttribute namespace="##any" processContents="skip"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="module">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="register" maxOccurs="unbounded"/>
+				<xs:element ref="group" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:choice>
+			<xs:attribute name="id" type="xs:string" use="optional"/>
+			<xs:attribute name="desc" type="xs:string" use="optional"/>
+			<xs:attribute name="instanceFile" type="xs:string" use="optional"/>
+			<xs:attribute name="XML_version" type="xs:string" use="optional"/>
+			<xs:attribute name="description" type="xs:string" use="required"/>
+			<xs:attribute name="HW_revision" type="xs:string" use="optional"/>
+			<xs:anyAttribute namespace="##any" processContents="skip"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="address_space">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="instanceFile" use="optional" />
+			<xs:attribute name="id" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:NMTOKEN">
+						<xs:enumeration value="data"/>
+						<xs:enumeration value="program"/>
+						<xs:enumeration value="program-data"/>
+						<xs:enumeration value="i_o"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="increment" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:nonNegativeInteger">
+						<xs:minInclusive value="1"/>
+						<xs:maxInclusive value="64"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="endianess" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:NMTOKEN">
+						<xs:enumeration value="big"/>
+						<xs:enumeration value="little"/>
+						<xs:enumeration value="dual"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="addr_width" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:nonNegativeInteger">
+						<xs:minInclusive value="8"/>
+						<xs:maxInclusive value="64"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="max_data_width" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:nonNegativeInteger">
+						<xs:maxInclusive value="64"/>
+						<xs:minInclusive value="8"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="align_8" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:nonNegativeInteger">
+						<xs:enumeration value="0"/>
+						<xs:enumeration value="8"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="align_16" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:nonNegativeInteger">
+						<xs:enumeration value="0"/>
+						<xs:enumeration value="8"/>
+						<xs:enumeration value="16"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="align_32" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:nonNegativeInteger">
+						<xs:enumeration value="0"/>
+						<xs:enumeration value="8"/>
+						<xs:enumeration value="16"/>
+						<xs:enumeration value="32"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="align_64" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:nonNegativeInteger">
+						<xs:enumeration value="0"/>
+						<xs:enumeration value="8"/>
+						<xs:enumeration value="16"/>
+						<xs:enumeration value="32"/>
+						<xs:enumeration value="64"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="memory">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attributeGroup ref="id"/>
+			<xs:attribute name="requestor" type="xs:string" use="optional"/>
+			<xs:attribute name="startaddress" type="xs:string" use="optional"/>
+			<xs:attribute name="endaddress" type="xs:string" use="optional"/>
+			<xs:attribute name="size" type="xs:string" use="optional"/>
+			<xs:attribute name="accessnumbytes" type="xs:string" use="optional"/>
+			<xs:attribute name="permissions" type="xs:string" use="optional"/>
+			<xs:attribute name="populated" type="xs:string" use="optional"/>
+			<xs:attribute name="description" type="xs:string" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="registers">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="register" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:attribute name="id" type="xs:string" use="required"/>
+						<xs:attribute name="size" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:nonNegativeInteger">
+									<xs:minInclusive value="1"/>
+									<xs:maxInclusive value="64"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="desc" type="xs:string"/>
+						<xs:attribute name="access">
+							<xs:simpleType>
+								<xs:restriction base="xs:NMTOKEN">
+									<xs:enumeration value="read"/>
+									<xs:enumeration value="write"/>
+									<xs:enumeration value="read-write"/>
+									<xs:enumeration value="readvolatile"/>
+									<xs:enumeration value="read-write-volatile"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="format">
+							<xs:simpleType>
+								<xs:restriction base="xs:NMTOKEN">
+									<xs:enumeration value="char"/>
+									<xs:enumeration value="short"/>
+									<xs:enumeration value="int"/>
+									<xs:enumeration value="long"/>
+									<xs:enumeration value="float"/>
+									<xs:enumeration value="double"/>
+									<xs:enumeration value="uchar"/>
+									<xs:enumeration value="ushort"/>
+									<xs:enumeration value="uint"/>
+									<xs:enumeration value="ulong"/>
+									<xs:enumeration value="void"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="id_XMLVer"/>
+			<xs:attribute name="group" type="xs:string"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="register">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="bitfield" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attribute name="acronym" type="xs:string" use="required"/>
+			<xs:attribute name="offset" type="xs:string" use="optional"/>
+			<xs:attribute name="width" type="xs:string" use="required"/>
+			<xs:attribute name="description" type="xs:string" use="required"/>
+			<xs:attribute name="page" use="optional">
+				<xs:simpleType>
+					<xs:restriction base="xs:nonNegativeInteger">
+						<xs:enumeration value="0"/>
+						<xs:enumeration value="1"/>
+						<xs:enumeration value="2"/>
+						<xs:enumeration value="3"/>
+						<xs:enumeration value="4"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="group">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="register" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attribute name="name" type="xs:string" use="optional"/>
+			<xs:attribute name="instances" type="xs:string" use="optional"/>
+			<xs:attribute name="base" type="xs:string" use="required"/>
+			<xs:attribute name="instaddr" type="xs:string" use="optional"/>
+			<xs:attribute name="description" type="xs:string" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="bitfield">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="bitenum" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="description" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attribute name="width" type="xs:string" use="required"/>
+			<xs:attribute name="begin" type="xs:unsignedLong" use="required"/>
+			<xs:attribute name="end" type="xs:unsignedLong" use="required"/>
+			<xs:attribute name="resetval" type="xs:anySimpleType" use="required"/>
+			<xs:attribute name="description" type="xs:string" use="required"/>
+			<xs:attribute name="range" type="xs:string" use="required"/>
+			<xs:attribute name="rwaccess" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="bitenum">
+		<xs:complexType>
+			<xs:attribute name="id" type="xs:string" use="optional"/>
+			<xs:attribute name="desc" type="xs:string" use="optional"/>
+			<xs:attribute name="value" type="xs:string" use="required"/>
+			<xs:attribute name="token" type="xs:string" use="required"/>
+			<xs:attribute name="description" type="xs:string" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="instance">
+		<xs:complexType>
+			<xs:attributeGroup ref="id"/>
+			<xs:attribute name="href" type="xs:string" use="required"/>
+			<xs:attribute name="xml" type="xs:string" use="required"/>
+			<xs:attribute name="xmlpath" type="xs:string" use="required"/>
+			<xs:anyAttribute namespace="##any" processContents="skip"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="include">
+		<xs:complexType>
+			<xs:attribute name="href" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="description">
+		<xs:complexType>
+			<xs:attributeGroup ref="id"/>
+			<xs:attribute name="ln" type="xs:string" use="required"/>
+			<xs:attribute name="nl" type="xs:string" use="required"/>
+			<xs:attribute name="bold" type="xs:boolean" use="required"/>
+			<xs:attribute name="italics" type="xs:boolean" use="required"/>
+			<xs:attribute name="underline" type="xs:boolean" use="required"/>
+			<xs:attribute name="text" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="register_ids">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="register_id" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:attribute name="id" type="xs:ID" use="required"/>
+						<xs:attribute name="value" type="xs:string" use="required"/>
+						<xs:attribute name="address" type="xs:string" use="required"/>
+						<xs:attribute name="page" type="xs:string" use="required"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="id_XMLVer"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="isa">
+		<xs:annotation>
+			<xs:documentation>Sub-Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="driver" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element ref="include" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element ref="connectionType" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:group ref="properties"/>
+							<xs:element ref="register_ids" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+						<xs:attribute name="path" type="xs:string" use="optional"/>
+						<xs:attribute name="file" type="xs:string" use="required"/>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="driverProperties" type="driverProperties_t" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id_XMLVer"/>
+			<xs:attribute name="ProcID" type="xs:string"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="jtag">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="properties"/>
+			</xs:choice>
+			<xs:attribute name="ir_length" type="xs:string" use="optional"/>
+			<xs:attribute name="dr_length" type="xs:string"/>
+			<xs:attribute name="idcode" type="xs:string"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="connectionType">
+		<xs:complexType>
+			<xs:attributeGroup ref="Type"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:group name="properties">
+		<xs:sequence>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="property">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="choice" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:group ref="properties"/>
+									<xs:attribute name="Name" type="xs:token" use="optional"/>
+									<xs:attribute name="value" type="xs:token" use="required"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attributeGroup ref="PropertyAttributes"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:sequence>
+	</xs:group>
+	<xs:attributeGroup name="id_Acronym_XMLVer_HWRev">
+		<xs:attributeGroup ref="id_HW_XML_Desc"/>
+		<xs:attribute name="isa" type="xs:string" use="required"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="id_deviceDescr">
+		<xs:attributeGroup ref="id_HW_XML_Desc"/>
+		<xs:attribute name="partnum" type="xs:string" use="required"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="id">
+		<xs:attribute name="id" type="xs:string" use="required"/>
+		<xs:attribute name="desc" type="xs:string" use="optional"/>
+		<xs:attribute name="instanceFile" type="xs:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="Type">
+		<xs:attribute name="Type" type="xs:string" use="required"/>
+		<xs:attribute name="instanceFile" type="xs:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="id_XMLVer">
+		<xs:attributeGroup ref="id"/>
+		<xs:attribute name="XML_version" type="xs:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="id_XMLVer_HWRev">
+		<xs:attributeGroup ref="id_XMLVer"/>
+		<xs:attribute name="HW_revision" type="xs:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="PropertyAttributes">
+		<xs:attributeGroup ref="id"/>
+		<xs:attribute name="Type" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:NMTOKEN">
+					<xs:enumeration value="stringfield"/>
+					<xs:enumeration value="numericfield"/>
+					<xs:enumeration value="filepathfield"/>
+					<xs:enumeration value="choicelist"/>
+					<xs:enumeration value="hiddenfield"/>
+					<xs:enumeration value="summaryfield"/>
+					<xs:enumeration value="processorlist"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Value" type="xs:token" use="required"/>
+		<xs:attribute name="SubPath" type="xs:boolean" use="optional"/>
+		<xs:attribute name="DrvSetupPath" type="xs:string" use="optional"/>
+		<xs:attribute name="ID" type="xs:token" use="optional"/>
+		<xs:attribute name="readOnly" type="xs:boolean" use="optional"/>
+		<xs:attributeGroup ref="NumericAttributes"/>
+		<xs:attributeGroup ref="FileAttributes"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="NumericAttributes">
+		<xs:attribute name="NumericType" type="xs:token" use="optional"/>
+		<xs:attribute name="UpperBound" type="xs:token" use="optional"/>
+		<xs:attribute name="LowerBound" type="xs:token" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="FileAttributes">
+		<xs:attribute name="Extensions" type="xs:token" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="id_HW_XML_Desc">
+		<xs:attributeGroup ref="id_XMLVer_HWRev"/>
+		<xs:attribute name="description" type="xs:string" use="required"/>
+	</xs:attributeGroup>
+	<xs:complexType name="driverProperties_t">
+		<xs:sequence>
+			<xs:element name="version" type="version_t"/>
+			<xs:element name="choicelist" type="choicelist_t" maxOccurs="unbounded"/>
+			<xs:element name="hierarchy" type="hierarchy_t"/>
+			<xs:element name="current" type="current_t"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="version_t">
+		<xs:attribute name="number" type="xs:string" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="choicelist_t">
+		<xs:sequence>
+			<xs:element name="choice" type="choice_t" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:string" use="required"/>
+		<xs:attribute name="type" type="xs:string" use="required"/>
+		<xs:attribute name="must" type="xs:boolean" use="optional"/>
+		<xs:attribute name="extn" type="xs:string" default=""/>
+		<xs:attribute name="field_type" type="xs:string" default=""/>
+		<xs:attribute name="hide_on_na" type="xs:boolean" default="true"/>
+		<xs:attribute name="value_if_na" type="xs:string" default=""/>
+		<xs:attribute name="lower_range" type="xs:string" default=""/>
+		<xs:attribute name="upper_range" type="xs:string" default=""/>
+	</xs:complexType>
+	<xs:complexType name="choice_t">
+		<xs:sequence>
+			<xs:element name="choicelist" type="choicelist_t" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="inference" type="inference_t" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="value" type="xs:string"/>
+	</xs:complexType>
+	<xs:complexType name="inference_t">
+		<xs:attribute name="key" type="xs:string" use="optional"/>
+		<xs:attribute name="advice" type="xs:string" use="optional"/>
+		<xs:attribute name="summary" type="xs:string" use="optional"/>
+		<xs:attribute name="FixedEntry" type="xs:string" use="optional"/>
+		<xs:attribute name="value" type="xs:string" use="optional"/>
+		<xs:attribute name="module" type="xs:string" use="optional"/>
+		<xs:attribute name="value2" type="xs:string" use="optional"/>
+	</xs:complexType>
+	<xs:complexType name="hierarchy_t">
+		<xs:sequence>
+			<xs:element name="hchoice" type="hchoice_t" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="current_t">
+		<xs:sequence>
+			<xs:element name="cchoice" type="cchoice_t" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="hchoice_t">
+		<xs:attribute name="key" type="xs:string" use="required"/>
+		<xs:attribute name="depends" type="xs:string" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="cchoice_t">
+		<xs:attribute name="key" type="xs:string" use="required"/>
+		<xs:attribute name="value" type="xs:string" use="required"/>
+		<xs:attribute name="cfg_key" type="xs:string" use="optional"/>
+		<xs:attribute name="module" type="xs:string" use="optional"/>
+	</xs:complexType>
+</xs:schema>

@@ -157,6 +157,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // candidates for STM32
                     o.Platform = "stm32";
                 }
+                else if (
+                   o.TargetName.Contains("TI_CC1352")
+                )
+                {
+                    // candidates for TI CC13x2
+                    o.Platform = "cc13x2";
+                }
                 else
                 {
                     // other supported platforms will go here
@@ -648,6 +655,106 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             #endregion
+
+
+            #region TI CC13x2 platform options
+
+            if (o.Platform == "cc13x2")
+            {
+                if (!string.IsNullOrEmpty(o.TargetName))
+                {
+                    // update operation requested?
+                    if (o.Update)
+                    {
+                        // this to update the device with fw from Bintray
+
+                        // need to take care of flash address
+                        string appFlashAddress = null;
+
+                        if (o.FlashAddress.Any())
+                        {
+                            // take the first address, it should be the only one valid
+                            appFlashAddress = o.FlashAddress.ElementAt(0);
+                        }
+
+                        _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
+                            o.TargetName,
+                            o.FwVersion,
+                            o.Stable,
+                            true,
+                            o.DeploymentImage,
+                            appFlashAddress,
+                            verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
+                        }
+                    }
+
+                    // it's OK to deploy after update
+                    if (o.Deploy)
+                    {
+                        // this to flash a deployment image without updating the firmware
+
+                        // need to take care of flash address
+                        string appFlashAddress = null;
+
+                        if (o.FlashAddress.Any())
+                        {
+                            // take the first address, it should be the only one valid
+                            appFlashAddress = o.FlashAddress.ElementAt(0);
+                        }
+                        else
+                        {
+                            _exitCode = ExitCodes.E9009;
+                            return;
+                        }
+
+                        _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
+                                        o.TargetName,
+                                        null,
+                                        false,
+                                        false,
+                                        o.DeploymentImage,
+                                        appFlashAddress,
+                                        verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
+                        }
+                    }
+
+                    // reset MCU requested?
+                    if (o.ResetMcu)
+                    {
+                        // can't reset CC13x2 device without configuration file
+                        // would require to specify the exact target name and then had to try parsing that 
+                        _exitCode = ExitCodes.E9000;
+
+                        // done here
+                        return;
+                    }
+                }
+
+                if(o.TIInstallXdsDrivers)
+                {
+
+                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(verbosityLevel);
+
+                    if (_exitCode != ExitCodes.OK)
+                    {
+                        // done here
+                        return;
+                    }
+                }
+            }
+
+            #endregion
+
         }
 
         private static void OutputError(ExitCodes errorCode, bool outputMessage, string extraMessage = null)
