@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="UART" HW_revision="" XML_version="1.0" description="Universal Asynchronous Receiver/Transmitter (UART) interface
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="DR" width="32" description="Data
+For words to be transmitted:
+  - if the FIFOs are enabled (LCRH.FEN = 1), data written to this location is pushed onto the transmit FIFO
+  - if the FIFOs are not enabled (LCRH.FEN = 0), data is stored in the transmitter holding register (the bottom word of the transmit FIFO).
+The write operation initiates transmission from the UART. The data is prefixed with a start bit, appended with the appropriate parity bit (if parity is enabled), and a stop bit.
+The resultant word is then transmitted.
+For received words:
+  - if the FIFOs are enabled (LCRH.FEN = 1), the data byte and the 4-bit status (break, frame, parity, and overrun) is pushed onto the 12-bit wide receive FIFO 
+  - if the FIFOs are not enabled (LCRH.FEN = 0), the data byte and status are stored in the receiving holding register (the bottom word of the receive FIFO).
+The received data byte is read by performing reads from this register along with the corresponding status information. The status information can also be read by a read of the RSR register." id="DR" offset="0x0">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="UART Overrun Error:
+This bit is set to 1 if data is received and the receive FIFO is already full. The FIFO contents remain valid because no more data is written when the FIFO is full, , only the contents of the shift register are overwritten.
+This is cleared to 0 once there is an empty space in the FIFO and a new character can be written to it." id="OE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="UART Break Error:
+This bit is set to 1 if a break condition was detected, indicating that the received data input (UARTRXD input pin) was held LOW for longer than a full-word transmission time (defined as start, data, parity and stop bits).
+In FIFO mode, this error is associated with the character at the top of the FIFO (that is., the oldest received data character since last read). When a break occurs, a 0 character is loaded into the FIFO. The next character is enabled after the receive data input (UARTRXD input pin) goes to a 1 (marking state), and the next valid start bit is received." id="BE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="UART Parity Error:
+When set to 1, it indicates that the parity of the received data character does not match the parity that the LCRH.EPS and LCRH.SPS select.
+In FIFO mode, this error is associated with the character at the top of the FIFO (that is, the oldest received data character since last read)." id="PE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="UART Framing Error:
+When set to 1, it indicates that the received character did not have a valid stop bit (a valid stop bit is 1).
+In FIFO mode, this error is associated with the character at the top of the FIFO (that is., the oldest received data character since last read)." id="FE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Data transmitted or received:
+On writes, the transmit data character is pushed into the FIFO.
+On reads, the oldest received data character since the last read is returned." id="DATA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RSR" width="32" description="Status
+This register is mapped to the same address as ECR register.  Reads from this address are associated with RSR register and return the receive status. Writes to this address are associated with ECR register and clear the receive status flags (framing, parity, break, and overrun errors).
+If the status is read from this register, then the status information for break, framing and parity corresponds to the data character read from the Data Register, DR prior to reading the RSR. The status information for overrun is set immediately when an overrun condition occurs." id="RSR" offset="0x4">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="UART Overrun Error:
+This bit is set to 1 if data is received and the receive FIFO is already full. The FIFO contents remain valid because no more data is written when the FIFO is full, , only the contents of the shift register are overwritten.
+This is cleared to 0 once there is an empty space in the FIFO and a new character can be written to it." id="OE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="UART Break Error:
+This bit is set to 1 if a break condition was detected, indicating that the received data input (UARTRXD input pin) was held LOW for longer than a full-word transmission time (defined as start, data, parity and stop bits).
+When a break occurs, a 0 character is loaded into the FIFO. The next character is enabled after the receive data input (UARTRXD input pin) goes to a 1 (marking state), and the next valid start bit is received." id="BE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="UART Parity Error:
+When set to 1, it indicates that the parity of the received data character does not match the parity that the LCRH.EPS and LCRH.SPS select." id="PE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="UART Framing Error:
+When set to 1, it indicates that the received character did not have a valid stop bit (a valid stop bit is 1)." id="FE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ECR" width="32" description="Error Clear
+This register is mapped to the same address as RSR register.  Reads from this address are associated with RSR register and return the receive status. Writes to this address are associated with ECR register and clear the receive status flags (framing, parity, break, and overrun errors)." id="ECR" offset="0x4">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="The framing (FE), parity (PE), break (BE) and overrun (OE) errors are cleared to 0 by any write to this register." id="OE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="The framing (FE), parity (PE), break (BE) and overrun (OE) errors are cleared to 0 by any write to this register." id="BE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="The framing (FE), parity (PE), break (BE) and overrun (OE) errors are cleared to 0 by any write to this register." id="PE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="The framing (FE), parity (PE), break (BE) and overrun (OE) errors are cleared to 0 by any write to this register." id="FE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESERVED0" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" offset="0x8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FR" width="32" description="Flag
+Reads from this register return the UART flags." id="FR" offset="0x18">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="UART Transmit FIFO Empty:
+The meaning of this bit depends on the state of LCRH.FEN .
+  - If the FIFO is disabled, this bit is set when the transmit holding register is empty.
+  - If the FIFO is enabled, this bit is set when the transmit FIFO is empty.
+This bit does not indicate if there is data in the transmit shift register." id="TXFE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="UART Receive FIFO Full: 
+The meaning of this bit depends on the state of LCRH.FEN.
+  - If the FIFO is disabled, this bit is set when the receive holding register is full.
+  - If the FIFO is enabled, this bit is set when the receive FIFO is full." id="RXFF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="UART Transmit FIFO Full:
+Transmit FIFO full. The meaning of this bit depends on the state of LCRH.FEN.
+  - If the FIFO is disabled, this bit is set when the transmit holding register is full.
+  - If the FIFO is enabled, this bit is set when the transmit FIFO is full." id="TXFF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="UART Receive FIFO Empty:
+Receive FIFO empty. The meaning of this bit depends on the state of LCRH.FEN.
+  - If the FIFO is disabled, this bit is set when the receive holding register is empty.
+  - If the FIFO is enabled, this bit is set when the receive FIFO is empty." id="RXFE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="UART Busy: 
+If this bit is set to 1, the UART is busy transmitting data. This bit remains set until the complete byte, including all the stop bits, has been sent from the shift register.
+This bit is set as soon as the transmit FIFO becomes non-empty, regardless of whether the UART is enabled or not." id="BUSY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="2" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Clear To Send: 
+This bit is the complement of the active-low UART CTS input pin.
+That is, the bit is 1 when CTS input pin is LOW." id="CTS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESERVED2" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" offset="0x1c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IBRD" width="32" description="Integer Baud-Rate Divisor
+If this register is modified while transmission or reception is on-going, the baud rate will not be updated until transmission or reception of the current character is complete." id="IBRD" offset="0x24">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="The integer baud rate divisor:
+The baud rate divisor is calculated using the formula below:
+Baud rate divisor = (UART reference clock frequency) / (16 * Baud rate)
+Baud rate divisor must be minimum 1 and maximum 65535. 
+That is, DIVINT=0 does not give a valid baud rate. 
+Similarly, if DIVINT=0xFFFF, any non-zero values in FBRD.DIVFRAC will be illegal.
+A valid value must be written to this field before the UART can be used for RX or TX operations.
+" id="DIVINT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FBRD" width="32" description="Fractional Baud-Rate Divisor
+If this register is modified while trasmission or reception is on-going, the baudrate will not be updated until transmission or reception of the current character is complete." id="FBRD" offset="0x28">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Fractional Baud-Rate Divisor:
+The baud rate divisor is calculated using the formula below:
+Baud rate divisor = (UART reference clock frequency) / (16 * Baud rate)
+Baud rate divisor must be minimum 1 and maximum 65535. 
+That is, IBRD.DIVINT=0 does not give a valid baud rate. 
+Similarly, if IBRD.DIVINT=0xFFFF, any non-zero values in DIVFRAC will be illegal.
+A valid value must be written to this field before the UART can be used for RX or TX operations.
+" id="DIVFRAC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LCRH" width="32" description="Line Control" id="LCRH" offset="0x2c">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="UART Stick Parity Select:
+
+0: Stick parity is disabled
+1: The parity bit is transmitted and checked as invert of EPS field (i.e. the parity bit is transmitted and checked as 1 when EPS = 0).
+
+This bit has no effect when PEN disables parity checking and generation." id="SPS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="2" end="5" rwaccess="RW" description="UART Word Length:
+These bits indicate the number of data bits transmitted or received in a frame." id="WLEN" resetval="0x0">
+         <bitenum id="8" value="3" token="Word Length 8 bits" description="Word Length 8 bits"/>
+         <bitenum id="7" value="2" token="Word Length 7 bits" description="Word Length 7 bits"/>
+         <bitenum id="6" value="1" token="Word Length 6 bits" description="Word Length 6 bits"/>
+         <bitenum id="5" value="0" token="Word Length 5 bits" description="Word Length 5 bits"/>
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="UART Enable FIFOs" id="FEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="Transmit and receive FIFO buffers are enabled (FIFO mode)" description="Transmit and receive FIFO buffers are enabled (FIFO mode)"/>
+         <bitenum id="DIS" value="0" token="FIFOs are disabled (character mode) that is, the FIFOs become 1-byte-deep holding registers." description="FIFOs are disabled (character mode) that is, the FIFOs become 1-byte-deep holding registers."/>
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="UART Two Stop Bits Select:
+If this bit is set to 1, two stop bits are transmitted at the end of the frame. The receive logic does not check for two stop bits being received." id="STP2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="UART Even Parity Select" id="EPS" resetval="0x0">
+         <bitenum id="EVEN" value="1" token="Even parity: The UART generates or checks for an even number of 1s in the data and parity bits." description="Even parity: The UART generates or checks for an even number of 1s in the data and parity bits."/>
+         <bitenum id="ODD" value="0" token="Odd parity: The UART generates or checks for an odd number of 1s in the data and parity bits." description="Odd parity: The UART generates or checks for an odd number of 1s in the data and parity bits."/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="UART Parity Enable
+This bit controls generation and checking of parity bit. 
+" id="PEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="Parity checking and generation is enabled." description="Parity checking and generation is enabled."/>
+         <bitenum id="DIS" value="0" token="Parity is disabled and no parity bit is added to the data frame" description="Parity is disabled and no parity bit is added to the data frame"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="UART Send Break
+If this bit is set to 1, a low-level is continually output on the UARTTXD output pin, after completing transmission of the current character. For the proper execution of the break command, the
+software must set this bit for at least two complete frames. For normal use, this bit must be cleared to 0." id="BRK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CTL" width="32" description="Control" id="CTL" offset="0x30">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="CTS hardware flow control enable" id="CTSEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="CTS hardware flow control enabled" description="CTS hardware flow control enabled"/>
+         <bitenum id="DIS" value="0" token="CTS hardware flow control disabled" description="CTS hardware flow control disabled"/>
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="RTS hardware flow control enable" id="RTSEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="RTS hardware flow control enabled" description="RTS hardware flow control enabled"/>
+         <bitenum id="DIS" value="0" token="RTS hardware flow control disabled" description="RTS hardware flow control disabled"/>
+      </bitfield>
+      <bitfield range="" begin="13" width="2" end="12" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Request to Send
+This bit is the complement of the active-low UART RTS output. That is, when the bit is programmed to a 1 then RTS output on the pins is LOW." id="RTS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="UART Receive Enable
+If the UART is disabled in the middle of reception, it completes the current character before stopping." id="RXE" resetval="0x1">
+         <bitenum id="EN" value="1" token="UART Receive enabled" description="UART Receive enabled"/>
+         <bitenum id="DIS" value="0" token="UART Receive disabled" description="UART Receive disabled"/>
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="UART Transmit Enable
+If the UART is disabled in the middle of transmission, it completes the current character before stopping." id="TXE" resetval="0x1">
+         <bitenum id="EN" value="1" token="UART Transmit enabled" description="UART Transmit enabled"/>
+         <bitenum id="DIS" value="0" token="UART Transmit disabled" description="UART Transmit disabled"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="UART Loop Back Enable:
+Enabling the loop-back mode connects the UARTTXD output from the UART to UARTRXD input of the UART." id="LBE" resetval="0x0">
+         <bitenum id="EN" value="1" token="Loop Back enabled" description="Loop Back enabled"/>
+         <bitenum id="DIS" value="0" token="Loop Back disabled" description="Loop Back disabled"/>
+      </bitfield>
+      <bitfield range="" begin="6" width="6" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="UART Enable" id="UARTEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="UART enabled" description="UART enabled"/>
+         <bitenum id="DIS" value="0" token="UART disabled" description="UART disabled"/>
+      </bitfield>
+   </register>
+   <register acronym="IFLS" width="32" description="Interrupt FIFO Level Select" id="IFLS" offset="0x34">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="3" end="3" rwaccess="RW" description="Receive interrupt FIFO level select:
+This field sets the trigger points for the receive interrupt. Values 0b101-0b111 are reserved." id="RXSEL" resetval="0x2">
+         <bitenum id="7_8" value="4" token="Receive FIFO becomes &#62;= 7/8 full" description="Receive FIFO becomes &#62;= 7/8 full"/>
+         <bitenum id="6_8" value="3" token="Receive FIFO becomes &#62;= 3/4 full" description="Receive FIFO becomes &#62;= 3/4 full"/>
+         <bitenum id="4_8" value="2" token="Receive FIFO becomes &#62;= 1/2 full" description="Receive FIFO becomes &#62;= 1/2 full"/>
+         <bitenum id="2_8" value="1" token="Receive FIFO becomes &#62;= 1/4 full" description="Receive FIFO becomes &#62;= 1/4 full"/>
+         <bitenum id="1_8" value="0" token="Receive FIFO becomes &#62;= 1/8 full" description="Receive FIFO becomes &#62;= 1/8 full"/>
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Transmit interrupt FIFO level select:
+This field sets the trigger points for the transmit interrupt. Values 0b101-0b111 are reserved." id="TXSEL" resetval="0x2">
+         <bitenum id="7_8" value="4" token="Transmit FIFO becomes &#60;= 7/8 full" description="Transmit FIFO becomes &#60;= 7/8 full"/>
+         <bitenum id="6_8" value="3" token="Transmit FIFO becomes &#60;= 3/4 full" description="Transmit FIFO becomes &#60;= 3/4 full"/>
+         <bitenum id="4_8" value="2" token="Transmit FIFO becomes &#60;= 1/2 full" description="Transmit FIFO becomes &#60;= 1/2 full"/>
+         <bitenum id="2_8" value="1" token="Transmit FIFO becomes &#60;= 1/4 full" description="Transmit FIFO becomes &#60;= 1/4 full"/>
+         <bitenum id="1_8" value="0" token="Transmit FIFO becomes &#60;= 1/8 full" description="Transmit FIFO becomes &#60;= 1/8 full"/>
+      </bitfield>
+   </register>
+   <register acronym="IMSC" width="32" description="Interrupt Mask Set/Clear" id="IMSC" offset="0x38">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="End of Transmission interrupt mask. A read returns the current mask for UART&#39;s EoT interrupt. On a write of 1, the mask of the EoT interrupt is set which means the interrupt state will be reflected in MIS.EOTMIS. A write of 0 clears the mask which means MIS.EOTMIS will not reflect the interrupt. " id="EOTIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Overrun error interrupt mask. A read returns the current mask for UART&#39;s overrun error interrupt. On a write of 1, the mask of the overrun error interrupt is set which means the interrupt state will be reflected in MIS.OEMIS. A write of 0 clears the mask which means MIS.OEMIS will not reflect the interrupt. " id="OEIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Break error interrupt mask. A read returns the current mask for UART&#39;s break error interrupt. On a write of 1, the mask of the overrun error interrupt is set which means the interrupt state will be reflected in MIS.BEMIS. A write of 0 clears the mask which means MIS.BEMIS will not reflect the interrupt. " id="BEIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Parity error interrupt mask. A read returns the current mask for UART&#39;s parity error interrupt. On a write of 1, the mask of the overrun error interrupt is set which means the interrupt state will be reflected in MIS.PEMIS. A write of 0 clears the mask which means MIS.PEMIS will not reflect the interrupt. " id="PEIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Framing error interrupt mask. A read returns the current mask for UART&#39;s framing error interrupt. On a write of 1, the mask of the overrun error interrupt is set which means the interrupt state will be reflected in MIS.FEMIS. A write of 0 clears the mask which means MIS.FEMIS will not reflect the interrupt. " id="FEIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Receive timeout interrupt mask. A read returns the current mask for UART&#39;s receive timeout interrupt. On a write of 1, the mask of the overrun error interrupt is set which means the interrupt state will be reflected in MIS.RTMIS. A write of 0 clears the mask which means this bitfield will not reflect the interrupt. 
+The raw interrupt for receive timeout RIS.RTRIS cannot be set unless the mask is set (RTIM = 1). This is because the mask acts as an enable for power saving. That is, the same status can be read from MIS.RTMIS and RIS.RTRIS." id="RTIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Transmit interrupt mask. A read returns the current mask for UART&#39;s transmit interrupt. On a write of 1, the mask of the overrun error interrupt is set which means the interrupt state will be reflected in MIS.TXMIS. A write of 0 clears the mask which means MIS.TXMIS will not reflect the interrupt. " id="TXIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Receive interrupt mask. A read returns the current mask for UART&#39;s receive interrupt. On a write of 1, the mask of the overrun error interrupt is set which means the interrupt state will be reflected in MIS.RXMIS. A write of 0 clears the mask which means MIS.RXMIS will not reflect the interrupt. " id="RXIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Clear to Send (CTS) modem interrupt mask. A read returns the current mask for UART&#39;s clear to send interrupt. On a write of 1, the mask of the overrun error interrupt is set which means the interrupt state will be reflected in MIS.CTSMMIS. A write of 0 clears the mask which means MIS.CTSMMIS will not reflect the interrupt. " id="CTSMIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RIS" width="32" description="Raw Interrupt Status" id="RIS" offset="0x3c">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="End of Transmission interrupt status: 
+This field returns the raw interrupt state of UART&#39;s end of transmission  interrupt. End of transmission flag is set when all the Transmit data in the FIFO and on the TX Line is tranmitted." id="EOTRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="Overrun error interrupt status: 
+This field returns the raw interrupt state of UART&#39;s overrun error interrupt. Overrun error occurs if data is received and the receive FIFO is full." id="OERIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="Break error interrupt status:
+This field returns the raw interrupt state of UART&#39;s break error interrupt. Break error is set when a break condition is detected, indicating that the received data input (UARTRXD input pin) was held LOW for longer than a full-word transmission time (defined as start, data, parity and stop bits)." id="BERIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="Parity error interrupt status:
+This field returns the raw interrupt state of UART&#39;s parity error interrupt. Parity error is set if the parity of the received data character does not match the parity that the LCRH.EPS and LCRH.SPS select." id="PERIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="Framing error interrupt status:
+This field returns the raw interrupt state of UART&#39;s framing error interrupt. Framing error is set if the received character does not have a valid stop bit (a valid stop bit is 1)." id="FERIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="Receive timeout interrupt status:
+This field returns the raw interrupt state of UART&#39;s receive timeout interrupt. The receive timeout interrupt is asserted when the receive FIFO is not empty, and no more data is received during a 32-bit period. The receive timeout interrupt is cleared either when the FIFO becomes empty through reading all the data, or when a 1 is written to ICR.RTIC.
+The raw interrupt for receive timeout cannot be set unless the mask is set (IMSC.RTIM = 1). This is because the mask acts as an enable for power saving. That is, the same status can be read from MIS.RTMIS and RTRIS." id="RTRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="Transmit interrupt status: 
+This field returns the raw interrupt state of UART&#39;s transmit interrupt.
+When FIFOs are enabled (LCRH.FEN = 1), the transmit interrupt is asserted if the number of bytes in transmit FIFO is equal to or lower than the programmed trigger level (IFLS.TXSEL). The transmit interrupt is cleared by writing data to the transmit FIFO until it becomes greater than the trigger level, or by clearing the interrupt through ICR.TXIC.
+When FIFOs are disabled (LCRH.FEN = 0), that is they have a depth of one location, the transmit interrupt is asserted if there is no data present in the transmitters single location. It is cleared by performing a single write to the transmit FIFO, or by clearing the interrupt through ICR.TXIC." id="TXRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Receive interrupt status:
+This field returns the raw interrupt state of UART&#39;s receive interrupt. 
+When FIFOs are enabled (LCRH.FEN = 1), the receive interrupt is asserted if the receive FIFO reaches the programmed trigger
+level (IFLS.RXSEL). The receive interrupt is cleared by reading data from the receive FIFO until it becomes less than the trigger level, or by clearing the interrupt through ICR.RXIC.
+When FIFOs are disabled (LCRH.FEN = 0), that is they have a depth of one location, the receive interrupt is asserted if data is received
+thereby filling the location. The receive interrupt is cleared by performing a single read of the receive FIFO, or by clearing the interrupt through ICR.RXIC." id="RXRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x3">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Clear to Send (CTS) modem interrupt status: 
+This field returns the raw interrupt state of UART&#39;s clear to send interrupt." id="CTSRMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="MIS" width="32" description="Masked Interrupt Status" id="MIS" offset="0x40">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="End of Transmission interrupt status: 
+This field returns the masked interrupt state of the overrun interrupt which is the AND product of raw interrupt state RIS.EOTRIS and the mask setting IMSC.EOTIM." id="EOTMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="Overrun error masked interrupt status: 
+This field returns the masked interrupt state of the overrun interrupt which is the AND product of raw interrupt state RIS.OERIS and the mask setting IMSC.OEIM." id="OEMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="Break error masked interrupt status: 
+This field returns the masked interrupt state of the break error interrupt which is the AND product of raw interrupt state RIS.BERIS and the mask setting IMSC.BEIM." id="BEMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="Parity error masked interrupt status:
+This field returns the masked interrupt state of the parity error interrupt which is the AND product of raw interrupt state RIS.PERIS and the mask setting IMSC.PEIM." id="PEMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="Framing error masked interrupt status: Returns the masked interrupt state of the framing error interrupt which is the AND product of raw interrupt state RIS.FERIS and the mask setting IMSC.FEIM." id="FEMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="Receive timeout masked interrupt status: 
+Returns the masked interrupt state of the receive timeout interrupt.
+The raw interrupt for receive timeout cannot be set unless the mask is set (IMSC.RTIM = 1). This is because the mask acts as an enable for power saving. That is, the same status can be read from RTMIS and RIS.RTRIS." id="RTMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="Transmit masked interrupt status: 
+This field returns the masked interrupt state of the transmit interrupt  which is the AND product of raw interrupt state RIS.TXRIS and the mask setting IMSC.TXIM." id="TXMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Receive masked interrupt status:
+This field returns the masked interrupt state of the receive interrupt  which is the AND product of raw interrupt state RIS.RXRIS and the mask setting IMSC.RXIM." id="RXMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Clear to Send (CTS) modem masked interrupt status:
+This field returns the masked interrupt state of the clear to send interrupt which is the AND product of raw interrupt state RIS.CTSRMIS and the mask setting IMSC.CTSMIM." id="CTSMMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ICR" width="32" description="Interrupt Clear
+On a write of 1, the corresponding interrupt is cleared. A write of 0 has no effect." id="ICR" offset="0x44">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="WO" description="End of Transmission interrupt clear:
+Writing 1 to this field clears the overrun error interrupt (RIS.EOTRIS). Writing 0 has no effect." id="EOTIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="WO" description="Overrun error interrupt clear:
+Writing 1 to this field clears the overrun error interrupt (RIS.OERIS). Writing 0 has no effect." id="OEIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="WO" description="Break error interrupt clear:
+Writing 1 to this field clears the break error interrupt (RIS.BERIS). Writing 0 has no effect." id="BEIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Parity error interrupt clear:
+Writing 1 to this field clears the parity error interrupt (RIS.PERIS). Writing 0 has no effect." id="PEIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="WO" description="Framing error interrupt clear:
+Writing 1 to this field clears the framing error interrupt (RIS.FERIS). Writing 0 has no effect." id="FEIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="WO" description="Receive timeout interrupt clear:
+Writing 1 to this field clears the receive timeout interrupt (RIS.RTRIS). Writing 0 has no effect." id="RTIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="WO" description="Transmit interrupt clear:
+Writing 1 to this field clears the transmit interrupt (RIS.TXRIS). Writing 0 has no effect." id="TXIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="WO" description="Receive interrupt clear:
+Writing 1 to this field clears the receive interrupt (RIS.RXRIS). Writing 0 has no effect." id="RXIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior. Write 0" id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Clear to Send (CTS) modem interrupt clear:
+Writing 1 to this field clears the clear to send interrupt (RIS.CTSRMIS). Writing 0 has no effect." id="CTSMIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior. Write 0." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMACTL" width="32" description="DMA Control" id="DMACTL" offset="0x48">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="DMA on error. If this bit is set to 1, the DMA receive request outputs (for  single and burst requests) are disabled when the UART error interrupt is asserted (more specifically if any of the error interrupts RIS.PERIS, RIS.BERIS, RIS.FERIS or RIS.OERIS are asserted)." id="DMAONERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Transmit DMA enable. If this bit is set to 1, DMA for the transmit FIFO is enabled." id="TXDMAE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Receive DMA enable. If this bit is set to 1, DMA for the receive FIFO is enabled." id="RXDMAE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESERVED1" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" offset="0x4c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESERVED3" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" offset="0x90">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESERVED4" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" offset="0xfd0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

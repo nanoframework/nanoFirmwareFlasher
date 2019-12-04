@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<drivers id="Cortex_M3">
+  <isa Type="Cortex_M3" ProcID="0x75803800">
+    <driver file="..\..\..\emulation\drivers\tixds510cortexM.dvr">
+      <connectionType Type="TIXDS510"/>
+      <connectionType Type="TIXDS110"/>
+      <property Name="Access Port Designator" Type="numericfield" Value="0x02000003" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.identify"/>
+      <property id="Use Board Reset" Type="hiddenfield" Value="0" />
+      <property id="Use Board Reset Free Run" Type="hiddenfield" Value="0" />
+      <!--Block target access to enable fast digital state scanning in C13xx/26xx devices (ET++)-->
+      <property id="Block Target Access on Free Run" Type="hiddenfield" Value="0" />
+      <property Name="TraceDeviceId" Type="numericfield" Value="0x0" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.traceId"/>
+    </driver>
+  </isa>
+  <isa Type="Cortex_M4" ProcID="0x75803800">
+    <driver file="..\..\..\emulation\drivers\tixds510cortexM.dvr">
+      <connectionType Type="TIXDS510"/>
+      <connectionType Type="TIXDS110"/>
+      <property Name="Access Port Designator" Type="numericfield" Value="0x02000003" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.identify"/>
+      <property id="Use Board Reset" Type="hiddenfield" Value="0" />
+      <property id="Use Board Reset Free Run" Type="hiddenfield" Value="0" />
+      <property Name="TraceDeviceId" Type="numericfield" Value="0x0" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.traceId"/>
+    </driver>
+  </isa>
+  <isa Type="Cortex_M4F" ProcID="0x75803800">
+    <driver file="..\..\..\emulation\drivers\tixds510cortexM.dvr">
+      <connectionType Type="TIXDS510"/>
+      <connectionType Type="TIXDS110"/>
+      <property Name="Access Port Designator" Type="numericfield" Value="0x02000003" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.identify"/>
+      <property id="Use Board Reset" Type="hiddenfield" Value="0" />
+      <property id="Use Board Reset Free Run" Type="hiddenfield" Value="0" />
+      <property Name="TraceDeviceId" Type="numericfield" Value="0x0" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.traceId"/>
+    </driver>
+  </isa>
+  <isa Type="CORTEX_M4_CC" ProcID="0x75803800">
+    <driver file="..\..\..\emulation\drivers\tixds510cortexM.dvr">
+      <connectionType Type="TIXDS510"/>
+      <connectionType Type="TIXDS110"/>
+      <property Name="Access Port Designator" Type="numericfield" Value="0x02000003" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.identify"/>
+      <property id="Use Board Reset" Type="hiddenfield" Value="0" />
+      <property id="Use Board Reset Free Run" Type="hiddenfield" Value="0" />
+      <property Name="TraceDeviceId" Type="numericfield" Value="0x0" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.traceId"/>
+    </driver>
+  </isa>
+  <isa Type="CORTEX_M4_432" ProcID="0x75803800">
+    <driver file="..\..\..\emulation\drivers\tixds510cortexM.dvr">
+      <connectionType Type="TIXDS510"/>
+      <connectionType Type="TIXDS110"/>
+      <property Name="Access Port Designator" Type="numericfield" Value="0x02000003" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.identify"/>
+      <property id="Use Board Reset" Type="hiddenfield" Value="0" />
+      <property id="Use Board Reset Free Run" Type="hiddenfield" Value="0" />
+      <property Name="TraceDeviceId" Type="numericfield" Value="0x0" NumericType="HEX" UpperBound="0xFFFFFFFF" LowerBound="0" ID="device.traceId"/>
+    </driver>
+  </isa>
+</drivers>

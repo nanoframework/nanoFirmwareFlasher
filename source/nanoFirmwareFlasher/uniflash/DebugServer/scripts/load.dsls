@@ -1,0 +1,31 @@
+{"command":"defineOption", "data":["config,c", "Configuration (ccxml) file.", true]}
+{"command":"defineOption", "data":["file,f", "Elf, coff or binary file(s) to flash or verify.  To specify a binary file, append ',address' after the file.  This option exists only for compatibility - the file to load can instead just be passed as the last token on the command line."]}
+{"command":"defineOption", "data":["timeout,t", "Timeout in seconds, infinite if unspecified.", false]}
+{"command":"defineOption", "data":["log,g", "Enable detailed logging to the specified file.", false]}
+{"command":"defineDefaultOption", "data":["core,n", "Zero based index of core to operate on.", 0]}
+{"command":"defineValuelessOption", "data":["help,h", "Print this message."]}
+{"command":"defineUsage", "data":["dslite load --config=file.ccxml [options] coff-or-binary-file1"]}
+{"command":"acceptTrailingOperand"}
+{"command":"parseCommandLine"}
+{"command":"verifySomeOptionsSupplied", "data":[["file", "operands"], "no file to load was specified"]}
+{"command":"getVersion", "log":["DSLite version %s\n", "version"]}
+{"command":"logging.configure", "data":[true, "@log@"]}
+{"command":"logEvent", "data":["statusMessage", "%s: %s", ["type", "message"]]}
+{"command":"logEvent", "data":["gelOutput", "GEL: %s", ["message"]]}
+{"command":"logEventIf", "data":["progress.update", "%s\n", ["name"], ["isFirstUpdate"], [true]]}
+{"command":"logEventIf", "data":["progress.update", "\t%s: %s%%\n", ["subActivity", "percent"], ["percent", "isComplete", "isFirstUpdate"], [true, false, false]]}
+{"command":"logEventIf", "data":["progress.update", "\t%s\n", ["subActivity"], ["percent", "isComplete", "isFirstUpdate"], [false, false, false]]}
+{"command":"setTimeout", "data":[@timeout@]}
+{"command":"configure","data":["@config@"]}
+{"command":"switchToCore", "data":[@core@]}
+{"command":"logMessage", "data":["Connecting...\n"]}
+{"command":"targetState.connect"}
+{"command":"settings.set","data":[{"AutoRunToLabelOnRestart":false,"AutoRunToLabelOnReset":false}]}
+{"command":"symbols.loadProgramOnly","data":["@file@"], "enableIf":"@not_operands@"}
+{"command":"symbols.loadProgramOnly","data":[@operands@]}
+{"command":"logMessage", "data":["Running...\n"]}
+{"command":"targetState.run","data":[true]}
+{"command":"switchToDebugger"}
+{"command":"waitForIdle"}
+{"command":"deConfigure"}
+{"command":"logMessage", "data":["Success\n"]}

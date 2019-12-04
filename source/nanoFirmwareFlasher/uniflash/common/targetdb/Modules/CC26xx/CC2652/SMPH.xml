@@ -1,0 +1,713 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="SMPH" HW_revision="" XML_version="1.0" description="MCU Semaphore Module
+
+This module provides 32 binary semaphores. The state of a binary semaphore is either taken or available. 
+
+A semaphore does not implement any ownership attribute. Still, a semaphore can be used to handle mutual exclusion scenarios.
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="SMPH0" width="32" description="MCU SEMAPHORE 0" id="SMPH0" offset="0x0">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH1" width="32" description="MCU SEMAPHORE 1" id="SMPH1" offset="0x4">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH2" width="32" description="MCU SEMAPHORE 2" id="SMPH2" offset="0x8">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH3" width="32" description="MCU SEMAPHORE 3" id="SMPH3" offset="0xc">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH4" width="32" description="MCU SEMAPHORE 4" id="SMPH4" offset="0x10">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH5" width="32" description="MCU SEMAPHORE 5" id="SMPH5" offset="0x14">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH6" width="32" description="MCU SEMAPHORE 6" id="SMPH6" offset="0x18">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH7" width="32" description="MCU SEMAPHORE 7" id="SMPH7" offset="0x1c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH8" width="32" description="MCU SEMAPHORE 8" id="SMPH8" offset="0x20">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH9" width="32" description="MCU SEMAPHORE 9" id="SMPH9" offset="0x24">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH10" width="32" description="MCU SEMAPHORE 10" id="SMPH10" offset="0x28">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH11" width="32" description="MCU SEMAPHORE 11" id="SMPH11" offset="0x2c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH12" width="32" description="MCU SEMAPHORE 12" id="SMPH12" offset="0x30">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH13" width="32" description="MCU SEMAPHORE 13" id="SMPH13" offset="0x34">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH14" width="32" description="MCU SEMAPHORE 14" id="SMPH14" offset="0x38">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH15" width="32" description="MCU SEMAPHORE 15" id="SMPH15" offset="0x3c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH16" width="32" description="MCU SEMAPHORE 16" id="SMPH16" offset="0x40">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH17" width="32" description="MCU SEMAPHORE 17" id="SMPH17" offset="0x44">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH18" width="32" description="MCU SEMAPHORE 18" id="SMPH18" offset="0x48">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH19" width="32" description="MCU SEMAPHORE 19" id="SMPH19" offset="0x4c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH20" width="32" description="MCU SEMAPHORE 20" id="SMPH20" offset="0x50">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH21" width="32" description="MCU SEMAPHORE 21" id="SMPH21" offset="0x54">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH22" width="32" description="MCU SEMAPHORE 22" id="SMPH22" offset="0x58">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH23" width="32" description="MCU SEMAPHORE 23" id="SMPH23" offset="0x5c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH24" width="32" description="MCU SEMAPHORE 24" id="SMPH24" offset="0x60">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH25" width="32" description="MCU SEMAPHORE 25" id="SMPH25" offset="0x64">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH26" width="32" description="MCU SEMAPHORE 26" id="SMPH26" offset="0x68">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH27" width="32" description="MCU SEMAPHORE 27" id="SMPH27" offset="0x6c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH28" width="32" description="MCU SEMAPHORE 28" id="SMPH28" offset="0x70">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH29" width="32" description="MCU SEMAPHORE 29" id="SMPH29" offset="0x74">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH30" width="32" description="MCU SEMAPHORE 30" id="SMPH30" offset="0x78">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH31" width="32" description="MCU SEMAPHORE 31" id="SMPH31" offset="0x7c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available
+
+Reading the register causes it to change value to 0. Releasing the semaphore is done by writing 1." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK0" width="32" description="MCU SEMAPHORE 0 ALIAS" id="PEEK0" offset="0x800">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK1" width="32" description="MCU SEMAPHORE 1 ALIAS" id="PEEK1" offset="0x804">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK2" width="32" description="MCU SEMAPHORE 2 ALIAS" id="PEEK2" offset="0x808">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK3" width="32" description="MCU SEMAPHORE 3 ALIAS" id="PEEK3" offset="0x80c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK4" width="32" description="MCU SEMAPHORE 4 ALIAS" id="PEEK4" offset="0x810">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK5" width="32" description="MCU SEMAPHORE 5 ALIAS" id="PEEK5" offset="0x814">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK6" width="32" description="MCU SEMAPHORE 6 ALIAS" id="PEEK6" offset="0x818">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK7" width="32" description="MCU SEMAPHORE 7 ALIAS" id="PEEK7" offset="0x81c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK8" width="32" description="MCU SEMAPHORE 8 ALIAS" id="PEEK8" offset="0x820">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK9" width="32" description="MCU SEMAPHORE 9 ALIAS" id="PEEK9" offset="0x824">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK10" width="32" description="MCU SEMAPHORE 10 ALIAS" id="PEEK10" offset="0x828">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK11" width="32" description="MCU SEMAPHORE 11 ALIAS" id="PEEK11" offset="0x82c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK12" width="32" description="MCU SEMAPHORE 12 ALIAS" id="PEEK12" offset="0x830">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK13" width="32" description="MCU SEMAPHORE 13 ALIAS" id="PEEK13" offset="0x834">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK14" width="32" description="MCU SEMAPHORE 14 ALIAS" id="PEEK14" offset="0x838">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK15" width="32" description="MCU SEMAPHORE 15 ALIAS" id="PEEK15" offset="0x83c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK16" width="32" description="MCU SEMAPHORE 16 ALIAS" id="PEEK16" offset="0x840">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK17" width="32" description="MCU SEMAPHORE 17 ALIAS" id="PEEK17" offset="0x844">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK18" width="32" description="MCU SEMAPHORE 18 ALIAS" id="PEEK18" offset="0x848">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK19" width="32" description="MCU SEMAPHORE 19 ALIAS" id="PEEK19" offset="0x84c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK20" width="32" description="MCU SEMAPHORE 20 ALIAS" id="PEEK20" offset="0x850">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK21" width="32" description="MCU SEMAPHORE 21 ALIAS" id="PEEK21" offset="0x854">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK22" width="32" description="MCU SEMAPHORE 22 ALIAS" id="PEEK22" offset="0x858">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK23" width="32" description="MCU SEMAPHORE 23 ALIAS" id="PEEK23" offset="0x85c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK24" width="32" description="MCU SEMAPHORE 24 ALIAS" id="PEEK24" offset="0x860">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK25" width="32" description="MCU SEMAPHORE 25 ALIAS" id="PEEK25" offset="0x864">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK26" width="32" description="MCU SEMAPHORE 26 ALIAS" id="PEEK26" offset="0x868">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK27" width="32" description="MCU SEMAPHORE 27 ALIAS" id="PEEK27" offset="0x86c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK28" width="32" description="MCU SEMAPHORE 28 ALIAS" id="PEEK28" offset="0x870">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK29" width="32" description="MCU SEMAPHORE 29 ALIAS" id="PEEK29" offset="0x874">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK30" width="32" description="MCU SEMAPHORE 30 ALIAS" id="PEEK30" offset="0x878">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PEEK31" width="32" description="MCU SEMAPHORE 31 ALIAS" id="PEEK31" offset="0x87c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status when reading:
+
+0: Semaphore is taken
+1: Semaphore is available 
+
+Used for semaphore debugging. A read operation will not change register value. Register writing is not possible. " id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+</module>

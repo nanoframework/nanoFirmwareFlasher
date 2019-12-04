@@ -1,0 +1,32 @@
+{"command":"defineOption", "data":["config,c", "Configuration (ccxml) file.", true]}
+{"command":"defineValuelessOption", "data":["coff,f", "Output in coff format.  Default format is binary."]}
+{"command":"defineMultiTokenOption", "data":["range,r", "Memory location and length to read in the form 'address,length' or 'address@page,length'.  This can be specified multiple times if using the coff format."]}
+{"command":"defineDefaultOption", "data":["size,s", "Bit size of each memory value to read (for endianness considerations, binary format only).", 8]}
+{"command":"defineOption", "data":["output,o", "File to write the extracted memory to.", true]}
+{"command":"defineOption", "data":["timeout,t", "Timeout in seconds, infinite if unspecified.", false]}
+{"command":"defineOption", "data":["log,g", "Enable detailed logging to the specified file.", false]}
+{"command":"defineValuelessOption", "data":["verbose,e", "Outputs progress messages to the console."]}
+{"command":"defineDefaultOption", "data":["core,n", "Zero based index of core to operate on.", 0]}
+{"command":"defineValuelessOption", "data":["help,h", "Print this message."]}
+{"command":"defineUsage", "data":["dslite memory [options] --config=ccxml-file --range=address,length --output=output-file"]}
+{"command":"parseCommandLine"}
+{"command":"verifySomeOptionsSupplied", "data":[["range"], "the option --range is required but missing"]}
+{"command":"getVersion", "log":["DSLite version %s\n", "version"],"enableIf":[@verbose@]}
+{"command":"logging.configure", "data":[true, "@log@"]}
+{"command":"logEvent", "data":["statusMessage", "%s: %s", ["type", "message"]]}
+{"command":"logEvent", "data":["gelOutput", "GEL: %s", ["message"]],"enableIf":[@verbose@]}
+{"command":"logEventIf", "data":["progress.update", "%s\n", ["name"], ["isFirstUpdate"], [true]],"enableIf":[@verbose@]}
+{"command":"logEventIf", "data":["progress.update", "\t%s: %s%%\n", ["subActivity", "percent"], ["percent", "isComplete", "isFirstUpdate"], [true, false, false]],"enableIf":[@verbose@]}
+{"command":"logEventIf", "data":["progress.update", "\t%s\n", ["subActivity"], ["percent", "isComplete", "isFirstUpdate"], [false, false, false]],"enableIf":[@verbose@]}
+{"command":"setTimeout", "data":[@timeout@]}
+{"command":"configure","data":["@config@"]}
+{"command":"switchToCore", "data":[@core@]}
+{"command":"logMessage", "data":["Connecting...\n"],"enableIf":[@verbose@]}
+{"command":"targetState.connect"}
+{"command":"logMessage", "data":["Reading memory...\n"],"enableIf":[@verbose@]}
+{"command":"memory.exportAsBin", "data":[@range@, @size@, "@output@"], "enableIf":[@not_coff@]}
+{"command":"memory.exportAsCoff", "data":[@range@, "@output@"], "enableIf":[@coff@]}
+{"command":"switchToDebugger"}
+{"command":"waitForIdle"}
+{"command":"deConfigure"}
+{"command":"logMessage", "data":["Success\n"],"enableIf":[@verbose@]}

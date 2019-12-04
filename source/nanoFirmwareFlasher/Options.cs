@@ -101,6 +101,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
         #endregion
 
 
+        # region TI options
+
+
+        [Option(
+            "installdrivers",
+            Required = false,
+            Default = false,
+            HelpText = "Install XDS110 drivers.")]
+        public bool TIInstallXdsDrivers { get; set; }
+
+        #endregion
+
+
         #region common options
 
         [Option(
@@ -114,7 +127,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "platform",
             Required = false,
             Default = null,
-            HelpText = "Target platform. Acceptable values are: esp32, stm32.")]
+            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2.")]
         public string Platform { get; set; }
 
         /// <summary>

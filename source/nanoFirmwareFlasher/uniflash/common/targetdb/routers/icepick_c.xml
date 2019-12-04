@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<router HW_revision="1.0" XML_version="1.2" id="IcePick_C" isa="ICEPICK_C" description="ICEPick_C Router">
+
+	<register id="IP_TAPID" acronym="IP_TAPID" width="32" description="" />
+	<register id="IP_IPCODE" acronym="IP_IPCODE" width="32" description="" />
+	<register id="IP_USERCODE" acronym="IP_USERCODE" width="32" description="" />
+	<register id="IP_CNTL" acronym="IP_CNTL" width="32" description="" />
+	<register id="IP_CONNECT" acronym="IP_CONNECT" width="32" description="" />
+	<register id="IP_LINKMODE" acronym="IP_LINKMODE" width="32" description="" />
+	<register id="IP_SYS_CNTL" acronym="IP_SYS_CNTL" width="32" description="" />
+	<register id="IP_PIN_CFG" acronym="IP_PIN_CFG" width="32" description="" />
+	<register id="IP_TAP_CNTL_0" acronym="IP_TAP_CNTL_0" width="32" description="" />
+	<register id="IP_TAP_CNTL_1" acronym="IP_TAP_CNTL_1" width="32" description="" />
+	<register id="IP_TAP_CNTL_2" acronym="IP_TAP_CNTL_2" width="32" description="" />
+	<register id="IP_TAP_CNTL_3" acronym="IP_TAP_CNTL_3" width="32" description="" />
+	<register id="IP_TAP_CNTL_4" acronym="IP_TAP_CNTL_4" width="32" description="" />
+	<register id="IP_TAP_CNTL_5" acronym="IP_TAP_CNTL_5" width="32" description="" />
+	<register id="IP_TAP_CNTL_6" acronym="IP_TAP_CNTL_6" width="32" description="" />
+	<register id="IP_TAP_CNTL_7" acronym="IP_TAP_CNTL_7" width="32" description="" />
+	<register id="IP_TAP_CNTL_8" acronym="IP_TAP_CNTL_8" width="32" description="" />
+	<register id="IP_TAP_CNTL_9" acronym="IP_TAP_CNTL_9" width="32" description="" />
+	<register id="IP_TAP_CNTL_10" acronym="IP_TAP_CNTL_10" width="32" description="" />
+	<register id="IP_TAP_CNTL_11" acronym="IP_TAP_CNTL_11" width="32" description="" />
+	<register id="IP_TAP_CNTL_12" acronym="IP_TAP_CNTL_12" width="32" description="" />
+	<register id="IP_TAP_CNTL_13" acronym="IP_TAP_CNTL_13" width="32" description="" />
+	<register id="IP_TAP_CNTL_14" acronym="IP_TAP_CNTL_14" width="32" description="" />
+	<register id="IP_TAP_CNTL_15" acronym="IP_TAP_CNTL_15" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_0" acronym="IP_TST_TAP_CNTL_0" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_1" acronym="IP_TST_TAP_CNTL_1" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_2" acronym="IP_TST_TAP_CNTL_2" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_3" acronym="IP_TST_TAP_CNTL_3" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_4" acronym="IP_TST_TAP_CNTL_4" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_5" acronym="IP_TST_TAP_CNTL_5" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_6" acronym="IP_TST_TAP_CNTL_6" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_7" acronym="IP_TST_TAP_CNTL_7" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_8" acronym="IP_TST_TAP_CNTL_8" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_9" acronym="IP_TST_TAP_CNTL_9" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_10" acronym="IP_TST_TAP_CNTL_10" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_11" acronym="IP_TST_TAP_CNTL_11" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_12" acronym="IP_TST_TAP_CNTL_12" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_13" acronym="IP_TST_TAP_CNTL_13" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_14" acronym="IP_TST_TAP_CNTL_14" width="32" description="" />
+	<register id="IP_TST_TAP_CNTL_15" acronym="IP_TST_TAP_CNTL_15" width="32" description="" />
+
+	<instance href="..\Modules\ICEPickCHidden.xml" id="" xml="ICEPickHidden.xml" xmlpath="..\Modules\" HW_revision="1.0" description="" requestor="ICEPICK_D" baseaddr="0" size="00" accessnumbytes="4" permissions="p"/>
+
+</router>

@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<register_ids id="TMS470Rx" XML_version="2.0">
+	<register_id id="CLK" value="213" address="0" page="0" />
+	<register_id id="R0" value="0" address="0" page="0" />
+	<register_id id="R1" value="1" address="0" page="0" />
+	<register_id id="R2" value="2" address="0" page="0" />
+	<register_id id="R3" value="3" address="0" page="0" />
+	<register_id id="R4" value="4" address="0" page="0" />
+	<register_id id="R5" value="5" address="0" page="0" />
+	<register_id id="R6" value="6" address="0" page="0" />
+	<register_id id="R7" value="7" address="0" page="0" />
+	<register_id id="R8" value="8" address="0" page="0" />
+	<register_id id="R9" value="9" address="0" page="0" />
+	<register_id id="R10" value="10" address="0" page="0" />
+	<register_id id="R11" value="11" address="0" page="0" />
+	<register_id id="R12" value="12" address="0" page="0" />
+	<register_id id="R13" value="13" address="0" page="0" />
+	<register_id id="R14" value="14" address="0" page="0" />
+	<register_id id="R15" value="15" address="0" page="0" />
+	<register_id id="CPSR" value="16" address="0" page="0" />
+	<register_id id="R8_FIQ" value="17" address="0" page="0" />
+	<register_id id="R9_FIQ" value="18" address="0" page="0" />
+	<register_id id="R10_FIQ" value="19" address="0" page="0" />
+	<register_id id="R11_FIQ" value="20" address="0" page="0" />
+	<register_id id="R12_FIQ" value="21" address="0" page="0" />
+	<register_id id="R13_FIQ" value="22" address="0" page="0" />
+	<register_id id="R14_FIQ" value="23" address="0" page="0" />
+	<register_id id="R13_SVC" value="24" address="0" page="0" />
+	<register_id id="R14_SVC" value="25" address="0" page="0" />
+	<register_id id="R13_ABT" value="26" address="0" page="0" />
+	<register_id id="R14_ABT" value="27" address="0" page="0" />
+	<register_id id="R13_IRQ" value="28" address="0" page="0" />
+	<register_id id="R14_IRQ" value="29" address="0" page="0" />
+	<register_id id="R13_UND" value="30" address="0" page="0" />
+	<register_id id="R14_UND" value="31" address="0" page="0" />
+	<register_id id="SPSR_FIQ" value="32" address="0" page="0" />
+	<register_id id="SPSR_SVC" value="33" address="0" page="0" />
+	<register_id id="SPSR_ABT" value="34" address="0" page="0" />
+	<register_id id="SPSR_IRQ" value="35" address="0" page="0" />
+	<register_id id="SPSR_UND" value="36" address="0" page="0" />
+	<register_id id="SIDLE" value="37" address="0" page="0" />
+	<register_id id="AP" value="7" address="0" page="0" />
+	<register_id id="SP" value="13" address="0" page="0" />
+	<register_id id="FP" value="13" address="0" page="0" />
+	<register_id id="LR" value="14" address="0" page="0" />
+	<register_id id="PC" value="15" address="0" page="0" />
+	<register_id id="F0" value="0" address="0" page="0" />
+	<register_id id="F1" value="1" address="0" page="0" />
+	<register_id id="F2" value="2" address="0" page="0" />
+	<register_id id="F3" value="3" address="0" page="0" />
+	<register_id id="F4" value="4" address="0" page="0" />
+	<register_id id="F5" value="5" address="0" page="0" />
+	<register_id id="F6" value="6" address="0" page="0" />
+	<register_id id="F7" value="7" address="0" page="0" />
+	<register_id id="F8" value="8" address="0" page="0" />
+	<register_id id="F9" value="9" address="0" page="0" />
+	<register_id id="F10" value="10" address="0" page="0" />
+	<register_id id="F11" value="11" address="0" page="0" />
+	<register_id id="F12" value="12" address="0" page="0" />
+	<register_id id="F13" value="13" address="0" page="0" />
+	<register_id id="F14" value="14" address="0" page="0" />
+	<register_id id="F15" value="15" address="0" page="0" />
+	<register_id id="D0" value="0" address="0" page="0" />
+	<register_id id="D1" value="3" address="0" page="0" />
+	<register_id id="D2" value="5" address="0" page="0" />
+	<register_id id="D3" value="7" address="0" page="0" />
+	<register_id id="D4" value="9" address="0" page="0" />
+	<register_id id="D5" value="11" address="0" page="0" />
+	<register_id id="D6" value="13" address="0" page="0" />
+	<register_id id="WP0_ADDR" value="38" address="0" page="0" />
+	<register_id id="WP0_AMASK" value="39" address="0" page="0" />
+	<register_id id="WP0_DATA" value="40" address="0" page="0" />
+	<register_id id="WP0_DMASK" value="41" address="0" page="0" />
+	<register_id id="WP0_CTRL" value="42" address="0" page="0" />
+	<register_id id="WP0_CMASK" value="43" address="0" page="0" />
+	<register_id id="WP1_ADDR" value="44" address="0" page="0" />
+	<register_id id="WP1_AMASK" value="45" address="0" page="0" />
+	<register_id id="WP1_DATA" value="46" address="0" page="0" />
+	<register_id id="WP1_DMASK" value="47" address="0" page="0" />
+	<register_id id="WP1_CTRL" value="48" address="0" page="0" />
+	<register_id id="WP1_CMASK" value="49" address="0" page="0" />
+	<register_id id="EMU_STAT" value="50" address="0" page="0" />
+	<register_id id="EMU_CNTR" value="51" address="0" page="0" />
+	<register_id id="EMU_MODE" value="52" address="0" page="0" />
+	<register_id id="EMU_PCTL" value="53" address="0" page="0" />
+	<register_id id="ANAENBL" value="54" address="0" page="0" />
+	<register_id id="REG_END" value="55" address="0" page="0" />
+	<register_id id="REG_ENDIAN" value="56" address="0" page="0" />
+	<register_id id="REG_ICECRUSHER" value="57" address="0" page="0" />
+	<register_id id="REG_RTDXENABLE" value="58" address="0" page="0" />
+	<register_id id="REG_VECTOR_CATCH" value="59" address="0" page="0" />
+	<register_id id="REG_CP15_ID" value="61" address="0" page="0" />
+	<register_id id="REG_CP15_CIR" value="62" address="0" page="0" />
+	<register_id id="REG_CP15_CONTROL" value="63" address="0" page="0" />
+	<register_id id="REG_CP15_MMU" value="64" address="0" page="0" />
+	<register_id id="REG_CP15_ALNG_FLT" value="65" address="0" page="0" />
+	<register_id id="REG_CP15_D_CACHE" value="66" address="0" page="0" />
+	<register_id id="REG_CP15_W_BUFF" value="67" address="0" page="0" />
+	<register_id id="REG_CP15_ENDIAN" value="68" address="0" page="0" />
+	<register_id id="REG_CP15_SYS_PROT" value="69" address="0" page="0" />
+	<register_id id="REG_CP15_ROM_PROT" value="70" address="0" page="0" />
+	<register_id id="REG_CP15_I_CACHE" value="71" address="0" page="0" />
+	<register_id id="REG_CP15_ALT_VECT" value="72" address="0" page="0" />
+	<register_id id="REG_CP15_TT_BASE" value="73" address="0" page="0" />
+	<register_id id="REG_CP15_DACR" value="74" address="0" page="0" />
+	<register_id id="REG_CP15_FAULT_STAT" value="76" address="0" page="0" />
+	<register_id id="REG_CP15_FAULT_ADDR" value="77" address="0" page="0" />
+	<register_id id="REG_CP15_CACHE_OPS" value="78" address="0" page="0" />
+	<register_id id="REG_CP15_FLSH_DI" value="79" address="0" page="0" />
+	<register_id id="REG_CP15_FLSH_I" value="80" address="0" page="0" />
+	<register_id id="REG_CP15_FLSH_I_ENTRY" value="81" address="0" page="0" />
+	<register_id id="REG_CP15_FLSH_D" value="82" address="0" page="0" />
+	<register_id id="REG_CP15_FLSH_D_ENTRY" value="83" address="0" page="0" />
+	<register_id id="REG_CP15_CLEAN_D_ENTRY" value="84" address="0" page="0" />
+	<register_id id="REG_CP15_CLNFLS_D_ENTRY" value="85" address="0" page="0" />
+	<register_id id="REG_CP15_FL_DENT_SI" value="86" address="0" page="0" />
+	<register_id id="REG_CP15_CL_DENT_SI" value="87" address="0" page="0" />
+	<register_id id="REG_CP15_CF_DENT_SI" value="88" address="0" page="0" />
+	<register_id id="REG_CP15_CLEAN_DATA" value="89" address="0" page="0" />
+	<register_id id="REG_CP15_PREFETCH" value="90" address="0" page="0" />
+	<register_id id="REG_CP15_WAIT_FOR_INT" value="91" address="0" page="0" />
+	<register_id id="REG_CP15_DRAIN_WBUFF" value="92" address="0" page="0" />
+	<register_id id="REG_CP15_TLB_OPS" value="93" address="0" page="0" />
+	<register_id id="REG_CP15_FLUSH_I_TLB" value="94" address="0" page="0" />
+	<register_id id="REG_CP15_FLUSH_I_TLB_ENTRY" value="95" address="0" page="0" />
+	<register_id id="REG_CP15_FLUSH_D_TLB" value="96" address="0" page="0" />
+	<register_id id="REG_CP15_FLUSH_D_TLB_ENTRY" value="97" address="0" page="0" />
+	<register_id id="REG_CP15_FLUSH_DI_TLB" value="98" address="0" page="0" />
+	<register_id id="REG_CP15_DATA_TLB_LOCK" value="100" address="0" page="0" />
+	<register_id id="REG_CP15_INST_TLB_LOCK" value="101" address="0" page="0" />
+	<register_id id="REG_CP15_PID" value="104" address="0" page="0" />
+	<register_id id="REG_CP15_TIOPS_CONFIG" value="106" address="0" page="0" />
+	<register_id id="REG_CP15_LOCK_ENABLE" value="107" address="0" page="0" />
+	<register_id id="REG_CP15_TRANSPARENT_MODE" value="108" address="0" page="0" />
+	<register_id id="REG_CP15_CLEAN_MODE" value="109" address="0" page="0" />
+	<register_id id="REG_CP15_WBUFF_CONFIG" value="110" address="0" page="0" />
+	<register_id id="REG_CP15_OS_CONFIG" value="111" address="0" page="0" />
+	<register_id id="REG_CP15_ICACHE_STREAM" value="112" address="0" page="0" />
+	<register_id id="REG_CP15_I_MAX" value="113" address="0" page="0" />
+	<register_id id="REG_CP15_I_MIN" value="114" address="0" page="0" />
+	<register_id id="REG_CP15_THREAD_ID" value="115" address="0" page="0" />
+	<register_id id="REG_CP15_TIOPS_STAT" value="116" address="0" page="0" />
+	<register_id id="REG_CP15_STAT_ABORT" value="117" address="0" page="0" />
+	<register_id id="REG_CP15_STAT_DIRTY" value="118" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_DBG_OVR" value="158" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_DBG_TST_ADDR" value="159" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_MMU_TST" value="160" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_CACHE_DBG_CTRL" value="161" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_MMU_DBG_CTRL" value="162" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_TRACE_CTRL" value="163" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_TAG_BIST_CTRL" value="164" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_RAM_BIST_CTRL" value="165" address="0" page="0" />
+	<register_id id="TRG_CP15_REG15_C_RAM_BIST_CTRL" value="166" address="0" page="0" />
+	<register_id id="REG_E2ICE_COUNTER0" value="207" address="0" page="0" />
+	<register_id id="REG_E2ICE_COUNTER1" value="208" address="0" page="0" />
+	<register_id id="REG_CP15_TABL_ADDR" value="209" address="0" page="0" />
+	<register_id id="REG_RUN_COUNT" value="210" address="0" page="0" />
+	<register_id id="EMU0_COUNTER" value="211" address="0" page="0" />
+	<register_id id="EMU1_COUNTER" value="212" address="0" page="0" />
+	<register_id id="REG_DCC_CONTROL" value="217" address="0" page="0"/>
+	<register_id id="REG_DCC_DATA" value="218" address="0" page="0"/>
+	<register_id id="DCC_DOWNLOAD_ENBL" value="219" address="0" page="0"/>
+	<register_id id="ETM_CONTROL" value="220" address="0" page="0" />
+	<register_id id="ETM_CONFIG" value="221" address="0" page="0" />
+	<register_id id="ETM_TRIG_EVNT" value="222" address="0" page="0" />
+	<register_id id="ETM_MAP_CNTL" value="223" address="0" page="0" />
+	<register_id id="ETM_STATUS" value="224" address="0" page="0" />
+	<register_id id="ETM_TRACE_ENBL_EVT" value="228" address="0" page="0" />
+	<register_id id="ETM_TRACE_ENBL_RGN" value="229" address="0" page="0" />
+	<register_id id="ETM_FIFO_FULL_RGN" value="230" address="0" page="0" />
+	<register_id id="ETM_FIFO_FULL_LVL" value="231" address="0" page="0" />
+	<register_id id="ETM_VIEW_DATA_EVT" value="232" address="0" page="0" />
+	<register_id id="ETM_VIEW_DATA_CTL1" value="233" address="0" page="0" />
+	<register_id id="ETM_VIEW_DATA_CTL2" value="234" address="0" page="0" />
+	<register_id id="ETM_VIEW_DATA_CTL3" value="235" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP1" value="236" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP2" value="237" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP3" value="238" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP4" value="239" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP5" value="240" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP6" value="241" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP7" value="242" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP8" value="243" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP9" value="244" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP10" value="245" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP11" value="246" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP12" value="247" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP13" value="248" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP14" value="249" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP15" value="250" address="0" page="0" />
+	<register_id id="ETM_ADDR_CMP16" value="251" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC1" value="252" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC2" value="253" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC3" value="254" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC4" value="255" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC5" value="256" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC6" value="257" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC7" value="258" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC8" value="259" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC9" value="260" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC10" value="261" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC11" value="262" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC12" value="263" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC13" value="264" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC14" value="265" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC15" value="266" address="0" page="0" />
+	<register_id id="ETM_ADDR_ACC16" value="267" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP1" value="268" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP2" value="269" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP3" value="270" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP4" value="271" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP5" value="272" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP6" value="273" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP7" value="274" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP8" value="275" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP9" value="276" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP10" value="277" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP11" value="278" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP12" value="279" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP13" value="280" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP14" value="281" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP15" value="282" address="0" page="0" />
+	<register_id id="ETM_DATA_CMP16" value="283" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK1" value="284" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK2" value="285" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK3" value="286" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK4" value="287" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK5" value="288" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK6" value="289" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK7" value="290" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK8" value="291" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK9" value="292" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK10" value="293" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK11" value="294" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK12" value="295" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK13" value="296" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK14" value="297" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK15" value="298" address="0" page="0" />
+	<register_id id="ETM_DATA_MSK16" value="299" address="0" page="0" />
+	<register_id id="ETM_INIT_CNT1" value="300" address="0" page="0" />
+	<register_id id="ETM_INIT_CNT2" value="301" address="0" page="0" />
+	<register_id id="ETM_INIT_CNT3" value="302" address="0" page="0" />
+	<register_id id="ETM_INIT_CNT4" value="303" address="0" page="0" />
+	<register_id id="ETM_CNT_ENBL1" value="304" address="0" page="0" />
+	<register_id id="ETM_CNT_ENBL2" value="305" address="0" page="0" />
+	<register_id id="ETM_CNT_ENBL3" value="306" address="0" page="0" />
+	<register_id id="ETM_CNT_ENBL4" value="307" address="0" page="0" />
+	<register_id id="ETM_CNT_RELD1" value="308" address="0" page="0" />
+	<register_id id="ETM_CNT_RELD2" value="309" address="0" page="0" />
+	<register_id id="ETM_CNT_RELD3" value="310" address="0" page="0" />
+	<register_id id="ETM_CNT_RELD4" value="311" address="0" page="0" />
+	<register_id id="ETM_CNT_VAL1" value="312" address="0" page="0" />
+	<register_id id="ETM_CNT_VAL2" value="313" address="0" page="0" />
+	<register_id id="ETM_CNT_VAL3" value="314" address="0" page="0" />
+	<register_id id="ETM_CNT_VAL4" value="315" address="0" page="0" />
+	<register_id id="ETM_SEQ_STATE1" value="316" address="0" page="0" />
+	<register_id id="ETM_SEQ_STATE2" value="317" address="0" page="0" />
+	<register_id id="ETM_SEQ_STATE3" value="318" address="0" page="0" />
+	<register_id id="ETM_SEQ_STATE4" value="319" address="0" page="0" />
+	<register_id id="ETM_SEQ_STATE5" value="320" address="0" page="0" />
+	<register_id id="ETM_SEQ_STATE6" value="321" address="0" page="0" />
+	<register_id id="ETM_SEQ_CURRENT" value="323" address="0" page="0" />
+	<register_id id="ETM_EXTN_OUTP1" value="324" address="0" page="0" />
+	<register_id id="ETM_EXTN_OUTP2" value="325" address="0" page="0" />
+	<register_id id="ETM_EXTN_OUTP3" value="326" address="0" page="0" />
+	<register_id id="ETM_EXTN_OUTP4" value="327" address="0" page="0" />
+	<register_id id="ETM_IMPL_SPEC1" value="332" address="0" page="0" />
+	<register_id id="ETM_IMPL_SPEC2" value="333" address="0" page="0" />
+	<register_id id="ETM_IMPL_SPEC3" value="334" address="0" page="0" />
+	<register_id id="ETM_IMPL_SPEC4" value="335" address="0" page="0" />
+	<register_id id="ETM_IMPL_SPEC5" value="336" address="0" page="0" />
+	<register_id id="ETM_IMPL_SPEC6" value="337" address="0" page="0" />
+	<register_id id="ETM_IMPL_SPEC7" value="338" address="0" page="0" />
+	<register_id id="ETM_IMPL_SPEC8" value="339" address="0" page="0" />
+	<register_id id="SCLK" value="100" address="0" page="0" />
+	<register_id id="NCLK" value="101" address="0" page="0" />
+	<register_id id="ICLK" value="102" address="0" page="0" />
+	<register_id id="CCLK" value="103" address="0" page="0" />
+	<register_id id="FCLK" value="104" address="0" page="0" />
+	<register_id id="NINSTR" value="105" address="0" page="0" />
+	<register_id id="FADDR" value="210" address="0" page="0" />
+	<register_id id="DADDR" value="211" address="0" page="0" />
+	<register_id id="XADDR" value="212" address="0" page="0" />
+	<register_id id="ETM_SYSTEM_CONFIG" value="225" address="0" page="0" />
+	<register_id id="ETM_START_STOP" value="226" address="0" page="0" />
+	<register_id id="ETM_TRACE_ENBL_CTL2" value="227" address="0" page="0" />
+	<register_id id="ETM_CONTEXT_ID_VAL1" value="328" address="0" page="0" />
+	<register_id id="ETM_CONTEXT_ID_VAL2" value="329" address="0" page="0" />
+	<register_id id="ETM_CONTEXT_ID_VAL3" value="330" address="0" page="0" />
+	<register_id id="ETM_CONTEXT_ID_MASK" value="331" address="0" page="0" />
+	<register_id id="ETM_SYNCH_FREQ" value="340" address="0" page="0" />
+	<register_id id="ETM_ID" value="341" address="0" page="0" />
+	<register_id id="ETM_CONFIG_EXT" value="342" address="0" page="0" />
+	<register_id id="ETM_EXT_INPUT_SEL" value="343" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_LOCKDOWN" value="512" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_LOCKDOWN" value="513" address="0" page="0" />
+	<register_id id="RCP15_CACHE_WAIT_FOR_INTR" value="514" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_INVALIDATE" value="515" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_INVALIDATE_LINE_MVA" value="516" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_INVALIDATE_LINE_INDEX" value="517" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_FLUSH_PREFETCH_BUFFER" value="518" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_FLUSH_BRANCH_TARGET" value="519" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_FLUSH_BRANCH_TARTET_ENTRY" value="520" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_INVALIDATE" value="521" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_INVALIDATE_LINE_MVA" value="522" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_INVALIDATE_LINE_INDEX" value="523" address="0" page="0" />
+	<register_id id="RCP15_CACHE_INVALIDATE_BOTH" value="524" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_CLEAN" value="525" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_CLEAN_LINE_MVA" value="526" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_CLEAN_LINE_INDEX" value="527" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_DRAIN_WRITE_BUFFER" value="528" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_DATA_MEMORY_BARRIER" value="529" address="0" page="0" />
+	<register_id id="RCP15_CACHE_DIRTY_STATUS" value="530" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_PREFETCH_LINE" value="531" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_CLEAN_INVALIDATE" value="532" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_CLEAN_INVALIDATE_LINE_MVA" value="533" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_CLEAN_INVALIDATE_LINE_INDEX" value="534" address="0" page="0" />
+	<register_id id="RCP15_CACHE_TYPE" value="535" address="0" page="0" />
+	<register_id id="RCP15_CACHE_DEBUG_CONTROL" value="536" address="0" page="0" />
+	<register_id id="RCP15_INST_DEBUG_CACHE" value="537" address="0" page="0" />
+	<register_id id="RCP15_DATA_DEBUG_CACHE" value="538" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_MASTER_VALID_0" value="539" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_MASTER_VALID_1" value="540" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_MASTER_VALID_2" value="541" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_MASTER_VALID_3" value="542" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_MASTER_VALID_4" value="543" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_MASTER_VALID_5" value="544" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_MASTER_VALID_6" value="545" address="0" page="0" />
+	<register_id id="RCP15_ICACHE_MASTER_VALID_7" value="546" address="0" page="0" />
+	<register_id id="RCP15_ISCACHE_MASTER_VALID_0" value="547" address="0" page="0" />
+	<register_id id="RCP15_ISCACHE_MASTER_VALID_1" value="548" address="0" page="0" />
+	<register_id id="RCP15_ISCACHE_MASTER_VALID_2" value="549" address="0" page="0" />
+	<register_id id="RCP15_ISCACHE_MASTER_VALID_3" value="550" address="0" page="0" />
+	<register_id id="RCP15_ISCACHE_MASTER_VALID_4" value="551" address="0" page="0" />
+	<register_id id="RCP15_ISCACHE_MASTER_VALID_5" value="552" address="0" page="0" />
+	<register_id id="RCP15_ISCACHE_MASTER_VALID_6" value="553" address="0" page="0" />
+	<register_id id="RCP15_ISCACHE_MASTER_VALID_7" value="554" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_MASTER_VALID_0" value="555" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_MASTER_VALID_1" value="556" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_MASTER_VALID_2" value="557" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_MASTER_VALID_3" value="558" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_MASTER_VALID_4" value="559" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_MASTER_VALID_5" value="560" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_MASTER_VALID_6" value="561" address="0" page="0" />
+	<register_id id="RCP15_DCACHE_MASTER_VALID_7" value="562" address="0" page="0" />
+	<register_id id="RCP15_DSCACHE_MASTER_VALID_0" value="563" address="0" page="0" />
+	<register_id id="RCP15_DSCACHE_MASTER_VALID_1" value="564" address="0" page="0" />
+	<register_id id="RCP15_DSCACHE_MASTER_VALID_2" value="565" address="0" page="0" />
+	<register_id id="RCP15_DSCACHE_MASTER_VALID_3" value="566" address="0" page="0" />
+	<register_id id="RCP15_DSCACHE_MASTER_VALID_4" value="567" address="0" page="0" />
+	<register_id id="RCP15_DSCACHE_MASTER_VALID_5" value="568" address="0" page="0" />
+	<register_id id="RCP15_DSCACHE_MASTER_VALID_6" value="569" address="0" page="0" />
+	<register_id id="RCP15_DSCACHE_MASTER_VALID_7" value="570" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_MASTER_VALID_0" value="571" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_MASTER_VALID_1" value="572" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_MASTER_VALID_2" value="573" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_MASTER_VALID_3" value="574" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_MASTER_VALID_4" value="575" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_MASTER_VALID_5" value="576" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_MASTER_VALID_6" value="577" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_MASTER_VALID_7" value="578" address="0" page="0" />
+	<register_id id="RCP15_TLB_DEBUG_CONTROL" value="579" address="0" page="0" />
+	<register_id id="RCP15_D_MICROTLB_ENTRY_OP" value="580" address="0" page="0" />
+	<register_id id="RCP15_I_MICROTLB_ENTRY_OP" value="581" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_ENTRY" value="582" address="0" page="0" />
+	<register_id id="RCP15_D_MICROTLB_VA" value="583" address="0" page="0" />
+	<register_id id="RCP15_D_MICROTLB_PA" value="584" address="0" page="0" />
+	<register_id id="RCP15_D_MICROTLB_ATTRIBUTE" value="585" address="0" page="0" />
+	<register_id id="RCP15_I_MICROTLB_VA" value="586" address="0" page="0" />
+	<register_id id="RCP15_I_MICROTLB_PA" value="587" address="0" page="0" />
+	<register_id id="RCP15_I_MICROTLB_ATTRIBUTE" value="588" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_VA" value="589" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_PA" value="590" address="0" page="0" />
+	<register_id id="RCP15_MAIN_TLB_ATTRIBUTE" value="591" address="0" page="0" />
+	<register_id id="RCP15_DMA_CHANNEL_NUMBER" value="592" address="0" page="0" />
+	<register_id id="RCP15_DMA_STATUS" value="593" address="0" page="0" />
+	<register_id id="RCP15_DMA_CONTEXT_ID" value="594" address="0" page="0" />
+	<register_id id="RCP15_DMA_CONTROL" value="595" address="0" page="0" />
+	<register_id id="RCP15_DMA_ENABLE_STOP" value="596" address="0" page="0" />
+	<register_id id="RCP15_DMA_ENABLE_START" value="597" address="0" page="0" />
+	<register_id id="RCP15_DMA_ENABLE_CLEAR" value="598" address="0" page="0" />
+	<register_id id="RCP15_DMA_EXT_START_ADDRESS" value="599" address="0" page="0" />
+	<register_id id="RCP15_DMA_ID_STATUS_PRESENT" value="600" address="0" page="0" />
+	<register_id id="RCP15_DMA_ID_STATUS_QUEUED" value="601" address="0" page="0" />
+	<register_id id="RCP15_DMA_ID_STATUS_RUNNING" value="602" address="0" page="0" />
+	<register_id id="RCP15_DMA_ID_STATUS_INTERRUPT" value="603" address="0" page="0" />
+	<register_id id="RCP15_DMA_INT_END_ADDRESS" value="604" address="0" page="0" />
+	<register_id id="RCP15_DMA_INT_START_ADDRESS" value="605" address="0" page="0" />
+	<register_id id="RCP15_DMA_USER_ACCESS" value="606" address="0" page="0" />
+	<register_id id="RCP15_MMU_FAULT_ADDRESS" value="607" address="0" page="0" />
+	<register_id id="RCP15_MMU_DATA_FAULT_STATUS" value="608" address="0" page="0" />
+	<register_id id="RCP15_MMU_DOMAIN_ACCESS_CONTROL" value="609" address="0" page="0" />
+	<register_id id="RCP15_MMU_I_FAULT_ADDRESS" value="610" address="0" page="0" />
+	<register_id id="RCP15_MMU_I_FAULT_STATUS" value="611" address="0" page="0" />
+	<register_id id="RCP15_MMU_MEM_REGION_REMAP_INS" value="612" address="0" page="0" />
+	<register_id id="RCP15_MMU_MEM_REGION_REMAP_DAT" value="613" address="0" page="0" />
+	<register_id id="RCP15_MMU_MEM_REGION_REMAP_DMA" value="614" address="0" page="0" />
+	<register_id id="RCP15_MMU_MEM_REGION_REMAP_PHE" value="615" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_TYPE" value="616" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_INS" value="617" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_DAT" value="618" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_UND" value="619" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_MVA_INS" value="620" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_MVA_DAT" value="621" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_MVA_UND" value="622" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_ASID_INS" value="623" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_ASID_DAT" value="624" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_INVALID_ASID_UND" value="625" address="0" page="0" />
+	<register_id id="RCP15_MMU_TLB_LOCKDOWN" value="626" address="0" page="0" />
+	<register_id id="RCP15_MMU_XLATION_TABLE_BASE" value="627" address="0" page="0" />
+	<register_id id="RCP15_MMU_XLATION_TABLE_BASE_0" value="628" address="0" page="0" />
+	<register_id id="RCP15_MMU_XLATION_TABLE_BASE_1" value="629" address="0" page="0" />
+	<register_id id="RCP15_TCM_STATUS" value="630" address="0" page="0" />
+	<register_id id="RCP15_TCM_DATA_TCM_REGION" value="631" address="0" page="0" />
+	<register_id id="RCP15_TCM_INST_TCM_REGION" value="632" address="0" page="0" />
+	<register_id id="RCP15_TCM_DOMAIN_ACCESS_CONTROL" value="633" address="0" page="0" />
+	<register_id id="RCP15_PMNC" value="634" address="0" page="0" />
+	<register_id id="RCP15_PMN0" value="635" address="0" page="0" />
+	<register_id id="RCP15_PMN1" value="636" address="0" page="0" />
+	<register_id id="RCP15_CCNT" value="637" address="0" page="0" />
+	<register_id id="RCP15_CONTROL_REGISTER" value="638" address="0" page="0" />
+	<register_id id="RCP15_AUXILIARY_CONTROL" value="639" address="0" page="0" />
+	<register_id id="RCP15_COPROCESSOR_ACCESS_CONTROL" value="640" address="0" page="0" />
+	<register_id id="RCP15_CONTEXT_ID" value="641" address="0" page="0" />
+	<register_id id="RCP15_FCSE_PID" value="642" address="0" page="0" />
+	<register_id id="RCP15_ID_CODE" value="643" address="0" page="0" />
+	<register_id id="ICECR_VERSION" value="768" address="0" page="0" />
+	<register_id id="ICECR_DBG_CTRL_STATUS" value="769" address="0" page="0" />
+	<register_id id="ICECR_CONFIG_CTRL" value="770" address="0" page="0" />
+	<register_id id="ICECR_MODULE_RESET" value="771" address="0" page="0" />
+	<register_id id="ICECR_MODULE_PRESENT" value="772" address="0" page="0" />
+	<register_id id="ICECR_PERIPH_BUS_READY" value="784" address="0" page="0" />
+	<register_id id="ICECR_WRITE_BUS_READY" value="785" address="0" page="0" />
+	<register_id id="ICECR_READ_BUS_READY" value="786" address="0" page="0" />
+	<register_id id="ICECR_INSTRUCTION_BUS_READY" value="787" address="0" page="0" />
+	<register_id id="ICECR_PERIPH_BUS_ABORT" value="788" address="0" page="0" />
+	<register_id id="ICECR_WRITE_BUS_ABORT" value="789" address="0" page="0" />
+	<register_id id="ICECR_READ_BUS_ABORT" value="790" address="0" page="0" />
+	<register_id id="ICECR_INSTRUCTION_BUS_ABORT" value="791" address="0" page="0" />
+	<register_id id="ICECR_STANDBY_WFI" value="792" address="0" page="0" />
+	<register_id id="ICECR_EMU_INTR" value="793" address="0" page="0" />
+	<register_id id="ICECR_HALT" value="794" address="0" page="0" />
+	<register_id id="ICECR_INTERCONNECT_ERROR" value="795" address="0" page="0" />
+	<register_id id="ICECR_SUPPRESS_INTERCONNECT_INTR" value="796" address="0" page="0" />
+	<register_id id="ICECR_SECURE_MODE" value="797" address="0" page="0" />
+	<register_id id="ICECR_SECURITY_VIOLATION" value="798" address="0" page="0" />
+	<register_id id="ICECR_DEBUG_ACK" value="799" address="0" page="0" />
+	<register_id id="ICECR_TRIGGER0" value="800" address="0" page="0" />
+	<register_id id="ICECR_TRIGGER1" value="801" address="0" page="0" />
+	<register_id id="ICECR_HALT_ON_INTERCONNECT_ERROR" value="802" address="0" page="0" />
+	<register_id id="ICECR_LATCH_EMU_INT" value="803" address="0" page="0" />
+	<register_id id="ICECR_GATE_STANDBY_WFI" value="804" address="0" page="0" />
+	<register_id id="ICECR_ARM_RESET" value="805" address="0" page="0" />
+	<register_id id="ICECR_PUBLIC_TRACE_ENABLED" value="806" address="0" page="0" />
+	<register_id id="ICECR_SECURE_TRACE_ENABLED" value="807" address="0" page="0" />
+	<register_id id="ICECR_DEBUG_OPERATING_MODE" value="808" address="0" page="0" />
+	<register_id id="ICECR_HALT_ON_SECURITY_VIOLATION" value="809" address="0" page="0" />
+	<register_id id="ICECR_DEBUG_ENABLE" value="810" address="0" page="0" />
+	<register_id id="BPWP_VERSION" value="1024" address="0" page="0" />
+	<register_id id="BPWP_NUM_BP_AVAILABLE" value="1025" address="0" page="0" />
+	<register_id id="BPWP_NUM_BP_WITH_CONTEXT" value="1026" address="0" page="0" />
+	<register_id id="BPWP_FIRST_CONTEXT_BP" value="1027" address="0" page="0" />
+	<register_id id="BPWP_NUM_WP_AVAILABLE" value="1028" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR0" value="1040" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR1" value="1041" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR2" value="1042" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR3" value="1043" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR4" value="1044" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR5" value="1045" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR6" value="1046" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR7" value="1047" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR8" value="1048" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR9" value="1049" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR10" value="1050" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR11" value="1051" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR12" value="1052" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR13" value="1053" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR14" value="1054" address="0" page="0" />
+	<register_id id="BPWP_BP_ADDR15" value="1055" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL0" value="1056" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL1" value="1057" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL2" value="1058" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL3" value="1059" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL4" value="1060" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL5" value="1061" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL6" value="1062" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL7" value="1063" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL8" value="1064" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL9" value="1065" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL10" value="1066" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL11" value="1067" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL12" value="1068" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL13" value="1069" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL14" value="1070" address="0" page="0" />
+	<register_id id="BPWP_BP_CNTL15" value="1071" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR0" value="1072" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR1" value="1073" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR2" value="1074" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR3" value="1075" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR4" value="1076" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR5" value="1077" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR6" value="1078" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR7" value="1079" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR8" value="1080" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR9" value="1081" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR10" value="1082" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR11" value="1083" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR12" value="1084" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR13" value="1085" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR14" value="1086" address="0" page="0" />
+	<register_id id="BPWP_WP_ADDR15" value="1087" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL0" value="1088" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL1" value="1089" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL2" value="1090" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL3" value="1091" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL4" value="1092" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL5" value="1093" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL6" value="1094" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL7" value="1095" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL8" value="1096" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL9" value="1097" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL10" value="1098" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL11" value="1099" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL12" value="1100" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL13" value="1101" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL14" value="1102" address="0" page="0" />
+	<register_id id="BPWP_WP_CNTL15" value="1103" address="0" page="0" />
+	<register_id id="VFP11_SYSTEM_FPSID" value = "672" address="0" page="0" />
+	<register_id id="VFP11_SYSTEM_FPSCR" value = "673" address="0" page="0" />
+	<register_id id="VFP11_SYSTEM_FPEXC" value = "674" address="0" page="0" />
+	<register_id id="VFP11_SYSTEM_FPINST" value = "675" address="0" page="0" />
+	<register_id id="VFP11_SYSTEM_FPINST2" value = "676" address="0" page="0" />
+	<register_id id="VFP11_SYSTEM_MFVFR0" value = "677" address="0" page="0" />
+	<register_id id="VFP11_SYSTEM_MFVFR1" value = "678" address="0" page="0" />
+	<register_id id="VFP11_SP_S0" value = "679" address="0" page="0" />
+	<register_id id="VFP11_SP_S1" value = "680" address="0" page="0" />
+	<register_id id="VFP11_SP_S2" value = "681" address="0" page="0" />
+	<register_id id="VFP11_SP_S3" value = "682" address="0" page="0" />
+	<register_id id="VFP11_SP_S4" value = "683" address="0" page="0" />
+	<register_id id="VFP11_SP_S5" value = "684" address="0" page="0" />
+	<register_id id="VFP11_SP_S6" value = "685" address="0" page="0" />
+	<register_id id="VFP11_SP_S7" value = "686" address="0" page="0" />
+	<register_id id="VFP11_SP_S8" value = "687" address="0" page="0" />
+	<register_id id="VFP11_SP_S9" value = "688" address="0" page="0" />
+	<register_id id="VFP11_SP_S10" value = "689" address="0" page="0" />
+	<register_id id="VFP11_SP_S11" value = "690" address="0" page="0" />
+	<register_id id="VFP11_SP_S12" value = "691" address="0" page="0" />
+	<register_id id="VFP11_SP_S13" value = "692" address="0" page="0" />
+	<register_id id="VFP11_SP_S14" value = "693" address="0" page="0" />
+	<register_id id="VFP11_SP_S15" value = "694" address="0" page="0" />
+	<register_id id="VFP11_SP_S16" value = "695" address="0" page="0" />
+	<register_id id="VFP11_SP_S17" value = "696" address="0" page="0" />
+	<register_id id="VFP11_SP_S18" value = "697" address="0" page="0" />
+	<register_id id="VFP11_SP_S19" value = "698" address="0" page="0" />
+	<register_id id="VFP11_SP_S20" value = "699" address="0" page="0" />
+	<register_id id="VFP11_SP_S21" value = "700" address="0" page="0" />
+	<register_id id="VFP11_SP_S22" value = "701" address="0" page="0" />
+	<register_id id="VFP11_SP_S23" value = "702" address="0" page="0" />
+	<register_id id="VFP11_SP_S24" value = "703" address="0" page="0" />
+	<register_id id="VFP11_SP_S25" value = "704" address="0" page="0" />
+	<register_id id="VFP11_SP_S26" value = "705" address="0" page="0" />
+	<register_id id="VFP11_SP_S27" value = "706" address="0" page="0" />
+	<register_id id="VFP11_SP_S28" value = "707" address="0" page="0" />
+	<register_id id="VFP11_SP_S29" value = "708" address="0" page="0" />
+	<register_id id="VFP11_SP_S30" value = "709" address="0" page="0" />
+	<register_id id="VFP11_SP_S31" value = "710" address="0" page="0" />
+	<register_id id="VFP11_DP_D0_L" value = "711" address="0" page="0" />
+	<register_id id="VFP11_DP_D0_H" value = "712" address="0" page="0" />
+	<register_id id="VFP11_DP_D1_L" value = "713" address="0" page="0" />
+	<register_id id="VFP11_DP_D1_H" value = "714" address="0" page="0" />
+	<register_id id="VFP11_DP_D2_L" value = "715" address="0" page="0" />
+	<register_id id="VFP11_DP_D2_H" value = "716" address="0" page="0" />
+	<register_id id="VFP11_DP_D3_L" value = "717" address="0" page="0" />
+	<register_id id="VFP11_DP_D3_H" value = "718" address="0" page="0" />
+	<register_id id="VFP11_DP_D4_L" value = "719" address="0" page="0" />
+	<register_id id="VFP11_DP_D4_H" value = "720" address="0" page="0" />
+	<register_id id="VFP11_DP_D5_L" value = "721" address="0" page="0" />
+	<register_id id="VFP11_DP_D5_H" value = "722" address="0" page="0" />
+	<register_id id="VFP11_DP_D6_L" value = "723" address="0" page="0" />
+	<register_id id="VFP11_DP_D6_H" value = "724" address="0" page="0" />
+	<register_id id="VFP11_DP_D7_L" value = "725" address="0" page="0" />
+	<register_id id="VFP11_DP_D7_H" value = "726" address="0" page="0" />
+	<register_id id="VFP11_DP_D8_L" value = "727" address="0" page="0" />
+	<register_id id="VFP11_DP_D8_H" value = "728" address="0" page="0" />
+	<register_id id="VFP11_DP_D9_L" value = "729" address="0" page="0" />
+	<register_id id="VFP11_DP_D9_H" value = "730" address="0" page="0" />
+	<register_id id="VFP11_DP_D10_L" value = "731" address="0" page="0" />
+	<register_id id="VFP11_DP_D10_H" value = "732" address="0" page="0" />
+	<register_id id="VFP11_DP_D11_L" value = "733" address="0" page="0" />
+	<register_id id="VFP11_DP_D11_H" value = "734" address="0" page="0" />
+	<register_id id="VFP11_DP_D12_L" value = "735" address="0" page="0" />
+	<register_id id="VFP11_DP_D12_H" value = "736" address="0" page="0" />
+	<register_id id="VFP11_DP_D13_L" value = "737" address="0" page="0" />
+	<register_id id="VFP11_DP_D13_H" value = "738" address="0" page="0" />
+	<register_id id="VFP11_DP_D14_L" value = "739" address="0" page="0" />
+	<register_id id="VFP11_DP_D14_H" value = "740" address="0" page="0" />
+	<register_id id="VFP11_DP_D15_L" value = "741" address="0" page="0" />
+	<register_id id="VFP11_DP_D15_H" value = "742" address="0" page="0" />
+    <register_id id="TRG_CP15_REG0_ID_REV_ID"           value = "350" address="0" page="0" />
+    <register_id id="TRG_CP15_REG0_ID_PART_ID"          value = "351" address="0" page="0" />
+    <register_id id="TRG_CP15_REG0_ID_ARCH_ID"          value = "352" address="0" page="0" />
+    <register_id id="TRG_CP15_REG0_ID_VARIANT_ID"       value = "353" address="0" page="0" />
+    <register_id id="TRG_CP15_REG0_ID_IMPL_ID"          value = "354" address="0" page="0" />
+    <register_id id="TRG_CP15_REG1_TYPE_MPU_ID"         value = "355" address="0" page="0" />
+    <register_id id="TRG_CP15_REG1_TYPE_NUM_REGION_ID"  value = "356" address="0" page="0" />
+    <register_id id="TRG_CP15_REG2_GCTRL_MPU_ENABLE_ID" value = "357" address="0" page="0" /> 
+    <register_id id="TRG_CP15_REG2_GCTRL_ENDIAN_ID"     value = "358" address="0" page="0" />
+    <register_id id="TRG_CP15_REG2_GCTRL_VECINT_ID"     value = "359" address="0" page="0" />
+    <register_id id="TRG_CP15_REG3_FSR_ID"              value = "360" address="0" page="0" />
+    <register_id id="TRG_CP15_REG4_DFAR_ID"             value = "361" address="0" page="0" />
+    <register_id id="TRG_CP15_REG5_IFAR_ID"             value = "362" address="0" page="0" />
+    <register_id id="TRG_CP15_REG6_BASEADDR_ID"         value = "363" address="0" page="0" />
+    <register_id id="TRG_CP15_REG7_REGSIZE_CHANNEL_ID"  value = "364" address="0" page="0" />
+    <register_id id="TRG_CP15_REG7_REGSIZE_SIZE_ID"     value = "365" address="0" page="0" />
+    <register_id id="TRG_CP15_REG8_REGACCESS_AP_ID"     value = "366" address="0" page="0" />
+    <register_id id="TRG_CP15_REG8_REGACCESS_XN_ID"     value = "367" address="0" page="0" />
+    <register_id id="TRG_CP15_REG9_REGCTRL_ID"          value = "368" address="0" page="0" />
+    <register_id id="TRG_CP15_REG10_PROCESS_ID"         value = "369" address="0" page="0" />
+    <register_id id="TRG_CP15_REG0_CPID"                value = "370" address="0" page="0" />
+    <register_id id="TRG_CP15_REG2_GCTRL"               value = "371" address="0" page="0" /> 
+	<register_id id="ICEC_VERSION" value="400" address="0" page="0"/>
+	<register_id id="ICEC_DEBUG_CONFIG" value="401" address="0" page="0"/>
+	<register_id id="ICEC_DEBUG_CSR" value="402" address="0" page="0"/>
+	<register_id id="ICEC_TRIGGER_CONTROL" value="404" address="0" page="0"/>
+	<register_id id="ICEC_RESET_CSR" value="405" address="0" page="0"/>
+	<register_id id="ICEC_THREAD_ID_CLAIM" value="406" address="0" page="0"/>
+	<register_id id="ICEC_THREAD_ID" value="407" address="0" page="0"/>
+	<register_id id="ICEC_INTERRUPT_CSR" value="408" address="0" page="0"/>
+	<register_id id="ICEC_ETM_CSR" value="409" address="0" page="0"/>
+	<register_id id="ICEC_ETM_PROCESS_ID" value="410" address="0" page="0"/>
+	<register_id id="ICEC_TEST" value="411" address="0" page="0"/>
+	<register_id id="ICEC_SWBP_CONTROL" value="412" address="0" page="0"/>
+	<register_id id="ICEC_SWBP_VALUE" value="413" address="0" page="0"/>
+	<register_id id="ICEC_BMCNTR0_CSR" value="416" address="0" page="0"/>
+	<register_id id="ICEC_BMCNTR0" value="417" address="0" page="0"/>
+	<register_id id="ICEC_BMCNTR1_CSR" value="420" address="0" page="0"/>
+	<register_id id="ICEC_BMCNTR1" value="421" address="0" page="0"/>
+	<register_id id="ICEC_BMCNTR2_CSR" value="424" address="0" page="0"/>
+	<register_id id="ICEC_BMCNTR2" value="425" address="0" page="0"/>
+	<register_id id="ICEC_BMCNTR3_CSR" value="428" address="0" page="0"/>
+	<register_id id="ICEC_BMCNTR3" value="429" address="0" page="0"/>
+	<register_id id="ICEC_HWBP0_CNTRL" value="432" address="0" page="0"/>
+	<register_id id="ICEC_HWBP0_ADDR" value="433" address="0" page="0"/>
+	<register_id id="ICEC_HWBP0_ADDR_MASK" value="434" address="0" page="0"/>
+	<register_id id="ICEC_HWBP1_CNTRL" value="436" address="0" page="0"/>
+	<register_id id="ICEC_HWBP1_ADDR" value="437" address="0" page="0"/>
+	<register_id id="ICEC_HWBP1_ADDR_MASK" value="438" address="0" page="0"/>
+	<register_id id="ICEC_HWBP2_CNTRL" value="440" address="0" page="0"/>
+	<register_id id="ICEC_HWBP2_ADDR" value="441" address="0" page="0"/>
+	<register_id id="ICEC_HWBP2_ADDR_MASK" value="442" address="0" page="0"/>
+	<register_id id="ICEC_HWBP3_CNTRL" value="444" address="0" page="0"/>
+	<register_id id="ICEC_HWBP3_ADDR" value="445" address="0" page="0"/>
+	<register_id id="ICEC_HWBP3_ADDR_MASK" value="446" address="0" page="0"/>
+	<register_id id="ICEC_OSLOCK_STATUS" value="461" address="0" page="0"/>
+	<register_id id="ICEC_OSLOCK" value="462" address="0" page="0"/>
+	<register_id id="ICEC_DCON" value="463" address="0" page="0"/>
+	<register_id id="REG_SYSTEM_TARGET_CONFIG"  value = "470" address="0" page="0" />
+	<register_id id="REG_SYSTEM_TARGET_STATUS"  value = "471" address="0" page="0" />
+	<register_id id="REG_SYSTEM_MMU_CONFIG"     value = "472" address="0" page="0" />
+	<register_id id="REG_SYSTEM_MMU_STATUS"     value = "473" address="0" page="0" />
+    <register_id id="REG_SYSTEM_TARGET_PSR"     value = "474" address="0" page="0" />
+    <register_id id="REG_CORE_WP_STATUS"        value = "475" address="0" page="0" />
+    <register_id id="REG_CORE_WP_CONFIG"        value = "476" address="0" page="0" />
+    <register_id id="REG_ICECRUSH_BP_STATUS"    value = "477" address="0" page="0" />
+    <register_id id="REG_ICECRUSH_BP_CONFIG"    value = "478" address="0" page="0" />
+    <register_id id="REG_SYSTEM_DOWNLOAD_STATUS" value = "479" address="0" page="0" />
+    <register_id id="REG_PROFILE_CLK_CALIBRATE" value = "488" address="0" page="0" />
+    <register_id id="REG_SYSTEM_PC_SAFE_HARBOR" value = "492" address="0" page="0" />
+	<register_id id="REG_ANALYSIS_RESOURCE_EXIST" value="493" address="0" page="0"/>
+	<register_id id="REG_ANALYSIS_RESOURCE_AVAIL" value="494" address="0" page="0"/>
+</register_ids>

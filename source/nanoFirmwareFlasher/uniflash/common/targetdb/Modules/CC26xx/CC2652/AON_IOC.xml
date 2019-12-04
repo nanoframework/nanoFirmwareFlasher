@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AON_IOC" HW_revision="" XML_version="1.0" description="Always On (AON) IO Controller  - controls IO operation when the MCU IO Controller (IOC) is powered off and resides in the AON domain.  Note: This module only supports 32 bit Read/Write access from MCU.  " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="IOSTRMIN" width="32" description="Internal. Only to be used through TI provided API." id="IOSTRMIN" offset="0x0">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="GRAY_CODE" resetval="0x3">
+      </bitfield>
+   </register>
+   <register acronym="IOSTRMED" width="32" description="Internal. Only to be used through TI provided API." id="IOSTRMED" offset="0x4">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="GRAY_CODE" resetval="0x6">
+      </bitfield>
+   </register>
+   <register acronym="IOSTRMAX" width="32" description="Internal. Only to be used through TI provided API." id="IOSTRMAX" offset="0x8">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="GRAY_CODE" resetval="0x5">
+      </bitfield>
+   </register>
+   <register acronym="CLK32KCTL" width="32" description="SCLK_LF External Output Control
+
+" id="CLK32KCTL" offset="0x10">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="0: Output enable active. SCLK_LF output on IO pin that has PORT_ID (for example IOC:IOCFG0.PORT_ID) set to AON_CLK32K.
+1: Output enable not active
+
+" id="OE_N" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="TCKCTL" width="32" description="TCK IO Pin Control" id="TCKCTL" offset="0x14">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="0: Input driver for TCK disabled. 
+1: Input driver for TCK enabled. " id="EN" resetval="0x1">
+      </bitfield>
+   </register>
+</module>

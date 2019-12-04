@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<router HW_revision="1.0" XML_version="1.2" id="CS_DAP" isa="CS_DAP" description="CS_DAP Router">
+
+	<register id="IP_DUMMY"  acronym="IP_DUMMY" width="32" description="" />
+    <register id="DEVICE_ID"  acronym="DEVICE_ID" width="32" description="" />
+    <instance href="..\Modules\cs_dap_NotVisible.xml" id="" xml="cs_dap_NotVisible.xml" xmlpath="..\Modules\" HW_revision="1.0" description="" requestor="CS_DAP" baseaddr="0" size="00" accessnumbytes="4" permissions="p" />
+</router>

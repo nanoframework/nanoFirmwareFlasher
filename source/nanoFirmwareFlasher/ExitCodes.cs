@@ -164,6 +164,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Need to specify a COM port.")]
         E6001 = 6001,
 
+        ///////////////
+        // TI Errors //
+        ///////////////
+
+        /// <summary>
+        /// Couldn't open serial device
+        /// </summary>
+        [Display(Name = "Unsupported device.")]
+        E7000 = 7000,
+
         ////////////////////////////////
         // Application general Errors //
         ////////////////////////////////
@@ -215,7 +225,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Couldn't find application file. Check the path.")]
         E9008 = 9008,
-
 
         /// <summary>
         /// Can't program deployment BIN file without specifying a valid address

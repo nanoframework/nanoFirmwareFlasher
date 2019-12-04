@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="RFC_RAT" HW_revision="" XML_version="1.0" description="RF core radio timer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="RATCNT" width="32" description="Radio Timer Counter Value" id="RATCNT" offset="0x4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Counter value. This is not writable while radio timer counter is enabled." id="CNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RATCH0VAL" width="32" description="Timer Channel 0 Capture/Compare Register" id="RATCH0VAL" offset="0x80">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Capture/compare value. Only writable when the channel is configured for compare mode. In compare mode, a write to this register will auto-arm the channel." id="VAL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RATCH1VAL" width="32" description="Timer Channel 1 Capture/Compare Register" id="RATCH1VAL" offset="0x84">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Capture/compare value. Only writable when the channel is configured for compare mode. In compare mode, a write to this register will auto-arm the channel." id="VAL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RATCH2VAL" width="32" description="Timer Channel 2 Capture/Compare Register" id="RATCH2VAL" offset="0x88">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Capture/compare value. Only writable when the channel is configured for compare mode. In compare mode, a write to this register will auto-arm the channel." id="VAL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RATCH3VAL" width="32" description="Timer Channel 3 Capture/Compare Register" id="RATCH3VAL" offset="0x8c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Capture/compare value. Only writable when the channel is configured for compare mode. In compare mode, a write to this register will auto-arm the channel." id="VAL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RATCH4VAL" width="32" description="Timer Channel 4 Capture/Compare Register" id="RATCH4VAL" offset="0x90">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Capture/compare value. Only writable when the channel is configured for compare mode. In compare mode, a write to this register will auto-arm the channel." id="VAL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RATCH5VAL" width="32" description="Timer Channel 5 Capture/Compare Register" id="RATCH5VAL" offset="0x94">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Capture/compare value. Only writable when the channel is configured for compare mode. In compare mode, a write to this register will auto-arm the channel." id="VAL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RATCH6VAL" width="32" description="Timer Channel 6 Capture/Compare Register" id="RATCH6VAL" offset="0x98">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Capture/compare value. Only writable when the channel is configured for compare mode. In compare mode, a write to this register will auto-arm the channel." id="VAL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RATCH7VAL" width="32" description="Timer Channel 7 Capture/Compare Register" id="RATCH7VAL" offset="0x9c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Capture/compare value. Only writable when the channel is configured for compare mode. In compare mode, a write to this register will auto-arm the channel." id="VAL" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

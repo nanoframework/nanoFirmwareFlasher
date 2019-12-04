@@ -1,0 +1,779 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AUX_AIODIO" HW_revision="" XML_version="1.0" description="AUX Analog Digital Input Output Controller (AUX_AIODIO) controls the general purpose input output pins of the AUX domain. These pins are referenced as AUXIO and can:
+- be connected to analog AUX modules, such as comparators and ADC.
+- be used by AUX_SCE.
+- connect to AUX_SPIM SCLK, MISO and MOSI signals.
+- connect to the asynchronous AUX event bus.
+
+Enabled digital inputs are synchronized at SCE clock rate.
+
+Note that the IO mapping in the AUX domain is different from the IO mapping in the MCU domain. This means that AUXIO[n] does not map to DIO[n]. AUXIO-DIO remapping is handled by Sensor Controller Studio." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="IOMODE" width="32" description="Input Output Mode
+
+This register controls pull-up, pull-down, and output mode for AUXIO that are controlled by instance i of AUX_AIODIO. Hence, in formulas below i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth." id="IOMODE" offset="0x0">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="2" end="14" rwaccess="RW" description="Selects mode for AUXIO[8i+7]." id="IO7" resetval="0x0">
+         <bitenum id="OPEN_SOURCE" value="3" token="Open-Source Mode: 
+
+When IOPOE bit 7 is 0: 
+- If GPIODOUT bit 7 is 0: AUXIO[8i+7] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 7 is 1: AUXIO[8i+7] is driven high.
+
+When IOPOE bit 7 is 1: 
+- If signal selected by IO7PSEL.SRC is 0: AUXIO[8i+7] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO7PSEL.SRC is 1: AUXIO[8i+7] is driven high.
+" description="Open-Source Mode: 
+
+When IOPOE bit 7 is 0: 
+- If GPIODOUT bit 7 is 0: AUXIO[8i+7] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 7 is 1: AUXIO[8i+7] is driven high.
+
+When IOPOE bit 7 is 1: 
+- If signal selected by IO7PSEL.SRC is 0: AUXIO[8i+7] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO7PSEL.SRC is 1: AUXIO[8i+7] is driven high.
+"/>
+         <bitenum id="OPEN_DRAIN" value="2" token="Open-Drain Mode: 
+
+When IOPOE bit 7 is 0: 
+- If GPIODOUT bit 7 is 0: AUXIO[8i+7] is driven low.  
+- If GPIODOUT bit 7 is 1: AUXIO[8i+7] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 7 is 1: 
+- If signal selected by IO7PSEL.SRC is 0: AUXIO[8i+7] is driven low. 
+- If signal selected by IO7PSEL.SRC is 1: AUXIO[8i+7] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+" description="Open-Drain Mode: 
+
+When IOPOE bit 7 is 0: 
+- If GPIODOUT bit 7 is 0: AUXIO[8i+7] is driven low.  
+- If GPIODOUT bit 7 is 1: AUXIO[8i+7] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 7 is 1: 
+- If signal selected by IO7PSEL.SRC is 0: AUXIO[8i+7] is driven low. 
+- If signal selected by IO7PSEL.SRC is 1: AUXIO[8i+7] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+"/>
+         <bitenum id="IN" value="1" token="Input Mode:
+
+When GPIODIE bit 7 is 0: AUXIO[8i+7] is enabled for analog signal transfer.
+
+When GPIODIE bit 7 is 1: AUXIO[8i+7] is enabled for digital input.
+" description="Input Mode:
+
+When GPIODIE bit 7 is 0: AUXIO[8i+7] is enabled for analog signal transfer.
+
+When GPIODIE bit 7 is 1: AUXIO[8i+7] is enabled for digital input.
+"/>
+         <bitenum id="OUT" value="0" token="Output Mode:
+
+When IOPOE bit 7 is 0: GPIODOUT bit 7 drives AUXIO[8i+7].
+
+When IOPOE bit 7 is 1: The signal selected by IO7PSEL.SRC drives AUXIO[8i+7].
+" description="Output Mode:
+
+When IOPOE bit 7 is 0: GPIODOUT bit 7 drives AUXIO[8i+7].
+
+When IOPOE bit 7 is 1: The signal selected by IO7PSEL.SRC drives AUXIO[8i+7].
+"/>
+      </bitfield>
+      <bitfield range="" begin="13" width="2" end="12" rwaccess="RW" description="Selects mode for AUXIO[8i+6]." id="IO6" resetval="0x0">
+         <bitenum id="OPEN_SOURCE" value="3" token="Open-Source Mode: 
+
+When IOPOE bit 6 is 0: 
+- If GPIODOUT bit 6 is 0: AUXIO[8i+6] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 6 is 1: AUXIO[8i+6] is driven high.
+
+When IOPOE bit 6 is 1: 
+- If signal selected by IO6PSEL.SRC is 0: AUXIO[8i+6] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO6PSEL.SRC is 1: AUXIO[8i+6] is driven high.
+" description="Open-Source Mode: 
+
+When IOPOE bit 6 is 0: 
+- If GPIODOUT bit 6 is 0: AUXIO[8i+6] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 6 is 1: AUXIO[8i+6] is driven high.
+
+When IOPOE bit 6 is 1: 
+- If signal selected by IO6PSEL.SRC is 0: AUXIO[8i+6] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO6PSEL.SRC is 1: AUXIO[8i+6] is driven high.
+"/>
+         <bitenum id="OPEN_DRAIN" value="2" token="Open-Drain Mode: 
+
+When IOPOE bit 6 is 0: 
+- If GPIODOUT bit 6 is 0: AUXIO[8i+6] is driven low.  
+- If GPIODOUT bit 6 is 1: AUXIO[8i+6] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 6 is 1: 
+- If signal selected by IO6PSEL.SRC is 0: AUXIO[8i+6] is driven low. 
+- If signal selected by IO6PSEL.SRC is 1: AUXIO[8i+6] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+" description="Open-Drain Mode: 
+
+When IOPOE bit 6 is 0: 
+- If GPIODOUT bit 6 is 0: AUXIO[8i+6] is driven low.  
+- If GPIODOUT bit 6 is 1: AUXIO[8i+6] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 6 is 1: 
+- If signal selected by IO6PSEL.SRC is 0: AUXIO[8i+6] is driven low. 
+- If signal selected by IO6PSEL.SRC is 1: AUXIO[8i+6] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+"/>
+         <bitenum id="IN" value="1" token="Input Mode:
+
+When GPIODIE bit 6 is 0: AUXIO[8i+6] is enabled for analog signal transfer.
+
+When GPIODIE bit 6 is 1: AUXIO[8i+6] is enabled for digital input.
+" description="Input Mode:
+
+When GPIODIE bit 6 is 0: AUXIO[8i+6] is enabled for analog signal transfer.
+
+When GPIODIE bit 6 is 1: AUXIO[8i+6] is enabled for digital input.
+"/>
+         <bitenum id="OUT" value="0" token="Output Mode:
+
+When IOPOE bit 6 is 0: GPIODOUT bit 6 drives AUXIO[8i+6].
+
+When IOPOE bit 6 is 1: The signal selected by IO6PSEL.SRC drives AUXIO[8i+6].
+" description="Output Mode:
+
+When IOPOE bit 6 is 0: GPIODOUT bit 6 drives AUXIO[8i+6].
+
+When IOPOE bit 6 is 1: The signal selected by IO6PSEL.SRC drives AUXIO[8i+6].
+"/>
+      </bitfield>
+      <bitfield range="" begin="11" width="2" end="10" rwaccess="RW" description="Selects mode for AUXIO[8i+5]." id="IO5" resetval="0x0">
+         <bitenum id="OPEN_SOURCE" value="3" token="Open-Source Mode: 
+
+When IOPOE bit 5 is 0: 
+- If GPIODOUT bit 5 is 0: AUXIO[8i+5] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 5 is 1: AUXIO[8i+5] is driven high.
+
+When IOPOE bit 5 is 1: 
+- If signal selected by IO5PSEL.SRC is 0: AUXIO[8i+5] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO5PSEL.SRC is 1: AUXIO[8i+5] is driven high.
+" description="Open-Source Mode: 
+
+When IOPOE bit 5 is 0: 
+- If GPIODOUT bit 5 is 0: AUXIO[8i+5] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 5 is 1: AUXIO[8i+5] is driven high.
+
+When IOPOE bit 5 is 1: 
+- If signal selected by IO5PSEL.SRC is 0: AUXIO[8i+5] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO5PSEL.SRC is 1: AUXIO[8i+5] is driven high.
+"/>
+         <bitenum id="OPEN_DRAIN" value="2" token="Open-Drain Mode: 
+
+When IOPOE bit 5 is 0: 
+- If GPIODOUT bit 5 is 0: AUXIO[8i+5] is driven low.  
+- If GPIODOUT bit 5 is 1: AUXIO[8i+5] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 5 is 1: 
+- If signal selected by IO5PSEL.SRC is 0: AUXIO[8i+5] is driven low. 
+- If signal selected by IO5PSEL.SRC is 1: AUXIO[8i+5] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+" description="Open-Drain Mode: 
+
+When IOPOE bit 5 is 0: 
+- If GPIODOUT bit 5 is 0: AUXIO[8i+5] is driven low.  
+- If GPIODOUT bit 5 is 1: AUXIO[8i+5] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 5 is 1: 
+- If signal selected by IO5PSEL.SRC is 0: AUXIO[8i+5] is driven low. 
+- If signal selected by IO5PSEL.SRC is 1: AUXIO[8i+5] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+"/>
+         <bitenum id="IN" value="1" token="Input Mode:
+
+When GPIODIE bit 5 is 0: AUXIO[8i+5] is enabled for analog signal transfer.
+
+When GPIODIE bit 5 is 1: AUXIO[8i+5] is enabled for digital input.
+" description="Input Mode:
+
+When GPIODIE bit 5 is 0: AUXIO[8i+5] is enabled for analog signal transfer.
+
+When GPIODIE bit 5 is 1: AUXIO[8i+5] is enabled for digital input.
+"/>
+         <bitenum id="OUT" value="0" token="Output Mode:
+
+When IOPOE bit 5 is 0: GPIODOUT bit 5 drives AUXIO[8i+5].
+
+When IOPOE bit 5 is 1: The signal selected by IO5PSEL.SRC drives AUXIO[8i+5].
+" description="Output Mode:
+
+When IOPOE bit 5 is 0: GPIODOUT bit 5 drives AUXIO[8i+5].
+
+When IOPOE bit 5 is 1: The signal selected by IO5PSEL.SRC drives AUXIO[8i+5].
+"/>
+      </bitfield>
+      <bitfield range="" begin="9" width="2" end="8" rwaccess="RW" description="Selects mode for AUXIO[8i+4]." id="IO4" resetval="0x0">
+         <bitenum id="OPEN_SOURCE" value="3" token="Open-Source Mode: 
+
+When IOPOE bit 4 is 0: 
+- If GPIODOUT bit 4 is 0: AUXIO[8i+4] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 4 is 1: AUXIO[8i+4] is driven high.
+
+When IOPOE bit 4 is 1: 
+- If signal selected by IO4PSEL.SRC is 0: AUXIO[8i+4] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO4PSEL.SRC is 1: AUXIO[8i+4] is driven high.
+" description="Open-Source Mode: 
+
+When IOPOE bit 4 is 0: 
+- If GPIODOUT bit 4 is 0: AUXIO[8i+4] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 4 is 1: AUXIO[8i+4] is driven high.
+
+When IOPOE bit 4 is 1: 
+- If signal selected by IO4PSEL.SRC is 0: AUXIO[8i+4] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO4PSEL.SRC is 1: AUXIO[8i+4] is driven high.
+"/>
+         <bitenum id="OPEN_DRAIN" value="2" token="Open-Drain Mode: 
+
+When IOPOE bit 4 is 0: 
+- If GPIODOUT bit 4 is 0: AUXIO[8i+4] is driven low.  
+- If GPIODOUT bit 4 is 1: AUXIO[8i+4] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 4 is 1: 
+- If signal selected by IO4PSEL.SRC is 0: AUXIO[8i+4] is driven low. 
+- If signal selected by IO4PSEL.SRC is 1: AUXIO[8i+4] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+" description="Open-Drain Mode: 
+
+When IOPOE bit 4 is 0: 
+- If GPIODOUT bit 4 is 0: AUXIO[8i+4] is driven low.  
+- If GPIODOUT bit 4 is 1: AUXIO[8i+4] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 4 is 1: 
+- If signal selected by IO4PSEL.SRC is 0: AUXIO[8i+4] is driven low. 
+- If signal selected by IO4PSEL.SRC is 1: AUXIO[8i+4] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+"/>
+         <bitenum id="IN" value="1" token="Input Mode:
+
+When GPIODIE bit 4 is 0: AUXIO[8i+4] is enabled for analog signal transfer.
+
+When GPIODIE bit 4 is 1: AUXIO[8i+4] is enabled for digital input.
+" description="Input Mode:
+
+When GPIODIE bit 4 is 0: AUXIO[8i+4] is enabled for analog signal transfer.
+
+When GPIODIE bit 4 is 1: AUXIO[8i+4] is enabled for digital input.
+"/>
+         <bitenum id="OUT" value="0" token="Output Mode:
+
+When IOPOE bit 4 is 0: GPIODOUT bit 4 drives AUXIO[8i+4].
+
+When IOPOE bit 4 is 1: The signal selected by IO4PSEL.SRC drives AUXIO[8i+4].
+" description="Output Mode:
+
+When IOPOE bit 4 is 0: GPIODOUT bit 4 drives AUXIO[8i+4].
+
+When IOPOE bit 4 is 1: The signal selected by IO4PSEL.SRC drives AUXIO[8i+4].
+"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="Selects mode for AUXIO[8i+3]." id="IO3" resetval="0x0">
+         <bitenum id="OPEN_SOURCE" value="3" token="Open-Source Mode: 
+
+When IOPOE bit 3 is 0: 
+- If GPIODOUT bit 3 is 0: AUXIO[8i+3] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 3 is 1: AUXIO[8i+3] is driven high.
+
+When IOPOE bit 3 is 1: 
+- If signal selected by IO3PSEL.SRC is 0: AUXIO[8i+3] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO3PSEL.SRC is 1: AUXIO[8i+3] is driven high.
+" description="Open-Source Mode: 
+
+When IOPOE bit 3 is 0: 
+- If GPIODOUT bit 3 is 0: AUXIO[8i+3] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 3 is 1: AUXIO[8i+3] is driven high.
+
+When IOPOE bit 3 is 1: 
+- If signal selected by IO3PSEL.SRC is 0: AUXIO[8i+3] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO3PSEL.SRC is 1: AUXIO[8i+3] is driven high.
+"/>
+         <bitenum id="OPEN_DRAIN" value="2" token="Open-Drain Mode: 
+
+When IOPOE bit 3 is 0: 
+- If GPIODOUT bit 3 is 0: AUXIO[8i+3] is driven low.  
+- If GPIODOUT bit 3 is 1: AUXIO[8i+3] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 3 is 1: 
+- If signal selected by IO3PSEL.SRC is 0: AUXIO[8i+3] is driven low. 
+- If signal selected by IO3PSEL.SRC is 1: AUXIO[8i+3] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+" description="Open-Drain Mode: 
+
+When IOPOE bit 3 is 0: 
+- If GPIODOUT bit 3 is 0: AUXIO[8i+3] is driven low.  
+- If GPIODOUT bit 3 is 1: AUXIO[8i+3] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 3 is 1: 
+- If signal selected by IO3PSEL.SRC is 0: AUXIO[8i+3] is driven low. 
+- If signal selected by IO3PSEL.SRC is 1: AUXIO[8i+3] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+"/>
+         <bitenum id="IN" value="1" token="Input Mode:
+
+When GPIODIE bit 3 is 0: AUXIO[8i+3] is enabled for analog signal transfer.
+
+When GPIODIE bit 3 is 1: AUXIO[8i+3] is enabled for digital input.
+" description="Input Mode:
+
+When GPIODIE bit 3 is 0: AUXIO[8i+3] is enabled for analog signal transfer.
+
+When GPIODIE bit 3 is 1: AUXIO[8i+3] is enabled for digital input.
+"/>
+         <bitenum id="OUT" value="0" token="Output Mode:
+
+When IOPOE bit 3 is 0: GPIODOUT bit 3 drives AUXIO[8i+3].
+
+When IOPOE bit 3 is 1: The signal selected by IO3PSEL.SRC drives AUXIO[8i+3].
+" description="Output Mode:
+
+When IOPOE bit 3 is 0: GPIODOUT bit 3 drives AUXIO[8i+3].
+
+When IOPOE bit 3 is 1: The signal selected by IO3PSEL.SRC drives AUXIO[8i+3].
+"/>
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="Select mode for AUXIO[8i+2]." id="IO2" resetval="0x0">
+         <bitenum id="OPEN_SOURCE" value="3" token="Open-Source Mode: 
+
+When IOPOE bit 2 is 0: 
+- If GPIODOUT bit 2 is 0: AUXIO[8i+2] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 2 is 1: AUXIO[8i+2] is driven high.
+
+When IOPOE bit 2 is 1: 
+- If signal selected by IO2PSEL.SRC is 0: AUXIO[8i+2] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO2PSEL.SRC is 1: AUXIO[8i+2] is driven high.
+" description="Open-Source Mode: 
+
+When IOPOE bit 2 is 0: 
+- If GPIODOUT bit 2 is 0: AUXIO[8i+2] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 2 is 1: AUXIO[8i+2] is driven high.
+
+When IOPOE bit 2 is 1: 
+- If signal selected by IO2PSEL.SRC is 0: AUXIO[8i+2] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO2PSEL.SRC is 1: AUXIO[8i+2] is driven high.
+"/>
+         <bitenum id="OPEN_DRAIN" value="2" token="Open-Drain Mode: 
+
+When IOPOE bit 2 is 0: 
+- If GPIODOUT bit 2 is 0: AUXIO[8i+2] is driven low.  
+- If GPIODOUT bit 2 is 1: AUXIO[8i+2] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 2 is 1: 
+- If signal selected by IO2PSEL.SRC is 0: AUXIO[8i+2] is driven low. 
+- If signal selected by IO2PSEL.SRC is 1: AUXIO[8i+2] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+" description="Open-Drain Mode: 
+
+When IOPOE bit 2 is 0: 
+- If GPIODOUT bit 2 is 0: AUXIO[8i+2] is driven low.  
+- If GPIODOUT bit 2 is 1: AUXIO[8i+2] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 2 is 1: 
+- If signal selected by IO2PSEL.SRC is 0: AUXIO[8i+2] is driven low. 
+- If signal selected by IO2PSEL.SRC is 1: AUXIO[8i+2] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+"/>
+         <bitenum id="IN" value="1" token="Input Mode:
+
+When GPIODIE bit 2 is 0: AUXIO[8i+2] is enabled for analog signal transfer.
+
+When GPIODIE bit 2 is 1: AUXIO[8i+2] is enabled for digital input.
+" description="Input Mode:
+
+When GPIODIE bit 2 is 0: AUXIO[8i+2] is enabled for analog signal transfer.
+
+When GPIODIE bit 2 is 1: AUXIO[8i+2] is enabled for digital input.
+"/>
+         <bitenum id="OUT" value="0" token="Output Mode:
+
+When IOPOE bit 2 is 0: GPIODOUT bit 2 drives AUXIO[8i+2].
+
+When IOPOE bit 2 is 1: The signal selected by IO2PSEL.SRC drives AUXIO[8i+2].
+" description="Output Mode:
+
+When IOPOE bit 2 is 0: GPIODOUT bit 2 drives AUXIO[8i+2].
+
+When IOPOE bit 2 is 1: The signal selected by IO2PSEL.SRC drives AUXIO[8i+2].
+"/>
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RW" description="Select mode for AUXIO[8i+1]." id="IO1" resetval="0x0">
+         <bitenum id="OPEN_SOURCE" value="3" token="Open-Source Mode: 
+
+When IOPOE bit 1 is 0: 
+- If GPIODOUT bit 1 is 0: AUXIO[8i+1] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 1 is 1: AUXIO[8i+1] is driven high.
+
+When IOPOE bit 1 is 1: 
+- If signal selected by IO1PSEL.SRC is 0: AUXIO[8i+1] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO1PSEL.SRC is 1: AUXIO[8i+1] is driven high.
+" description="Open-Source Mode: 
+
+When IOPOE bit 1 is 0: 
+- If GPIODOUT bit 1 is 0: AUXIO[8i+1] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 1 is 1: AUXIO[8i+1] is driven high.
+
+When IOPOE bit 1 is 1: 
+- If signal selected by IO1PSEL.SRC is 0: AUXIO[8i+1] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO1PSEL.SRC is 1: AUXIO[8i+1] is driven high.
+"/>
+         <bitenum id="OPEN_DRAIN" value="2" token="Open-Drain Mode: 
+
+When IOPOE bit 1 is 0: 
+- If GPIODOUT bit 1 is 0: AUXIO[8i+1] is driven low.  
+- If GPIODOUT bit 1 is 1: AUXIO[8i+1] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 1 is 1: 
+- If signal selected by IO1PSEL.SRC is 0: AUXIO[8i+1] is driven low. 
+- If signal selected by IO1PSEL.SRC is 1: AUXIO[8i+1] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+" description="Open-Drain Mode: 
+
+When IOPOE bit 1 is 0: 
+- If GPIODOUT bit 1 is 0: AUXIO[8i+1] is driven low.  
+- If GPIODOUT bit 1 is 1: AUXIO[8i+1] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 1 is 1: 
+- If signal selected by IO1PSEL.SRC is 0: AUXIO[8i+1] is driven low. 
+- If signal selected by IO1PSEL.SRC is 1: AUXIO[8i+1] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+"/>
+         <bitenum id="IN" value="1" token="Input Mode:
+
+When GPIODIE bit 1 is 0: AUXIO[8i+1] is enabled for analog signal transfer.
+
+When GPIODIE bit 1 is 1: AUXIO[8i+1] is enabled for digital input.
+" description="Input Mode:
+
+When GPIODIE bit 1 is 0: AUXIO[8i+1] is enabled for analog signal transfer.
+
+When GPIODIE bit 1 is 1: AUXIO[8i+1] is enabled for digital input.
+"/>
+         <bitenum id="OUT" value="0" token="Output Mode:
+
+When IOPOE bit 1 is 0: GPIODOUT bit 1 drives AUXIO[8i+1].
+
+When IOPOE bit 1 is 1: The signal selected by IO1PSEL.SRC drives AUXIO[8i+1].
+" description="Output Mode:
+
+When IOPOE bit 1 is 0: GPIODOUT bit 1 drives AUXIO[8i+1].
+
+When IOPOE bit 1 is 1: The signal selected by IO1PSEL.SRC drives AUXIO[8i+1].
+"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Select mode for AUXIO[8i+0]." id="IO0" resetval="0x0">
+         <bitenum id="OPEN_SOURCE" value="3" token="Open-Source Mode: 
+
+When IOPOE bit 0 is 0: 
+- If GPIODOUT bit 0 is 0: AUXIO[8i+0] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 0 is 1: AUXIO[8i+0] is driven high.
+
+When IOPOE bit 0 is 1: 
+- If signal selected by IO0PSEL.SRC is 0: AUXIO[8i+0] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO0PSEL.SRC is 1: AUXIO[8i+0] is driven high.
+" description="Open-Source Mode: 
+
+When IOPOE bit 0 is 0: 
+- If GPIODOUT bit 0 is 0: AUXIO[8i+0] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If GPIODOUT bit 0 is 1: AUXIO[8i+0] is driven high.
+
+When IOPOE bit 0 is 1: 
+- If signal selected by IO0PSEL.SRC is 0: AUXIO[8i+0] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+- If signal selected by IO0PSEL.SRC is 1: AUXIO[8i+0] is driven high.
+"/>
+         <bitenum id="OPEN_DRAIN" value="2" token="Open-Drain Mode: 
+
+When IOPOE bit 0 is 0: 
+- If GPIODOUT bit 0 is 0: AUXIO[8i+0] is driven low.  
+- If GPIODOUT bit 0 is 1: AUXIO[8i+0] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 0 is 1: 
+- If signal selected by IO0PSEL.SRC is 0: AUXIO[8i+0] is driven low. 
+- If signal selected by IO0PSEL.SRC is 1: AUXIO[8i+0] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+" description="Open-Drain Mode: 
+
+When IOPOE bit 0 is 0: 
+- If GPIODOUT bit 0 is 0: AUXIO[8i+0] is driven low.  
+- If GPIODOUT bit 0 is 1: AUXIO[8i+0] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+
+When IOPOE bit 0 is 1: 
+- If signal selected by IO0PSEL.SRC is 0: AUXIO[8i+0] is driven low. 
+- If signal selected by IO0PSEL.SRC is 1: AUXIO[8i+0] is tri-stated or pulled. This depends on IOC:IOCFGn.PULL_CTL.
+"/>
+         <bitenum id="IN" value="1" token="Input Mode:
+
+When GPIODIE bit 0 is 0: AUXIO[8i+0] is enabled for analog signal transfer.
+
+When GPIODIE bit 0 is 1: AUXIO[8i+0] is enabled for digital input.
+" description="Input Mode:
+
+When GPIODIE bit 0 is 0: AUXIO[8i+0] is enabled for analog signal transfer.
+
+When GPIODIE bit 0 is 1: AUXIO[8i+0] is enabled for digital input.
+"/>
+         <bitenum id="OUT" value="0" token="Output Mode:
+
+When IOPOE bit 0 is 0: GPIODOUT bit 0 drives AUXIO[8i+0].
+
+When IOPOE bit 0 is 1: The signal selected by IO0PSEL.SRC drives AUXIO[8i+0].
+" description="Output Mode:
+
+When IOPOE bit 0 is 0: GPIODOUT bit 0 drives AUXIO[8i+0].
+
+When IOPOE bit 0 is 1: The signal selected by IO0PSEL.SRC drives AUXIO[8i+0].
+"/>
+      </bitfield>
+   </register>
+   <register acronym="GPIODIE" width="32" description="General Purpose Input Output Digital Input Enable
+
+This register controls input buffers for AUXIO that are controlled by instance i of AUX_AIODIO.  Hence, in formulas below i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth." id="GPIODIE" offset="0x4">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Write 1 to bit index n in this bit vector to enable digital input buffer for AUXIO[8i+n]. 
+Write 0 to bit index n in this bit vector to disable digital input buffer for AUXIO[8i+n].
+
+You must enable the digital input buffer for AUXIO[8i+n] to read the pin value in GPIODIN.  
+You must disable the digital input buffer for analog input or pins that float to avoid current leakage. " id="IO7_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IOPOE" width="32" description="Input Output Peripheral Output Enable
+
+This register selects the output source for AUXIO that are controlled by instance i of AUX_AIODIO. Hence, in formulas below i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth." id="IOPOE" offset="0x8">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Write 1 to bit index n in this bit vector to configure AUXIO[8i+n] to be driven from source given in [IOnPSEL.*].
+Write 0 to bit index n in this bit vector to configure AUXIO[8i+n] to be driven from bit n in GPIODOUT." id="IO7_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPIODOUT" width="32" description="General Purpose Input Output Data Out
+
+The output data register is used to set data on AUXIO that are controlled by instance i of AUX_AIODIO.  Hence, in formulas below i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth." id="GPIODOUT" offset="0xc">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Write 1 to bit index n in this bit vector to set AUXIO[8i+n].
+Write 0 to bit index n in this bit vector to clear AUXIO[8i+n].
+
+You must clear bit n in IOPOE to connect bit n in this bit vector to AUXIO[8i+n]." id="IO7_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPIODIN" width="32" description="General Purpose Input Output Data In
+
+This register provides synchronized input data for AUXIO  that are controlled by instance i of AUX_AIODIO. Hence, in formulas below i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth" id="GPIODIN" offset="0x10">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Bit n in this bit vector contains the value for AUXIO[8i+n] when GPIODIE bit n is set. Otherwise, bit n is read as 0." id="IO7_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPIODOUTSET" width="32" description="General Purpose Input Output Data Out Set
+
+Set bits in GPIODOUT in instance i of AUX_AIODIO. Hence, in formulas below i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth." id="GPIODOUTSET" offset="0x14">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Write 1 to bit index n in this bit vector to set GPIODOUT bit n. 
+
+Read value is 0." id="IO7_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPIODOUTCLR" width="32" description="General Purpose Input Output Data Out Clear
+
+Clear bits in GPIODOUT instance i of AUX_AIODIO. Hence, in formulas below i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth." id="GPIODOUTCLR" offset="0x18">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Write 1 to bit index n in this bit vector to clear GPIODOUT bit n.
+
+Read value is 0." id="IO7_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPIODOUTTGL" width="32" description="General Purpose Input Output Data Out Toggle
+
+Toggle bits in GPIODOUT in instance i of AUX_AIODIO. Hence, in formulas below i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth." id="GPIODOUTTGL" offset="0x1c">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Write 1 to bit index n in this bit vector to toggle GPIODOUT bit n. 
+
+Read value is 0." id="IO7_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IO0PSEL" width="32" description="Input Output 0 Peripheral Select
+
+This register selects a peripheral signal that connects to AUXIO[8i+0] when IOPOE bit 0 is 1. 
+
+To avoid glitches on AUXIO[8i+0] you must configure this register while IOPOE bit 0 is 0.
+
+In the formulas i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth. 
+" id="IO0PSEL" offset="0x20">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select a peripheral signal that connects to AUXIO[8i+0] when IOPOE bit 0 is set." id="SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_PULSE" value="7" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE."/>
+         <bitenum id="AUX_TIMER2_EV3" value="6" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3."/>
+         <bitenum id="AUX_TIMER2_EV2" value="5" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2."/>
+         <bitenum id="AUX_TIMER2_EV1" value="4" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1."/>
+         <bitenum id="AUX_TIMER2_EV0" value="3" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0."/>
+         <bitenum id="AUX_SPIM_MOSI" value="2" token="Peripheral output mux selects AUX_SPIM MOSI." description="Peripheral output mux selects AUX_SPIM MOSI."/>
+         <bitenum id="AUX_SPIM_SCLK" value="1" token="Peripheral output mux selects AUX_SPIM SCLK." description="Peripheral output mux selects AUX_SPIM SCLK."/>
+         <bitenum id="AUX_EV_OBS" value="0" token="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG" description="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG"/>
+      </bitfield>
+   </register>
+   <register acronym="IO1PSEL" width="32" description="Input Output 1 Peripheral Select
+
+This register selects a peripheral signal that connects to AUXIO[8i+1] when IOPOE bit 1 is 1. 
+
+To avoid glitches on AUXIO[8i+1] you must configure this register while IOPOE bit 1 is 0.
+
+In the formulas i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth. 
+" id="IO1PSEL" offset="0x24">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select a peripheral signal that connects to AUXIO[8i+1] when IOPOE bit 1 is set." id="SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_PULSE" value="7" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE."/>
+         <bitenum id="AUX_TIMER2_EV3" value="6" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3."/>
+         <bitenum id="AUX_TIMER2_EV2" value="5" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2."/>
+         <bitenum id="AUX_TIMER2_EV1" value="4" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1."/>
+         <bitenum id="AUX_TIMER2_EV0" value="3" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0."/>
+         <bitenum id="AUX_SPIM_MOSI" value="2" token="Peripheral output mux selects AUX_SPIM MOSI." description="Peripheral output mux selects AUX_SPIM MOSI."/>
+         <bitenum id="AUX_SPIM_SCLK" value="1" token="Peripheral output mux selects AUX_SPIM SCLK." description="Peripheral output mux selects AUX_SPIM SCLK."/>
+         <bitenum id="AUX_EV_OBS" value="0" token="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG" description="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG"/>
+      </bitfield>
+   </register>
+   <register acronym="IO2PSEL" width="32" description="Input Output 2 Peripheral Select
+
+This register selects a peripheral signal that connects to AUXIO[8i+2] when IOPOE bit 2 is 1. 
+
+To avoid glitches on AUXIO[8i+2] you must configure this register while IOPOE bit 2 is 0.
+
+In the formulas i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth. 
+" id="IO2PSEL" offset="0x28">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select a peripheral signal that connects to AUXIO[8i+2] when IOPOE bit 2 is set." id="SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_PULSE" value="7" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE."/>
+         <bitenum id="AUX_TIMER2_EV3" value="6" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3."/>
+         <bitenum id="AUX_TIMER2_EV2" value="5" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2."/>
+         <bitenum id="AUX_TIMER2_EV1" value="4" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1."/>
+         <bitenum id="AUX_TIMER2_EV0" value="3" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0."/>
+         <bitenum id="AUX_SPIM_MOSI" value="2" token="Peripheral output mux selects AUX_SPIM MOSI." description="Peripheral output mux selects AUX_SPIM MOSI."/>
+         <bitenum id="AUX_SPIM_SCLK" value="1" token="Peripheral output mux selects AUX_SPIM SCLK." description="Peripheral output mux selects AUX_SPIM SCLK."/>
+         <bitenum id="AUX_EV_OBS" value="0" token="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG" description="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG"/>
+      </bitfield>
+   </register>
+   <register acronym="IO3PSEL" width="32" description="Input Output 3 Peripheral Select
+
+This register selects a peripheral signal that connects to AUXIO[8i+3] when IOPOE bit 3 is 1. 
+
+To avoid glitches on AUXIO[8i+3] you must configure this register while IOPOE bit 3 is 0.
+
+In the formulas i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth. 
+" id="IO3PSEL" offset="0x2c">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select a peripheral signal that connects to AUXIO[8i+3] when IOPOE bit 3 is set." id="SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_PULSE" value="7" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE."/>
+         <bitenum id="AUX_TIMER2_EV3" value="6" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3."/>
+         <bitenum id="AUX_TIMER2_EV2" value="5" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2."/>
+         <bitenum id="AUX_TIMER2_EV1" value="4" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1."/>
+         <bitenum id="AUX_TIMER2_EV0" value="3" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0."/>
+         <bitenum id="AUX_SPIM_MOSI" value="2" token="Peripheral output mux selects AUX_SPIM MOSI." description="Peripheral output mux selects AUX_SPIM MOSI."/>
+         <bitenum id="AUX_SPIM_SCLK" value="1" token="Peripheral output mux selects AUX_SPIM SCLK." description="Peripheral output mux selects AUX_SPIM SCLK."/>
+         <bitenum id="AUX_EV_OBS" value="0" token="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG" description="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG"/>
+      </bitfield>
+   </register>
+   <register acronym="IO4PSEL" width="32" description="Input Output 4 Peripheral Select
+
+This register selects a peripheral signal that connects to AUXIO[8i+4] when IOPOE bit 4 is 1. 
+
+To avoid glitches on AUXIO[8i+4] you must configure this register while IOPOE bit 4 is 0.
+
+In the formulas i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth. 
+" id="IO4PSEL" offset="0x30">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select a peripheral signal that connects to AUXIO[8i+4] when IOPOE bit 4 is set." id="SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_PULSE" value="7" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE."/>
+         <bitenum id="AUX_TIMER2_EV3" value="6" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3."/>
+         <bitenum id="AUX_TIMER2_EV2" value="5" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2."/>
+         <bitenum id="AUX_TIMER2_EV1" value="4" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1."/>
+         <bitenum id="AUX_TIMER2_EV0" value="3" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0."/>
+         <bitenum id="AUX_SPIM_MOSI" value="2" token="Peripheral output mux selects AUX_SPIM MOSI." description="Peripheral output mux selects AUX_SPIM MOSI."/>
+         <bitenum id="AUX_SPIM_SCLK" value="1" token="Peripheral output mux selects AUX_SPIM SCLK." description="Peripheral output mux selects AUX_SPIM SCLK."/>
+         <bitenum id="AUX_EV_OBS" value="0" token="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG" description="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG"/>
+      </bitfield>
+   </register>
+   <register acronym="IO5PSEL" width="32" description="Input Output 5 Peripheral Select
+
+This register selects a peripheral signal that connects to AUXIO[8i+5] when IOPOE bit 5 is 1. 
+
+To avoid glitches on AUXIO[8i+5] you must configure this register while IOPOE bit 5 is 0.
+
+In the formulas i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth. 
+" id="IO5PSEL" offset="0x34">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select a peripheral signal that connects to AUXIO[8i+5] when IOPOE bit 5 is set." id="SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_PULSE" value="7" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE."/>
+         <bitenum id="AUX_TIMER2_EV3" value="6" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3."/>
+         <bitenum id="AUX_TIMER2_EV2" value="5" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2."/>
+         <bitenum id="AUX_TIMER2_EV1" value="4" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1."/>
+         <bitenum id="AUX_TIMER2_EV0" value="3" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0."/>
+         <bitenum id="AUX_SPIM_MOSI" value="2" token="Peripheral output mux selects AUX_SPIM MOSI." description="Peripheral output mux selects AUX_SPIM MOSI."/>
+         <bitenum id="AUX_SPIM_SCLK" value="1" token="Peripheral output mux selects AUX_SPIM SCLK." description="Peripheral output mux selects AUX_SPIM SCLK."/>
+         <bitenum id="AUX_EV_OBS" value="0" token="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG" description="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG"/>
+      </bitfield>
+   </register>
+   <register acronym="IO6PSEL" width="32" description="Input Output 6 Peripheral Select
+
+This register selects a peripheral signal that connects to AUXIO[8i+6] when IOPOE bit 6 is 1. 
+
+To avoid glitches on AUXIO[8i+6] you must configure this register while IOPOE bit 6 is 0.
+
+In the formulas i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth. 
+" id="IO6PSEL" offset="0x38">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select a peripheral signal that connects to AUXIO[8i+6] when IOPOE bit 6 is set." id="SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_PULSE" value="7" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE."/>
+         <bitenum id="AUX_TIMER2_EV3" value="6" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3."/>
+         <bitenum id="AUX_TIMER2_EV2" value="5" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2."/>
+         <bitenum id="AUX_TIMER2_EV1" value="4" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1."/>
+         <bitenum id="AUX_TIMER2_EV0" value="3" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0."/>
+         <bitenum id="AUX_SPIM_MOSI" value="2" token="Peripheral output mux selects AUX_SPIM MOSI." description="Peripheral output mux selects AUX_SPIM MOSI."/>
+         <bitenum id="AUX_SPIM_SCLK" value="1" token="Peripheral output mux selects AUX_SPIM SCLK." description="Peripheral output mux selects AUX_SPIM SCLK."/>
+         <bitenum id="AUX_EV_OBS" value="0" token="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG" description="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG"/>
+      </bitfield>
+   </register>
+   <register acronym="IO7PSEL" width="32" description="Input Output 7 Peripheral Select
+
+This register selects a peripheral signal that connects to AUXIO[8i+7] when IOPOE bit 7 is 1. 
+
+To avoid glitches on AUXIO[8i+7] you must configure this register while IOPOE bit 7 is 0.
+
+In the formulas i = 0 for AUX_AIODIO0, i = 1 for AUX_AIODIO1, and so forth. 
+" id="IO7PSEL" offset="0x3c">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select a peripheral signal that connects to AUXIO[8i+7] when IOPOE bit 7 is set." id="SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_PULSE" value="7" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE."/>
+         <bitenum id="AUX_TIMER2_EV3" value="6" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3."/>
+         <bitenum id="AUX_TIMER2_EV2" value="5" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2."/>
+         <bitenum id="AUX_TIMER2_EV1" value="4" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1."/>
+         <bitenum id="AUX_TIMER2_EV0" value="3" token="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0." description="Peripheral output mux selects asynchronous version of AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0."/>
+         <bitenum id="AUX_SPIM_MOSI" value="2" token="Peripheral output mux selects AUX_SPIM MOSI." description="Peripheral output mux selects AUX_SPIM MOSI."/>
+         <bitenum id="AUX_SPIM_SCLK" value="1" token="Peripheral output mux selects AUX_SPIM SCLK." description="Peripheral output mux selects AUX_SPIM SCLK."/>
+         <bitenum id="AUX_EV_OBS" value="0" token="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG" description="Peripheral output mux selects event selected by AUX_EVCTL:EVOBSCFG"/>
+      </bitfield>
+   </register>
+   <register acronym="IOMODEL" width="32" description="Input Output Mode Low
+
+This is an alias register for IOMODE.IO0 thru IOMODE.IO3." id="IOMODEL" offset="0x40">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="See IOMODE.IO3." id="IO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="See IOMODE.IO2." id="IO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RW" description="See IOMODE.IO1." id="IO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="See IOMODE.IO0." id="IO0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IOMODEH" width="32" description="Input Output Mode High
+
+This is an alias register for IOMODE.IO4 thru IOMODE.IO7." id="IOMODEH" offset="0x44">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="See IOMODE.IO7." id="IO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="See IOMODE.IO6." id="IO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RW" description="See IOMODE.IO5." id="IO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="See IOMODE.IO4." id="IO4" resetval="0x0">
+      </bitfield>
+   </register>
+</module>
