@@ -1088,8 +1088,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="costura32\STDFU.dll" />
-    <EmbeddedResource Include="costura32\STTubeDevice30.dll" />
+    <EmbeddedResource Include="costura32\STDFU.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="costura32\STTubeDevice30.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="stlink\ST-LINK_CLI.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
