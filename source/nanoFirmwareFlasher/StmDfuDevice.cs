@@ -28,7 +28,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly StDfu.DfuFunctionalDescriptor _dfuDescriptor;
 
         private readonly uint _numberOfBlocks;
-        private readonly uint _startAddress;
+        //private readonly uint _startAddress;
 
         private readonly List<StDfu.MappingSector> _sectorMap;
 

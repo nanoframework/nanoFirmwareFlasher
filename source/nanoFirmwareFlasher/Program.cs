@@ -83,9 +83,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return (int)_exitCode;
         }
 
-        static async Task HandleErrorsAsync(IEnumerable<Error> errors)
+        static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
             _exitCode = ExitCodes.E9000;
+            return Task.CompletedTask;
         }
 
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
