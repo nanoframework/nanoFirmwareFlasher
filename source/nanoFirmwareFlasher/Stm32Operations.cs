@@ -114,7 +114,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // done here, this command has no further processing
                     return ExitCodes.OK;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // exception
                     return ExitCodes.E1003;

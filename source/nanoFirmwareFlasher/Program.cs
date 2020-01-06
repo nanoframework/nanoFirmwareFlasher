@@ -498,7 +498,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         return;
                     }
-                    catch (DfuFileDoesNotExistException ex)
+                    catch (DfuFileDoesNotExistException)
                     {
                         // DFU file doesn't exist
                         _exitCode = ExitCodes.E1002;
