@@ -83,9 +83,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return (int)_exitCode;
         }
 
-        static async Task HandleErrorsAsync(IEnumerable<Error> errors)
+        static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
             _exitCode = ExitCodes.E9000;
+            return Task.CompletedTask;
         }
 
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
@@ -465,6 +466,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (!string.IsNullOrEmpty(o.DfuFile))
                 {
                     // there is a DFU file argument, so follow DFU path
+#if NETCOREAPP2_1
+                    throw new Exception("DFU flashing is not currently possible with dotnet core 2.1, please consider installing the 3.1 runtime");
+#else
 
                     var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
 
@@ -498,7 +502,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         return;
                     }
-                    catch (DfuFileDoesNotExistException ex)
+                    catch (DfuFileDoesNotExistException)
                     {
                         // DFU file doesn't exist
                         _exitCode = ExitCodes.E1002;
@@ -509,6 +513,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E1001;
                         _extraMessage = ex.Message;
                     }
+#endif
                 }
                 else if (
                     o.BinFile.Any() &&
@@ -516,7 +521,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // this has to be a JTAG connected device
 
-                    #region STM32 JTAG options
+#region STM32 JTAG options
 
                     try
                     {
@@ -565,7 +570,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E5002;
                     }
 
-                    #endregion
+#endregion
                 }
                 else if (!string.IsNullOrEmpty(o.TargetName))
                 {
@@ -654,10 +659,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            #endregion
+#endregion
 
 
-            #region TI CC13x2 platform options
+#region TI CC13x2 platform options
 
             if (o.Platform == "cc13x2")
             {
@@ -753,7 +758,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            #endregion
+#endregion
 
         }
 
