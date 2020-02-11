@@ -192,7 +192,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 else if ( 
                     o.ListDevicesInDfuMode ||
                     !string.IsNullOrEmpty(o.DfuDeviceId) ||
-                    o.DfuFile.Any())
+                    !string.IsNullOrEmpty(o.DfuFile))
                 {
                     o.Platform = "stm32";
                 }
