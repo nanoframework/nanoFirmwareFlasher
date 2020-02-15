@@ -1,0 +1,52 @@
+/* \file        cc26xx_connect_util.gel
+ * \brief       Utility functions. GEL file applies to target it is
+ *              loaded for.
+ *
+ * \revision    $Revision$
+ */
+ int _prevState = -1;
+
+/* \brief Store connection state. See also ConnectStateRestore(). */
+ConnectStateStore()
+{
+    _prevState = GEL_IsConnected();
+    return _prevState;
+}
+
+/* \brief Restore connection state stored by ConnectStateStore(). */
+ConnectStateRestore()
+{
+    if(_prevState >= 0)
+    {
+        if(_prevState == 0)
+        {
+            DisconnectIfConnected();
+        }
+        else
+        {
+            ConnectIfDisconnected();
+        }
+    }
+    else
+    {
+        GEL_TextOut("Previous connect state not set using ConnectStateStore().\n");
+    }
+}
+
+/* \brief Connect to target if not already connected. */
+ConnectIfDisconnected()
+{
+    if(GEL_IsConnected() == 0)
+    {
+        GEL_Connect();
+    }
+}
+
+/* \brief Disconnect from if connected. */
+DisconnectIfConnected()
+{
+    if(GEL_IsConnected() == 1)
+    {
+        GEL_Disconnect();
+    }
+}

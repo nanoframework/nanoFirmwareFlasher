@@ -183,6 +183,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     Console.WriteLine("OK");
                 }
+                else
+                {
+                    Console.WriteLine("");
+                }
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
@@ -197,6 +201,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (verbosity >= VerbosityLevel.Normal)
                     {
                         Console.WriteLine("OK");
+                    }
+                    else
+                    {
+                        Console.WriteLine("");
                     }
                 }
             }

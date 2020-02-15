@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AUX_TIMER01" HW_revision="" XML_version="1.0" description="AUX Timer 0 and AUX Timer 1 (AUX_TIMER01) are two 16-bit timers capable of generating one event each:
+- AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV.
+- AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV.
+
+The events are described in T0TARGET and T1TARGET. Subscribers to the AUX event bus can use these events to sequence and trigger actions. 
+
+AUX_SYSIF:PEROPRATE.TIMER01_OP_RATE sets the peripheral clock frequency used by the prescaler, timer, and event logic to SCE or AUX bus rate. To use AUX_TIMER01: 
+- AUX_SCE must set AUX_SYSIF:PEROPRATE.TIMER01_OP_RATE to SCE_RATE.
+- System CPU must set AUX_SYSIF:PEROPRATE.TIMER01_OP_RATE to BUS_RATE.
+- The timers must only subscribe to events updated at the peripheral clock frequency or lower.
+
+Unexpected execution behavior can result if software does not obey these rules. " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="T0CFG" width="32" description="Timer 0 Configuration" id="T0CFG" offset="0x0">
+      <bitfield range="" begin="31" width="17" end="15" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Tick source polarity for Timer 0." id="TICK_SRC_POL" resetval="0x0">
+         <bitenum id="FALL" value="1" token="Count on falling edges of TICK_SRC." description="Count on falling edges of TICK_SRC."/>
+         <bitenum id="RISE" value="0" token="Count on rising edges of TICK_SRC." description="Count on rising edges of TICK_SRC."/>
+      </bitfield>
+      <bitfield range="" begin="13" width="6" end="8" rwaccess="RW" description="Select Timer 0 tick source from the synchronous event bus." id="TICK_SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_CLKSW_RDY" value="63" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_CLKSWITCH_RDY    " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_CLKSWITCH_RDY    "/>
+         <bitenum id="AUX_DAC_HOLD_ACTIVE" value="62" token="AUX_EVCTL:EVSTAT3.AUX_DAC_HOLD_ACTIVE                        " description="AUX_EVCTL:EVSTAT3.AUX_DAC_HOLD_ACTIVE                        "/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE               "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N                       " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N                       "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE                         "/>
+         <bitenum id="NO_EVENT" value="54" token="No event." description="No event."/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV                        " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV                        "/>
+         <bitenum id="AUX_TIMER2_PULSE" value="52" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE                     " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE                     "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3                       " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3                       "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2                       " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2                       "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1                       " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1                       "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0                       " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0                       "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                            " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                            "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                            " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                            "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                          " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                          "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                          " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                          "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                               " description="AUX_EVCTL:EVSTAT2.MCU_EV                               "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                             " description="AUX_EVCTL:EVSTAT2.ACLK_REF                             "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE                        " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE                        "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                           " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                           "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                              " description="AUX_EVCTL:EVSTAT2.PWR_DWN                              "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                              " description="AUX_EVCTL:EVSTAT2.SCLK_LF                              "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD                  " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD                  "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD                   " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD                   "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                         " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                         "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                      " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                      "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                          " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                          "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                              " description="AUX_EVCTL:EVSTAT1.AUXIO31                              "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                              " description="AUX_EVCTL:EVSTAT1.AUXIO30                              "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                              " description="AUX_EVCTL:EVSTAT1.AUXIO29                              "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                              " description="AUX_EVCTL:EVSTAT1.AUXIO28                              "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                              " description="AUX_EVCTL:EVSTAT1.AUXIO27                              "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                              " description="AUX_EVCTL:EVSTAT1.AUXIO26                              "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                              " description="AUX_EVCTL:EVSTAT1.AUXIO25                              "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                              " description="AUX_EVCTL:EVSTAT1.AUXIO24                              "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                              " description="AUX_EVCTL:EVSTAT1.AUXIO23                              "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                              " description="AUX_EVCTL:EVSTAT1.AUXIO22                              "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                              " description="AUX_EVCTL:EVSTAT1.AUXIO21                              "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                              " description="AUX_EVCTL:EVSTAT1.AUXIO20                              "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                              " description="AUX_EVCTL:EVSTAT1.AUXIO19                              "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                              " description="AUX_EVCTL:EVSTAT1.AUXIO18                              "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                              " description="AUX_EVCTL:EVSTAT1.AUXIO17                              "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                              " description="AUX_EVCTL:EVSTAT1.AUXIO16                              "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                              " description="AUX_EVCTL:EVSTAT0.AUXIO15                              "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                              " description="AUX_EVCTL:EVSTAT0.AUXIO14                              "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                              " description="AUX_EVCTL:EVSTAT0.AUXIO13                              "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                              " description="AUX_EVCTL:EVSTAT0.AUXIO12                              "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                              " description="AUX_EVCTL:EVSTAT0.AUXIO11                              "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                              " description="AUX_EVCTL:EVSTAT0.AUXIO10                              "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                               " description="AUX_EVCTL:EVSTAT0.AUXIO9                               "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                               " description="AUX_EVCTL:EVSTAT0.AUXIO8                               "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                               " description="AUX_EVCTL:EVSTAT0.AUXIO7                               "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                               " description="AUX_EVCTL:EVSTAT0.AUXIO6                               "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                               " description="AUX_EVCTL:EVSTAT0.AUXIO5                               "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                               " description="AUX_EVCTL:EVSTAT0.AUXIO4                               "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                               " description="AUX_EVCTL:EVSTAT0.AUXIO3                               "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                               " description="AUX_EVCTL:EVSTAT0.AUXIO2                               "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                               " description="AUX_EVCTL:EVSTAT0.AUXIO1                               "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                               " description="AUX_EVCTL:EVSTAT0.AUXIO0                               "/>
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RW" description="Prescaler division ratio is 2^PRE:
+
+0x0: Divide by 1.
+0x1: Divide by 2.
+0x2: Divide by 4.
+... 
+0xF: Divide by 32,768." id="PRE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Timer 0 mode.
+
+Configure source for Timer 0 prescaler." id="MODE" resetval="0x0">
+         <bitenum id="TICK" value="1" token="Use event set by TICK_SRC as source for prescaler.
+" description="Use event set by TICK_SRC as source for prescaler.
+"/>
+         <bitenum id="CLK" value="0" token="Use clock as source for prescaler. Note that AUX_SYSIF:PEROPRATE.TIMER01_OP_RATE sets the clock frequency." description="Use clock as source for prescaler. Note that AUX_SYSIF:PEROPRATE.TIMER01_OP_RATE sets the clock frequency."/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Timer 0 reload mode." id="RELOAD" resetval="0x0">
+         <bitenum id="CONT" value="1" token="Continuous mode.
+
+Timer 0 restarts when the counter value becomes equal to or greater than ( T0TARGET.VALUE - 1). " description="Continuous mode.
+
+Timer 0 restarts when the counter value becomes equal to or greater than ( T0TARGET.VALUE - 1). "/>
+         <bitenum id="MAN" value="0" token="Manual mode.
+
+Timer 0 stops and T0CTL.EN becomes 0 when the counter value becomes equal to or greater than T0TARGET.VALUE." description="Manual mode.
+
+Timer 0 stops and T0CTL.EN becomes 0 when the counter value becomes equal to or greater than T0TARGET.VALUE."/>
+      </bitfield>
+   </register>
+   <register acronym="T0CTL" width="32" description="Timer 0 Control" id="T0CTL" offset="0x4">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Timer 0 enable.
+
+0: Disable Timer 0.
+1: Enable Timer 0.
+
+The counter restarts from 0 when you enable Timer 0." id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="T0TARGET" width="32" description="Timer 0 Target" id="T0TARGET" offset="0x8">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Timer 0 target value.
+
+Manual Reload Mode:
+- Timer 0 increments until the counter value becomes equal to or greater than VALUE. 
+- AUX_TIMER0_EV pulses high for 1 peripheral clock period when the counter value is equal to or greater than VALUE.
+
+Note: When VALUE is 0, Timer 0 counts to 1. AUX_TIMER0_EV pulses high for 1 peripheral clock period.
+
+Continuous Reload Mode:
+- Timer 0 increments until the counter value becomes equal to or greater than ( VALUE - 1), then restarts from 0.
+- AUX_TIMER0_EV pulses high for 1 peripheral clock period when the counter value is 0, except for when you enable the timer.
+
+Note: When VALUE is less than 2, Timer 0 counter value remains 0. AUX_TIMER0_EV goes high and remains high 1 peripheral clock period after you enable the timer.
+
+
+It is allowed to update the VALUE while the timer runs." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="T0CNTR" width="32" description="Timer 0 Counter" id="T0CNTR" offset="0xc">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Timer 0 counter value." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="T1CFG" width="32" description="Timer 1 Configuration" id="T1CFG" offset="0x10">
+      <bitfield range="" begin="31" width="17" end="15" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Tick source polarity for Timer 1." id="TICK_SRC_POL" resetval="0x0">
+         <bitenum id="FALL" value="1" token="Count on falling edges of TICK_SRC." description="Count on falling edges of TICK_SRC."/>
+         <bitenum id="RISE" value="0" token="Count on rising edges of TICK_SRC." description="Count on rising edges of TICK_SRC."/>
+      </bitfield>
+      <bitfield range="" begin="13" width="6" end="8" rwaccess="RW" description="Select Timer 1 tick source from the synchronous event bus." id="TICK_SRC" resetval="0x0">
+         <bitenum id="AUX_TIMER2_CLKSW_RDY" value="63" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_CLKSWITCH_RDY    " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_CLKSWITCH_RDY    "/>
+         <bitenum id="AUX_DAC_HOLD_ACTIVE" value="62" token="AUX_EVCTL:EVSTAT3.AUX_DAC_HOLD_ACTIVE                        " description="AUX_EVCTL:EVSTAT3.AUX_DAC_HOLD_ACTIVE                        "/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE               "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N                       " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N                       "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE                         "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV                        " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV                        "/>
+         <bitenum id="NO_EVENT" value="53" token="No event." description="No event."/>
+         <bitenum id="AUX_TIMER2_PULSE" value="52" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE                     " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE                     "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3                       " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3                       "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2                       " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2                       "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1                       " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1                       "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0                       " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0                       "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                            " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                            "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                            " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                            "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                          " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                          "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                          " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                          "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                               " description="AUX_EVCTL:EVSTAT2.MCU_EV                               "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                             " description="AUX_EVCTL:EVSTAT2.ACLK_REF                             "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE                        " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE                        "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                           " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                           "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                              " description="AUX_EVCTL:EVSTAT2.PWR_DWN                              "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                              " description="AUX_EVCTL:EVSTAT2.SCLK_LF                              "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD                  " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD                  "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD                   " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD                   "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                         " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                         "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                      " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                      "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                          " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                          "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                              " description="AUX_EVCTL:EVSTAT1.AUXIO31                              "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                              " description="AUX_EVCTL:EVSTAT1.AUXIO30                              "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                              " description="AUX_EVCTL:EVSTAT1.AUXIO29                              "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                              " description="AUX_EVCTL:EVSTAT1.AUXIO28                              "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                              " description="AUX_EVCTL:EVSTAT1.AUXIO27                              "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                              " description="AUX_EVCTL:EVSTAT1.AUXIO26                              "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                              " description="AUX_EVCTL:EVSTAT1.AUXIO25                              "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                              " description="AUX_EVCTL:EVSTAT1.AUXIO24                              "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                              " description="AUX_EVCTL:EVSTAT1.AUXIO23                              "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                              " description="AUX_EVCTL:EVSTAT1.AUXIO22                              "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                              " description="AUX_EVCTL:EVSTAT1.AUXIO21                              "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                              " description="AUX_EVCTL:EVSTAT1.AUXIO20                              "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                              " description="AUX_EVCTL:EVSTAT1.AUXIO19                              "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                              " description="AUX_EVCTL:EVSTAT1.AUXIO18                              "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                              " description="AUX_EVCTL:EVSTAT1.AUXIO17                              "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                              " description="AUX_EVCTL:EVSTAT1.AUXIO16                              "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                              " description="AUX_EVCTL:EVSTAT0.AUXIO15                              "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                              " description="AUX_EVCTL:EVSTAT0.AUXIO14                              "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                              " description="AUX_EVCTL:EVSTAT0.AUXIO13                              "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                              " description="AUX_EVCTL:EVSTAT0.AUXIO12                              "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                              " description="AUX_EVCTL:EVSTAT0.AUXIO11                              "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                              " description="AUX_EVCTL:EVSTAT0.AUXIO10                              "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                               " description="AUX_EVCTL:EVSTAT0.AUXIO9                               "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                               " description="AUX_EVCTL:EVSTAT0.AUXIO8                               "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                               " description="AUX_EVCTL:EVSTAT0.AUXIO7                               "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                               " description="AUX_EVCTL:EVSTAT0.AUXIO6                               "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                               " description="AUX_EVCTL:EVSTAT0.AUXIO5                               "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                               " description="AUX_EVCTL:EVSTAT0.AUXIO4                               "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                               " description="AUX_EVCTL:EVSTAT0.AUXIO3                               "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                               " description="AUX_EVCTL:EVSTAT0.AUXIO2                               "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                               " description="AUX_EVCTL:EVSTAT0.AUXIO1                               "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                               " description="AUX_EVCTL:EVSTAT0.AUXIO0                               "/>
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RW" description="Prescaler division ratio is 2^PRE:
+
+0x0: Divide by 1.
+0x1: Divide by 2.
+0x2: Divide by 4.
+... 
+0xF: Divide by 32,768." id="PRE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Timer 1 mode.
+
+Configure source for Timer 1 prescaler." id="MODE" resetval="0x0">
+         <bitenum id="TICK" value="1" token="Use event set by TICK_SRC as source for prescaler.
+" description="Use event set by TICK_SRC as source for prescaler.
+"/>
+         <bitenum id="CLK" value="0" token="Use clock as source for prescaler. Note that AUX_SYSIF:PEROPRATE.TIMER01_OP_RATE sets the clock frequency." description="Use clock as source for prescaler. Note that AUX_SYSIF:PEROPRATE.TIMER01_OP_RATE sets the clock frequency."/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Timer 1 reload mode." id="RELOAD" resetval="0x0">
+         <bitenum id="CONT" value="1" token="Continuous mode.
+
+Timer 1 restarts when the counter value becomes equal to or greater than ( T1TARGET.VALUE - 1)." description="Continuous mode.
+
+Timer 1 restarts when the counter value becomes equal to or greater than ( T1TARGET.VALUE - 1)."/>
+         <bitenum id="MAN" value="0" token="Manual mode.
+
+Timer 1 stops and T1CTL.EN becomes 0 when the counter value becomes equal to or greater than T1TARGET.VALUE.
+" description="Manual mode.
+
+Timer 1 stops and T1CTL.EN becomes 0 when the counter value becomes equal to or greater than T1TARGET.VALUE.
+"/>
+      </bitfield>
+   </register>
+   <register acronym="T1CTL" width="32" description="Timer 1 Control" id="T1CTL" offset="0x14">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Timer 1 enable.
+
+0: Disable Timer 1.
+1: Enable Timer 1.
+
+The counter restarts from 0 when you enable Timer 1." id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="T1TARGET" width="32" description="Timer 1 Target
+
+Timer 1 counter target value" id="T1TARGET" offset="0x18">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Timer 1 target value.
+
+Manual Reload Mode:
+- Timer 1 increments until the counter value becomes equal to or greater than VALUE. 
+- AUX_TIMER1_EV pulses high for 1 peripheral clock period when the counter value is equal to or greater than VALUE.
+
+Note: When VALUE is 0, Timer 1 counts to 1. AUX_TIMER1_EV pulses high for 1 peripheral clock period.
+
+Continuous Reload Mode:
+- Timer 1 increments until the counter value becomes equal to or greater than ( VALUE - 1), then restarts from 0.
+- AUX_TIMER1_EV pulses high for 1 peripheral clock period when the counter value is 0, except for when you enable the timer.
+
+Note: When VALUE is less than 2, Timer 1 counter value remains 0. AUX_TIMER1_EV goes high and remains high 1 peripheral clock period after you enable the timer.
+
+
+It is allowed to update the VALUE while the timer runs." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="T1CNTR" width="32" description="Timer 1 Counter" id="T1CNTR" offset="0x1c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Timer 1 counter value." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

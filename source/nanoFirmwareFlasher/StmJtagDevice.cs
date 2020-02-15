@@ -111,6 +111,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     Console.WriteLine(" OK");
                 }
+                else
+                {
+                    Console.WriteLine("");
+                }
 
                 // toggle mass erase so it's only performed before the first file is flashed
                 DoMassErase = false;
@@ -221,12 +225,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!cliOuput.Contains("Flash memory erased."))
                 {
+                    Console.WriteLine("");
                     return ExitCodes.E5005;
                 }
 
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
                     Console.WriteLine(" OK");
+                }
+                else
+                {
+                    Console.WriteLine("");
                 }
 
                 // toggle mass erase so it's only performed before the first file is flashed
@@ -330,7 +339,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!cliOuput.Contains("MCU Reset."))
             {
+                Console.WriteLine("");
                 return ExitCodes.E5010;
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.WriteLine(" OK");
+            }
+            else
+            {
+                Console.WriteLine("");
             }
 
             return ExitCodes.OK;

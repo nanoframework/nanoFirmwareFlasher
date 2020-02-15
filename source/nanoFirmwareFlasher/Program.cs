@@ -83,9 +83,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return (int)_exitCode;
         }
 
-        static async Task HandleErrorsAsync(IEnumerable<Error> errors)
+        static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
             _exitCode = ExitCodes.E9000;
+            return Task.CompletedTask;
         }
 
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
@@ -150,10 +151,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.TargetName.Contains("MBN_QUAIL") ||
                     o.TargetName.Contains("NETDUINO3") ||
                     o.TargetName.Contains("GHI FEZ") ||
-                    o.TargetName.Contains("IngenuityMicro"))
+                    o.TargetName.Contains("IngenuityMicro") ||
+                    o.TargetName.Contains("ORGPAL")
+                )
                 {
                     // candidates for STM32
                     o.Platform = "stm32";
+                }
+                else if (
+                   o.TargetName.Contains("TI_CC1352")
+                )
+                {
+                    // candidates for TI CC13x2
+                    o.Platform = "cc13x2";
                 }
                 else
                 {
@@ -182,7 +192,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 else if ( 
                     o.ListDevicesInDfuMode ||
                     !string.IsNullOrEmpty(o.DfuDeviceId) ||
-                    o.DfuFile.Any())
+                    !string.IsNullOrEmpty(o.DfuFile))
                 {
                     o.Platform = "stm32";
                 }
@@ -456,6 +466,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (!string.IsNullOrEmpty(o.DfuFile))
                 {
                     // there is a DFU file argument, so follow DFU path
+#if NETCOREAPP2_1
+                    throw new Exception("DFU flashing is not currently possible with dotnet core 2.1, please consider installing the 3.1 runtime");
+#else
 
                     var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
 
@@ -489,7 +502,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         return;
                     }
-                    catch (DfuFileDoesNotExistException ex)
+                    catch (DfuFileDoesNotExistException)
                     {
                         // DFU file doesn't exist
                         _exitCode = ExitCodes.E1002;
@@ -500,6 +513,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E1001;
                         _extraMessage = ex.Message;
                     }
+#endif
                 }
                 else if (
                     o.BinFile.Any() &&
@@ -507,7 +521,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // this has to be a JTAG connected device
 
-                    #region STM32 JTAG options
+#region STM32 JTAG options
 
                     try
                     {
@@ -556,7 +570,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E5002;
                     }
 
-                    #endregion
+#endregion
                 }
                 else if (!string.IsNullOrEmpty(o.TargetName))
                 {
@@ -645,7 +659,107 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            #endregion
+#endregion
+
+
+#region TI CC13x2 platform options
+
+            if (o.Platform == "cc13x2")
+            {
+                if (!string.IsNullOrEmpty(o.TargetName))
+                {
+                    // update operation requested?
+                    if (o.Update)
+                    {
+                        // this to update the device with fw from Bintray
+
+                        // need to take care of flash address
+                        string appFlashAddress = null;
+
+                        if (o.FlashAddress.Any())
+                        {
+                            // take the first address, it should be the only one valid
+                            appFlashAddress = o.FlashAddress.ElementAt(0);
+                        }
+
+                        _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
+                            o.TargetName,
+                            o.FwVersion,
+                            o.Stable,
+                            true,
+                            o.DeploymentImage,
+                            appFlashAddress,
+                            verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
+                        }
+                    }
+
+                    // it's OK to deploy after update
+                    if (o.Deploy)
+                    {
+                        // this to flash a deployment image without updating the firmware
+
+                        // need to take care of flash address
+                        string appFlashAddress = null;
+
+                        if (o.FlashAddress.Any())
+                        {
+                            // take the first address, it should be the only one valid
+                            appFlashAddress = o.FlashAddress.ElementAt(0);
+                        }
+                        else
+                        {
+                            _exitCode = ExitCodes.E9009;
+                            return;
+                        }
+
+                        _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
+                                        o.TargetName,
+                                        null,
+                                        false,
+                                        false,
+                                        o.DeploymentImage,
+                                        appFlashAddress,
+                                        verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
+                        }
+                    }
+
+                    // reset MCU requested?
+                    if (o.ResetMcu)
+                    {
+                        // can't reset CC13x2 device without configuration file
+                        // would require to specify the exact target name and then had to try parsing that 
+                        _exitCode = ExitCodes.E9000;
+
+                        // done here
+                        return;
+                    }
+                }
+
+                if(o.TIInstallXdsDrivers)
+                {
+
+                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(verbosityLevel);
+
+                    if (_exitCode != ExitCodes.OK)
+                    {
+                        // done here
+                        return;
+                    }
+                }
+            }
+
+#endregion
+
         }
 
         private static void OutputError(ExitCodes errorCode, bool outputMessage, string extraMessage = null)

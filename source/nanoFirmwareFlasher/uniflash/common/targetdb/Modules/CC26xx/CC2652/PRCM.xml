@@ -1,0 +1,1326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="PRCM" HW_revision="" XML_version="1.0" description="Power, Reset and Clock Management
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="INFRCLKDIVR" width="32" description="Infrastructure Clock Division Factor For Run Mode" id="INFRCLKDIVR" offset="0x0">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Division rate for clocks driving modules in the MCU_AON domain when system CPU is in run mode. Division ratio affects both infrastructure clock and perbusull clock.
+
+" id="RATIO" resetval="0x0">
+         <bitenum id="DIV32" value="3" token="Divide by 32" description="Divide by 32"/>
+         <bitenum id="DIV8" value="2" token="Divide by 8" description="Divide by 8"/>
+         <bitenum id="DIV2" value="1" token="Divide by 2" description="Divide by 2"/>
+         <bitenum id="DIV1" value="0" token="Divide by 1" description="Divide by 1"/>
+      </bitfield>
+   </register>
+   <register acronym="INFRCLKDIVS" width="32" description="Infrastructure Clock Division Factor For Sleep Mode" id="INFRCLKDIVS" offset="0x4">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Division rate for clocks driving modules in the MCU_AON domain when system CPU is in sleep mode. Division ratio affects both infrastructure clock and perbusull clock.
+
+" id="RATIO" resetval="0x0">
+         <bitenum id="DIV32" value="3" token="Divide by 32" description="Divide by 32"/>
+         <bitenum id="DIV8" value="2" token="Divide by 8" description="Divide by 8"/>
+         <bitenum id="DIV2" value="1" token="Divide by 2" description="Divide by 2"/>
+         <bitenum id="DIV1" value="0" token="Divide by 1" description="Divide by 1"/>
+      </bitfield>
+   </register>
+   <register acronym="INFRCLKDIVDS" width="32" description="Infrastructure Clock Division Factor For DeepSleep Mode" id="INFRCLKDIVDS" offset="0x8">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Division rate for clocks driving modules in the MCU_AON domain when system CPU is in seepsleep mode. Division ratio affects both infrastructure clock and perbusull clock.
+
+" id="RATIO" resetval="0x0">
+         <bitenum id="DIV32" value="3" token="Divide by 32" description="Divide by 32"/>
+         <bitenum id="DIV8" value="2" token="Divide by 8" description="Divide by 8"/>
+         <bitenum id="DIV2" value="1" token="Divide by 2" description="Divide by 2"/>
+         <bitenum id="DIV1" value="0" token="Divide by 1" description="Divide by 1"/>
+      </bitfield>
+   </register>
+   <register acronym="VDCTL" width="32" description="MCU Voltage Domain Control" id="VDCTL" offset="0xc">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request PMCTL to switch to uLDO.
+
+0: No request
+1: Assert request when possible
+
+The bit will have no effect before the following requirements are met:
+1. PDCTL1.CPU_ON = 0
+2. PDCTL1.VIMS_MODE = x0
+3. SECDMACLKGDS.DMA_CLK_EN = 0 and S.CRYPTO_CLK_EN] = 0 and  SECDMACLKGR.DMA_AM_CLK_EN = 0 (Note: Settings must be loaded with CLKLOADCTL.LOAD)
+4. SECDMACLKGDS.CRYPTO_CLK_EN = 0 and  SECDMACLKGR.CRYPTO_AM_CLK_EN = 0 (Note: Settings must be loaded with CLKLOADCTL.LOAD)
+5. I2SCLKGDS.CLK_EN = 0 and I2SCLKGR.AM_CLK_EN = 0 (Note: Settings must be loaded with CLKLOADCTL.LOAD)
+6. RFC do no request access to BUS
+7. System CPU in deepsleep" id="ULDO" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLKLOADCTL" width="32" description="Load PRCM Settings To CLKCTRL Power Domain" id="CLKLOADCTL" offset="0x28">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Status of LOAD. 
+Will be cleared to 0 when any of the registers requiring a LOAD is written to, and be set to 1 when a LOAD is done.
+Note that writing no change to a register will result in the LOAD_DONE being cleared.
+
+0 : One or more registers have been write accessed after last LOAD
+1 : No registers are write accessed after last LOAD" id="LOAD_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="
+0: No action
+1: Load settings to CLKCTRL. Bit is HW cleared.
+
+Multiple changes to settings may be done before LOAD is written once so all changes takes place at the same time. LOAD can also be done after single setting updates.
+
+Registers that needs to be followed by LOAD before settings being applied are:
+- SYSBUSCLKDIV
+- CPUCLKDIV
+- PERBUSCPUCLKDIV
+- PERDMACLKDIV
+- PERBUSCPUCLKG
+- RFCCLKG
+- VIMSCLKG
+- SECDMACLKGR
+- SECDMACLKGS
+- SECDMACLKGDS
+- GPIOCLKGR
+- GPIOCLKGS
+- GPIOCLKGDS
+- GPTCLKGR
+- GPTCLKGS
+- GPTCLKGDS
+- GPTCLKDIV
+- I2CCLKGR
+- I2CCLKGS
+- I2CCLKGDS
+- SSICLKGR
+- SSICLKGS
+- SSICLKGDS
+- UARTCLKGR
+- UARTCLKGS
+- UARTCLKGDS
+- I2SCLKGR
+- I2SCLKGS
+- I2SCLKGDS
+- I2SBCLKSEL
+- I2SCLKCTL
+- I2SMCLKDIV
+- I2SBCLKDIV
+- I2SWCLKDIV" id="LOAD" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RFCCLKG" width="32" description="RFC Clock Gate" id="RFCCLKG" offset="0x2c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable Clock
+1: Enable clock if RFC power domain is on
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="VIMSCLKG" width="32" description="VIMS Clock Gate" id="VIMSCLKG" offset="0x30">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="00: Disable clock
+01: Disable clock when SYSBUS clock is disabled
+11: Enable clock
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x3">
+      </bitfield>
+   </register>
+   <register acronym="SECDMACLKGR" width="32" description="SEC (PKA And TRNG And CRYPTO) And UDMA Clock Gate For Run And All Modes" id="SECDMACLKGR" offset="0x3c">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides DMA_CLK_EN, SECDMACLKGS.DMA_CLK_EN and SECDMACLKGDS.DMA_CLK_EN when enabled.
+
+SYSBUS clock will always run when enabled
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="DMA_AM_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Zeroization logic hardware reset.
+
+0: pka_zeroize logic inactive.
+1: pka_zeroize of memory  is enabled. 
+
+This register must remain active until the memory are completely zeroized which requires 256 periods on systembus clock." id="PKA_ZERIOZE_RESET_N" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides PKA_CLK_EN, SECDMACLKGS.PKA_CLK_EN and SECDMACLKGDS.PKA_CLK_EN when enabled.
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="PKA_AM_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides TRNG_CLK_EN, SECDMACLKGS.TRNG_CLK_EN and SECDMACLKGDS.TRNG_CLK_EN when enabled.
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="TRNG_AM_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides CRYPTO_CLK_EN, SECDMACLKGS.CRYPTO_CLK_EN and SECDMACLKGDS.CRYPTO_CLK_EN when enabled.
+
+SYSBUS clock will always run when enabled
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CRYPTO_AM_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by DMA_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="DMA_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by PKA_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="PKA_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by TRNG_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="TRNG_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by CRYPTO_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CRYPTO_CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SECDMACLKGS" width="32" description="SEC (PKA And TRNG And CRYPTO) And UDMA Clock Gate For Sleep Mode" id="SECDMACLKGS" offset="0x40">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by SECDMACLKGR.DMA_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="DMA_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by SECDMACLKGR.PKA_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="PKA_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by SECDMACLKGR.TRNG_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="TRNG_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by SECDMACLKGR.CRYPTO_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CRYPTO_CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SECDMACLKGDS" width="32" description="SEC (PKA And TRNG and CRYPTO) And UDMA Clock Gate For Deep Sleep Mode" id="SECDMACLKGDS" offset="0x44">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by SECDMACLKGR.DMA_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="DMA_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by SECDMACLKGR.PKA_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="PKA_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+SYSBUS clock will always run when enabled
+
+Can be forced on by SECDMACLKGR.TRNG_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="TRNG_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+SYSBUS clock will always run when enabled
+
+Can be forced on by SECDMACLKGR.CRYPTO_AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CRYPTO_CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPIOCLKGR" width="32" description="GPIO Clock Gate For Run And All Modes" id="GPIOCLKGR" offset="0x48">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides CLK_EN,  GPIOCLKGS.CLK_EN and  GPIOCLKGDS.CLK_EN when enabled.
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="AM_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPIOCLKGS" width="32" description="GPIO Clock Gate For Sleep Mode" id="GPIOCLKGS" offset="0x4c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by GPIOCLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPIOCLKGDS" width="32" description="GPIO Clock Gate For Deep Sleep Mode" id="GPIOCLKGDS" offset="0x50">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by GPIOCLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPTCLKGR" width="32" description="GPT Clock Gate For Run And All Modes" id="GPTCLKGR" offset="0x54">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="4" end="8" rwaccess="RW" description="Each bit below has the following meaning:
+
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides CLK_EN,  GPTCLKGS.CLK_EN and  GPTCLKGDS.CLK_EN when enabled.
+
+ENUMs can be combined
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="AM_CLK_EN" resetval="0x0">
+         <bitenum id="AM_GPT3" value="8" token="Enable clock for GPT3  in all modes" description="Enable clock for GPT3  in all modes"/>
+         <bitenum id="AM_GPT2" value="4" token="Enable clock for GPT2  in all modes" description="Enable clock for GPT2  in all modes"/>
+         <bitenum id="AM_GPT1" value="2" token="Enable clock for GPT1  in all modes" description="Enable clock for GPT1  in all modes"/>
+         <bitenum id="AM_GPT0" value="1" token="Enable clock for GPT0 in all modes" description="Enable clock for GPT0 in all modes"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Each bit below has the following meaning:
+
+0: Disable clock
+1: Enable clock 
+
+Can be forced on by AM_CLK_EN
+
+ENUMs can be combined
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="GPT3" value="8" token="Enable clock for GPT3" description="Enable clock for GPT3"/>
+         <bitenum id="GPT2" value="4" token="Enable clock for GPT2" description="Enable clock for GPT2"/>
+         <bitenum id="GPT1" value="2" token="Enable clock for GPT1" description="Enable clock for GPT1"/>
+         <bitenum id="GPT0" value="1" token="Enable clock for GPT0" description="Enable clock for GPT0"/>
+      </bitfield>
+   </register>
+   <register acronym="GPTCLKGS" width="32" description="GPT Clock Gate For Sleep Mode" id="GPTCLKGS" offset="0x58">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Each bit below has the following meaning:
+
+0: Disable clock
+1: Enable clock
+
+Can be forced on by GPTCLKGR.AM_CLK_EN
+
+ENUMs can be combined
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="GPT3" value="8" token="Enable clock for GPT3" description="Enable clock for GPT3"/>
+         <bitenum id="GPT2" value="4" token="Enable clock for GPT2" description="Enable clock for GPT2"/>
+         <bitenum id="GPT1" value="2" token="Enable clock for GPT1" description="Enable clock for GPT1"/>
+         <bitenum id="GPT0" value="1" token="Enable clock for GPT0" description="Enable clock for GPT0"/>
+      </bitfield>
+   </register>
+   <register acronym="GPTCLKGDS" width="32" description="GPT Clock Gate For Deep Sleep Mode" id="GPTCLKGDS" offset="0x5c">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Each bit below has the following meaning:
+
+0: Disable clock
+1: Enable clock
+
+Can be forced on by GPTCLKGR.AM_CLK_EN
+
+ENUMs can be combined
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="GPT3" value="8" token="Enable clock for GPT3" description="Enable clock for GPT3"/>
+         <bitenum id="GPT2" value="4" token="Enable clock for GPT2" description="Enable clock for GPT2"/>
+         <bitenum id="GPT1" value="2" token="Enable clock for GPT1" description="Enable clock for GPT1"/>
+         <bitenum id="GPT0" value="1" token="Enable clock for GPT0" description="Enable clock for GPT0"/>
+      </bitfield>
+   </register>
+   <register acronym="I2CCLKGR" width="32" description="I2C Clock Gate For Run And All Modes" id="I2CCLKGR" offset="0x60">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides CLK_EN,  I2CCLKGS.CLK_EN and  I2CCLKGDS.CLK_EN when enabled.
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="AM_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="I2CCLKGS" width="32" description="I2C Clock Gate For Sleep Mode" id="I2CCLKGS" offset="0x64">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by I2CCLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="I2CCLKGDS" width="32" description="I2C Clock Gate For Deep Sleep Mode" id="I2CCLKGDS" offset="0x68">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by I2CCLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="UARTCLKGR" width="32" description="UART Clock Gate For Run And All Modes" id="UARTCLKGR" offset="0x6c">
+      <bitfield range="" begin="31" width="22" end="10" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="2" end="8" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides CLK_EN,  UARTCLKGS.CLK_EN and  UARTCLKGDS.CLK_EN when enabled.
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="AM_CLK_EN" resetval="0x0">
+         <bitenum id="AM_UART1" value="2" token="Enable clock for UART1" description="Enable clock for UART1"/>
+         <bitenum id="AM_UART0" value="1" token="Enable clock for UART0" description="Enable clock for UART0"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="6" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="UART1" value="2" token="Enable clock for UART1" description="Enable clock for UART1"/>
+         <bitenum id="UART0" value="1" token="Enable clock for UART0" description="Enable clock for UART0"/>
+      </bitfield>
+   </register>
+   <register acronym="UARTCLKGS" width="32" description="UART Clock Gate For Sleep Mode" id="UARTCLKGS" offset="0x70">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by UARTCLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="AM_UART1" value="2" token="Enable clock for UART1" description="Enable clock for UART1"/>
+         <bitenum id="AM_UART0" value="1" token="Enable clock for UART0" description="Enable clock for UART0"/>
+      </bitfield>
+   </register>
+   <register acronym="UARTCLKGDS" width="32" description="UART Clock Gate For Deep Sleep Mode" id="UARTCLKGDS" offset="0x74">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by UARTCLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="AM_UART1" value="2" token="Enable clock for UART1" description="Enable clock for UART1"/>
+         <bitenum id="AM_UART0" value="1" token="Enable clock for UART0" description="Enable clock for UART0"/>
+      </bitfield>
+   </register>
+   <register acronym="SSICLKGR" width="32" description="SSI Clock Gate For Run And All Modes" id="SSICLKGR" offset="0x78">
+      <bitfield range="" begin="31" width="22" end="10" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="2" end="8" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides CLK_EN,  SSICLKGS.CLK_EN and  SSICLKGDS.CLK_EN when enabled.
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="AM_CLK_EN" resetval="0x0">
+         <bitenum id="SSI1" value="2" token="Enable clock for SSI1" description="Enable clock for SSI1"/>
+         <bitenum id="SSI0" value="1" token="Enable clock for SSI0" description="Enable clock for SSI0"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="6" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="SSI1" value="2" token="Enable clock for SSI1" description="Enable clock for SSI1"/>
+         <bitenum id="SSI0" value="1" token="Enable clock for SSI0" description="Enable clock for SSI0"/>
+      </bitfield>
+   </register>
+   <register acronym="SSICLKGS" width="32" description="SSI Clock Gate For Sleep Mode" id="SSICLKGS" offset="0x7c">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by SSICLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="SSI1" value="2" token="Enable clock for SSI1" description="Enable clock for SSI1"/>
+         <bitenum id="SSI0" value="1" token="Enable clock for SSI0" description="Enable clock for SSI0"/>
+      </bitfield>
+   </register>
+   <register acronym="SSICLKGDS" width="32" description="SSI Clock Gate For Deep Sleep Mode" id="SSICLKGDS" offset="0x80">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by SSICLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+
+" id="CLK_EN" resetval="0x0">
+         <bitenum id="SSI1" value="2" token="Enable clock for SSI1" description="Enable clock for SSI1"/>
+         <bitenum id="SSI0" value="1" token="Enable clock for SSI0" description="Enable clock for SSI0"/>
+      </bitfield>
+   </register>
+   <register acronym="I2SCLKGR" width="32" description="I2S Clock Gate For Run And All Modes" id="I2SCLKGR" offset="0x84">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="
+0: No force
+1: Force clock on for all modes (Run, Sleep and Deep Sleep)
+
+Overrides CLK_EN,  I2SCLKGS.CLK_EN and  I2SCLKGDS.CLK_EN when enabled.
+SYSBUS clock will always run when enabled
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="AM_CLK_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="I2SCLKGS" width="32" description="I2S Clock Gate For Sleep Mode" id="I2SCLKGS" offset="0x88">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+Can be forced on by I2SCLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="I2SCLKGDS" width="32" description="I2S Clock Gate For Deep Sleep Mode" id="I2SCLKGDS" offset="0x8c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: Disable clock
+1: Enable clock
+
+SYSBUS clock will always run when enabled
+
+Can be forced on by I2SCLKGR.AM_CLK_EN
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="CLK_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SYSBUSCLKDIV" width="32" description="Internal. Only to be used through TI provided API." id="SYSBUSCLKDIV" offset="0xb4">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RATIO" resetval="0x0">
+         <bitenum id="DIV2" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV1" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="CPUCLKDIV" width="32" description="Internal. Only to be used through TI provided API." id="CPUCLKDIV" offset="0xb8">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RATIO" resetval="0x0">
+         <bitenum id="DIV2" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV1" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="PERBUSCPUCLKDIV" width="32" description="Internal. Only to be used through TI provided API." id="PERBUSCPUCLKDIV" offset="0xbc">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RATIO" resetval="0x0">
+         <bitenum id="DIV256" value="8" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV128" value="7" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV64" value="6" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV32" value="5" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV16" value="4" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV8" value="3" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV4" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV2" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV1" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="PERBUSDMACLKDIV" width="32" description="Internal. Only to be used through TI provided API." id="PERBUSDMACLKDIV" offset="0xc0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="SPARE0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PERDMACLKDIV" width="32" description="Internal. Only to be used through TI provided API." id="PERDMACLKDIV" offset="0xc4">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="RATIO" resetval="0x0">
+         <bitenum id="DIV256" value="8" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV128" value="7" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV64" value="6" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV32" value="5" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV16" value="4" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV8" value="3" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV4" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV2" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DIV1" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="I2SBCLKSEL" width="32" description="I2S Clock Control" id="I2SBCLKSEL" offset="0xc8">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="BCLK source selector
+
+0: Use external BCLK
+1: Use internally generated clock
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="SRC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="GPTCLKDIV" width="32" description="GPT Scalar" id="GPTCLKDIV" offset="0xcc">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Scalar used for GPTs. The division rate will be constant and ungated for Run / Sleep / DeepSleep mode.   For changes to take effect, CLKLOADCTL.LOAD needs to be written Other values are not supported." id="RATIO" resetval="0x0">
+         <bitenum id="DIV256" value="8" token="Divide by 256" description="Divide by 256"/>
+         <bitenum id="DIV128" value="7" token="Divide by 128" description="Divide by 128"/>
+         <bitenum id="DIV64" value="6" token="Divide by 64" description="Divide by 64"/>
+         <bitenum id="DIV32" value="5" token="Divide by 32" description="Divide by 32"/>
+         <bitenum id="DIV16" value="4" token="Divide by 16" description="Divide by 16"/>
+         <bitenum id="DIV8" value="3" token="Divide by 8" description="Divide by 8"/>
+         <bitenum id="DIV4" value="2" token="Divide by 4" description="Divide by 4"/>
+         <bitenum id="DIV2" value="1" token="Divide by 2" description="Divide by 2"/>
+         <bitenum id="DIV1" value="0" token="Divide by 1" description="Divide by 1"/>
+      </bitfield>
+   </register>
+   <register acronym="I2SCLKCTL" width="32" description="I2S Clock Control" id="I2SCLKCTL" offset="0xd0">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="On the I2S serial interface, data and WCLK is sampled and clocked out on opposite edges of BCLK. 
+
+0 - data and WCLK are sampled on the negative edge and clocked out on the positive edge. 
+1 - data and WCLK are sampled on the positive edge and clocked out on the negative edge.
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="SMPL_ON_POSEDGE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="2" end="1" rwaccess="RW" description="Decides how the WCLK division ratio is calculated and used to generate different duty cycles (See I2SWCLKDIV.WDIV). 
+
+0: Single phase
+1: Dual phase
+2: User Defined
+3: Reserved/Undefined
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written
+" id="WCLK_PHASE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: MCLK, BCLK and WCLK will be static low
+1: Enables the generation of  MCLK, BCLK and WCLK
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="I2SMCLKDIV" width="32" description="MCLK Division Ratio" id="I2SMCLKDIV" offset="0xd4">
+      <bitfield range="" begin="31" width="22" end="10" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="10" end="0" rwaccess="RW" description="An unsigned factor of the division ratio used to generate MCLK [2-1024]:
+
+MCLK = MCUCLK/MDIV[Hz]
+MCUCLK is 48MHz.
+
+A value of 0 is interpreted as 1024.
+A value of 1 is invalid.
+If MDIV is odd the low phase of the clock is one MCUCLK period longer than the high phase.
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="MDIV" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="I2SBCLKDIV" width="32" description="BCLK Division Ratio" id="I2SBCLKDIV" offset="0xd8">
+      <bitfield range="" begin="31" width="22" end="10" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="10" end="0" rwaccess="RW" description="An unsigned factor of the division ratio used to generate I2S BCLK [2-1024]:
+
+BCLK = MCUCLK/BDIV[Hz]
+MCUCLK is 48MHz.
+
+A value of 0 is interpreted as 1024.
+A value of 1 is invalid.
+If BDIV is odd and I2SCLKCTL.SMPL_ON_POSEDGE = 0, the low phase of the clock is one MCUCLK period longer than the high phase. 
+If BDIV is odd and I2SCLKCTL.SMPL_ON_POSEDGE = 1 , the high phase of the clock is one MCUCLK period longer than the low phase. 
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="BDIV" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="I2SWCLKDIV" width="32" description="WCLK Division Ratio" id="I2SWCLKDIV" offset="0xdc">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="If I2SCLKCTL.WCLK_PHASE = 0, Single phase.
+WCLK is high one BCLK period and low WDIV[9:0] (unsigned, [1-1023]) BCLK periods.
+ 
+WCLK = MCUCLK / BDIV*(WDIV[9:0] + 1) [Hz]
+MCUCLK is 48MHz.
+
+If I2SCLKCTL.WCLK_PHASE = 1, Dual phase.
+Each phase on WCLK (50% duty cycle) is WDIV[9:0] (unsigned, [1-1023]) BCLK periods.
+
+WCLK = MCUCLK / BDIV*(2*WDIV[9:0]) [Hz] 
+
+If I2SCLKCTL.WCLK_PHASE = 2, User defined.
+WCLK is high WDIV[7:0] (unsigned, [1-255]) BCLK periods and low WDIV[15:8] (unsigned, [1-255]) BCLK periods.
+
+WCLK = MCUCLK / (BDIV*(WDIV[7:0] + WDIV[15:8]) [Hz] 
+
+For changes to take effect, CLKLOADCTL.LOAD needs to be written" id="WDIV" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESETSECDMA" width="32" description="RESET For SEC (PKA And TRNG And CRYPTO) And UDMA" id="RESETSECDMA" offset="0xf0">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Write 1 to reset. HW cleared.
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="DMA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Write 1 to reset. HW cleared.
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="PKA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Write 1 to reset. HW cleared.
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="TRNG" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Write 1 to reset. HW cleared.
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="CRYPTO" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESETGPIO" width="32" description="RESET For GPIO IPs" id="RESETGPIO" offset="0xf4">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="
+0: No action 
+1: Reset GPIO. HW cleared.
+
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="GPIO" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESETGPT" width="32" description="RESET For GPT Ips" id="RESETGPT" offset="0xf8">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="
+0: No action 
+1: Reset all GPTs. HW cleared.
+
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="GPT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESETI2C" width="32" description="RESET For I2C IPs" id="RESETI2C" offset="0xfc">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="
+0: No action 
+1: Reset I2C. HW cleared.
+
+Acess will only have effect when SERIAL power domain is on, PDSTAT0.SERIAL_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="I2C" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESETUART" width="32" description="RESET For UART IPs" id="RESETUART" offset="0x100">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="
+0: No action 
+1: Reset UART1. HW cleared.
+
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="UART1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="
+0: No action 
+1: Reset UART0. HW cleared.
+
+Acess will only have effect when SERIAL power domain is on, PDSTAT0.SERIAL_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="UART0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESETSSI" width="32" description="RESET For SSI IPs" id="RESETSSI" offset="0x104">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="WO" description="SSI 0: 
+
+0: No action 
+1: Reset SSI. HW cleared.
+
+Acess will only have effect when SERIAL power domain is on, PDSTAT0.SERIAL_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset.
+
+SSI 1: 
+
+0: No action 
+1: Reset SSI. HW cleared.
+
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="SSI" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESETI2S" width="32" description="RESET For I2S IP" id="RESETI2S" offset="0x108">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="
+0: No action 
+1: Reset module. HW cleared.
+
+Acess will only have effect when PERIPH power domain is on, PDSTAT0.PERIPH_ON = 1
+Before writing set FLASH:CFG.DIS_READACCESS = 1 to ensure the reset is not activated while executing from flash. This means one cannot execute from flash when using the SW reset." id="I2S" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDCTL0" width="32" description="Power Domain Control" id="PDCTL0" offset="0x12c">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="PERIPH Power domain.
+
+0: PERIPH power domain is powered down
+1: PERIPH power domain is powered up
+" id="PERIPH_ON" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="SERIAL Power domain.
+
+0: SERIAL power domain is powered down
+1: SERIAL power domain is powered up
+" id="SERIAL_ON" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="
+0: RFC power domain powered off if also PDCTL1.RFC_ON = 0
+1: RFC power domain powered on
+" id="RFC_ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDCTL0RFC" width="32" description="RFC Power Domain Control" id="PDCTL0RFC" offset="0x130">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Alias for PDCTL0.RFC_ON" id="ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDCTL0SERIAL" width="32" description="SERIAL Power Domain Control" id="PDCTL0SERIAL" offset="0x134">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Alias for PDCTL0.SERIAL_ON" id="ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDCTL0PERIPH" width="32" description="PERIPH Power Domain Control" id="PDCTL0PERIPH" offset="0x138">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Alias for PDCTL0.PERIPH_ON" id="ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT0" width="32" description="Power Domain Status" id="PDSTAT0" offset="0x140">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="PERIPH Power domain.
+
+0: Domain may be powered down
+1: Domain powered up (guaranteed)
+" id="PERIPH_ON" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="SERIAL Power domain.
+
+0: Domain may be powered down
+1: Domain powered up (guaranteed)
+" id="SERIAL_ON" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="RFC Power domain
+
+0: Domain may be powered down
+1: Domain powered up (guaranteed)
+" id="RFC_ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT0RFC" width="32" description="RFC Power Domain Status" id="PDSTAT0RFC" offset="0x144">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Alias for PDSTAT0.RFC_ON" id="ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT0SERIAL" width="32" description="SERIAL Power Domain Status" id="PDSTAT0SERIAL" offset="0x148">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Alias for PDSTAT0.SERIAL_ON" id="ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT0PERIPH" width="32" description="PERIPH Power Domain Status" id="PDSTAT0PERIPH" offset="0x14c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Alias for PDSTAT0.PERIPH_ON" id="ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDCTL1" width="32" description="Power Domain Control" id="PDCTL1" offset="0x17c">
+      <bitfield range="" begin="31" width="27" end="5" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="2" end="3" rwaccess="RW" description="
+00: VIMS power domain is only powered when CPU power domain is powered.
+01: VIMS power domain is powered whenever the BUS power domain is powered. 
+1X: Block power up of VIMS power domain at next wake up. This mode only has effect when VIMS power domain is not powered. Used for Autonomous RF Core." id="VIMS_MODE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description=" 0: RFC power domain powered off if also PDCTL0.RFC_ON = 0 1: RFC power domain powered on  Bit shall be used by RFC in autonomous mode but there is no HW restrictions fom system CPU to access the bit." id="RFC_ON" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="
+0: Causes a power down of the CPU power domain when system CPU indicates it is idle. 
+1: Initiates power-on of the CPU power domain.
+
+This bit is automatically set by a WIC power-on event." id="CPU_ON" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDCTL1CPU" width="32" description="CPU Power Domain Direct Control" id="PDCTL1CPU" offset="0x184">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="This is an alias for PDCTL1.CPU_ON" id="ON" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PDCTL1RFC" width="32" description="RFC Power Domain Direct Control" id="PDCTL1RFC" offset="0x188">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="This is an alias for PDCTL1.RFC_ON" id="ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDCTL1VIMS" width="32" description="VIMS Mode Direct Control" id="PDCTL1VIMS" offset="0x18c">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="This is an alias for PDCTL1.VIMS_MODE" id="MODE" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT1" width="32" description="Power Manager Status" id="PDSTAT1" offset="0x194">
+      <bitfield range="" begin="31" width="27" end="5" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="
+0: BUS domain not accessible
+1: BUS domain is currently accessible
+" id="BUS_ON" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="
+0: VIMS domain not accessible
+1: VIMS domain is currently accessible
+" id="VIMS_ON" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="
+0: RFC domain not accessible
+1: RFC domain is currently accessible
+" id="RFC_ON" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="
+0: CPU and BUS domain not accessible
+1: CPU and BUS domains are both currently accessible
+" id="CPU_ON" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT1BUS" width="32" description="BUS Power Domain Direct Read Status" id="PDSTAT1BUS" offset="0x198">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="This is an alias for PDSTAT1.BUS_ON" id="ON" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT1RFC" width="32" description="RFC Power Domain Direct Read Status" id="PDSTAT1RFC" offset="0x19c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="This is an alias for PDSTAT1.RFC_ON" id="ON" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT1CPU" width="32" description="CPU Power Domain Direct Read Status" id="PDSTAT1CPU" offset="0x1a0">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="This is an alias for PDSTAT1.CPU_ON" id="ON" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="PDSTAT1VIMS" width="32" description="VIMS Mode Direct Read Status" id="PDSTAT1VIMS" offset="0x1a4">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="This is an alias for PDSTAT1.VIMS_ON" id="ON" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="RFCBITS" width="32" description="Control To RFC" id="RFCBITS" offset="0x1cc">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Control bits for RFC. The RF core CPE processor will automatically check this register when it boots, and it can be used to immediately instruct CPE to perform some tasks at its start-up. The supported functionality is ROM-defined and may vary. See the technical reference manual for more details.
+
+" id="READ" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RFCMODESEL" width="32" description="Selected RFC Mode" id="RFCMODESEL" offset="0x1d0">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Selects the set of commands that the RFC will accept. Only modes permitted by RFCMODEHWOPT.AVAIL are writeable. See the technical reference manual for details." id="CURR" resetval="0x0">
+         <bitenum id="MODE7" value="7" token="Select Mode 7" description="Select Mode 7"/>
+         <bitenum id="MODE6" value="6" token="Select Mode 6" description="Select Mode 6"/>
+         <bitenum id="MODE5" value="5" token="Select Mode 5" description="Select Mode 5"/>
+         <bitenum id="MODE4" value="4" token="Select Mode 4" description="Select Mode 4"/>
+         <bitenum id="MODE3" value="3" token="Select Mode 3" description="Select Mode 3"/>
+         <bitenum id="MODE2" value="2" token="Select Mode 2" description="Select Mode 2"/>
+         <bitenum id="MODE1" value="1" token="Select Mode 1" description="Select Mode 1"/>
+         <bitenum id="MODE0" value="0" token="Select Mode 0" description="Select Mode 0"/>
+      </bitfield>
+   </register>
+   <register acronym="RFCMODEHWOPT" width="32" description="Allowed RFC Modes" id="RFCMODEHWOPT" offset="0x1d4">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Permitted RFC modes. More than one mode can be permitted." id="AVAIL" resetval="0x0">
+         <bitenum id="MODE7" value="128" token="Mode 7 permitted" description="Mode 7 permitted"/>
+         <bitenum id="MODE6" value="64" token="Mode 6 permitted" description="Mode 6 permitted"/>
+         <bitenum id="MODE5" value="32" token="Mode 5 permitted" description="Mode 5 permitted"/>
+         <bitenum id="MODE4" value="16" token="Mode 4 permitted" description="Mode 4 permitted"/>
+         <bitenum id="MODE3" value="8" token="Mode 3 permitted" description="Mode 3 permitted"/>
+         <bitenum id="MODE2" value="4" token="Mode 2 permitted" description="Mode 2 permitted"/>
+         <bitenum id="MODE1" value="2" token="Mode 1 permitted" description="Mode 1 permitted"/>
+         <bitenum id="MODE0" value="1" token="Mode 0 permitted" description="Mode 0 permitted"/>
+      </bitfield>
+   </register>
+   <register acronym="PWRPROFSTAT" width="32" description="Power Profiler Register" id="PWRPROFSTAT" offset="0x1e0">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="SW can use these bits to timestamp the application. These bits are also available through the testtap and can thus be used by the emulator to profile in real time." id="VALUE" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="MCUSRAMCFG" width="32" description="MCU SRAM configuration" id="MCUSRAMCFG" offset="0x21c">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Burst Mode disable
+
+0: Burst Mode enabled.
+1: Burst Mode off." id="BM_OFF" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Page Mode select
+
+0: Page Mode disabled. Memory works in standard mode
+1: Page Mode enabled. Only one  half of butterfly array selected. Page Mode will select either LSB half or MSB half of the word based on PGS setting. 
+
+This mode can be used for additional power saving " id="PAGE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="0: Select LSB half of word during Page Mode, PAGE = 1
+1: Select MSB half of word during Page Mode, PAGE = 1
+" id="PGS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Burst Mode Enable
+
+0: Burst Mode Disable. Memory works in standard mode.
+1: Burst Mode Enable
+
+When in Burst Mode bitline precharge and wordline firing depends on PCH_F and PCH_L.
+Burst Mode results in reduction in active power." id="BM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="0: No bitline precharge in second half of cycle
+1: Bitline precharge in second half of cycle when in Burst Mode, BM = 1" id="PCH_F" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="0: No bitline precharge in first half of cycle
+1: Bitline precharge in first half of cycle when in Burst Mode, BM = 1" id="PCH_L" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RAMRETEN" width="32" description="Memory Retention Control" id="RAMRETEN" offset="0x224">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="0: Retention for RFC ULL SRAM disabled 
+1: Retention for RFC ULL SRAM enabled 
+
+Memories controlled:
+CPEULLRAM" id="RFCULL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="0: Retention for RFC SRAM disabled  
+1: Retention for RFC SRAM enabled  
+
+Memories controlled: CPERAM  MCERAM  RFERAM  DSBRAM " id="RFC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="
+0: Memory retention disabled
+1: Memory retention enabled  
+
+Bit 0: VIMS_TRAM 
+Bit 1: VIMS_CRAM  
+
+Legal modes depend on settings in VIMS:CTL.MODE  
+
+00: VIMS:CTL.MODE must be OFF before DEEPSLEEP is asserted - must be set to CACHE or SPLIT mode after waking up again 
+01: VIMS:CTL.MODE must be GPRAM before DEEPSLEEP is asserted. Must remain in GPRAM mode after wake up, alternatively select OFF mode first and then CACHE or SPILT mode. 
+10: Illegal mode 
+11: No restrictions
+" id="VIMS" resetval="0x3">
+      </bitfield>
+   </register>
+   <register acronym="OSCIMSC" width="32" description="Oscillator Interrupt Mask" id="OSCIMSC" offset="0x290">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="0: Disable interrupt generation when HFSRCPEND is qualified
+1: Enable interrupt generation when HFSRCPEND is qualified" id="HFSRCPENDIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="0: Disable interrupt generation when LFSRCDONE is qualified
+1: Enable interrupt generation when LFSRCDONE is qualified" id="LFSRCDONEIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="0: Disable interrupt generation when XOSCDLF is qualified
+1: Enable interrupt generation when XOSCDLF is qualified" id="XOSCDLFIM" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="0: Disable interrupt generation when XOSCLF is qualified
+1: Enable interrupt generation when XOSCLF is qualified" id="XOSCLFIM" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="0: Disable interrupt generation when RCOSCDLF is qualified
+1: Enable interrupt generation when RCOSCDLF is qualified" id="RCOSCDLFIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="0: Disable interrupt generation when RCOSCLF is qualified
+1: Enable interrupt generation when RCOSCLF is qualified" id="RCOSCLFIM" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="0: Disable interrupt generation when XOSCHF is qualified
+1: Enable interrupt generation when XOSCHF is qualified" id="XOSCHFIM" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="0: Disable interrupt generation when RCOSCHF is qualified
+1: Enable interrupt generation when RCOSCHF is qualified" id="RCOSCHFIM" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OSCRIS" width="32" description="Oscillator Raw Interrupt Status" id="OSCRIS" offset="0x294">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="0: HFSRCPEND has not been qualified
+1: HFSRCPEND has been qualified since last clear 
+
+Interrupt is qualified regardless of OSCIMSC.HFSRCPENDIM setting. The order of qualifying raw interrupt and enable of interrupt mask is indifferent for generating an OSC Interrupt. 
+
+Set by HW. Cleared by writing to OSCICR.HFSRCPENDC" id="HFSRCPENDRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="0: LFSRCDONE has not been qualified
+1: LFSRCDONE has been qualified since last clear 
+
+Interrupt is qualified regardless of OSCIMSC.LFSRCDONEIM setting. The order of qualifying raw interrupt and enable of interrupt mask is indifferent for generating an OSC Interrupt. 
+
+Set by HW. Cleared by writing to OSCICR.LFSRCDONEC" id="LFSRCDONERIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="0: XOSCDLF has not been qualified
+1: XOSCDLF has been qualified since last clear. 
+
+Interrupt is qualified regardless of OSCIMSC.XOSCDLFIM setting. The order of qualifying raw interrupt and enable of interrupt mask is indifferent for generating an OSC Interrupt. 
+
+Set by HW. Cleared by writing to OSCICR.XOSCDLFC" id="XOSCDLFRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="0: XOSCLF has not been qualified
+1: XOSCLF has been qualified since last clear. 
+
+Interrupt is qualified regardless of OSCIMSC.XOSCLFIM setting. The order of qualifying raw interrupt and enable of interrupt mask is indifferent for generating an OSC Interrupt. 
+
+Set by HW. Cleared by writing to OSCICR.XOSCLFC" id="XOSCLFRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="0: RCOSCDLF has not been qualified
+1: RCOSCDLF has been qualified since last clear.
+
+Interrupt is qualified regardless of OSCIMSC.RCOSCDLFIM setting. The order of qualifying raw interrupt and enable of interrupt mask is indifferent for generating an OSC Interrupt. 
+
+Set by HW. Cleared by writing to OSCICR.RCOSCDLFC" id="RCOSCDLFRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="0: RCOSCLF has not been qualified
+1: RCOSCLF has been qualified since last clear. 
+
+Interrupt is qualified regardless of OSCIMSC.RCOSCLFIM setting. The order of qualifying raw interrupt and enable of interrupt mask is indifferent for generating an OSC Interrupt. 
+
+Set by HW. Cleared by writing to OSCICR.RCOSCLFC" id="RCOSCLFRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="0: XOSCHF has not been qualified
+1: XOSCHF has been qualified since last clear. 
+
+Interrupt is qualified regardless of OSCIMSC.XOSCHFIM setting. The order of qualifying raw interrupt and enable of interrupt mask is indifferent for generating an OSC Interrupt. 
+
+Set by HW. Cleared by writing to OSCICR.XOSCHFC" id="XOSCHFRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="0: RCOSCHF has not been qualified
+1: RCOSCHF has been qualified since last clear. 
+
+Interrupt is qualified regardless of OSCIMSC.RCOSCHFIM setting. The order of qualifying raw interrupt and enable of interrupt mask is indifferent for generating an OSC Interrupt.
+
+Set by HW. Cleared by writing to OSCICR.RCOSCHFC" id="RCOSCHFRIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OSCICR" width="32" description="Oscillator Raw Interrupt Clear" id="OSCICR" offset="0x298">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="WO" description="Writing 1 to this field clears the HFSRCPEND raw interrupt status. Writing 0 has no effect." id="HFSRCPENDC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="WO" description="Writing 1 to this field clears the LFSRCDONE raw interrupt status. Writing 0 has no effect." id="LFSRCDONEC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="WO" description="Writing 1 to this field clears the XOSCDLF raw interrupt status. Writing 0 has no effect." id="XOSCDLFC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="WO" description="Writing 1 to this field clears the XOSCLF raw interrupt status. Writing 0 has no effect." id="XOSCLFC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="Writing 1 to this field clears the RCOSCDLF raw interrupt status. Writing 0 has no effect." id="RCOSCDLFC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Writing 1 to this field clears the RCOSCLF raw interrupt status. Writing 0 has no effect." id="RCOSCLFC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Writing 1 to this field clears the XOSCHF raw interrupt status. Writing 0 has no effect." id="XOSCHFC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Writing 1 to this field clears the RCOSCHF raw interrupt status. Writing 0 has no effect." id="RCOSCHFC" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

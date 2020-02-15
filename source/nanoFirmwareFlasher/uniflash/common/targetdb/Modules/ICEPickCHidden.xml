@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="Hidden" HW_revision="1" XML_version="1" description="" hidden="true" >
+	<register id="IP_GLOBALSTART" acronym="IP_GLOBALSTART" width="32" description="" />
+	<register id="IP_CC2538_MASSERASE" acronym="IP_CC2538_MASSERASE" width="32" description="" />
+	<register id="IP_CC26xx_CHIPRESET" acronym="IP_CC26xx_CHIPRESET" width="32" description="" />
+	<register id="IP_CC26xx_TMSSTRENGTH" acronym="IP_CC26xx_TMSSTRENGTH" width="32" description="" />
+	<register id="IP_CC26xx_CHIPERASE" acronym="IP_CC26xx_CHIPERASE" width="32" description="" />
+	<register id="IP_CC26xx_WAKEUPMCU" acronym="IP_CC26xx_WAKEUPMCU" width="32" description="" />
+</module>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AUX_SMPH" HW_revision="" XML_version="1.0" description="AUX Semaphore (AUX_SMPH) provides hardware means to share modules in AUX safely between CPUs based on resource ownership. 
+
+AUX_SMPH operates at AUX bus rate." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="SMPH0" width="32" description="Semaphore 0" id="SMPH0" offset="0x0">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request or release of semaphore.
+
+Request by read:
+
+0: Semaphore not available.
+1: Semaphore granted.
+
+Release by write:
+
+0: Do not use.
+1: Release semaphore." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH1" width="32" description="Semaphore 1" id="SMPH1" offset="0x4">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request or release of semaphore.
+
+Request by read:
+
+0: Semaphore not available.
+1: Semaphore granted.
+
+Release by write:
+
+0: Do not use.
+1: Release semaphore." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH2" width="32" description="Semaphore 2" id="SMPH2" offset="0x8">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request or release of semaphore.
+
+Request by read:
+
+0: Semaphore not available.
+1: Semaphore granted.
+
+Release by write:
+
+0: Do not use.
+1: Release semaphore." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH3" width="32" description="Semaphore 3" id="SMPH3" offset="0xc">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request or release of semaphore.
+
+Request by read:
+
+0: Semaphore not available.
+1: Semaphore granted.
+
+Release by write:
+
+0: Do not use.
+1: Release semaphore." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH4" width="32" description="Semaphore 4" id="SMPH4" offset="0x10">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request or release of semaphore.
+
+Request by read:
+
+0: Semaphore not available.
+1: Semaphore granted.
+
+Release by write:
+
+0: Do not use.
+1: Release semaphore." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH5" width="32" description="Semaphore 5" id="SMPH5" offset="0x14">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request or release of semaphore.
+
+Request by read:
+
+0: Semaphore not available.
+1: Semaphore granted.
+
+Release by write:
+
+0: Do not use.
+1: Release semaphore." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH6" width="32" description="Semaphore 6" id="SMPH6" offset="0x18">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request or release of semaphore.
+
+Request by read:
+
+0: Semaphore not available.
+1: Semaphore granted.
+
+Release by write:
+
+0: Do not use.
+1: Release semaphore." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SMPH7" width="32" description="Semaphore 7" id="SMPH7" offset="0x1c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request or release of semaphore.
+
+Request by read:
+
+0: Semaphore not available.
+1: Semaphore granted.
+
+Release by write:
+
+0: Do not use.
+1: Release semaphore." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="AUTOTAKE" width="32" description="Auto Take
+
+Sticky Request for Single Semaphore." id="AUTOTAKE" offset="0x20">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Write the semaphore ID,0x0-0x7, to SMPH_ID to request this semaphore until it is granted. 
+
+When semaphore SMPH_ID is granted, event  AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE becomes 1. 
+
+The event becomes 0 when software releases the semaphore or writes a new value to SMPH_ID.
+
+To avoid corrupted semaphores: 
+- Usage of this functionality must be restricted to one CPU core. 
+- Software must wait until AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE is 1 before it writes a new value to SMPH_ID. " id="SMPH_ID" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

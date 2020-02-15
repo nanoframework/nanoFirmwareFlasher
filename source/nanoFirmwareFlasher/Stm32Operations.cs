@@ -114,7 +114,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // done here, this command has no further processing
                     return ExitCodes.OK;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // exception
                     return ExitCodes.E1003;
@@ -152,6 +152,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // now program the application file
                     programResult = jtagDevice.FlashBinFiles(new List<string>() { applicationPath }, new List<string>() { deploymentAddress });
+                }
+
+                if(updateFw)
+                {
+                    // reset MCU
+                    jtagDevice.ResetMcu();
                 }
 
                 return programResult;

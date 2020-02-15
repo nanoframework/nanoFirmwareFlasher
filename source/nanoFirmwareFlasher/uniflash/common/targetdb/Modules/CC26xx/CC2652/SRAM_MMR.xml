@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="SRAM_MMR" HW_revision="" XML_version="1.0" description="General Purpose RAM  " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="PER_CTL" width="32" description="Parity Error Control 
+Parity error check controls" id="PER_CTL" offset="0x0">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Parity Status Disable
+
+0: A parity error will update PER_CHK.PER_ADDR field
+1: Parity error does not update PER_CHK.PER_ADDR field" id="PER_DISABLE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Parity Error Debug Enable
+
+0: Normal operation
+1: An address offset can be written to PER_DBG.PER_DEBUG_ADDR and parity errors will be generated on reads from within this offset" id="PER_DEBUG_ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PER_CHK" width="32" description="Parity Error Check
+Parity error check results" id="PER_CHK" offset="0x4">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RO" description="Parity Error Address Offset
+Returns the last address offset which resulted in a parity error during an SRAM read. The address offset returned is always the word-aligned address that contains the location with the parity error. For parity faults on non word-aligned accesses, CPU_SCS:BFAR.ADDRESS will hold the address of the location that resulted in parity error." id="PER_ADDR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PER_DBG" width="32" description="Parity Error Debug
+Parity error check debug address setting" id="PER_DBG" offset="0x8">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RW" description="Debug Parity Error Address Offset
+When PER_CTL.PER_DEBUG is 1, this field is used to set a parity debug address offset. The address offset must be a word-aligned address. Writes within this address offset will force incorrect parity bits to be stored together with the data written. The following reads within this same address offset will thus result in parity errors to be generated." id="PER_DEBUG_ADDR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MEM_CTL" width="32" description="Memory Control
+Controls memory initialization" id="MEM_CTL" offset="0xc">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Memory Busy status
+
+0: Memory accepts transfers
+1: Memory controller is busy during initialization. Read and write transfers are not performed." id="MEM_BUSY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Memory Contents Initialization enable
+
+Writing 1 to MEM_CLR_EN will start memory initialization. The contents of all byte locations will be initialized to 0x00. MEM_BUSY will be 1 until memory initialization has completed." id="MEM_CLR_EN" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

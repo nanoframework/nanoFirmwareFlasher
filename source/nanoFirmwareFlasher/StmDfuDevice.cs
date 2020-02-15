@@ -28,7 +28,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly StDfu.DfuFunctionalDescriptor _dfuDescriptor;
 
         private readonly uint _numberOfBlocks;
-        private readonly uint _startAddress;
+        //private readonly uint _startAddress;
 
         private readonly List<StDfu.MappingSector> _sectorMap;
 
@@ -108,7 +108,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string devicePath = @"\\?\" + deviceId.Replace(@"\", "#") + @"#{" + s_dfuGuid.ToString() + "}";
 
             // open device
-            returnValue = StDfu.STDFU_Open(devicePath, out _hDevice);
+#if NETCOREAPP2_1
+            throw new Exception("DFU flashing is not currently possible with dotnet core 2.1, please consider installing the 3.1 runtime");
+#else
+            returnValue = StDfu.STDFU_Open(devicePath, out _hDevice); //this causes an error using x64 on .netCore 2.1 due to trying to access the Registry
             if (returnValue != StDfu.STDFU_NOERROR)
             {
                 throw new CantOpenDfuDeviceException(returnValue);
@@ -173,6 +176,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // create sector mapping for device
             _sectorMap = StDfu.CreateMappingFromDevice(_hDevice, alternates, dfuDescriptor);
+#endif
         }
 
         /// <summary>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<!-- Node definitions.  These appear as a tree in eclipse -->
+	<node id="SerialFlashNode">
+		<name>Serial Interface Options</name>
+		<children>
+			<child>FlashSerialCOMPort</child>
+			<child>FlashSerialText2</child>
+			<child>FlashSerialBaudRate</child>
+			<child>FlashSerialText</child>
+		</children>
+	</node>
+	
+	<property id="FlashSerialText">
+		<target>generic</target>
+		<name>
+Note: The Serial Interface Settings are associated with each core; for devices with multiple cores on the same serial interface, 
+users will need to modify these settings for each core separately.</name>
+		<valueType>Text</valueType>
+	</property>
+	
+	<property id="FlashSerialCOMPort">
+		<target>generic</target>
+		<name>COM Port:  </name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+	</property>
+	
+	<property id="FlashSerialText2">
+		<target>generic</target>
+		<name>For example: COM1 (Windows)  /dev/ttyS0 (Linux)</name>
+		<valueType>Text</valueType>
+	</property>
+	
+	<property id="FlashSerialBaudRate">
+		<target>generic</target>
+		<name>Baud Rate:</name>
+		<valueType>Numeric</valueType>
+		<defaultValue>115200</defaultValue>
+	</property>
+	
+	<!-- fin -->
+</PropertyList>

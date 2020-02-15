@@ -1,0 +1,704 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="GPIO" HW_revision="" XML_version="1.0" description="MCU GPIO - I/F for controlling and reading IO status and IO event status
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="DOUT3_0" width="32" description="Data Out 0 to 3
+
+Alias register for byte access to each bit in DOUT31_0" id="DOUT3_0" offset="0x0">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#3, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#2, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#1, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#0, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUT7_4" width="32" description="Data Out 4 to 7
+
+Alias register for byte access to each bit in DOUT31_0" id="DOUT7_4" offset="0x4">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#7, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#6, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#5, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#4, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO4" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUT11_8" width="32" description="Data Out 8 to 11
+
+Alias register for byte access to each bit in DOUT31_0" id="DOUT11_8" offset="0x8">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#11, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#10, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#9, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#8, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO8" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUT15_12" width="32" description="Data Out 12 to 15
+
+Alias register for byte access to each bit in DOUT31_0" id="DOUT15_12" offset="0xc">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#15, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#14, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#13, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#12, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO12" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUT19_16" width="32" description="Data Out 16 to 19
+
+Alias register for byte access to each bit in DOUT31_0" id="DOUT19_16" offset="0x10">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#19, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#18, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#17, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#16, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO16" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUT23_20" width="32" description="Data Out 20 to 23
+
+Alias register for byte access to each bit in DOUT31_0" id="DOUT23_20" offset="0x14">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#23, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#22, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#21, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#20, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO20" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUT27_24" width="32" description="Data Out 24 to 27
+
+Alias register for byte access to each bit in DOUT31_0" id="DOUT27_24" offset="0x18">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#27, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#26, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#25, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#24, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO24" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUT31_28" width="32" description="Data Out 28 to 31
+
+Alias register for byte access to each bit in DOUT31_0" id="DOUT31_28" offset="0x1c">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#31, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#30, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="7" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#29, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Sets the state of the pin that is configured as DIO#28, if the corresponding DOE31_0 bitfield is set.
+
+" id="DIO28" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUT31_0" width="32" description="Data Output for DIO 0 to 31" id="DOUT31_0" offset="0x80">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Data output for DIO 31" id="DIO31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Data output for DIO 30" id="DIO30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Data output for DIO 29" id="DIO29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Data output for DIO 28" id="DIO28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Data output for DIO 27" id="DIO27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Data output for DIO 26" id="DIO26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Data output for DIO 25" id="DIO25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Data output for DIO 24" id="DIO24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Data output for DIO 23" id="DIO23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Data output for DIO 22" id="DIO22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Data output for DIO 21" id="DIO21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Data output for DIO 20" id="DIO20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Data output for DIO 19" id="DIO19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Data output for DIO 18" id="DIO18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Data output for DIO 17" id="DIO17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Data output for DIO 16" id="DIO16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Data output for DIO 15" id="DIO15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Data output for DIO 14" id="DIO14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Data output for DIO 13" id="DIO13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Data output for DIO 12" id="DIO12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Data output for DIO 11" id="DIO11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Data output for DIO 10" id="DIO10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Data output for DIO 9" id="DIO9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Data output for DIO 8" id="DIO8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Data output for DIO 7" id="DIO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Data output for DIO 6" id="DIO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Data output for DIO 5" id="DIO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Data output for DIO 4" id="DIO4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Data output for DIO 3" id="DIO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Data output for DIO 2" id="DIO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Data output for DIO 1" id="DIO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Data output for DIO 0" id="DIO0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUTSET31_0" width="32" description="Data Out Set
+
+Writing 1 to a bit position sets the corresponding bit in the DOUT31_0 register" id="DOUTSET31_0" offset="0x90">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="WO" description="Set bit 31" id="DIO31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="WO" description="Set bit 30" id="DIO30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="WO" description="Set bit 29" id="DIO29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="WO" description="Set bit 28" id="DIO28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="WO" description="Set bit 27" id="DIO27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="WO" description="Set bit 26" id="DIO26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="WO" description="Set bit 25" id="DIO25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Set bit 24" id="DIO24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="WO" description="Set bit 23" id="DIO23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="WO" description="Set bit 22" id="DIO22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="WO" description="Set bit 21" id="DIO21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="WO" description="Set bit 20" id="DIO20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="WO" description="Set bit 19" id="DIO19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="WO" description="Set bit 18" id="DIO18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="WO" description="Set bit 17" id="DIO17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Set bit 16" id="DIO16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="WO" description="Set bit 15" id="DIO15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="WO" description="Set bit 14" id="DIO14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="WO" description="Set bit 13" id="DIO13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="WO" description="Set bit 12" id="DIO12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="WO" description="Set bit 11" id="DIO11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="WO" description="Set bit 10" id="DIO10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="WO" description="Set bit 9" id="DIO9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Set bit 8" id="DIO8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="WO" description="Set bit 7" id="DIO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="WO" description="Set bit 6" id="DIO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="WO" description="Set bit 5" id="DIO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="WO" description="Set bit 4" id="DIO4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="Set bit 3" id="DIO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Set bit 2" id="DIO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Set bit 1" id="DIO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Set bit 0" id="DIO0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUTCLR31_0" width="32" description="Data Out Clear
+
+Writing 1 to a bit position clears the corresponding bit in the DOUT31_0 register" id="DOUTCLR31_0" offset="0xa0">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="WO" description="Clears bit 31" id="DIO31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="WO" description="Clears bit 30" id="DIO30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="WO" description="Clears bit 29" id="DIO29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="WO" description="Clears bit 28" id="DIO28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="WO" description="Clears bit 27" id="DIO27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="WO" description="Clears bit 26" id="DIO26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="WO" description="Clears bit 25" id="DIO25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Clears bit 24" id="DIO24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="WO" description="Clears bit 23" id="DIO23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="WO" description="Clears bit 22" id="DIO22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="WO" description="Clears bit 21" id="DIO21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="WO" description="Clears bit 20" id="DIO20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="WO" description="Clears bit 19" id="DIO19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="WO" description="Clears bit 18" id="DIO18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="WO" description="Clears bit 17" id="DIO17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Clears bit 16" id="DIO16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="WO" description="Clears bit 15" id="DIO15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="WO" description="Clears bit 14" id="DIO14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="WO" description="Clears bit 13" id="DIO13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="WO" description="Clears bit 12" id="DIO12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="WO" description="Clears bit 11" id="DIO11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="WO" description="Clears bit 10" id="DIO10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="WO" description="Clears bit 9" id="DIO9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="WO" description="Clears bit 8" id="DIO8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="WO" description="Clears bit 7" id="DIO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="WO" description="Clears bit 6" id="DIO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="WO" description="Clears bit 5" id="DIO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="WO" description="Clears bit 4" id="DIO4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="Clears bit 3" id="DIO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Clears bit 2" id="DIO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Clears bit 1" id="DIO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Clears bit 0" id="DIO0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOUTTGL31_0" width="32" description="Data Out Toggle
+
+Writing 1 to a bit position will invert the corresponding DIO output." id="DOUTTGL31_0" offset="0xb0">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Toggles bit 31" id="DIO31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Toggles bit 30" id="DIO30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Toggles bit 29" id="DIO29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Toggles bit 28" id="DIO28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Toggles bit 27" id="DIO27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Toggles bit 26" id="DIO26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Toggles bit 25" id="DIO25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Toggles bit 24" id="DIO24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Toggles bit 23" id="DIO23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Toggles bit 22" id="DIO22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Toggles bit 21" id="DIO21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Toggles bit 20" id="DIO20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Toggles bit 19" id="DIO19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Toggles bit 18" id="DIO18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Toggles bit 17" id="DIO17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Toggles bit 16" id="DIO16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Toggles bit 15" id="DIO15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Toggles bit 14" id="DIO14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Toggles bit 13" id="DIO13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Toggles bit 12" id="DIO12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Toggles bit 11" id="DIO11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Toggles bit 10" id="DIO10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Toggles bit 9" id="DIO9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Toggles bit 8" id="DIO8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Toggles bit 7" id="DIO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Toggles bit 6" id="DIO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Toggles bit 5" id="DIO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Toggles bit 4" id="DIO4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Toggles bit 3" id="DIO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Toggles bit 2" id="DIO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Toggles bit 1" id="DIO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Toggles bit 0" id="DIO0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DIN31_0" width="32" description="Data Input from DIO 0 to 31" id="DIN31_0" offset="0xc0">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="Data input from DIO 31" id="DIO31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RO" description="Data input from DIO 30" id="DIO30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RO" description="Data input from DIO 29" id="DIO29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RO" description="Data input from DIO 28" id="DIO28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RO" description="Data input from DIO 27" id="DIO27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RO" description="Data input from DIO 26" id="DIO26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RO" description="Data input from DIO 25" id="DIO25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="Data input from DIO 24" id="DIO24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RO" description="Data input from DIO 23" id="DIO23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RO" description="Data input from DIO 22" id="DIO22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RO" description="Data input from DIO 21" id="DIO21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RO" description="Data input from DIO 20" id="DIO20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RO" description="Data input from DIO 19" id="DIO19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RO" description="Data input from DIO 18" id="DIO18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="Data input from DIO 17" id="DIO17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="Data input from DIO 16" id="DIO16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="Data input from DIO 15" id="DIO15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="Data input from DIO 14" id="DIO14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="Data input from DIO 13" id="DIO13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="Data input from DIO 12" id="DIO12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="Data input from DIO 11" id="DIO11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="Data input from DIO 10" id="DIO10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="Data input from DIO 9" id="DIO9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="Data input from DIO 8" id="DIO8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="Data input from DIO 7" id="DIO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="Data input from DIO 6" id="DIO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="Data input from DIO 5" id="DIO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Data input from DIO 4" id="DIO4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Data input from DIO 3" id="DIO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Data input from DIO 2" id="DIO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Data input from DIO 1" id="DIO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Data input from DIO 0" id="DIO0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DOE31_0" width="32" description="Data Output Enable for DIO 0 to 31" id="DOE31_0" offset="0xd0">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Data output enable for DIO 31" id="DIO31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Data output enable for DIO 30" id="DIO30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Data output enable for DIO 29" id="DIO29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Data output enable for DIO 28" id="DIO28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Data output enable for DIO 27" id="DIO27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Data output enable for DIO 26" id="DIO26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Data output enable for DIO 25" id="DIO25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Data output enable for DIO 24" id="DIO24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Data output enable for DIO 23" id="DIO23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Data output enable for DIO 22" id="DIO22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Data output enable for DIO 21" id="DIO21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Data output enable for DIO 20" id="DIO20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Data output enable for DIO 19" id="DIO19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Data output enable for DIO 18" id="DIO18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Data output enable for DIO 17" id="DIO17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Data output enable for DIO 16" id="DIO16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Data output enable for DIO 15" id="DIO15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Data output enable for DIO 14" id="DIO14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Data output enable for DIO 13" id="DIO13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Data output enable for DIO 12" id="DIO12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Data output enable for DIO 11" id="DIO11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Data output enable for DIO 10" id="DIO10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Data output enable for DIO 9" id="DIO9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Data output enable for DIO 8" id="DIO8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Data output enable for DIO 7" id="DIO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Data output enable for DIO 6" id="DIO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Data output enable for DIO 5" id="DIO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Data output enable for DIO 4" id="DIO4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Data output enable for DIO 3" id="DIO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Data output enable for DIO 2" id="DIO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Data output enable for DIO 1" id="DIO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Data output enable for DIO 0" id="DIO0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="EVFLAGS31_0" width="32" description="Event Register for DIO 0 to 31
+
+Reading  this registers will return 1 for triggered event and 0 for non-triggered events. 
+Writing a 1 to a bit field will clear the event. 
+
+The configuration of events is done inside MCU IOC, e.g. events for DIO #0 is configured in IOC:IOCFG0.EDGE_DET and IOC:IOCFG0.EDGE_IRQ_EN.
+
+" id="EVFLAGS31_0" offset="0xe0">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Event for DIO 31" id="DIO31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Event for DIO 30" id="DIO30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Event for DIO 29" id="DIO29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Event for DIO 28" id="DIO28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Event for DIO 27" id="DIO27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Event for DIO 26" id="DIO26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Event for DIO 25" id="DIO25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Event for DIO 24" id="DIO24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Event for DIO 23" id="DIO23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Event for DIO 22" id="DIO22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Event for DIO 21" id="DIO21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Event for DIO 20" id="DIO20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Event for DIO 19" id="DIO19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Event for DIO 18" id="DIO18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Event for DIO 17" id="DIO17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Event for DIO 16" id="DIO16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Event for DIO 15" id="DIO15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Event for DIO 14" id="DIO14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Event for DIO 13" id="DIO13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Event for DIO 12" id="DIO12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Event for DIO 11" id="DIO11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Event for DIO 10" id="DIO10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Event for DIO 9" id="DIO9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Event for DIO 8" id="DIO8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Event for DIO 7" id="DIO7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Event for DIO 6" id="DIO6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Event for DIO 5" id="DIO5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Event for DIO 4" id="DIO4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Event for DIO 3" id="DIO3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Event for DIO 2" id="DIO2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Event for DIO 1" id="DIO1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Event for DIO 0" id="DIO0" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

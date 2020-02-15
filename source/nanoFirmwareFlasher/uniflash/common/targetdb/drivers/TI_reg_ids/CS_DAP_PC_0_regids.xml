@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<register_ids id="CS_DAP_PC_0" XML_version="2.0">
+
+	<register_id id="IP_DUMMY"  value="0" address="0" page="0" />
+	<register_id id="IP_TAP_CNTL_0" value="1"  address="0" page="0" />
+	<register_id id="IP_TAP_CNTL_1" value="2"  address="0" page="0" />
+	<register_id id="IP_TAP_CNTL_2" value="3"  address="0" page="0" />
+	<register_id id="IP_TAP_CNTL_3" value="4"  address="0" page="0" />
+	<register_id id="IP_SYS_CNTL_ID" value="5" address="0" page="0" />
+
+</register_ids>

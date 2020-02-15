@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="PKA_INT" HW_revision="" XML_version="1.0" description="Integrated module which includes the PKA K
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="RESERVED_0" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED_0" offset="0x0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="OPTIONS" width="32" description="PKA Options register
+" id="OPTIONS" offset="0xff8">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RO" description="Ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="When set to &#39;1&#39;, indicates that an EIP201 AIC  is included in the EIP150" id="AIC_PRESENT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="When set to &#39;1&#39;, indicates that the EIP76 TRNG  is included in the EIP150" id="EIP76_PRESENT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="When set to &#39;1&#39;, indicates that the EIP28 PKA is included in the EIP150" id="EIP28_PRESENT" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RO" description="Ignore on read" id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="When set to &#39;1&#39;, indicates that the EIP150 is equipped with a AXI interface" id="AXI_INTERFACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="When set to &#39;1&#39;, indicates that AHB interface is asynchronous  Only applicable when AHB_INTERFACE is 1" id="AHB_IS_ASYNC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="" description="When set to &#39;1&#39;, indicates that the EIP150 is equipped with a AHB interface" id="AHB_INTERFACE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="" description="When set to &#39;1&#39;, indicates that the EIP150 is equipped with a PLB interface" id="PLB_INTERFACE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="REVISION" width="32" description="PKA hardware revision register
+This register allows the host access to the hardware revision number of the PKA engine for software driver matching and diagnostic purposes. It is always located at the highest address in the access space of the module and contains an encoding of the EIP number (with its complement as signature) for recognition of the hardware module." id="REVISION" offset="0xffc">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="These bits should be ignored on read" id="RESERVED28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="4" end="24" rwaccess="RO" description="These bits encode the major version number for this module" id="MAJOR_REVISION" resetval="0x2">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="These bits encode the minor version number for this module" id="MINOR_REVISION" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="These bits encode the hardware patch level for this module they start at value 0 on the first release" id="PATCH_LEVEL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="These bits simply contain the complement of bits [7:0], used by a driver to ascertain that the EIP150 revision register is indeed read" id="COMP_EIP_NUM" resetval="0x69">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="These bits encode the AuthenTec EIP number for the EIP150" id="EIP_NUM" resetval="0x96">
+      </bitfield>
+   </register>
+</module>

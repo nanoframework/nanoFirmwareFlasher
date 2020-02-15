@@ -81,6 +81,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.WriteLine("");
                     Console.Write($"Trying to find {_targetName} in community targets repository...");
                 }
 
@@ -131,6 +132,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
                     Console.WriteLine("OK");
+                }
+                else
+                {
+                    Console.WriteLine("");
                 }
 
                 if (Verbosity >= VerbosityLevel.Detailed)
@@ -188,9 +193,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Path.Combine(LocationPath, fwFileName),
                 LocationPath);
 
-            if (Verbosity >= VerbosityLevel.Detailed)
+            if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.WriteLine($"OK");
+            }
+            else
+            {
+                Console.WriteLine("");
             }
 
             return ExitCodes.OK;

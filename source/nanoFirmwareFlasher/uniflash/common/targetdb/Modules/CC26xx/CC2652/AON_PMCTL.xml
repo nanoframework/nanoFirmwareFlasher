@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AON_PMCTL" HW_revision="" XML_version="1.0" description="This component control the Power Management controller residing in the AON domain.
+
+Note: This module is only supporting 32 bit Read Write access from MCU
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="AUXSCECLK" width="32" description="AUX SCE Clock Management
+
+This register contains bitfields that are relevant for setting up the clock to the AUX domain." id="AUXSCECLK" offset="0x4">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Selects the clock source for the AUX domain when AUX is in powerdown mode.
+Note: Switching the clock source is guaranteed to be glitch-free" id="PD_SRC" resetval="0x0">
+         <bitenum id="SCLK_LF" value="1" token="LF clock (SCLK_LF )" description="LF clock (SCLK_LF )"/>
+         <bitenum id="NO_CLOCK" value="0" token="No clock" description="No clock"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Selects the clock source for the AUX domain when AUX is in active mode.
+Note: Switching the clock source is guaranteed to be glitch-free" id="SRC" resetval="0x0">
+         <bitenum id="SCLK_MF" value="1" token="MF Clock (SCLK_MF)" description="MF Clock (SCLK_MF)"/>
+         <bitenum id="SCLK_HFDIV2" value="0" token="HF Clock divided by 2 (SCLK_HFDIV2)" description="HF Clock divided by 2 (SCLK_HFDIV2)"/>
+      </bitfield>
+   </register>
+   <register acronym="RAMCFG" width="32" description="RAM Configuration
+
+This register contains power management related configuration for the SRAM  in the MCU and AUX  domain." id="RAMCFG" offset="0x8">
+      <bitfield range="" begin="31" width="14" end="18" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="AUX_SRAM_PWR_OFF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="AUX_SRAM_RET_EN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="12" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="MCU SRAM is partitioned into 5  banks . This register controls which of the banks that has retention during MCU Bus domain power off
+" id="BUS_SRAM_RET_EN" resetval="0xf">
+         <bitenum id="RET_FULL" value="15" token="Retention on for all banks SRAM:BANK0, SRAM:BANK1 ,SRAM:BANK2,  SRAM:BANK3  and SRAM:BANK4 " description="Retention on for all banks SRAM:BANK0, SRAM:BANK1 ,SRAM:BANK2,  SRAM:BANK3  and SRAM:BANK4 "/>
+         <bitenum id="RET_LEVEL3" value="7" token="Retention on for SRAM:BANK0, SRAM:BANK1 ,SRAM:BANK2 and SRAM:BANK3" description="Retention on for SRAM:BANK0, SRAM:BANK1 ,SRAM:BANK2 and SRAM:BANK3"/>
+         <bitenum id="RET_LEVEL2" value="3" token="Retention on for SRAM:BANK0, SRAM:BANK1 and SRAM:BANK2 " description="Retention on for SRAM:BANK0, SRAM:BANK1 and SRAM:BANK2 "/>
+         <bitenum id="RET_LEVEL1" value="1" token="Retention on for SRAM:BANK0 and  SRAM:BANK1 " description="Retention on for SRAM:BANK0 and  SRAM:BANK1 "/>
+         <bitenum id="RET_NONE" value="0" token="Retention is disabled" description="Retention is disabled"/>
+      </bitfield>
+   </register>
+   <register acronym="PWRCTL" width="32" description="Power Management Control
+
+This register controls bitfields for setting low level power management features such as selection of  regulator for VDDR supply and control of IO ring where certain segments can be enabled / disabled." id="PWRCTL" offset="0x10">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Select to use DCDC regulator for VDDR in active mode 
+
+0: Use GLDO for regulation of VDDR in active mode. 
+1: Use DCDC for regulation of VDDR in active mode. 
+
+DCDC_EN must also be set for DCDC to be used as regulator for VDDR in active mode " id="DCDC_ACTIVE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Status of source for VDDRsupply:
+
+0: DCDC or GLDO are generating VDDR
+1: DCDC and GLDO are bypassed and an external regulator supplies VDDR" id="EXT_REG_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Select to use DCDC regulator during recharge of VDDR
+
+0: Use GLDO for recharge of VDDR
+1: Use DCDC for recharge of VDDR
+
+Note: This bitfield should be set to the same as DCDC_ACTIVE
+
+" id="DCDC_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PWRSTAT" width="32" description="AON Power and Reset Status
+
+This register is used to monitor various power management related signals in AON.  All other signals than JTAG_PD_ON, AUX_BUS_RESET_DONE, and AUX_RESET_DONE are for test, calibration and debug purpose only.
+
+" id="PWRSTAT" offset="0x14">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x780000">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Indicates JTAG power state:
+
+0: JTAG is powered off
+1: JTAG is powered on
+
+" id="JTAG_PD_ON" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Indicates Reset Done from AUX Bus:
+
+0: AUX Bus is being reset
+1: AUX Bus reset is released
+" id="AUX_BUS_RESET_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Indicates Reset Done from AUX:
+
+0: AUX is being reset
+1: AUX reset is released
+" id="AUX_RESET_DONE" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="SHUTDOWN" width="32" description="Shutdown Control
+
+This register contains bitfields required for entering shutdown mode" id="SHUTDOWN" offset="0x18">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Shutdown control.
+
+0: Do not write 0 to this bit. 
+1: Immediately start the process to enter shutdown mode" id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RECHARGECFG" width="32" description="Recharge Controller Configuration
+
+This register sets all relevant parameters for controlling the recharge algorithm. 
+" id="RECHARGECFG" offset="0x1c">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="Selects recharge algorithm for VDDR when the system is running on the uLDO" id="MODE" resetval="0x3">
+         <bitenum id="COMPARATOR" value="3" token="External recharge comparator. 
+Note that the clock to the recharge comparator must be enabled, [ANATOP_MMAP:ADI_3_REFSYS:CTL_RECHARGE_CMP0:COMP_CLK_DISABLE], before selecting  this recharge algorithm." description="External recharge comparator. 
+Note that the clock to the recharge comparator must be enabled, [ANATOP_MMAP:ADI_3_REFSYS:CTL_RECHARGE_CMP0:COMP_CLK_DISABLE], before selecting  this recharge algorithm."/>
+         <bitenum id="ADAPTIVE" value="2" token="Adaptive timer" description="Adaptive timer"/>
+         <bitenum id="STATIC" value="1" token="Static timer" description="Static timer"/>
+         <bitenum id="OFF" value="0" token="Recharge disabled" description="Recharge disabled"/>
+      </bitfield>
+      <bitfield range="" begin="29" width="6" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="C2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="C1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="5" end="11" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="MAX_PER_M" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="3" end="8" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="MAX_PER_E" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="PER_M" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="PER_E" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RECHARGESTAT" width="32" description="Recharge Controller Status
+
+This register controls various status registers which are updated during recharge.  The register is mostly intended for test and debug.
+" id="RECHARGESTAT" offset="0x20">
+      <bitfield range="" begin="31" width="12" end="20" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="The last 4 VDDR samples.
+
+For each bit:
+0: VDDR was below VDDR_OK threshold when recharge started
+1: VDDR was above VDDR_OK threshold when recharge started
+
+The register is updated prior to every recharge period with a shift left, and bit 0 is updated with the last VDDR sample." id="VDDR_SMPLS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Shows the maximum number of 32kHz periods that have separated two recharge cycles and VDDR still was above VDDR_OK threshold when the latter recharge started. This register can be used as an indication of the leakage current during standby.
+
+This bitfield is cleared to 0 when writing this register." id="MAX_USED_PER" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OSCCFG" width="32" description="Oscillator Configuration
+
+This register sets the period for Amplitude compensation requests sent to the oscillator control system. The amplitude compensations is only applicable when XOSC_HF is running in low power mode. " id="OSCCFG" offset="0x24">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="PER_M" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="PER_E" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESETCTL" width="32" description="Reset Management
+
+This register contains bitfields related to system reset such as reset source and reset request  and control of brown out resets.  
+" id="RESETCTL" offset="0x28">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="WO" description="Cold reset register. Writing 1 to this bitfield will reset the entire chip and cause boot code to run again.
+
+0: No effect
+1: Generate system reset. Appears as SYSRESET in RESET_SRC
+
+" id="SYSRESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="5" end="26" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="WO" description="Internal. Only to be used through TI provided API." id="BOOT_DET_1_CLR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="WO" description="Internal. Only to be used through TI provided API." id="BOOT_DET_0_CLR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="6" end="18" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="WO" description="Internal. Only to be used through TI provided API." id="BOOT_DET_1_SET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="Internal. Only to be used through TI provided API." id="BOOT_DET_0_SET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="A Wakeup from SHUTDOWN on an IO event has occurred, or a wakeup from SHUTDOWN has occurred as a result of the debugger being attached.. (TCK pin being forced low) 
+
+Please refer to IOC:IOCFGn.WU_CFG for configuring the IO&#39;s as wakeup sources.
+
+0: Wakeup occurred from cold reset or brown out as seen in RESET_SRC
+1: A wakeup has occurred from SHUTDOWN
+
+Note: This flag will be cleared when SLEEPCTL.IO_PAD_SLEEP_DIS is asserted." id="WU_FROM_SD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="A wakeup from SHUTDOWN on an IO event has occurred 
+
+Please refer to IOC:IOCFGn.WU_CFG for configuring the IO&#39;s as wakeup sources.
+
+0: The wakeup did not occur from SHUTDOWN on an IO event
+1: A wakeup from SHUTDOWN occurred from an IO event
+
+The case where WU_FROM_SD is asserted but this bitfield is not asserted will only occur in a debug session. The boot code will not proceed with wakeup from SHUTDOWN procedure until this bitfield is asserted as well.
+
+Note: This flag will be cleared when  SLEEPCTL.IO_PAD_SLEEP_DIS is asserted." id="GPIO_WU_FROM_SD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="BOOT_DET_1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="Internal. Only to be used through TI provided API." id="BOOT_DET_0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="3" end="9" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Controls reset generation in case VDDS is lost
+
+0: Brown out detect of VDDS is ignored, unless VDDS_LOSS_EN_OVR=1
+1: Brown out detect of VDDS generates system reset 
+" id="VDDS_LOSS_EN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Controls reset generation in case VDDR is lost
+
+0: Brown out detect of VDDR is ignored, unless VDDR_LOSS_EN_OVR=1
+1: Brown out detect of VDDR generates system reset  " id="VDDR_LOSS_EN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Controls reset generation in case VDD is lost
+
+0: Brown out detect of VDD is ignored, unless VDD_LOSS_EN_OVR=1
+1: Brown out detect of VDD generates system reset
+" id="VDD_LOSS_EN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Controls reset generation in case SCLK_LF, SCLK_MF or SCLK_HF is lost when clock loss detection is enabled by [ANATOP_MMAP:DDI_0_OSC:CTL0.CLK_LOSS_EN]
+
+0: Clock loss is ignored
+1: Clock loss generates system reset
+
+Note: Clock loss reset generation must be disabled when changing clock source for   SCLK_LF. Failure to do so may result in a spurious system reset. Clock loss reset generation is controlled by [ANATOP_MMAP:DDI_0_OSC:CTL0.CLK_LOSS_EN]" id="CLK_LOSS_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="MCU_WARM_RESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="3" end="1" rwaccess="RO" description="Shows the root cause of the last system reset. More than the reported reset source can have been active during the last system reset but only the root cause is reported.
+
+The capture feature is not rearmed until all off the possible reset sources have been released and the result has been copied to AON_PMCTL. During the copy and rearm process it is one 2MHz period in which and eventual new system reset will be reported as Power on reset regardless of the root cause." id="RESET_SRC" resetval="0x0">
+         <bitenum id="WARMRESET" value="7" token="Software reset via PRCM warm reset request" description="Software reset via PRCM warm reset request"/>
+         <bitenum id="SYSRESET" value="6" token="Software reset via SYSRESET or hardware power management timeout detection.
+
+Note: The hardware power management timeout circuit is always enabled.
+
+" description="Software reset via SYSRESET or hardware power management timeout detection.
+
+Note: The hardware power management timeout circuit is always enabled.
+
+"/>
+         <bitenum id="CLK_LOSS" value="5" token="SCLK_LF, SCLK_MF or SCLK_HF clock loss detect" description="SCLK_LF, SCLK_MF or SCLK_HF clock loss detect"/>
+         <bitenum id="VDDR_LOSS" value="4" token="Brown out detect on VDDR" description="Brown out detect on VDDR"/>
+         <bitenum id="VDDS_LOSS" value="2" token="Brown out detect on VDDS" description="Brown out detect on VDDS"/>
+         <bitenum id="PIN_RESET" value="1" token="Reset pin" description="Reset pin"/>
+         <bitenum id="PWR_ON" value="0" token="Power on reset" description="Power on reset"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SLEEPCTL" width="32" description="Sleep Control
+
+This register is used to unfreeze the IO pad ring after waking up from SHUTDOWN" id="SLEEPCTL" offset="0x2c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Controls the I/O pad sleep mode. The boot code will set this bitfield automatically unless waking up from a SHUTDOWN ( RESETCTL.WU_FROM_SD is set).  
+
+0: I/O pad sleep mode is enabled, meaning all outputs and pad configurations are latched. Inputs are transparent if pad is configured as input before IO_PAD_SLEEP_DIS is set to 1
+1: I/O pad sleep mode is disabled
+
+Application software must reconfigure the state for all IO&#39;s before setting this bitfield upon waking up from a SHUTDOWN to avoid glitches on pins.
+" id="IO_PAD_SLEEP_DIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="JTAGCFG" width="32" description="JTAG Configuration
+
+This register contains control for configuration of the JTAG domain. This includes permissions for each TAP." id="JTAGCFG" offset="0x34">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Controls JTAG Power domain power state:
+
+0: Controlled exclusively by debug subsystem. (JTAG Power domain will be powered off unless a debugger is attached)
+1: JTAG Power Domain is forced on, independent of debug subsystem.
+
+Note: The reset value causes JTAG Power domain to be powered on by default. Software must clear this bit to turn off the JTAG Power domain
+" id="JTAG_PD_FORCE_ON" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="JTAGUSERCODE" width="32" description="JTAG USERCODE
+
+Boot code copies the JTAG USERCODE to this register from where it is forwarded to the debug subsystem." id="JTAGUSERCODE" offset="0x3c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="32-bit JTAG USERCODE register feeding main JTAG TAP
+Note: This field can be locked by LOCKCFG.LOCK
+" id="USER_CODE" resetval="0xb99a02f">
+      </bitfield>
+   </register>
+</module>

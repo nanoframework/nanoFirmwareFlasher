@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="PKA" HW_revision="" XML_version="1.0" description="Integrated module which combines the Public Key Acceleration module, optional True Random Gnerator, optional interrupt controller and a standard bus interface                                                                                                                                                                                                          " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="APTR" width="32" description="PKA Vector A Address
+During execution of basic PKCP operations, this register is double buffered and can be written with a new value for the next operation; when not written, the value remains intact. During the execution of sequencer-controlled complex operations, this register may not be written and its value is undefined at the conclusion of the operation. The driver software cannot rely on the written value to remain intact." id="APTR" offset="0x0">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="11" end="0" rwaccess="RW" description="This register specifies the location of vector A within the PKA RAM. Vectors are identified through the location of their least-significant 32-bit word. Note that bit [0] must be zero to ensure that the vector starts at an 8-byte boundary." id="APTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BPTR" width="32" description="PKA Vector B Address
+During execution of basic PKCP operations, this register is double buffered and can be written with a new value for the next operation; when not written, the value remains intact. During the execution of sequencer-controlled complex operations, this register may not be written and its value is undefined at the conclusion of the operation. The driver software cannot rely on the written value to remain intact." id="BPTR" offset="0x4">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="11" end="0" rwaccess="RW" description="This register specifies the location of vector B within the PKA RAM. Vectors are identified through the location of their least-significant 32-bit word. Note that bit [0] must be zero to ensure that the vector starts at an 8-byte boundary." id="BPTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CPTR" width="32" description="PKA Vector C Address
+During execution of basic PKCP operations, this register is double buffered and can be written with a new value for the next operation; when not written, the value remains intact. During the execution of sequencer-controlled complex operations, this register may not be written and its value is undefined at the conclusion of the operation. The driver software cannot rely on the written value to remain intact." id="CPTR" offset="0x8">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="11" end="0" rwaccess="RW" description="This register specifies the location of vector C within the PKA RAM. Vectors are identified through the location of their least-significant 32-bit word. Note that bit [0] must be zero to ensure that the vector starts at an 8-byte boundary." id="CPTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DPTR" width="32" description="PKA Vector D Address
+During execution of basic PKCP operations, this register is double buffered and can be written with a new value for the next operation; when not written, the value remains intact. During the execution of sequencer-controlled complex operations, this register may not be written and its value is undefined at the conclusion of the operation. The driver software cannot rely on the written value to remain intact." id="DPTR" offset="0xc">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="11" end="0" rwaccess="RW" description="This register specifies the location of vector D within the PKA RAM. Vectors are identified through the location of their least-significant 32-bit word. Note that bit [0] must be zero to ensure that the vector starts at an 8-byte boundary." id="DPTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ALENGTH" width="32" description="PKA Vector A Length
+During execution of basic PKCP operations, this register is double buffered and can be written with a new value for the next operation; when not written, the value remains intact. During the execution of sequencer-controlled complex operations, this register may not be written and its value is undefined at the conclusion of the operation. The driver software cannot rely on the written value to remain intact." id="ALENGTH" offset="0x10">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="9" end="0" rwaccess="RW" description="This register specifies the length (in 32-bit words) of Vector A." id="ALENGTH" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BLENGTH" width="32" description="PKA Vector B Length
+During execution of basic PKCP operations, this register is double buffered and can be written with a new value for the next operation; when not written, the value remains intact. During the execution of sequencer-controlled complex operations, this register may not be written and its value is undefined at the conclusion of the operation. The driver software cannot rely on the written value to remain intact." id="BLENGTH" offset="0x14">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="9" end="0" rwaccess="RW" description="This register specifies the length (in 32-bit words) of Vector B." id="BLENGTH" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SHIFT" width="32" description="PKA Bit Shift Value
+For basic PKCP operations, modifying the contents of this register is made impossible while the operation is being performed. For the ExpMod-variable and ExpMod-CRT operations, this register is used to indicate the number of odd powers to use (directly as a value in the range 1-16). For the ModInv and ECC operations, this register is used to hold a completion code." id="SHIFT" offset="0x18">
+      <bitfield range="" begin="31" width="27" end="5" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="5" end="0" rwaccess="RW" description="This register specifies the number of bits to shift the input vector (in the range 0-31) during a Rshift or Lshift operation." id="NUM_BITS_TO_SHIFT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FUNCTION" width="32" description="PKA Function
+This register contains the control bits to start basic PKCP as well as complex sequencer operations. The run bit can be used to poll for the completion of the operation. Modifying bits [11:0] is made impossible during the execution of a basic PKCP operation.
+During the execution of sequencer-controlled complex operations, this register is modified, the run and stall result bits are set to zero at the conclusion, but other bits are undefined.
+
+NOTE: Continuously reading this register to poll the run bit is not allowed when executing complex sequencer operations (the sequencer cannot access the PKCP when this is done). Leave at least one sysclk cycle between poll operations." id="FUNCTION" offset="0x1c">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="When written with a 1b, updating of the COMPARE bit, MSW and DIVMSW registers, as well as resetting the run bit is stalled beyond the point that a running operation is actually finished. Use this to allow software enough time to read results from a previous operation when the newly started operation is known to take only a short amount of time. If a result is waiting, the result registers is updated and the run bit is reset in the clock cycle following writing the stall result bit back to 0b. The Stall result function may only be used for basic PKCP operations." id="STALL_RESULT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="The host sets this bit to instruct the PKA module to begin processing the basic PKCP or complex sequencer operation. This bit is reset low automatically when the operation is complete.
+After a reset, the run bit is always set to 1b. Depending on the option, program ROM or program RAM, the following applies:
+Program ROM - The first sequencer instruction sets the bit to 0b. This is done immediately after the hardware reset is released.
+Program RAM - The sequencer must set the bit to 0b. As a valid firmware may not have been loaded, the sequencer is held in software reset after the hardware reset is released (the SEQCTRL.RESET bit is set to 1b). After the FW image is loaded and the Reset bit is cleared, the sequencer starts to execute the FW. The first instruction clears the run bit.
+In both cases a few clock cycles are needed before the first instruction is executed and the run bit state has been propagated." id="RUN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="14" width="3" end="12" rwaccess="RW" description="These bits select the complex sequencer operation to perform:     
+0x0: None 
+0x1: ExpMod-CRT 
+0x2: ECmontMUL
+0x3: ECC-ADD (if available in firmware, otherwise reserved) 
+0x4: ExpMod-ACT2
+0x5: ECC-MUL (if available in firmware, otherwise reserved) 
+0x6: ExpMod-variable 
+0x7: ModInv (if available in firmware, otherwise reserved)            
+The encoding of these operations is determined by sequencer firmware." id="SEQUENCER_OPERATIONS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Perform copy operation" id="COPY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Perform compare operation" id="COMPARE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Perform modulo operation" id="MODULO" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Perform divide operation" id="DIVIDE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Perform left shift operation" id="LSHIFT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Perform right shift operation" id="RSHIFT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Perform subtract operation" id="SUBTRACT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Perform add operation" id="ADD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Loads the location of the Most Significant one bit within the result word indicated in the MSW register into bits [4:0] of the DIVMSW.MSW_ADDRESS register - can only be used with basic PKCP operations, except for Divide, Modulo and Compare." id="MS_ONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Perform combined add/subtract operation" id="ADDSUB" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Perform multiply operation" id="MULTIPLY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMPARE" width="32" description="PKA compare result
+This register provides the result of a basic PKCP compare operation. It is updated when the FUNCTION.RUN bit is reset at the end of that operation.
+Status after a complex sequencer operation is unknown" id="COMPARE" offset="0x20">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Ignore on read" id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Vector_A is greater than Vector_B" id="A_GREATER_THAN_B" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Vector_A is less than Vector_B" id="A_LESS_THAN_B" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Vector_A is equal to Vector_B" id="A_EQUALS_B" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="MSW" width="32" description="PKA most-significant-word of result vector
+This register indicates the (word) address in the PKA RAM where the most significant nonzero 32-bit word of the result is stored. Should be ignored for modulo operations. For basic PKCP operations, this register is updated  FUNCTION.RUN bit is reset at the end of the operation. For the complex-sequencer controlled operations, updating of the final value matching the actual result is done near the end of the operation; note that the result is only meaningful if no errors were detected and that for ECC operations, this register will provide information for the x-coordinate of the result point only." id="MSW" offset="0x24">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Ignore on read" id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="The result vector is all zeroes, ignore the address returned in bits [10:0]" id="RESULT_IS_ZERO" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="14" width="4" end="11" rwaccess="RO" description="Ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="11" end="0" rwaccess="RO" description="Address of the most-significant nonzero 32-bit word of the result vector in PKA RAM" id="MSW_ADDRESS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DIVMSW" width="32" description="PKA most-significant-word of divide remainder
+This register indicates the (32-bit word) address in the PKA RAM where the most significant nonzero 32-bit word of the remainder result for the basic divide and modulo operations is stored. Bits [4:0] are loaded with the bit number of the most-significant nonzero bit in the most-significant nonzero word when MS one control bit is set. For divide, modulo, and MS one reporting, this register is updated when FUNCTION.RUN bit is reset at the end of the operation. For the complex sequencer controlled operations, updating of bits [4:0] of this register with the most-significant bit location of the actual result is done near the end of the operation. The result is meaningful only if no errors were detected and that for ECC operations; this register provides information for the x-coordinate of the result point only." id="DIVMSW" offset="0x28">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Ignore on read" id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="The result vector is all zeroes, ignore the address returned in bits [10:0]" id="RESULT_IS_ZERO" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="14" width="4" end="11" rwaccess="RO" description="Ignore on read" id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="11" end="0" rwaccess="RO" description="Address of the most significant nonzero 32-bit word of the remainder result vector in PKA RAM" id="MSW_ADDRESS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SEQCTRL" width="32" description="PKA sequencer control and status register
+The sequencer is interfaced with the outside world through a single control and status register. With the exception of bit [31], the actual use of bits in the separate sub-fields of this register is determined by the sequencer firmware. This register need only be accessed when the sequencer program is stored in RAM. The reset value of the RESET bit depends upon the option chosen for sequencer program storage.                                                                                                                                                                   NOTE: For Agama the sequencer firmware is executed from ROM." id="SEQCTRL" offset="0xc8">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Option program ROM: Reset value = 0. Read/Write, reset value 0b (ZERO). Writing 1b resets the sequencer, write to 0b to restart operations again. As the reset value is 0b, the sequencer will automatically start operations executing from program ROM. This bit should always be written with zero and ignored when reading this register.
+
+Option Program RAM: Reset value =1. Read/Write, reset value 1b (ONE). When 1b, the sequencer is held in a reset state and the PKA_PROGRAM area is accessible for loading the sequencer program (while the PKA_DATA_RAM is inaccessible), write to 0b to (re)start sequencer operations and disable PKA_PROGRAM area accessibility (also enables the PKA_DATA_RAM accesses). Resetting the sequencer (in order to load other firmware) should only be done when the PKA Engine is not performing any operations (i.e. the FUNCTION.RUN bit should be zero)." id="RESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="15" end="16" rwaccess="RW" description="Set to zero on write, ignore on read" id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="These read-only bits can be used by the sequencer to communicate status to the outside world. Bit [8] is also used as sequencer interrupt, with the complement of this bit ORed into the FUNCTION.RUN bit. This field should always be written with zeroes and ignored when reading this register." id="SEQUENCER_STAT" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="These bits can be used by software to trigger sequencer operations. External logic can set these bits by writing 1b, cannot reset them by writing 0b. The sequencer can reset these bits by writing 0b, cannot set them by writing 1b. Setting the FUNCTION.RUN bit together with a nonzero sequencer operations field automatically sets bit [0] here. This field should always be written with zeroes and ignored when reading this register." id="SW_CONTROL_STAT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OPTIONS" width="32" description="PKA hardware options register
+This register provides the host with a means to determine the hardware configuration implemented in this PKA engine, focused on options that have an effect on software interacting with the module.
+" id="OPTIONS" offset="0xf4">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RO" description="Ignore on read" id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="Interrupt Masking                                                               0x0:  indicates that the main interrupt output (bit [1] of the interrupts output bus) is the direct complement of the run bit in the PKA_CONTROL register,                                                0x1 : indicates that interrupt masking logic is present for this output.
+Note: Reset value is undefined" id="INT_MASKING" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="3" end="8" rwaccess="RO" description="Protection Option                                                                0x0: indicates no additional protection against side channel attacks,                                                                             0x1: indicates the SCAP option                                                 0x2: Reserved                                                                    0x3: indicates the PROT option; 
+Note: Reset value is undefined" id="PROTECTION_OPTION" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="Program RAM                                                                   0x1: indicates sequencer program storage in RAM,               0x0: indicates sequencer program storage  in ROM.
+Note: Reset value is undefined" id="PROGRAM_RAM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="2" end="5" rwaccess="RO" description="Sequencer Configuration                                                     0x0: Reserved                                                                         0x1 : Indicates a standard sequencer                                  0x2: Reserved                                                                          0x3: Reserved" id="SEQUENCER_CONFIGURATION" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="3" end="2" rwaccess="RO" description="Ignore on read" id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RO" description="PKCP Configuration                                                       0x0 : Reserved                                                                        0x1 : Indicates a PKCP with a 16x16 multiplier,                  0x2:  indicates a PKCP with a 32x32 multiplier,                     0x3 : Reserved
+Note: Reset value is undefined." id="PKCP_CONFIGURATION" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FWREV" width="32" description="PKA firmware revision and capabilities register
+This register allows the host access to the internal firmware revision number of the PKA Engine for software driver matching and diagnostic purposes. This register also contains a field that encodes the capabilities of the embedded firmware.
+This  register is written by the firmware within a few clock cycles after starting up that firmware. The hardware reset value is zero, indicating that the information has not been written yet." id="FWREV" offset="0xf8">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="Firmware Capabilities                                                                                                                                                        4-bit binary encoding for the functionality implemented in the firmware.                                                                        0x0: indicates basic ModExp with/without CRT.               0x1: adds Modular Inversion,                                          0x2: value 2 adds Modular Inversion and ECC operations.                                                                       0x3-0xF : Reserved." id="FW_CAPABILITIES" resetval="0x2">
+      </bitfield>
+      <bitfield range="" begin="27" width="4" end="24" rwaccess="RO" description="4-bit binary encoding of the major firmware revision number" id="MAJOR_FW_REVISION" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="4-bit binary encoding of the minor firmware revision number" id="MINOR_FW_REVISION" resetval="0x5">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="4-bit binary encoding of the firmware patch level, initial release will carry value zero
+Patches are used to remove bugs without changing the functionality or interface of a module." id="FW_PATCH_LEVEL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Ignore on read" id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HWREV" width="32" description="PKA hardware revision register
+This register allows the host access to the hardware revision number of the PKA engine for software driver matching and diagnostic purposes. It is always located at the highest address in the access space of the module and contains an encoding of the EIP number (with its complement as signature) for recognition of the hardware module." id="HWREV" offset="0xfc">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="Ignore on read" id="RESERVED28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="4" end="24" rwaccess="RO" description="4-bit binary encoding of the major hardware revision number" id="MAJOR_HW_REVISION" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="4-bit binary encoding of the minor hardware revision number" id="MINOR_HW_REVISION" resetval="0x5">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="4-bit binary encoding of the hardware patch level, initial release will carry value zero
+Patches are used to remove bugs without changing the functionality or interface of a module." id="HW_PATCH_LEVEL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Bit-by-bit logic complement of bits [7:0], EIP-28 gives 0xE3" id="COMPLEMENT_OF_BASIC_EIP_NUMBER" resetval="0xe3">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="8-bit binary encoding of the EIP number, EIP-28 gives 0x1C" id="BASIC_EIP_NUMBER" resetval="0x1c">
+      </bitfield>
+   </register>
+</module>

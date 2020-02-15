@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="WDT" HW_revision="" XML_version="1.0" description="Watchdog Timer
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="LOAD" width="32" description="Configuration" id="LOAD" offset="0x0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="This register is the 32-bit interval value used by the 32-bit counter. When this register is written, the value is immediately loaded and the counter is restarted to count down from the new value. If this register is loaded with 0x0000.0000, an interrupt is immediately generated." id="WDTLOAD" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="VALUE" width="32" description="Current Count Value" id="VALUE" offset="0x4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description=" This register contains the current count value of the timer." id="WDTVALUE" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="CTL" width="32" description="Control" id="CTL" offset="0x8">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="WDT Interrupt Type
+
+0:  WDT interrupt is a standard interrupt.  
+1:  WDT interrupt is a non-maskable interrupt. " id="INTTYPE" resetval="0x0">
+         <bitenum id="NONMASKABLE" value="1" token="Non-maskable interrupt" description="Non-maskable interrupt"/>
+         <bitenum id="MASKABLE" value="0" token="Maskable interrupt" description="Maskable interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="WDT Reset Enable. Defines the function of the WDT reset source (see PRCM:WARMRESET.WDT_STAT if enabled)
+
+0:  Disabled.  
+1:  Enable the Watchdog reset output." id="RESEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="Reset output Enabled" description="Reset output Enabled"/>
+         <bitenum id="DIS" value="0" token="Reset output Disabled" description="Reset output Disabled"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="WDT Interrupt Enable
+
+0: Interrupt event disabled.  
+1: Interrupt event enabled. Once set, this bit can only be cleared by a hardware reset." id="INTEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="Interrupt Enabled" description="Interrupt Enabled"/>
+         <bitenum id="DIS" value="0" token="Interrupt Disabled" description="Interrupt Disabled"/>
+      </bitfield>
+   </register>
+   <register acronym="ICR" width="32" description="Interrupt Clear" id="ICR" offset="0xc">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="This register is the interrupt clear register. A write of any value to this register clears the WDT interrupt and reloads the 32-bit counter from the LOAD register." id="WDTICR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RIS" width="32" description="Raw Interrupt Status" id="RIS" offset="0x10">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="This register is the raw interrupt status register. WDT interrupt events can be monitored via this register if the controller interrupt is masked.
+
+Value Description
+
+0: The WDT has not timed out
+1: A WDT time-out event has occurred
+  " id="WDTRIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MIS" width="32" description="Masked Interrupt Status" id="MIS" offset="0x14">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="This register is the masked interrupt status register. The value of this register is the logical AND of the raw interrupt bit and the WDT interrupt enable bit CTL.INTEN. 
+
+Value Description 
+
+0: The WDT has not timed out or is masked.
+1: An unmasked WDT time-out event has occurred." id="WDTMIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TEST" width="32" description="Test Mode
+
+" id="TEST" offset="0x418">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="WDT Stall Enable
+
+0:  The WDT timer continues counting if the CPU is stopped with a debugger.
+1:  If the CPU is stopped with a debugger, the WDT stops counting. Once the CPU is restarted, the WDT resumes counting.  " id="STALL" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable STALL" description="Enable STALL"/>
+         <bitenum id="DIS" value="0" token="Disable STALL" description="Disable STALL"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="The test enable bit 
+
+0: Enable external reset
+1: Disables the generation of an external reset. Instead bit 1 of the INT_CAUS register is set and an interrupt is generated" id="TEST_EN" resetval="0x0">
+         <bitenum id="EN" value="1" token="Test mode Enabled" description="Test mode Enabled"/>
+         <bitenum id="DIS" value="0" token="Test mode Disabled" description="Test mode Disabled"/>
+      </bitfield>
+   </register>
+   <register acronym="INT_CAUS" width="32" description="Interrupt Cause Test Mode
+
+" id="INT_CAUS" offset="0x41c">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Indicates that the cause of an interrupt was a reset generated but blocked due to TEST.TEST_EN (only possible when TEST.TEST_EN is set). " id="CAUSE_RESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Replica of RIS.WDTRIS" id="CAUSE_INTR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LOCK" width="32" description="Lock
+
+" id="LOCK" offset="0xc00">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="WDT Lock: A write of the value 0x1ACC.E551 unlocks the watchdog registers for write access. A write of any other value reapplies the lock, preventing any register updates (NOTE: TEST.TEST_EN bit is not lockable).  
+
+A read of this register returns the following values: 
+
+0x0000.0000: Unlocked
+0x0000.0001:  Locked " id="WDTLOCK" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

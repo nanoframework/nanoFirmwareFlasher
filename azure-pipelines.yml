@@ -160,7 +160,7 @@ jobs:
       workingDirectory: source
     displayName: Restore NuGet packages
 
-  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack"
+  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
     workingDirectory: source
     displayName: Build NuGet package
 
@@ -311,7 +311,7 @@ jobs:
       githubReleaseDraft: false
       githubReleasePrerelease: false
       githubReuseDraftOnly: false
-      githubReuseRelease: false
+      githubReuseRelease: true
       githubEditRelease: false
       githubDeleteEmptyTag: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/$(nugetPackageName).$(MY_NUGET_VERSION).nupkg'

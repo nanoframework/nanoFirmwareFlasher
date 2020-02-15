@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="UDMA" HW_revision="" XML_version="1.0" description="ARM Micro Direct Memory Access Controller
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="STATUS" width="32" description="Status" id="STATUS" offset="0x0">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="
+0x0: Controller does not include the integration test logic
+0x1: Controller includes the integration test logic
+0x2: Undefined
+...
+0xF: Undefined" id="TEST" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="7" end="21" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="5" end="16" rwaccess="RO" description="Register value returns number of available uDMA channels minus one. For example a read out value of:
+
+0x00: Show that the controller is configured to use 1 uDMA channel
+0x01: Shows that the controller is configured to use 2 uDMA channels
+...
+0x1F: Shows that the controller is configured to use 32 uDMA channels (32-1=31=0x1F)" id="TOTALCHANNELS" resetval="0x1f">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RO" description="Current state of the control state machine. State can be one of the following:
+
+0x0: Idle
+0x1: Reading channel controller data
+0x2: Reading source data end pointer
+0x3: Reading destination data end pointer
+0x4: Reading source data
+0x5: Writing destination data
+0x6: Waiting for uDMA request to clear
+0x7: Writing channel controller data
+0x8: Stalled
+0x9: Done
+0xA: Peripheral scatter-gather transition
+0xB: Undefined
+...
+0xF: Undefined." id="STATE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="3" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Shows the enable status of the controller as configured by CFG.MASTERENABLE:
+
+0: Controller is disabled
+1: Controller is enabled" id="MASTERENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CFG" width="32" description="Configuration" id="CFG" offset="0x4">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="3" end="5" rwaccess="WO" description="Sets the AHB-Lite bus protocol protection state by controlling the AHB signal HProt[3:1] as follows:
+
+Bit [7] Controls HProt[3] to indicate if a cacheable access is occurring.
+Bit [6] Controls HProt[2] to indicate if a bufferable access is occurring.
+Bit [5] Controls HProt[1] to indicate if a privileged access is occurring.
+
+When bit [n] = 1 then the corresponding HProt bit is high.
+When bit [n] = 0 then the corresponding HProt bit is low.
+
+This field controls HProt[3:1] signal for all transactions initiated by uDMA except two transactions below:
+- the read from the address indicated by source address pointer
+- the write to the address indicated by destination address pointer
+HProt[3:1] for these two exceptions can be controlled by dedicated fields in the channel configutation descriptor." id="PRTOCTRL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="4" end="1" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Enables the controller:
+
+0: Disables the controller
+1: Enables the controller" id="MASTERENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CTRL" width="32" description="Channel Control Data Base Pointer" id="CTRL" offset="0x8">
+      <bitfield range="" begin="31" width="22" end="10" rwaccess="RW" description="This register point to the base address for the primary data structures of each DMA channel. This is not stored in module, but in system memory, thus space must be allocated for this usage when DMA is in usage" id="BASEPTR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="10" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ALTCTRL" width="32" description="Channel Alternate Control Data Base Pointer" id="ALTCTRL" offset="0xc">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="This register shows the base address for the alternate data structures and is calculated by module, thus read only" id="BASEPTR" resetval="0x200">
+      </bitfield>
+   </register>
+   <register acronym="WAITONREQ" width="32" description="Channel Wait On Request Status
+
+" id="WAITONREQ" offset="0x10">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Channel wait on request status:
+
+Bit [Ch] = 0: Once uDMA receives a single or burst request on channel Ch, this channel may come out of active state even if request is still present.
+Bit [Ch] = 1: Once uDMA receives a single or burst request on channel Ch, it keeps channel Ch in active state until the requests are deasserted. This handshake is necessary for channels where the requester is in an asynchronous domain or can run at slower clock speed than uDMA" id="CHNLSTATUS" resetval="0xffff1eff">
+      </bitfield>
+   </register>
+   <register acronym="SOFTREQ" width="32" description="Channel Software Request" id="SOFTREQ" offset="0x14">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="Set the appropriate bit to generate a software uDMA request on the corresponding uDMA channel
+
+Bit [Ch] = 0: Does not create a uDMA request for channel Ch
+Bit [Ch] = 1: Creates a uDMA request for channel Ch
+
+Writing to a bit where a uDMA channel is not implemented does not create a uDMA request for that channel" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SETBURST" width="32" description="Channel Set UseBurst" id="SETBURST" offset="0x18">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Returns the useburst status, or disables individual channels from generating single uDMA requests. The value R is the arbitration rate and stored in the controller data structure. 
+
+Read as:
+
+Bit [Ch] = 0: uDMA channel Ch responds to both burst and single requests on channel C. The controller performs 2^R, or single, bus transfers.
+
+Bit [Ch] = 1: uDMA channel Ch does not respond to single transfer requests. The controller only responds to burst transfer requests and performs 2^R transfers.
+
+Write as:
+Bit [Ch] = 0: No effect. Use the CLEARBURST.CHNLS to set bit [Ch] to 0.
+Bit [Ch] = 1: Disables single transfer requests on channel Ch. The controller performs 2^R transfers for burst requests.
+
+Writing to a bit where a uDMA channel is not implemented has no effect" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLEARBURST" width="32" description="Channel Clear UseBurst" id="CLEARBURST" offset="0x1c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="Set the appropriate bit to enable single transfer requests. 
+
+Write as:
+
+Bit [Ch] = 0: No effect. Use the SETBURST.CHNLS to disable single transfer requests.
+
+Bit [Ch] = 1: Enables single transfer requests on channel Ch.
+
+Writing to a bit where a DMA channel is not implemented has no effect." id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SETREQMASK" width="32" description="Channel Set Request Mask" id="SETREQMASK" offset="0x20">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Returns the burst and single request mask status, or disables the corresponding channel from generating uDMA requests. 
+
+Read as:
+Bit [Ch] = 0: External requests are enabled for channel Ch.
+Bit [Ch] = 1: External requests are disabled for channel Ch.
+
+Write as:
+Bit [Ch] = 0: No effect. Use the CLEARREQMASK.CHNLS to enable uDMA requests.
+Bit [Ch] = 1: Disables uDMA burst request channel [C] and uDMA single request channel [C] input from generating uDMA requests.
+
+Writing to a bit where a uDMA channel is not implemented has no effect" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLEARREQMASK" width="32" description="Clear Channel Request Mask" id="CLEARREQMASK" offset="0x24">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="Set the appropriate bit to enable DMA request for the channel. 
+
+Write as:
+Bit [Ch] = 0: No effect. Use the SETREQMASK.CHNLS to disable channel C from generating requests.
+Bit [Ch] = 1: Enables channel [C] to generate DMA requests.
+
+Writing to a bit where a DMA channel is not implemented has no effect." id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SETCHANNELEN" width="32" description="Set Channel Enable" id="SETCHANNELEN" offset="0x28">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Returns the enable status of the channels, or enables the corresponding channels. 
+
+Read as:
+Bit [Ch] = 0: Channel Ch is disabled.
+Bit [Ch] = 1: Channel Ch is enabled.
+
+Write as:
+Bit [Ch] = 0: No effect. Use the CLEARCHANNELEN.CHNLS to disable a channel
+Bit [Ch] = 1: Enables channel Ch
+
+Writing to a bit where a DMA channel is not implemented has no effect" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLEARCHANNELEN" width="32" description="Clear Channel Enable" id="CLEARCHANNELEN" offset="0x2c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="Set the appropriate bit to disable the corresponding uDMA channel. 
+
+Write as:
+Bit [Ch] = 0: No effect. Use the SETCHANNELEN.CHNLS to enable uDMA channels.
+Bit [Ch] = 1: Disables channel Ch
+
+Writing to a bit where a uDMA channel is not implemented has no effect" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SETCHNLPRIALT" width="32" description="Channel Set Primary-Alternate" id="SETCHNLPRIALT" offset="0x30">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Returns the channel control data structure status, or selects the alternate data structure for the corresponding uDMA channel. 
+
+Read as:
+Bit [Ch] = 0: uDMA channel Ch is using the primary data structure.
+Bit [Ch] = 1: uDMA channel Ch is using the alternate data structure.
+
+Write as:
+Bit [Ch] = 0: No effect. Use the CLEARCHNLPRIALT.CHNLS to disable a channel
+Bit [Ch] = 1: Selects the alternate data structure for channel Ch
+
+Writing to a bit where a uDMA channel is not implemented has no effect" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLEARCHNLPRIALT" width="32" description="Channel Clear Primary-Alternate" id="CLEARCHNLPRIALT" offset="0x34">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="Clears the appropriate bit to select the primary data structure for the corresponding uDMA channel.
+
+Write as:
+Bit [Ch] = 0: No effect. Use the SETCHNLPRIALT.CHNLS to select the alternate data structure.
+Bit [Ch] = 1: Selects the primary data structure for channel Ch.
+
+Writing to a bit where a uDMA channel is not implemented has no effect" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SETCHNLPRIORITY" width="32" description="Set Channel Priority" id="SETCHNLPRIORITY" offset="0x38">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Returns the channel priority mask status, or sets the channel priority to high. 
+
+Read as:
+Bit [Ch] = 0: uDMA channel Ch is using the default priority level.
+Bit [Ch] = 1: uDMA channel Ch is using a high priority level.
+
+Write as:
+Bit [Ch] = 0: No effect. Use the CLEARCHNLPRIORITY.CHNLS to set channel Ch to the default priority level.
+Bit [Ch] = 1: Channel Ch uses the high priority level.
+
+Writing to a bit where a uDMA channel is not implemented has no effect" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLEARCHNLPRIORITY" width="32" description="Clear Channel Priority" id="CLEARCHNLPRIORITY" offset="0x3c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="Clear the appropriate bit to select the default priority level for the specified uDMA channel.
+
+Write as:
+Bit [Ch] = 0: No effect. Use the SETCHNLPRIORITY.CHNLS to set channel Ch to the high priority level.
+Bit [Ch] = 1: Channel Ch uses the default priority level.
+
+Writing to a bit where a uDMA channel is not implemented has no effect" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ERROR" width="32" description="Error Status and Clear" id="ERROR" offset="0x4c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Returns the status of bus error flag in uDMA, or clears this bit 
+
+Read as:
+
+0: No bus error detected
+1: Bus error detected
+
+Write as:
+
+0: No effect, status of bus error flag is unchanged.
+1: Clears the bus error flag." id="STATUS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="REQDONE" width="32" description="Channel Request Done" id="REQDONE" offset="0x504">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Reflects the uDMA done status for the given channel, channel [Ch]. It&#39;s a sticky done bit. Unless cleared by writing a 1, it holds the value of 1.
+
+Read as:
+Bit [Ch] = 0: Request has not completed for channel Ch
+Bit [Ch] = 1: Request has completed for the channel Ch
+
+Writing a 1 to individual bits would clear the corresponding bit. 
+
+Write as:
+Bit [Ch] = 0: No effect.
+Bit [Ch] = 1: The corresponding [Ch] bit is cleared  and is set to 0" id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DONEMASK" width="32" description="Channel Request Done Mask" id="DONEMASK" offset="0x520">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Controls the propagation of the uDMA done and active state to the assigned peripheral. Specifically used for software channels.
+
+Read as:
+Bit [Ch] = 0: uDMA done and active state for channel Ch is not blocked from reaching to the peripherals. 
+Note that the uDMA done state for channel [Ch] is blocked from contributing to generation of combined uDMA done signal
+
+Bit [Ch] = 1: uDMA done and active state for channel Ch is blocked from reaching to the peripherals. 
+Note that the uDMA done state for channel [Ch] is not blocked from contributing to generation of combined uDMA done signal 
+
+Write as:
+Bit [Ch] = 0: Allows uDMA done and active stat to propagate to the peripherals. 
+Note that this disables uDMA done state for channel [Ch] from contributing to generation of combined uDMA done signal
+
+Bit [Ch] = 1: Blocks uDMA done and active state to propagate to the peripherals. 
+Note that this enables uDMA done for  channel [Ch] to contribute to generation of combined uDMA done signal." id="CHNLS" resetval="0x0">
+      </bitfield>
+   </register>
+</module>
