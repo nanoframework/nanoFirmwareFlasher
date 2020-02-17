@@ -9,7 +9,7 @@
     <PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
     <Authors>nanoFramework project contributors</Authors>
     <Product>nanoFramework Firmware Flasher</Product>
-    <Copyright>Copyright (c) 2019 nanoFramework project contributors</Copyright>
+    <Copyright>Copyright (c) 2020 nanoFramework project contributors</Copyright>
     <Company>nanoFramework</Company>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
@@ -21,12 +21,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackGlobalTool)' != true">
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1;net462</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net462</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackGlobalTool)' == true">
     <PackAsTool>true</PackAsTool>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <PackageId>nanoFirmwareFlasher</PackageId>
   </PropertyGroup>
 
@@ -36,7 +36,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-      </PropertyGroup>
+  </PropertyGroup>
 
   <PropertyGroup>
     <!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->

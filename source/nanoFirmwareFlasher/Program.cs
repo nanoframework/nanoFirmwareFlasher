@@ -37,7 +37,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             headerInfo = $"nanoFramework Firmware Flasher v{informationalVersionAttribute.InformationalVersion}";
 
-            copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2019);
+            copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2020);
 
             // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
             string codeBase = Assembly.GetExecutingAssembly().CodeBase;
