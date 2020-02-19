@@ -5,11 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -45,7 +45,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         unsafe struct DfuImageTarget
         {
             // "Target"
-            public fixed byte Signature[6];            
+            public fixed byte Signature[6];
             public byte AlternateSetting;
             // flag that the target has a name
             public uint IsNamed;
@@ -70,7 +70,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         //this is always at the end of the file, so you can seek there and work backwards
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         unsafe struct DfuTail
-        { 
+        {
             public ushort Version;
             public ushort Pid;
             public ushort Vid;
@@ -85,7 +85,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         #endregion
-
 
         #region DFU descriptors
 
@@ -170,20 +169,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private const char SEPARATOR_NBSECTORS_SECTORSIZE = '*';
 
         // DFU States
-        public const uint STATE_IDLE                    = 0x00;
-        public const uint STATE_DETACH					= 0x01;
-        public const uint STATE_DFU_IDLE				= 0x02;
-        public const uint STATE_DFU_DOWNLOAD_SYNC		= 0x03;
-        public const uint STATE_DFU_DOWNLOAD_BUSY		= 0x04;
-        public const uint STATE_DFU_DOWNLOAD_IDLE		= 0x05;
-        public const uint STATE_DFU_MANIFEST_SYNC		= 0x06;
-        public const uint STATE_DFU_MANIFEST			= 0x07;
+        public const uint STATE_IDLE = 0x00;
+        public const uint STATE_DETACH = 0x01;
+        public const uint STATE_DFU_IDLE = 0x02;
+        public const uint STATE_DFU_DOWNLOAD_SYNC = 0x03;
+        public const uint STATE_DFU_DOWNLOAD_BUSY = 0x04;
+        public const uint STATE_DFU_DOWNLOAD_IDLE = 0x05;
+        public const uint STATE_DFU_MANIFEST_SYNC = 0x06;
+        public const uint STATE_DFU_MANIFEST = 0x07;
         public const uint STATE_DFU_MANIFEST_WAIT_RESET = 0x08;
-        public const uint STATE_DFU_UPLOAD_IDLE			= 0x09;
-        public const uint STATE_DFU_ERROR				= 0x0A;
+        public const uint STATE_DFU_UPLOAD_IDLE = 0x09;
+        public const uint STATE_DFU_ERROR = 0x0A;
 
-        public const uint STATE_DFU_UPLOAD_SYNC			= 0x91;
-        public const uint STATE_DFU_UPLOAD_BUSY			= 0x92;
+        public const uint STATE_DFU_UPLOAD_SYNC = 0x91;
+        public const uint STATE_DFU_UPLOAD_BUSY = 0x92;
 
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -291,68 +290,68 @@ namespace nanoFramework.Tools.FirmwareFlasher
         //18   11 000012F0 STDFU_Upload
 
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_GetInterfaceDescriptor", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_GetInterfaceDescriptor", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetInterfaceDescriptor(
-            ref IntPtr handle, 
-            uint nConfigIdx, 
-            uint nInterfaceIdx, 
-            uint nAltSetIdx, 
+            ref IntPtr handle,
+            uint nConfigIdx,
+            uint nInterfaceIdx,
+            uint nAltSetIdx,
             ref UsbInterfaceDescriptor pDesc);
 
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_SelectCurrentConfiguration", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_SelectCurrentConfiguration", CharSet = CharSet.Ansi)]
         private static extern uint STDFU_SelectCurrentConfiguration(
-            ref IntPtr hDevice, 
-            uint ConfigIndex, 
-            uint InterfaceIndex, 
+            ref IntPtr hDevice,
+            uint ConfigIndex,
+            uint InterfaceIndex,
             uint AlternateSetIndex);
 
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_GetDFUDescriptor", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_GetDFUDescriptor", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetDFUDescriptor(
-            ref IntPtr handle, 
-            ref uint DFUInterfaceNum, 
-            ref uint NBOfAlternates, 
+            ref IntPtr handle,
+            ref uint DFUInterfaceNum,
+            ref uint NBOfAlternates,
             ref DfuFunctionalDescriptor dfuDescriptor);
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_GetDeviceDescriptor", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_GetDeviceDescriptor", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetDeviceDescriptor(
-            ref IntPtr handle, 
+            ref IntPtr handle,
             ref UsbDeviceDescriptor descriptor);
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_GetStringDescriptor", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_GetStringDescriptor", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetStringDescriptor(
-            ref IntPtr handle, 
-            uint index, 
-            IntPtr stringBuffer, 
+            ref IntPtr handle,
+            uint index,
+            IntPtr stringBuffer,
             uint stringLength);
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_Dnload", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_Dnload", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_Dnload(
-            ref IntPtr hDevice, 
+            ref IntPtr hDevice,
             [MarshalAs(UnmanagedType.LPArray)]byte[] pBuffer,
             uint nBytes,
             ushort nBlocks);
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_Getstatus", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_Getstatus", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetStatus(
-            ref IntPtr hDevice, 
+            ref IntPtr hDevice,
             ref DfuStatus dfuStatus);
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_Clrstatus", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_Clrstatus", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_ClrStatus(ref IntPtr hDevice);
 
-        [DllImport(@".\stdfu\STDFU.dll", EntryPoint = "STDFU_Open", CharSet = CharSet.Ansi)]
+        [DllImport("STDFU.dll", EntryPoint = "STDFU_Open", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_Open(
-            [MarshalAs(UnmanagedType.LPStr)]string szDevicePath, 
+            [MarshalAs(UnmanagedType.LPStr)]string szDevicePath,
             out IntPtr hDevice);
 
 
         #endregion
 
         internal static List<MappingSector> CreateMappingFromDevice(
-            IntPtr hDevice, 
-            uint alternates, 
+            IntPtr hDevice,
+            uint alternates,
             DfuFunctionalDescriptor dfuDescriptor)
         {
             List<MappingSector> sectorMap = new List<MappingSector>((int)alternates);
@@ -469,9 +468,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         public bool ParseDfuFile(
-            string filepath, 
-            out ushort vid, 
-            out ushort pid, 
+            string filepath,
+            out ushort vid,
+            out ushort pid,
             out ushort version,
             bool outputMessages = false)
         {
@@ -528,7 +527,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         internal static unsafe DfuFile LoadDfuFile(
-            string filePath, 
+            string filePath,
             VerbosityLevel verbosity)
         {
             byte[] fileData;
@@ -654,7 +653,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     DfuImageTarget dfuImageTarget = new DfuImageTarget();
 
                     StructFromBytes(ref dfuImageTarget, fileData, targetCursor);
-                    
+
                     // check signature
                     if (dfuImageTarget.Signature[0] == (byte)'T' &&
                             dfuImageTarget.Signature[1] == (byte)'a' &&
@@ -808,7 +807,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal static void PartialErase(
             IntPtr hDevice,
             uint startAddress,
-            uint size, 
+            uint size,
             List<MappingSector> mapSector,
             bool outputMessages = false)
         {
@@ -910,7 +909,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal static void WriteBlock(
             IntPtr hDevice,
-            uint address, 
+            uint address,
             byte[] data,
             uint blockNumber)
         {
@@ -1003,8 +1002,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
             STDFU_ClrStatus(ref hDevice);
             STDFU_GetStatus(ref hDevice, ref dfuStatus);
         }
-    }
 
+        static StDfu()
+        {
+            string myPath = new Uri(typeof(StDfu).Assembly.CodeBase).LocalPath;
+            string myFolder = Path.GetDirectoryName(myPath);
+
+            bool is64 = IntPtr.Size == 8;
+            string subfolder = is64 ? "stdfu\\x64\\" : "stdfu\\x86\\";
+
+            SetDllDirectory(Path.Combine(myFolder, subfolder));
+            LoadLibrary(Path.Combine(myFolder, subfolder, "STTubeDevice30.dll"));
+            LoadLibrary(Path.Combine(myFolder, subfolder, "STDFU.dll"));
+        }
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr LoadLibrary(string dllToLoad);
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern bool SetDllDirectory(string lpPathName);
+    }
 
     #region Exceptions
 

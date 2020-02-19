@@ -18,15 +18,17 @@
     <Description>nanoFirmwareFlasher</Description>
     <!-- need this to allow async Main() -->
     <LangVersion>latest</LangVersion>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+	<RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackGlobalTool)' != true">
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1;net462</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackGlobalTool)' == true">
     <PackAsTool>true</PackAsTool>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <PackageId>nanoFirmwareFlasher</PackageId>
   </PropertyGroup>
 
@@ -34,28 +36,36 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
       </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
 
   <PropertyGroup>
     <!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
     <NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
-    <!-- Required for ST-DFU -->
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)'=='net462'">
-    <!-- Required for ST-DFU -->
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-
   <ItemGroup>
-    <None Remove="stdfu\STDFU.dll" />
-    <None Remove="stdfu\STTubeDevice30.dll" />
+    <None Remove="stdfu\x86\STDFU.dll" />
+    <None Remove="stdfu\x86\STTubeDevice30.dll" />
+    <None Remove="stdfu\x64\STDFU.dll" />
+    <None Remove="stdfu\x64\STTubeDevice30.dll" />
     <None Remove="esptool.exe" />
     <None Remove="esptool\libcrypto-1_1-x64.dll" />
     <None Remove="esptool\libssl-1_1-x64.dll" />
@@ -132,6 +142,24 @@
     <None Remove="stlink\FlashLoader\0x9B0.stldr" />
     <None Remove="stlink\ST-LINK_CLI.exe" />
     <None Remove="stlink\STLinkUSBDriver.dll" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(PlatformTarget)'=='x64'">
+    <Content Include="stdfu\x64\STDFU.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stdfu\x64\STTubeDevice30.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(PlatformTarget)'=='x86'">
+    <Content Include="stdfu\x86\STDFU.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stdfu\x86\STTubeDevice30.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -1089,12 +1117,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="stdfu\STDFU.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="stdfu\STTubeDevice30.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="stlink\ST-LINK_CLI.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

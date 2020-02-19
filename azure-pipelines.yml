@@ -147,7 +147,7 @@ jobs:
   - task: DotNetCoreInstaller@0
     inputs:
       packageType: sdk
-      version: 2.1.500
+      version: 3.1.101
     displayName: Install .NET Core SDK
 
   - task: DotNetCoreCLI@2
@@ -160,11 +160,11 @@ jobs:
       workingDirectory: source
     displayName: Restore NuGet packages
 
-  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
+  - script: dotnet build -c $(BuildConfiguration) -r win-x64 /p:PublicRelease=true --no-restore /t:build,pack
     workingDirectory: source
     displayName: Build NuGet package
 
-  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true /p:PackGlobalTool=true --no-restore /t:build,pack"
+  - script: dotnet pack -c $(BuildConfiguration) --runtime win-x64 -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
     workingDirectory: source
     displayName: Build .NET Core Tool NuGet package
 
