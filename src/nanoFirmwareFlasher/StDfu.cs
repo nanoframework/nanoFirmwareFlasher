@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -290,7 +289,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         //18   11 000012F0 STDFU_Upload
 
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_GetInterfaceDescriptor", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_GetInterfaceDescriptor", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetInterfaceDescriptor(
             ref IntPtr handle,
             uint nConfigIdx,
@@ -299,7 +298,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             ref UsbInterfaceDescriptor pDesc);
 
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_SelectCurrentConfiguration", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_SelectCurrentConfiguration", CharSet = CharSet.Ansi)]
         private static extern uint STDFU_SelectCurrentConfiguration(
             ref IntPtr hDevice,
             uint ConfigIndex,
@@ -307,41 +306,41 @@ namespace nanoFramework.Tools.FirmwareFlasher
             uint AlternateSetIndex);
 
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_GetDFUDescriptor", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_GetDFUDescriptor", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetDFUDescriptor(
             ref IntPtr handle,
             ref uint DFUInterfaceNum,
             ref uint NBOfAlternates,
             ref DfuFunctionalDescriptor dfuDescriptor);
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_GetDeviceDescriptor", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_GetDeviceDescriptor", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetDeviceDescriptor(
             ref IntPtr handle,
             ref UsbDeviceDescriptor descriptor);
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_GetStringDescriptor", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_GetStringDescriptor", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetStringDescriptor(
             ref IntPtr handle,
             uint index,
             IntPtr stringBuffer,
             uint stringLength);
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_Dnload", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_Dnload", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_Dnload(
             ref IntPtr hDevice,
             [MarshalAs(UnmanagedType.LPArray)]byte[] pBuffer,
             uint nBytes,
             ushort nBlocks);
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_Getstatus", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_Getstatus", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_GetStatus(
             ref IntPtr hDevice,
             ref DfuStatus dfuStatus);
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_Clrstatus", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_Clrstatus", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_ClrStatus(ref IntPtr hDevice);
 
-        [DllImport("STDFU.dll", EntryPoint = "STDFU_Open", CharSet = CharSet.Ansi)]
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_Open", CharSet = CharSet.Ansi)]
         internal static extern uint STDFU_Open(
             [MarshalAs(UnmanagedType.LPStr)]string szDevicePath,
             out IntPtr hDevice);
@@ -1002,24 +1001,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             STDFU_ClrStatus(ref hDevice);
             STDFU_GetStatus(ref hDevice, ref dfuStatus);
         }
-
-        static StDfu()
-        {
-            string myPath = new Uri(typeof(StDfu).Assembly.CodeBase).LocalPath;
-            string myFolder = Path.GetDirectoryName(myPath);
-
-            bool is64 = IntPtr.Size == 8;
-            string subfolder = is64 ? "stdfu\\x64\\" : "stdfu\\x86\\";
-
-            SetDllDirectory(Path.Combine(myFolder, subfolder));
-            LoadLibrary(Path.Combine(myFolder, subfolder, "STTubeDevice30.dll"));
-            LoadLibrary(Path.Combine(myFolder, subfolder, "STDFU.dll"));
-        }
-
-        [DllImport("kernel32.dll")]
-        private static extern IntPtr LoadLibrary(string dllToLoad);
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern bool SetDllDirectory(string lpPathName);
     }
 
     #region Exceptions

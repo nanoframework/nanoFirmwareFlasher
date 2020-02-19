@@ -66,7 +66,7 @@ jobs:
       
       git checkout develop
       
-      cd source
+      cd src
 
       # prepare release and capture output
       $release = nbgv prepare-release
@@ -124,9 +124,9 @@ jobs:
 
   variables:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    buildPlatform: 'Any CPU'
+    buildPlatform: 'x64'
     buildConfiguration: 'Release'
-    solution: 'source\nanoFirmwareFlasher.sln'
+    solution: 'nanoFirmwareFlasher.sln'
 
   steps:
 
@@ -154,18 +154,15 @@ jobs:
     inputs:
       command: restore
       verbosityRestore: minimal # detailed, normal, minimal
-      projects: source\nanoFirmwareFlasher.sln
+      projects: nanoFirmwareFlasher.sln
       feedsToUse: config
-      nugetConfigPath: source/NuGet.Config
-      workingDirectory: source
+      nugetConfigPath: NuGet.Config
     displayName: Restore NuGet packages
 
-  - script: dotnet build -c $(BuildConfiguration) -r win-x64 /p:PublicRelease=true --no-restore /t:build,pack
-    workingDirectory: source
+  - script: dotnet build -r win-x64 -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
     displayName: Build NuGet package
 
-  - script: dotnet pack -c $(BuildConfiguration) --runtime win-x64 -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
-    workingDirectory: source
+  - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
     displayName: Build .NET Core Tool NuGet package
 
   - task: PowerShell@2
