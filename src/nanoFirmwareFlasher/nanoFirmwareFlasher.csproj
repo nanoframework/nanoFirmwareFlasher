@@ -25,6 +25,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(PackGlobalTool)' != true">
+    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(PackGlobalTool)' == true">
     <PackAsTool>true</PackAsTool>
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
@@ -49,19 +53,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\lib\stdfu\$(PlatformTarget)\**" Link="stdfu\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" />
+    <None Include="..\..\lib\stdfu\$(PlatformTarget)\**" Link="stdfu\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+	    <Pack>true</Pack>
+        <PackagePath>content\stdfu;contentFiles\stdfu</PackagePath>
+	</None>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\lib\esptool\**" Link="esptool\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" />
+    <None Include="..\..\lib\esptool\**" Link="esptool\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+	    <Pack>true</Pack>
+        <PackagePath>content\esptool;contentFiles\esptool</PackagePath>
+	</None>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" />
+    <None Include="..\..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+	    <Pack>true</Pack>
+        <PackagePath>content\stlink;contentFiles\stlink</PackagePath>
+	</None>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" />
+    <None Include="..\..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+	    <Pack>true</Pack>
+        <PackagePath>content\uniflash;contentFiles\uniflash</PackagePath>
+	</None>
   </ItemGroup>
 
 </Project>
