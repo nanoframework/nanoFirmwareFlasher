@@ -66,7 +66,7 @@ jobs:
       
       git checkout develop
       
-      cd source
+      cd src
 
       # prepare release and capture output
       $release = nbgv prepare-release
@@ -124,9 +124,9 @@ jobs:
 
   variables:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    buildPlatform: 'Any CPU'
+    buildPlatform: 'x64'
     buildConfiguration: 'Release'
-    solution: 'source\nanoFirmwareFlasher.sln'
+    solution: 'nanoFirmwareFlasher.sln'
 
   steps:
 
@@ -147,7 +147,7 @@ jobs:
   - task: DotNetCoreInstaller@0
     inputs:
       packageType: sdk
-      version: 2.1.500
+      version: 3.1.101
     displayName: Install .NET Core SDK
 
   - task: DotNetCoreCLI@2
@@ -160,11 +160,11 @@ jobs:
       workingDirectory: source
     displayName: Restore NuGet packages
 
-  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
+  - script: dotnet build -r win-x64 -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
     workingDirectory: source
     displayName: Build NuGet package
 
-  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true /p:PackGlobalTool=true --no-restore /t:build,pack"
+  - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
     workingDirectory: source
     displayName: Build .NET Core Tool NuGet package
 

@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<!-- TMS470REX Nodes-->
+	<node id="FlashProgrammerNode">
+		<name>Flash Settings</name>
+		<children>
+			<child>FlashSettings</child>
+			<child>FlashProgramGroup</child>
+			<child>FlashEraseGroup</child>
+			<child>FlashBlankCheckGroup</child>
+			<child>FlashChecksumGroup</child>
+			<child>FlashUserRegisterProgrammingGroup</child>
+			<child>FlashDebugPortUnlockGroup</child>
+			<child>FlashICDIFirmwareUpdateGroup</child>
+			<child>DeviceInfoGroup</child>
+		</children>
+	</node>
+
+	<!-- TMS470REX Groups -->
+	<group id="FlashSettings">
+		<name>Flash Settings</name>
+		<children>
+			<child>FlashCrystalFreq</child>
+			<child>FlashResetSetting</child>
+		</children>
+	</group>
+
+	<group id="FlashProgramGroup">
+		<name>Program Load Settings</name>
+		<children>
+			<child>FlashProgramOption</child>
+			<child>FlashProgramBlankCheckOption</child>
+			<child>FlashProgramCRCOption</child>
+		</children>
+	</group>
+	
+	<group id="FlashEraseGroup">
+		<name>Erase</name>
+		<children>
+			<child>FlashEraseType</child>
+			<child>FlashEraseStartAddr</child>
+			<child>FlashEraseEndAddr</child>
+			<child>FlashEraseButton</child>
+		</children>
+	</group>
+	
+	<group id="FlashBlankCheckGroup">
+		<name>Blank Check</name>
+		<children>
+			<child>FlashBlankCheckSelection</child>
+			<child>FlashBlankCheckStartAddr</child>
+			<child>FlashBlankCheckEndAddr</child>
+			<child>FlashBlankCheckButton</child>
+		</children>
+	</group>
+	
+	<group id="FlashChecksumGroup">
+		<name>CRC32</name>
+		<children>
+			<child>FlashChecksumSelection</child>
+			<child>FlashChecksumStartAddr</child>
+			<child>FlashChecksumEndAddr</child>
+			<child>FlashChecksumValue</child>
+			<child>FlashChecksumButton</child>
+		</children>
+	</group>
+	
+	<group id="FlashUserRegisterProgrammingGroup">
+		<name>User Register Programming</name>
+		<children>
+			<child>FlashUserRegisterModeGroup</child>
+			<child>FlashMACAddressModeGroup</child>
+		</children>
+	</group>
+	
+	<group id="FlashUserRegisterModeGroup">
+		<name>Register Mode</name>
+		<children>
+			<child>FlashUserRegister0Group</child>
+			<child>FlashUserRegister1Group</child>
+		</children>
+	</group>
+	
+	<group id="FlashUserRegister0Group">
+		<name></name>
+		<children>
+			<child>FlashUserRegister0Input</child>
+			<child>FlashUserRegister0Commit</child>
+			<child>FlashUserRegister0ProgramButton</child>
+			<child>FlashUserRegister0ReadButton</child>
+		</children>
+	</group>
+	
+	<group id="FlashUserRegister1Group">
+		<name></name>
+		<children>
+			<child>FlashUserRegister1Input</child>
+			<child>FlashUserRegister1Commit</child>
+			<child>FlashUserRegister1ProgramButton</child>
+			<child>FlashUserRegister1ReadButton</child>
+		</children>
+	</group>
+	
+	<group id="FlashMACAddressModeGroup">
+		<name>MAC Address Mode</name>
+		<children>
+			<child>FlashMACAddrText</child>
+			<child>FlashMACAddrInput</child>
+			<child>FlashMACAddrCommit</child>
+			<child>FlashMACAddrProgramButton</child>
+			<child>FlashMACAddrGetValueButton</child>
+		</children>
+	</group>
+	
+	<group id="FlashDebugPortUnlockGroup">
+		<name>Debug Port Unlock</name>
+		<children>
+			<child>FlashDebugPortUnlockText</child>
+			<child>FlashDebugPortUnlockChoice</child>
+			<child>FlashDebugPortUnlockText2</child>
+			<child>FlashDebugPortUnlockButton</child>
+			<child>FlashDebugPortUnlockButton2</child>
+		</children>
+	</group>
+	
+	<group id="FlashICDIFirmwareUpdateGroup">
+		<name>ICDI Firmware Update</name>
+		<children>
+			<child>FlashICDIFirmwareUpdateButton</child>
+		</children>
+	</group>
+
+	<group id="DeviceInfoGroup">
+		<name>Device Information</name>
+		<children>
+			<child>DeviceInfoFlashSize</child>
+			<child>DeviceInfoRAMSize</child>
+			<child>DeviceInfoSectorSize</child>
+			<child>DeviceInfoFamily</child>
+		</children>
+	</group>
+	
+	<categories>
+		<category>Clock</category>
+		<category>Download</category>
+		<category>Erase</category>
+		<category>BlankCheck</category>
+		<category>Checksum</category>
+		<category>UserRegister</category>
+		<category>DebugPortUnlock</category>
+		<category>DepletionRecovery</category>
+		<category>Device Info</category>
+	</categories>
+	
+	<!-- TMS470REX Property Definitions -->
+	<property id="FlashCrystalFreq">
+		<target>TMS470REX</target>
+		<name>Crystal Frequency: (MHz)</name>
+		<valueType>Numeric</valueType>
+		<defaultValue>8</defaultValue>
+		<categories>
+			<category>Clock</category>
+		</categories>
+	</property>
+	
+	<property id="FlashResetSetting">
+		<target>TMS470REX</target>
+		<name>Reset target during program load to Flash memory</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>1</defaultValue>
+		<categories>
+			<category>Download</category>
+		</categories>
+	</property>
+
+	<property id="FlashProgramOption">
+		<target>TMS470REX</target>
+		<name>Erase Method</name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Necessary Pages Only</value>
+			<value>Use the Erase Options Specified Below</value>
+			<value>Do Not Erase Flash Memory</value>
+		</values>
+		<defaultValue>Use the Erase Options Specified Below</defaultValue>
+		<categories>
+			<category>Download</category>
+		</categories>
+	</property>
+	
+	<property id="FlashProgramBlankCheckOption">
+		<target>TMS470REX</target>
+		<name>Perform Blank Check on Flash memory before load program</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<categories>
+			<category>Download</category>
+			<category>BlankCheck</category>
+		</categories>
+	</property>
+	
+	<property id="FlashProgramCRCOption">
+		<target>TMS470REX</target>
+		<name>Calculate CRC32 on entire Flash Memory after load program</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<categories>
+			<category>Download</category>
+			<category>Checksum</category>
+		</categories>
+	</property>
+	
+	<property id="FlashEraseType">
+		<target>TMS470REX</target>
+		<name></name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Entire Flash</value>
+			<value>By Address Range</value>
+		</values>
+		<defaultValue>Entire Flash</defaultValue>
+		<categories>
+			<category>Erase</category>
+		</categories>
+	</property>
+
+	<property id="FlashEraseStartAddr">
+		<target>TMS470REX</target>
+		<name>Start Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashEraseType">By Address Range</property>
+		</enableIf>
+		<categories>
+			<category>Erase</category>
+		</categories>
+	</property>
+
+	<property id="FlashEraseEndAddr">
+		<target>TMS470REX</target>
+		<name>End Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashEraseType">By Address Range</property>
+		</enableIf>
+		<categories>
+			<category>Erase</category>
+		</categories>
+	</property>
+
+	<property id="FlashEraseButton">
+		<target>TMS470REX</target>
+		<name>Erase Flash</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("Erase")</action>
+		<categories>
+			<category>Erase</category>
+		</categories>
+	</property>
+	
+	<property id="FlashBlankCheckSelection">
+		<target>TMS470REX</target>
+		<name></name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Entire Flash</value>
+			<value>By Address Range</value>
+		</values>
+		<defaultValue>Entire Flash</defaultValue>
+		<categories>
+			<category>BlankCheck</category>
+		</categories>
+	</property>
+	
+	<property id="FlashBlankCheckStartAddr">
+		<target>TMS470REX</target>
+		<name>Start Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashBlankCheckSelection">By Address Range</property>
+		</enableIf>
+		<categories>
+			<category>BlankCheck</category>
+		</categories>
+	</property>
+
+	<property id="FlashBlankCheckEndAddr">
+		<target>TMS470REX</target>
+		<name>End Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashBlankCheckSelection">By Address Range</property>
+		</enableIf>
+		<categories>
+			<category>BlankCheck</category>
+		</categories>
+	</property>
+	
+	<property id="FlashBlankCheckButton">
+		<target>TMS470REX</target>
+		<name>Blank Check</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("BlankCheck")</action>
+		<categories>
+			<category>BlankCheck</category>
+		</categories>
+	</property>
+	
+	<property id="FlashChecksumSelection">
+		<target>TMS470REX</target>
+		<name></name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Entire Flash</value>
+			<value>By Address Range</value>
+		</values>
+		<defaultValue>Entire Flash</defaultValue>
+		<categories>
+			<category>Checksum</category>
+		</categories>
+	</property>
+	
+	<property id="FlashChecksumStartAddr">
+		<target>TMS470REX</target>
+		<name>Start Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashChecksumSelection">By Address Range</property>
+		</enableIf>
+		<categories>
+			<category>Checksum</category>
+		</categories>
+	</property>
+
+	<property id="FlashChecksumEndAddr">
+		<target>TMS470REX</target>
+		<name>End Address: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue>0</defaultValue>
+		<enableIf>
+			<property id="FlashChecksumSelection">By Address Range</property>
+		</enableIf>
+		<categories>
+			<category>Checksum</category>
+		</categories>
+	</property>
+	
+	<property id="FlashChecksumValue">
+		<target>TMS470REX</target>
+		<name>CRC32 Value:</name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+		<readOnly>1</readOnly>
+		<categories>
+			<category>Checksum</category>
+		</categories>
+	</property>
+	
+	<property id="FlashChecksumButton">
+		<target>TMS470REX</target>
+		<name>Calculate</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("CalculateChecksum")</action>
+		<categories>
+			<category>Checksum</category>
+		</categories>
+	</property>
+	
+	<property id="FlashUserRegister0Input">
+		<target>TMS470REX</target>
+		<name>User Register 0: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashUserRegister0Commit">
+		<target>TMS470REX</target>
+		<name>Commit User 0</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashUserRegister0ProgramButton">
+		<target>TMS470REX</target>
+		<name>Program User 0</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("ProgramUserRegister0")</action>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashUserRegister0ReadButton">
+		<target>TMS470REX</target>
+		<name>Read User 0 Value</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("ReadUserRegister0")</action>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashUserRegister1Input">
+		<target>TMS470REX</target>
+		<name>User Register 1: 0x</name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashUserRegister1Commit">
+		<target>TMS470REX</target>
+		<name>Commit User 1</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashUserRegister1ProgramButton">
+		<target>TMS470REX</target>
+		<name>Program User 1</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("ProgramUserRegister1")</action>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashUserRegister1ReadButton">
+		<target>TMS470REX</target>
+		<name>Read User 1 Value</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("ReadUserRegister1")</action>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashMACAddrInput">
+		<target>TMS470REX</target>
+		<name>MAC Address:</name>
+		<valueType>String</valueType>
+		<defaultValue></defaultValue>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashMACAddrCommit">
+		<target>TMS470REX</target>
+		<name>Commit MAC Address</name>
+		<valueType>Boolean</valueType>
+		<defaultValue>0</defaultValue>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashMACAddrProgramButton">
+		<target>TMS470REX</target>
+		<name>Program MAC Address</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("ProgramMACAddress")</action>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashMACAddrGetValueButton">
+		<target>TMS470REX</target>
+		<name>Read MAC Address Value</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("ReadMACAddress")</action>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+	
+	<property id="FlashMACAddrText">
+		<target>TMS470REX</target>
+		<name>The MAC Address will be stored in the User0 and User1 registers.
+Example: MAC Address of 00-1A-B6-00-02-74 will be stored as
+User 0 = 0x00B61A00	User 1 = 0x00740200</name>
+		<valueType>Text</valueType>
+		<categories>
+			<category>UserRegister</category>
+		</categories>
+	</property>
+
+	<property id="FlashDebugPortUnlockText">
+		<target>TMS470REX</target>
+		<name>The following operation will erase the internal flash and the non-volatile user registers. 
+Often the user registers are used to store the Ethernet MAC address. You should consider 
+noting the current value of the user registers for reprogramming at a later time using the 
+User Register Programming utility.</name>
+		<valueType>Text</valueType>
+		<categories>
+			<category>DebugPortUnlock</category>
+		</categories>
+	</property>
+	
+	<property id="FlashDebugPortUnlockChoice">
+		<target>TMS470REX</target>
+		<name></name>
+		<valueType>ChoiceList</valueType>
+		<values>
+			<value>Fury, DustDevil, and Tiva Classes</value>
+			<value>Tempest and Firestorm Classes</value>
+		</values>
+		<defaultValue>Fury, DustDevil, and Blizzard Classes</defaultValue>
+		<categories>
+			<category>DebugPortUnlock</category>
+		</categories>
+	</property>
+	
+	<property id="FlashDebugPortUnlockText2">
+		<target>TMS470REX</target>
+		<name>Please press and hold reset on device while powering up before clicking on the Unlock button.</name>
+		<valueType>Text</valueType>
+		<categories>
+			<category>DebugPortUnlock</category>
+		</categories>
+	</property>
+	
+	<property id="FlashDebugPortUnlockButton">
+		<target>TMS470REX</target>
+		<name>Unlock</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("NCO_DebugPortUnlock")</action>
+		<categories>
+			<category>DebugPortUnlock</category>
+		</categories>
+	</property>
+	
+	<property id="FlashDebugPortUnlockButton2">
+		<target>TMS470REX</target>
+		<name>Finish Unlock</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("NCO_DebugPortUnlock2")</action>
+		<categories>
+			<category>DebugPortUnlock</category>
+		</categories>
+	</property>
+	
+	<property id="FlashICDIFirmwareUpdateButton">
+		<target>TMS470REX</target>
+		<name>Update</name>
+		<valueType>Button</valueType>
+		<action>DPActiveDebugSession.flash.performOperation("NCO_ICDIFirmwareUpdate")</action>
+		<categories>
+			<category>FirmwareUpdate</category>
+		</categories>
+	</property>
+	
+	<property id="DeviceInfoFlashSize">
+		<target>TMS470REX</target>
+		<name>Flash Size</name>
+		<valueType>String</valueType>
+		<defaultValue>--</defaultValue>
+		<readOnly>1</readOnly>
+		<categories>
+			<category>Device Info</category>
+		</categories>
+	</property>
+
+	<property id="DeviceInfoRAMSize">
+		<target>TMS470REX</target>
+		<name>RAM Size</name>
+		<valueType>String</valueType>
+		<defaultValue>--</defaultValue>
+		<readOnly>1</readOnly>
+		<categories>
+			<category>Device Info</category>
+		</categories>
+	</property>
+
+	<property id="DeviceInfoSectorSize">
+		<target>TMS470REX</target>
+		<name>Sector Size</name>
+		<valueType>String</valueType>
+		<defaultValue>--</defaultValue>
+		<readOnly>1</readOnly>
+		<categories>
+			<category>Device Info</category>
+		</categories>
+	</property>
+
+	<property id="DeviceInfoFamily">
+		<target>TMS470REX</target>
+		<name>Family</name>
+		<valueType>String</valueType>
+		<defaultValue>--</defaultValue>
+		<readOnly>1</readOnly>
+		<categories>
+			<category>Device Info</category>
+		</categories>
+	</property>
+	
+	<!-- fin -->
+</PropertyList>

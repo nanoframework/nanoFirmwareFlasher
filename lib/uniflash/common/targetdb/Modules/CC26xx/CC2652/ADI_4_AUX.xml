@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AUX_ADI4" HW_revision="" XML_version="1.0" description="Configuration registers controlling analog peripherals of AUX. Registers Fields should be considered static unless otherwise noted (as dynamic)" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="MUX0" width="8" description="Internal. Only to be used through TI provided API." id="MUX0" offset="0x0">
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="ADCCOMPB_IN" resetval="0x0">
+         <bitenum id="VDDR_1P8V" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="NC" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="COMPA_REF" resetval="0x0">
+         <bitenum id="ADCVREFP" value="8" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="VDDS" value="4" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="VSS" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DCOUPL" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="NC" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="MUX1" width="8" description="Internal. Only to be used through TI provided API." id="MUX1" offset="0x1">
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="COMPA_IN" resetval="0x0">
+         <bitenum id="AUXIO19" value="128" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO20" value="64" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO21" value="32" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO22" value="16" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO23" value="8" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO24" value="4" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO25" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO26" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="NC" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="MUX2" width="8" description="Internal. Only to be used through TI provided API." id="MUX2" offset="0x2">
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="ADCCOMPB_IN" resetval="0x0">
+         <bitenum id="VDDS" value="16" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="VSS" value="8" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DCOUPL" value="4" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="ATEST1" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="ATEST0" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="NC" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="DAC_VREF_SEL" resetval="0x0">
+         <bitenum id="VDDS" value="4" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="ADCREF" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="DCOUPL" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="NC" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="MUX3" width="8" description="Internal. Only to be used through TI provided API." id="MUX3" offset="0x3">
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="ADCCOMPB_IN" resetval="0x0">
+         <bitenum id="AUXIO19" value="128" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO20" value="64" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO21" value="32" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO22" value="16" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO23" value="8" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO24" value="4" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO25" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO26" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="NC" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="ISRC" width="8" description="Current Source
+
+Strength and trim control for current source. Only to be used through TI provided API." id="ISRC" offset="0x4">
+      <bitfield range="" begin="7" width="6" end="2" rwaccess="RW" description="Adjust current from current source.
+
+Output currents may be combined to get desired total current." id="TRIM" resetval="0x0">
+         <bitenum id="11P75U" value="32" token="11.75 uA" description="11.75 uA"/>
+         <bitenum id="4P5U" value="16" token="4.5 uA" description="4.5 uA"/>
+         <bitenum id="2P0U" value="8" token="2.0 uA" description="2.0 uA"/>
+         <bitenum id="1P0U" value="4" token="1.0 uA" description="1.0 uA"/>
+         <bitenum id="0P5U" value="2" token="0.5 uA" description="0.5 uA"/>
+         <bitenum id="0P25U" value="1" token="0.25 uA" description="0.25 uA"/>
+         <bitenum id="NC" value="0" token="No current connected" description="No current connected"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Current source enable" id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP" width="8" description="Comparator
+
+Control COMPA and COMPB comparators. Only to be used through TI provided API." id="COMP" offset="0x5">
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Enables 400kohm resistance from COMPA reference node to ground. Used with COMPA_REF_CURR_EN to generate voltage reference for cap-sense." id="COMPA_REF_RES_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Enables 2uA IPTAT current from ISRC to COMPA reference node. Requires ISRC.EN = 1. Used with COMPA_REF_RES_EN to generate voltage reference for cap-sense." id="COMPA_REF_CURR_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="3" end="3" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="LPM_BIAS_WIDTH_TRIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="COMPB enable" id="COMPB_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="COMPA enable" id="COMPA_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MUX4" width="8" description="Internal. Only to be used through TI provided API." id="MUX4" offset="0x7">
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="COMPA_REF" resetval="0x0">
+         <bitenum id="AUXIO19" value="128" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO20" value="64" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO21" value="32" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO22" value="16" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO23" value="8" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO24" value="4" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO25" value="2" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="AUXIO26" value="1" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+         <bitenum id="NC" value="0" token="Internal. Only to be used through TI provided API." description="Internal. Only to be used through TI provided API."/>
+      </bitfield>
+   </register>
+   <register acronym="ADC0" width="8" description="ADC Control 0
+
+ADC Sample Control. Only to be used through TI provided API." id="ADC0" offset="0x8">
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="ADC Sampling mode:
+
+0: Synchronous mode
+1: Asynchronous mode
+
+The ADC does a sample-and-hold before conversion. In synchronous mode the sampling starts when the ADC clock detects a rising edge on the trigger signal. Jitter/uncertainty will be inferred in the detection if the trigger signal originates from a domain that is asynchronous to the ADC clock. SMPL_CYCLE_EXP  determines the the duration of sampling.
+Conversion starts immediately after sampling ends.
+
+In asynchronous mode the sampling is continuous when enabled. Sampling ends and conversion starts immediately with the rising edge of the trigger signal. Sampling restarts when the conversion has finished.
+Asynchronous mode is useful when it is important to avoid jitter in the sampling instant of an externally driven signal" id="SMPL_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="4" end="3" rwaccess="RW" description="Controls the sampling duration before conversion when the ADC is operated in synchronous mode (SMPL_MODE = 0). The setting has no effect in asynchronous mode. The sampling duration is given as 2^(SMPL_CYCLE_EXP + 1) / 6 us.
+
+" id="SMPL_CYCLE_EXP" resetval="0x0">
+         <bitenum id="10P9_MS" value="15" token="65536x 6 MHz clock periods = 10.9ms" description="65536x 6 MHz clock periods = 10.9ms"/>
+         <bitenum id="5P46_MS" value="14" token="32768x 6 MHz clock periods = 5.46ms" description="32768x 6 MHz clock periods = 5.46ms"/>
+         <bitenum id="2P73_MS" value="13" token="16384x 6 MHz clock periods = 2.73ms" description="16384x 6 MHz clock periods = 2.73ms"/>
+         <bitenum id="1P37_MS" value="12" token="8192x 6 MHz clock periods = 1.37ms" description="8192x 6 MHz clock periods = 1.37ms"/>
+         <bitenum id="682_US" value="11" token="4096x 6 MHz clock periods = 682us" description="4096x 6 MHz clock periods = 682us"/>
+         <bitenum id="341_US" value="10" token="2048x 6 MHz clock periods = 341us" description="2048x 6 MHz clock periods = 341us"/>
+         <bitenum id="170_US" value="9" token="1024x 6 MHz clock periods = 170us" description="1024x 6 MHz clock periods = 170us"/>
+         <bitenum id="85P3_US" value="8" token="512x 6 MHz clock periods = 85.3us" description="512x 6 MHz clock periods = 85.3us"/>
+         <bitenum id="42P6_US" value="7" token="256x 6 MHz clock periods = 42.6us" description="256x 6 MHz clock periods = 42.6us"/>
+         <bitenum id="21P3_US" value="6" token="128x 6 MHz clock periods = 21.3us" description="128x 6 MHz clock periods = 21.3us"/>
+         <bitenum id="10P6_US" value="5" token="64x 6 MHz clock periods = 10.6us" description="64x 6 MHz clock periods = 10.6us"/>
+         <bitenum id="5P3_US" value="4" token="32x 6 MHz clock periods = 5.3us" description="32x 6 MHz clock periods = 5.3us"/>
+         <bitenum id="2P7_US" value="3" token="16x 6 MHz clock periods = 2.7us" description="16x 6 MHz clock periods = 2.7us"/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Reset ADC digital subchip, active low. ADC must be reset every time it is reconfigured.
+
+0: Reset
+1: Normal operation
+" id="RESET_N" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="ADC Enable
+
+0: Disable
+1: Enable
+" id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ADC1" width="8" description="ADC Control 1
+
+ADC Comparator Control. Only to be used through TI provided API." id="ADC1" offset="0x9">
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="SCALE_DIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ADCREF0" width="8" description="ADC Reference 0
+
+Control reference used by the ADC. Only to be used through TI provided API." id="ADCREF0" offset="0xa">
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Enable ADCREF in IDLE state.
+
+0: Disabled in IDLE state
+1: Enabled in IDLE state
+
+Keep ADCREF enabled when ADC0.SMPL_MODE = 0.
+Recommendation: Enable ADCREF always when ADC0.SMPL_CYCLE_EXP is less than 0x6 (21.3us sampling time)." id="REF_ON_IDLE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="IOMUX" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="EXT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="ADC reference source:
+
+0: Fixed reference = 4.3V
+1: Relative reference = VDDS
+
+" id="SRC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="2" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="ADC reference module enable:
+
+0: ADC reference module powered down
+1: ADC reference module enabled" id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ADCREF1" width="8" description="ADC Reference 1
+
+Control reference used by the ADC. Only to be used through TI provided API." id="ADCREF1" offset="0xb">
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Trim output voltage of ADC fixed reference (64 steps, 2&#39;s complement). Applies only for ADCREF0.SRC = 0.
+
+Examples:
+0x00 - nominal voltage 1.43V
+0x01 - nominal + 0.4% 1.435V
+0x3F - nominal - 0.4% 1.425V
+0x1F - maximum voltage 1.6V
+0x20 - minimum voltage 1.3V" id="VTRIM" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LPMBIAS" width="8" description="Internal. Only to be used through TI provided API." id="LPMBIAS" offset="0xe">
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="SPARE6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Internal. Only to be used through TI provided API." id="LPM_TRIM_IOUT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STAT" width="8" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="STAT" offset="0xf">
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="SPARE0" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

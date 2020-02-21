@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="I2C" HW_revision="" XML_version="1.0" description="I2CMaster/Slave Serial Controler
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="SOAR" width="32" description="Slave Own Address
+This register consists of seven address bits that identify this I2C device on the I2C bus." id="SOAR" offset="0x0">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="7" end="0" rwaccess="RW" description="I2C slave own address
+This field specifies bits a6 through a0 of the slave address." id="OAR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SSTAT" width="32" description="Slave Status 
+Note: This register shares address with SCTL, meaning that this register functions as a control register when written, and a status register when read." id="SSTAT" offset="0x4">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="First byte received
+
+0: The first byte has not been received.
+1: The first byte following the slave&#39;s own address has been received.
+
+This bit is only valid when the RREQ bit is set and is automatically cleared when data has been read from the SDR register.
+Note: This bit is not used for slave transmit operations." id="FBR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Transmit request
+
+0: No outstanding transmit request.
+1: The I2C controller has been addressed as a slave transmitter and is using clock stretching to delay the master until data has been written to the SDR register." id="TREQ" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Receive request
+
+0: No outstanding receive data
+1: The I2C controller has outstanding receive data from the I2C master and is using clock stretching to delay the master until data has been read from the SDR register.
+" id="RREQ" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SCTL" width="32" description="Slave Control
+Note: This register shares address with SSTAT, meaning that this register functions as a control register when written, and a status register when read." id="SCTL" offset="0x4">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="WO" description="Software should not rely on the value of a reserved field.  Writing any other value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Device active
+
+0: Disables the I2C slave operation
+1: Enables the I2C slave operation" id="DA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SDR" width="32" description="Slave Data
+This register contains the data to be transmitted when in the Slave Transmit state, and the data received when in the Slave Receive state." id="SDR" offset="0x8">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Data for transfer
+This field contains the data for transfer during a slave receive or transmit operation.  When written the register data is used as transmit data.  When read, this register returns the last data received.
+Data is stored until next update, either by a system write for transmit or by an external master for receive." id="DATA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SIMR" width="32" description="Slave Interrupt Mask
+This register controls whether a raw interrupt is promoted to a controller interrupt." id="SIMR" offset="0xc">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Stop condition interrupt mask
+
+0: The SRIS.STOPRIS interrupt is suppressed and not sent to the interrupt controller.
+1: The SRIS.STOPRIS interrupt is enabled and sent to the interrupt controller.
+" id="STOPIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Start condition interrupt mask
+
+0: The SRIS.STARTRIS interrupt is suppressed and not sent to the interrupt controller.
+1: The SRIS.STARTRIS interrupt is enabled and sent to the interrupt controller.
+" id="STARTIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Data interrupt mask
+
+0: The SRIS.DATARIS interrupt is suppressed and not sent to the interrupt controller.
+1: The SRIS.DATARIS interrupt is enabled and sent to the interrupt controller." id="DATAIM" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SRIS" width="32" description="Slave Raw Interrupt Status
+This register shows the unmasked interrupt status." id="SRIS" offset="0x10">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Stop condition raw interrupt status
+
+0: No interrupt
+1: A Stop condition interrupt is pending.
+
+This bit is cleared by writing a 1 to SICR.STOPIC." id="STOPRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Start condition raw interrupt status
+
+0: No interrupt
+1: A Start condition interrupt is pending.
+
+This bit is cleared by writing a 1 to SICR.STARTIC." id="STARTRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Data raw interrupt status
+
+0: No interrupt
+1: A data received or data requested interrupt is pending.
+
+This bit is cleared by writing a 1 to the SICR.DATAIC." id="DATARIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SMIS" width="32" description="Slave Masked Interrupt Status
+This register show which interrupt is active (based on result from SRIS and SIMR)." id="SMIS" offset="0x14">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Stop condition masked interrupt status
+
+0: An interrupt has not occurred or is masked/disabled.
+1: An unmasked Stop condition interrupt is pending.
+
+This bit is cleared by writing a 1 to the SICR.STOPIC." id="STOPMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Start condition masked interrupt status
+
+0: An interrupt has not occurred or is masked/disabled.
+1: An unmasked Start condition interrupt is pending.
+
+This bit is cleared by writing a 1 to the SICR.STARTIC." id="STARTMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Data masked interrupt status
+
+0: An interrupt has not occurred or is masked/disabled.
+1: An unmasked data received or data requested interrupt is pending.
+
+This bit is cleared by writing a 1 to the SICR.DATAIC." id="DATAMIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SICR" width="32" description="Slave Interrupt Clear
+This register clears the raw interrupt SRIS." id="SICR" offset="0x18">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Stop condition interrupt clear
+
+Writing 1 to this bit clears SRIS.STOPRIS and SMIS.STOPMIS." id="STOPIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Start condition interrupt clear
+
+Writing 1 to this bit clears SRIS.STARTRIS SMIS.STARTMIS." id="STARTIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Data interrupt clear
+
+Writing 1 to this bit clears SRIS.DATARIS SMIS.DATAMIS." id="DATAIC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MSA" width="32" description="Master Salve Address
+This register contains seven address bits of the slave to be accessed by the master (a6-a0), and an RS bit determining if the next operation is a receive or transmit." id="MSA" offset="0x800">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RW" description="I2C master slave address
+Defines which slave is addressed for the transaction in master mode" id="SA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Receive or Send
+This bit-field specifies if the next operation is a receive (high) or a transmit/send (low) from the addressed slave SA." id="RS" resetval="0x0">
+         <bitenum id="RX" value="1" token="Receive data from slave" description="Receive data from slave"/>
+         <bitenum id="TX" value="0" token="Transmit/send data to slave" description="Transmit/send data to slave"/>
+      </bitfield>
+   </register>
+   <register acronym="MSTAT" width="32" description="Master Status
+
+" id="MSTAT" offset="0x804">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="Bus busy
+
+0: The I2C bus is idle.
+1: The I2C bus is busy.
+
+The bit changes based on the MCTRL.START and MCTRL.STOP conditions." id="BUSBSY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="I2C idle
+
+0: The I2C controller is not idle.
+1: The I2C controller is idle." id="IDLE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Arbitration lost
+
+0: The I2C controller won arbitration.
+1: The I2C controller lost arbitration." id="ARBLST" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Data Was Not Acknowledge
+
+0: The transmitted data was acknowledged.
+1: The transmitted data was not acknowledged." id="DATACK_N" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Address Was Not Acknowledge
+
+0: The transmitted address was acknowledged.
+1: The transmitted address was not acknowledged." id="ADRACK_N" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Error
+
+0: No error was detected on the last operation.
+1: An error occurred on the last operation." id="ERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="I2C busy
+
+0: The controller is idle.
+1: The controller is busy.
+
+When this bit-field is set, the other status bits are not valid.
+
+Note: The I2C controller requires four SYSBUS clock cycles to assert the BUSY status after I2C master operation has been initiated through MCTRL register. 
+Hence after programming MCTRL register, application is requested to wait for four SYSBUS clock cycles before issuing a controller status inquiry through MSTAT register.
+Any prior inquiry would result in wrong status being reported.
+" id="BUSY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MCTRL" width="32" description="Master Control
+
+This register accesses status bits when read and control bits when written. When read, the status register indicates the state of the I2C bus controller as stated in MSTAT. When written, the control register configures the I2C controller operation.
+
+To generate a single transmit cycle, the I2C Master Slave Address (MSA) register is written with the desired address, the MSA.RS bit is cleared, and this register is written with 
+* ACK=X (0 or 1), 
+* STOP=1, 
+* START=1, 
+* RUN=1 
+to perform the operation and stop. 
+When the operation is completed (or aborted due an error), an interrupt becomes active and the data may be read from the MDR register. " id="MCTRL" offset="0x804">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="Data acknowledge enable
+
+0: The received data byte is not acknowledged automatically by the master.
+1: The received data byte is acknowledged automatically by the master.
+
+This bit-field must be cleared when the I2C bus controller requires no further data to be transmitted from the slave transmitter." id="ACK" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable acknowledge" description="Enable acknowledge"/>
+         <bitenum id="DIS" value="0" token="Disable acknowledge" description="Disable acknowledge"/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="This bit-field determines if the cycle stops at the end of the data cycle or continues on to a repeated START condition.
+
+0: The controller does not generate the Stop condition.
+1: The controller generates the Stop condition." id="STOP" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable STOP" description="Enable STOP"/>
+         <bitenum id="DIS" value="0" token="Disable STOP" description="Disable STOP"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="This bit-field generates the Start or Repeated Start condition. 
+
+0: The controller does not generate the Start condition.
+1: The controller generates the Start condition." id="START" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable START" description="Enable START"/>
+         <bitenum id="DIS" value="0" token="Disable START" description="Disable START"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="I2C master enable
+
+0: The master is disabled.
+1: The master is enabled to transmit or receive data.
+" id="RUN" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Master" description="Enable Master"/>
+         <bitenum id="DIS" value="0" token="Disable Master" description="Disable Master"/>
+      </bitfield>
+   </register>
+   <register acronym="MDR" width="32" description="Master Data
+This register contains the data to be transmitted when in the Master Transmit state and the data received when in the Master Receive state." id="MDR" offset="0x808">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="When Read: Last RX Data is returned
+When Written: Data is transferred during TX  transaction" id="DATA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MTPR" width="32" description="I2C Master Timer Period
+This register specifies the period of the SCL clock." id="MTPR" offset="0x80c">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Must be set to 0 to set TPR. If set to 1, a write to TPR will be ignored. " id="TPR_7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="7" end="0" rwaccess="RW" description="SCL clock period
+This field specifies the period of the SCL clock.
+SCL_PRD = 2*(1+TPR)*(SCL_LP + SCL_HP)*CLK_PRD
+where:
+SCL_PRD is the SCL line period (I2C clock).
+TPR is the timer period register value (range of 1 to 127)
+SCL_LP is the SCL low period (fixed at 6).
+SCL_HP is the SCL high period (fixed at 4).
+CLK_PRD is the system clock period in ns." id="TPR" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="MIMR" width="32" description="Master Interrupt Mask
+This register controls whether a raw interrupt is promoted to a controller interrupt." id="MIMR" offset="0x810">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Interrupt mask
+
+0: The MRIS.RIS interrupt is suppressed and not sent to the interrupt controller.
+1: The master interrupt is sent to the interrupt controller when the MRIS.RIS is set.
+" id="IM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+   </register>
+   <register acronym="MRIS" width="32" description="Master Raw Interrupt Status
+This register show the unmasked interrupt status." id="MRIS" offset="0x814">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Raw interrupt status
+
+0: No interrupt
+1: A master interrupt is pending.
+
+This bit is cleared by writing 1 to the MICR.IC bit ." id="RIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MMIS" width="32" description="Master Masked Interrupt Status
+This register show which interrupt is active (based on result from MRIS and MIMR)." id="MMIS" offset="0x818">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Masked interrupt status
+
+0: An interrupt has not occurred or is masked.
+1: A master interrupt is pending.
+
+This bit is cleared by writing 1 to the MICR.IC bit ." id="MIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MICR" width="32" description="Master Interrupt Clear
+This register clears the raw and masked interrupt." id="MICR" offset="0x81c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Interrupt clear
+Writing 1 to this bit clears MRIS.RIS and  MMIS.MIS .
+
+Reading this register returns no meaningful data." id="IC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MCR" width="32" description="Master Configuration
+This register configures the mode (Master or Slave) and sets the interface for test mode loopback." id="MCR" offset="0x820">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="I2C slave function enable
+" id="SFE" resetval="0x0">
+         <bitenum id="EN" value="1" token="Slave mode is enabled." description="Slave mode is enabled."/>
+         <bitenum id="DIS" value="0" token="Slave mode is disabled." description="Slave mode is disabled."/>
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="I2C master function enable
+" id="MFE" resetval="0x0">
+         <bitenum id="EN" value="1" token="Master mode is enabled." description="Master mode is enabled."/>
+         <bitenum id="DIS" value="0" token="Master mode is disabled." description="Master mode is disabled."/>
+      </bitfield>
+      <bitfield range="" begin="3" width="3" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="I2C loopback
+
+0: Normal operation
+1: Loopback operation (test mode)" id="LPBK" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Test Mode" description="Enable Test Mode"/>
+         <bitenum id="DIS" value="0" token="Disable Test Mode" description="Disable Test Mode"/>
+      </bitfield>
+   </register>
+</module>

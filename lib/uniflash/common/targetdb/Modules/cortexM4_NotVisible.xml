@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="Hidden" HW_revision="1" XML_version="1" description="" hidden="true">
+	<register id="CLK" acronym="CLK" width="32" description=""/>
+	<register id="R15" acronym="R15" width="32" description=""/>
+	<register id="AP" acronym="AP" width="32" description=""/>
+	<register id="FP" acronym="FP" width="32" description=""/>
+	<register id="F0" acronym="F0" width="32" description=""/>
+	<register id="F1" acronym="F1" width="32" description=""/>
+	<register id="F2" acronym="F2" width="32" description=""/>
+	<register id="F3" acronym="F3" width="32" description=""/>
+	<register id="F4" acronym="F4" width="32" description=""/>
+	<register id="F5" acronym="F5" width="32" description=""/>
+	<register id="F6" acronym="F6" width="32" description=""/>
+	<register id="F7" acronym="F7" width="32" description=""/>
+	<register id="F8" acronym="F8" width="32" description=""/>
+	<register id="F9" acronym="F9" width="32" description=""/>
+	<register id="F10" acronym="F10" width="32" description=""/>
+	<register id="F11" acronym="F11" width="32" description=""/>
+	<register id="F12" acronym="F12" width="32" description=""/>
+	<register id="F13" acronym="F13" width="32" description=""/>
+	<register id="F14" acronym="F14" width="32" description=""/>
+	<register id="F15" acronym="F15" width="32" description=""/>
+    
+    <register id="FPU_S0" acronym="FPU_S0" width="32" description=""/>
+    <register id="FPU_S1" acronym="FPU_S1" width="32" description=""/>
+    <register id="FPU_S2" acronym="FPU_S2" width="32" description=""/>
+    <register id="FPU_S3" acronym="FPU_S3" width="32" description=""/>
+    <register id="FPU_S4" acronym="FPU_S4" width="32" description=""/>
+    <register id="FPU_S5" acronym="FPU_S5" width="32" description=""/>
+    <register id="FPU_S6" acronym="FPU_S6" width="32" description=""/>
+    <register id="FPU_S7" acronym="FPU_S7" width="32" description=""/>
+    <register id="FPU_S8" acronym="FPU_S8" width="32" description=""/>
+    <register id="FPU_S9" acronym="FPU_S9" width="32" description=""/>
+    <register id="FPU_S10" acronym="FPU_S10" width="32" description=""/>
+    <register id="FPU_S11" acronym="FPU_S11" width="32" description=""/>
+    <register id="FPU_S12" acronym="FPU_S12" width="32" description=""/>
+    <register id="FPU_S13" acronym="FPU_S13" width="32" description=""/>
+    <register id="FPU_S14" acronym="FPU_S14" width="32" description=""/>
+    <register id="FPU_S15" acronym="FPU_S15" width="32" description=""/>
+    <register id="FPU_S16" acronym="FPU_S16" width="32" description=""/>
+    <register id="FPU_S17" acronym="FPU_S17" width="32" description=""/>
+    <register id="FPU_S18" acronym="FPU_S18" width="32" description=""/>
+    <register id="FPU_S19" acronym="FPU_S19" width="32" description=""/>
+    <register id="FPU_S20" acronym="FPU_S20" width="32" description=""/>
+    <register id="FPU_S21" acronym="FPU_S21" width="32" description=""/>
+    <register id="FPU_S22" acronym="FPU_S22" width="32" description=""/>
+    <register id="FPU_S23" acronym="FPU_S23" width="32" description=""/>
+    <register id="FPU_S24" acronym="FPU_S24" width="32" description=""/>
+    <register id="FPU_S25" acronym="FPU_S25" width="32" description=""/>
+    <register id="FPU_S26" acronym="FPU_S26" width="32" description=""/>
+    <register id="FPU_S27" acronym="FPU_S27" width="32" description=""/>
+    <register id="FPU_S28" acronym="FPU_S28" width="32" description=""/>
+    <register id="FPU_S29" acronym="FPU_S29" width="32" description=""/>
+    <register id="FPU_S30" acronym="FPU_S30" width="32" description=""/>
+    <register id="FPU_S31" acronym="FPU_S31" width="32" description=""/>
+    
+    <register id="FPU_D0" acronym="FPU_D0" width="64" description=""/>
+    <register id="FPU_D1" acronym="FPU_D1" width="64" description=""/>
+    <register id="FPU_D2" acronym="FPU_D2" width="64" description=""/>
+    <register id="FPU_D3" acronym="FPU_D3" width="64" description=""/>
+    <register id="FPU_D4" acronym="FPU_D4" width="64" description=""/>
+    <register id="FPU_D5" acronym="FPU_D5" width="64" description=""/>
+    <register id="FPU_D6" acronym="FPU_D6" width="64" description=""/>
+    <register id="FPU_D7" acronym="FPU_D7" width="64" description=""/>
+    <register id="FPU_D8" acronym="FPU_D8" width="64" description=""/>
+    <register id="FPU_D9" acronym="FPU_D9" width="64" description=""/>
+    <register id="FPU_D10" acronym="FPU_D10" width="64" description=""/>
+    <register id="FPU_D11" acronym="FPU_D11" width="64" description=""/>
+    <register id="FPU_D12" acronym="FPU_D12" width="64" description=""/>
+    <register id="FPU_D13" acronym="FPU_D13" width="64" description=""/>
+    <register id="FPU_D14" acronym="FPU_D14" width="64" description=""/>
+    <register id="FPU_D15" acronym="FPU_D15" width="64" description=""/>
+    
+    <register id="FPU_FPSCR" acronym="FPU_FPSCR" width="32" description=""/>
+    <register id="FPU_FPCCR" acronym="FPU_FPCCR" width="32" description=""/>
+	<register id="FPU_FPCAR" acronym="FPU_FPCAR" width="32" description=""/>
+	<register id="FPU_FPDSCR" acronym="FPU_FPDSCR" width="32" description=""/>
+	<register id="FPU_MVFR0" acronym="FPU_MVFR0" width="32" description=""/>
+	<register id="FPU_MVFR1" acronym="FPU_MVFR1" width="32" description=""/>
+    
+	<register id="D0" acronym="D0" width="64" description=""/>
+	<register id="D1" acronym="D1" width="64" description=""/>
+	<register id="D2" acronym="D2" width="64" description=""/>
+	<register id="D3" acronym="D3" width="64" description=""/>
+	<register id="D4" acronym="D4" width="64" description=""/>
+	<register id="D5" acronym="D5" width="64" description=""/>
+	<register id="D6" acronym="D6" width="64" description=""/>
+	<register id="WP0_ADDR" acronym="WP0_ADDR" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP0_AMASK" acronym="WP0_AMASK" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP0_DATA" acronym="WP0_DATA" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP0_DMASK" acronym="WP0_DMASK" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP0_CTRL" acronym="WP0_CTRL" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP0_CMASK" acronym="WP0_CMASK" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP1_ADDR" acronym="WP1_ADDR" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP1_AMASK" acronym="WP1_AMASK" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP1_DATA" acronym="WP1_DATA" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP1_DMASK" acronym="WP1_DMASK" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP1_CTRL" acronym="WP1_CTRL" width="32" description="" rwaccess="RW,RW"/>
+	<register id="WP1_CMASK" acronym="WP1_CMASK" width="32" description="" rwaccess="RW,RW"/>
+	<register id="EMU_STAT" acronym="EMU_STAT" width="32" description=""/>
+	<register id="EMU_CNTR" acronym="EMU_CNTR" width="32" description=""/>
+	<register id="EMU_MODE" acronym="EMU_MODE" width="32" description=""/>
+	<register id="EMU_PCTL" acronym="EMU_PCTL" width="32" description=""/>
+	<register id="ANAENBL" acronym="ANAENBL" width="32" description=""/>
+	<register id="REG_ENDIAN" acronym="REG_ENDIAN" width="32" description=""/>
+	<register id="REG_ICECRUSHER" acronym="REG_ICECRUSHER" width="32" description=""/>
+	<register id="REG_RTDXENABLE" acronym="REG_RTDXENABLE" width="32" description=""/>
+	<register id="SCLK" acronym="SCLK" width="32" description=""/>
+	<register id="NCLK" acronym="NCLK" width="32" description=""/>
+	<register id="ICLK" acronym="ICLK" width="32" description=""/>
+	<register id="CCLK" acronym="CCLK" width="32" description=""/>
+	<register id="FCLK" acronym="FCLK" width="32" description=""/>
+	<register id="NINSTR" acronym="NINSTR" width="32" description=""/>
+	<register id="FADDR" acronym="FADDR" width="32" description=""/>
+	<register id="DADDR" acronym="DADDR" width="32" description=""/>
+	<register id="XADDR" acronym="XADDR" width="32" description=""/>
+	<register id="REG_E2ICE_COUNTER0" acronym="REG_E2ICE_COUNTER0" width="32" description=""/>
+	<register id="REG_E2ICE_COUNTER1" acronym="REG_E2ICE_COUNTER1" width="32" description=""/>
+	<register id="REG_CP15_TABL_ADDR" acronym="REG_CP15_TABL_ADDR" width="32" description=""/>
+	<register id="REG_RUN_COUNT" acronym="REG_RUN_COUNT" width="32" description=""/>
+	<register id="EMU0_COUNTER" acronym="EMU0_COUNTER" width="32" description=""/>
+	<register id="EMU1_COUNTER" acronym="EMU1_COUNTER" width="32" description=""/>
+	<register id="DCC_DOWNLOAD_ENBL" acronym="DCC_DOWNLOAD_ENBL" width="32" description=""/>
+	<register id="DCC_DOWNLOAD_MONITOR_ADD" acronym="DCC_DOWNLOAD_MONITOR_ADD" width="32" description=""/>
+	<register id="REG_DAP_MSG_MASK" acronym="REG_DAP_MSG_MASK" width="32" description=""/>
+	<register id="REG_AHB_DOWNLOAD" acronym="REG_AHB_DOWNLOAD" width="32" description=""/>
+	<register id="REG_DEBUG1" acronym="REG_DEBUG1" width="32" description=""/>
+	<register id="REG_DEBUG2" acronym="REG_DEBUG2" width="32" description=""/>
+	<register id="REG_VECTOR_CATCH" acronym="REG_VECTOR_CATCH" width="32" description=""/>
+	<register id="ICECS_VERSION" acronym="ICECS_VERSION" width="32" description=""/>
+	<register id="ICECS_DCCR" acronym="ICECS_DCCR" width="32" description=""/>
+	<register id="ICECS_DCSR" acronym="ICECS_DCSR" width="32" description=""/>
+	<register id="ICECS_TCR" acronym="ICECS_TCR" width="32" description=""/>
+	<register id="ICECS_RCSR" acronym="ICECS_RCSR" width="32" description=""/>
+	<register id="ICECS_ICSR" acronym="ICECS_ICSR" width="32" description=""/>
+	<register id="ICECS_TEST" acronym="ICECS_TEST" width="32" description=""/>
+	<register id="ICECS_OSLOCK" acronym="ICECS_OSLOCK" width="32" description=""/>
+	<register id="ICECS_DCON" acronym="ICECS_DCON" width="32" description=""/>
+	<register id="ICECS_CMR_IMCR" acronym="ICECS_CMR_IMCR" width="32" description=""/>
+	<register id="ICECS_CMR_IOR" acronym="ICECS_CMR_IOR" width="32" description=""/>
+	<register id="ICECS_CMR_IIR" acronym="ICECS_CMR_IIR" width="32" description=""/>
+	<register id="ICECS_CMR_CTSR" acronym="ICECS_CMR_CTSR" width="32" description=""/>
+	<register id="ICECS_CMR_CTCR" acronym="ICECS_CMR_CTCR" width="32" description=""/>
+	<register id="ICECS_CMR_LAR" acronym="ICECS_CMR_LAR" width="32" description=""/>
+	<register id="ICECS_CMR_LSR" acronym="ICECS_CMR_LSR" width="32" description=""/>
+	<register id="ICECS_CMR_ASR" acronym="ICECS_CMR_ASR" width="32" description=""/>
+	<register id="ICECS_CMR_DIDR" acronym="ICECS_CMR_DIDR" width="32" description=""/>
+	<register id="ICECS_CMR_DTIR" acronym="ICECS_CMR_DTIR" width="32" description=""/>
+	<register id="ICECS_CMR_PID4" acronym="ICECS_CMR_PID4" width="32" description=""/>
+	<register id="ICECS_CMR_PID5" acronym="ICECS_CMR_PID5" width="32" description=""/>
+	<register id="ICECS_CMR_PID6" acronym="ICECS_CMR_PID6" width="32" description=""/>
+	<register id="ICECS_CMR_PID7" acronym="ICECS_CMR_PID7" width="32" description=""/>
+	<register id="ICECS_CMR_PID0" acronym="ICECS_CMR_PID0" width="32" description=""/>
+	<register id="ICECS_CMR_PID1" acronym="ICECS_CMR_PID1" width="32" description=""/>
+	<register id="ICECS_CMR_PID2" acronym="ICECS_CMR_PID2" width="32" description=""/>
+	<register id="ICECS_CMR_PID3" acronym="ICECS_CMR_PID3" width="32" description=""/>
+	<register id="ICECS_CMR_CID0" acronym="ICECS_CMR_CID0" width="32" description=""/>
+	<register id="ICECS_CMR_CID1" acronym="ICECS_CMR_CID1" width="32" description=""/>
+	<register id="ICECS_CMR_CID2" acronym="ICECS_CMR_CID2" width="32" description=""/>
+	<register id="ICECS_CMR_CID3" acronym="ICECS_CMR_CID3" width="32" description=""/>
+	<register id="ICEC_VERSION" acronym="ICEC_VERSION" width="32" description=""/>
+	<register id="ICEC_DEBUG_CONFIG" acronym="ICEC_DEBUG_CONFIG" width="32" description=""/>
+	<register id="ICEC_DEBUG_CSR" acronym="ICEC_DEBUG_CSR" width="32" description=""/>
+	<register id="ICEC_TRIGGER_CONTROL" acronym="ICEC_TRIGGER_CONTROL" width="32" description=""/>
+	<register id="ICEC_RESET_CSR" acronym="ICEC_RESET_CSR" width="32" description=""/>
+	<register id="ICEC_INTERRUPT_CSR" acronym="ICEC_INTERRUPT_CSR" width="32" description=""/>
+	<register id="ICEC_TEST" acronym="ICEC_TEST" width="32" description=""/>
+	<register id="ICEC_OSLOCK" acronym="ICEC_OSLOCK" width="32" description=""/>
+	<register id="ICEC_DCON" acronym="ICEC_DCON" width="32" description=""/>
+	<register id="ICEC_CMR_IMCR" acronym="ICEC_CMR_IMCR" width="32" description=""/>
+	<register id="ICEC_CMR_IOR" acronym="ICEC_CMR_IOR" width="32" description=""/>
+	<register id="ICEC_CMR_IIR" acronym="ICEC_CMR_IIR" width="32" description=""/>
+	<register id="ICEC_CMR_CTSR" acronym="ICEC_CMR_CTSR" width="32" description=""/>
+	<register id="ICEC_CMR_CTCR" acronym="ICEC_CMR_CTCR" width="32" description=""/>
+	<register id="ICEC_CMR_LAR" acronym="ICEC_CMR_LAR" width="32" description=""/>
+	<register id="ICEC_CMR_LSR" acronym="ICEC_CMR_LSR" width="32" description=""/>
+	<register id="ICEC_CMR_ASR" acronym="ICEC_CMR_ASR" width="32" description=""/>
+	<register id="ICEC_CMR_DIDR" acronym="ICEC_CMR_DIDR" width="32" description=""/>
+	<register id="ICEC_CMR_DTIR" acronym="ICEC_CMR_DTIR" width="32" description=""/>
+	<register id="ICEC_CMR_PID4" acronym="ICEC_CMR_PID4" width="32" description=""/>
+	<register id="ICEC_CMR_PID5" acronym="ICEC_CMR_PID5" width="32" description=""/>
+	<register id="ICEC_CMR_PID6" acronym="ICEC_CMR_PID6" width="32" description=""/>
+	<register id="ICEC_CMR_PID7" acronym="ICEC_CMR_PID7" width="32" description=""/>
+	<register id="ICEC_CMR_PID0" acronym="ICEC_CMR_PID0" width="32" description=""/>
+	<register id="ICEC_CMR_PID1" acronym="ICEC_CMR_PID1" width="32" description=""/>
+	<register id="ICEC_CMR_PID2" acronym="ICEC_CMR_PID2" width="32" description=""/>
+	<register id="ICEC_CMR_PID3" acronym="ICEC_CMR_PID3" width="32" description=""/>
+	<register id="ICEC_CMR_CID0" acronym="ICEC_CMR_CID0" width="32" description=""/>
+	<register id="ICEC_CMR_CID1" acronym="ICEC_CMR_CID1" width="32" description=""/>
+	<register id="ICEC_CMR_CID2" acronym="ICEC_CMR_CID2" width="32" description=""/>
+	<register id="ICEC_CMR_CID3" acronym="ICEC_CMR_CID3" width="32" description=""/>
+	<register id="DAP_DP_ADDR" acronym="DAP_DP_ADDR" width="32" description=""/>
+	<register id="DAP_DP_CSW" acronym="DAP_DP_CSW" width="32" description=""/>
+	<register id="DAP_APB_AP_CSW" acronym="DAP_APB_AP_CSW" width="32" description=""/>
+	<register id="DAP_APB_AP_TAR" acronym="DAP_APB_AP_TAR" width="32" description=""/>
+	<register id="DAP_APB_AP_DRW" acronym="DAP_APB_AP_DRW" width="32" description=""/>
+	<register id="DAP_APB_AP_BD0" acronym="DAP_APB_AP_BD0" width="32" description=""/>
+	<register id="DAP_APB_AP_BD1" acronym="DAP_APB_AP_BD1" width="32" description=""/>
+	<register id="DAP_APB_AP_BD2" acronym="DAP_APB_AP_BD2" width="32" description=""/>
+	<register id="DAP_APB_AP_BD3" acronym="DAP_APB_AP_BD3" width="32" description=""/>
+	<register id="DAP_APB_AP_ROM" acronym="DAP_APB_AP_ROM" width="32" description=""/>
+	<register id="DAP_APB_AP_IDR" acronym="DAP_APB_AP_IDR" width="32" description=""/>
+	<register id="DAP_AHB_AP_CSW" acronym="DAP_AHB_AP_CSW" width="32" description=""/>
+	<register id="DAP_AHB_AP_TAR" acronym="DAP_AHB_AP_TAR" width="32" description=""/>
+	<register id="DAP_AHB_AP_DRW" acronym="DAP_AHB_AP_DRW" width="32" description=""/>
+	<register id="DAP_AHB_AP_BD0" acronym="DAP_AHB_AP_BD0" width="32" description=""/>
+	<register id="DAP_AHB_AP_BD1" acronym="DAP_AHB_AP_BD1" width="32" description=""/>
+	<register id="DAP_AHB_AP_BD2" acronym="DAP_AHB_AP_BD2" width="32" description=""/>
+	<register id="DAP_AHB_AP_BD3" acronym="DAP_AHB_AP_BD3" width="32" description=""/>
+	<register id="DAP_AHB_AP_ROM" acronym="DAP_AHB_AP_ROM" width="32" description=""/>
+	<register id="DAP_AHB_AP_IDR" acronym="DAP_AHB_AP_IDR" width="32" description=""/>
+	<register id="REG_FOR_CTI_WORKAROUND" acronym="REG_FOR_CTI_WORKAROUND" width="32" description=""/>
+	<register id="MPU_TYPE" acronym="MPU_TYPE" width="32" description=""/>
+	<register id="MPU_CONTROL" acronym="MPU_CONTROL" width="32" description=""/>
+	<register id="MPU_REGION_NUM" acronym="MPU_REGION_NUM" width="32" description=""/>
+	<register id="MPU_REGION_BASE_ADDR" acronym="MPU_REGION_BASE_ADDR" width="32" description=""/>
+	<register id="MPU_REGION_ATTRIBUTE" acronym="MPU_REGION_ATTRIBUTE" width="32" description=""/>
+	<register id="MPU_ALIAS1_REGION_BASE_ADDR" acronym="MPU_ALIAS1_REGION_BASE_ADDR" width="32" description=""/>
+	<register id="MPU_ALIAS1_REGION_ATTRIBUTE" acronym="MPU_ALIAS1_REGION_ATTRIBUTE" width="32" description=""/>
+	<register id="MPU_ALIAS2_REGION_BASE_ADDR" acronym="MPU_ALIAS2_REGION_BASE_ADDR" width="32" description=""/>
+	<register id="MPU_ALIAS2_REGION_ATTRIBUTE" acronym="MPU_ALIAS2_REGION_ATTRIBUTE" width="32" description=""/>
+	<register id="MPU_ALIAS3_REGION_BASE_ADDR" acronym="MPU_ALIAS3_REGION_BASE_ADDR" width="32" description=""/>
+	<register id="MPU_ALIAS3_REGION_ATTRIBUTE" acronym="MPU_ALIAS3_REGION_ATTRIBUTE" width="32" description=""/>
+	<register id="FP_CTRL" acronym="FP_CTRL" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_REMAP" acronym="FP_REMAP" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_COMP0" acronym="FP_COMP0" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_COMP1" acronym="FP_COMP1" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_COMP2" acronym="FP_COMP2" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_COMP3" acronym="FP_COMP3" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_COMP4" acronym="FP_COMP4" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_COMP5" acronym="FP_COMP5" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_COMP6" acronym="FP_COMP6" width="32" description="" rwaccess="RW,RW"/>
+	<register id="FP_COMP7" acronym="FP_COMP7" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_CTRL" acronym="DWT_CTRL" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_CYCCNT" acronym="DWT_CYCCNT" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_CPICNT" acronym="DWT_CPICNT" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_EXCCNT" acronym="DWT_EXCCNT" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_SLEEPCNT" acronym="DWT_SLEEPCNT" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_LSUCNT" acronym="DWT_LSUCNT" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_FOLDCNT" acronym="DWT_FOLDCNT" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_COMP0" acronym="DWT_COMP0" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_MASK0" acronym="DWT_MASK0" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_FUNCTION0" acronym="DWT_FUNCTION0" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_COMP1" acronym="DWT_COMP1" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_MASK1" acronym="DWT_MASK1" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_FUNCTION1" acronym="DWT_FUNCTION1" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_COMP2" acronym="DWT_COMP2" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_MASK2" acronym="DWT_MASK2" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_FUNCTION2" acronym="DWT_FUNCTION2" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_COMP3" acronym="DWT_COMP3" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_MASK3" acronym="DWT_MASK3" width="32" description="" rwaccess="RW,RW"/>
+	<register id="DWT_FUNCTION3" acronym="DWT_FUNCTION3" width="32" description="" rwaccess="RW,RW"/>
+	<register id="XPSR" acronym="XPSR" width="32" description=""/>
+</module>

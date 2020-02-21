@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="SSI" HW_revision="" XML_version="1.0" description="Synchronous Serial Interface with master and slave capabilities
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="CR0" width="32" description="Control 0" id="CR0" offset="0x0">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Serial clock rate:
+This is used to generate the transmit and receive bit rate of the SSI. The bit rate is 
+(SSI&#39;s clock frequency)/((SCR+1)*CPSR.CPSDVSR).
+SCR is a value from 0-255.
+" id="SCR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="CLKOUT phase (Motorola SPI frame format only)
+This bit selects the clock edge that captures data and enables it to change state. It
+has the most impact on the first bit transmitted by either permitting or not permitting a clock transition before the first data capture edge." id="SPH" resetval="0x0">
+         <bitenum id="2ND_CLK_EDGE" value="1" token="Data is captured on the second clock edge transition." description="Data is captured on the second clock edge transition."/>
+         <bitenum id="1ST_CLK_EDGE" value="0" token="Data is captured on the first clock edge transition." description="Data is captured on the first clock edge transition."/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="CLKOUT polarity (Motorola SPI frame format only)" id="SPO" resetval="0x0">
+         <bitenum id="HIGH" value="1" token="SSI produces a steady state HIGH value on the CLKOUT pin when data is not being transferred." description="SSI produces a steady state HIGH value on the CLKOUT pin when data is not being transferred."/>
+         <bitenum id="LOW" value="0" token="SSI produces a steady state LOW value on the
+CLKOUT pin when data is not being transferred." description="SSI produces a steady state LOW value on the
+CLKOUT pin when data is not being transferred."/>
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="Frame format. 
+The supported frame formats are Motorola SPI, TI synchronous serial and National Microwire. 
+Value 0&#39;b11 is reserved and shall not be used." id="FRF" resetval="0x0">
+         <bitenum id="NATIONAL_MICROWIRE" value="2" token="National Microwire frame format" description="National Microwire frame format"/>
+         <bitenum id="TI_SYNC_SERIAL" value="1" token="TI synchronous serial frame format" description="TI synchronous serial frame format"/>
+         <bitenum id="MOTOROLA_SPI" value="0" token="Motorola SPI frame format" description="Motorola SPI frame format"/>
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Data Size Select. 
+Values 0b0000, 0b0001, 0b0010 are reserved and shall not be used." id="DSS" resetval="0x0">
+         <bitenum id="16_BIT" value="15" token="16-bit data" description="16-bit data"/>
+         <bitenum id="15_BIT" value="14" token="15-bit data" description="15-bit data"/>
+         <bitenum id="14_BIT" value="13" token="14-bit data" description="14-bit data"/>
+         <bitenum id="13_BIT" value="12" token="13-bit data" description="13-bit data"/>
+         <bitenum id="12_BIT" value="11" token="12-bit data" description="12-bit data"/>
+         <bitenum id="11_BIT" value="10" token="11-bit data" description="11-bit data"/>
+         <bitenum id="10_BIT" value="9" token="10-bit data" description="10-bit data"/>
+         <bitenum id="9_BIT" value="8" token="9-bit data" description="9-bit data"/>
+         <bitenum id="8_BIT" value="7" token="8-bit data" description="8-bit data"/>
+         <bitenum id="7_BIT" value="6" token="7-bit data" description="7-bit data"/>
+         <bitenum id="6_BIT" value="5" token="6-bit data" description="6-bit data"/>
+         <bitenum id="5_BIT" value="4" token="5-bit data" description="5-bit data"/>
+         <bitenum id="4_BIT" value="3" token="4-bit data" description="4-bit data"/>
+      </bitfield>
+   </register>
+   <register acronym="CR1" width="32" description="Control 1" id="CR1" offset="0x4">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Slave-mode output disabled
+This bit is relevant only in the slave mode, MS=1. In multiple-slave systems, it is possible for an SSI master to broadcast a message to all slaves in the system while ensuring that only one slave drives data onto its serial output line. In such systems the RXD lines from multiple slaves could be tied together. To operate in such systems, this bitfield can be set if the SSI slave is not supposed to drive the TXD line:
+
+0: SSI can drive the TXD output in slave mode.
+1: SSI cannot drive the TXD output in slave mode." id="SOD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Master or slave mode select. This bit can be modified only when SSI is disabled, SSE=0." id="MS" resetval="0x0">
+         <bitenum id="SLAVE" value="1" token="Device configured as slave" description="Device configured as slave"/>
+         <bitenum id="MASTER" value="0" token="Device configured as master" description="Device configured as master"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Synchronous serial interface enable." id="SSE" resetval="0x0">
+         <bitenum id="SSI_ENABLED" value="1" token="Operation enabled" description="Operation enabled"/>
+         <bitenum id="SSI_DISABLED" value="0" token="Operation disabled" description="Operation disabled"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Loop back mode:
+
+0: Normal serial port operation enabled.
+1: Output of transmit serial shifter is connected to input of receive serial shifter internally." id="LBM" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DR" width="32" description="Data
+16-bits wide data register:
+When read, the entry in the receive FIFO, pointed to by the current FIFO read pointer, is accessed. As data values are removed by the  receive logic from the incoming data frame, they are placed into the entry in the receive FIFO, pointed to by the current FIFO write pointer.
+When written, the entry in the transmit FIFO, pointed to by the write pointer, is written to. Data values are removed from the transmit FIFO one value at a time by the transmit logic. It is loaded into the transmit serial shifter, then serially shifted out onto the TXD output pin at the programmed bit rate.
+When a data size of less than 16 bits is selected, the user must right-justify data written to the transmit FIFO. The transmit logic ignores the unused bits. Received data less than 16 bits is automatically right-justified in the receive buffer." id="DR" offset="0x8">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Transmit/receive data
+The values read from this field or written to this field must be right-justified when SSI is programmed for a data size that is less than 16 bits (CR0.DSS != 0b1111). Unused bits at the top are ignored by transmit logic. The receive logic automatically right-justifies." id="DATA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SR" width="32" description="Status" id="SR" offset="0xc">
+      <bitfield range="" begin="31" width="27" end="5" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Serial interface busy:
+
+0: SSI is idle
+1: SSI is currently transmitting and/or receiving a frame or the transmit FIFO is not empty." id="BSY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Receive FIFO full:
+
+0: Receive FIFO is not full.
+1: Receive FIFO is full." id="RFF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Receive FIFO not empty
+
+0: Receive FIFO is empty.
+1: Receive FIFO is not empty." id="RNE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Transmit FIFO not full:
+
+0: Transmit FIFO is full.
+1: Transmit FIFO is not full." id="TNF" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Transmit FIFO empty:
+
+0: Transmit FIFO is not empty.
+1: Transmit FIFO is empty." id="TFE" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="CPSR" width="32" description="Clock Prescale" id="CPSR" offset="0x10">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Clock prescale divisor:
+This field specifies the division factor by which the input system clock to SSI must be internally divided before further use.
+The value programmed into this field must be an even non-zero number (2-254). The least significant bit of the programmed number is hard-coded to zero. If an odd number is written to this register, data read back from
+this register has the least significant bit as zero.
+" id="CPSDVSR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IMSC" width="32" description="Interrupt Mask Set and Clear" id="IMSC" offset="0x14">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Transmit FIFO interrupt mask:
+A read returns the current mask for transmit FIFO interrupt. On a write of 1, the mask for transmit FIFO interrupt is set which means the interrupt state will be reflected in MIS.TXMIS. A write of 0 clears the mask which means MIS.TXMIS will not reflect the interrupt. " id="TXIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Receive FIFO interrupt mask:
+A read returns the current mask for receive FIFO interrupt. On a write of 1, the mask for receive FIFO interrupt is set which means the interrupt state will be reflected in MIS.RXMIS. A write of 0 clears the mask which means MIS.RXMIS will not reflect the interrupt. " id="RXIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Receive timeout interrupt mask:
+A read returns the current mask for receive timeout interrupt. On a write of 1, the mask for receive timeout interrupt is set which means the interrupt state will be reflected in MIS.RTMIS. A write of 0 clears the mask which means MIS.RTMIS will not reflect the interrupt. " id="RTIM" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Receive overrun interrupt mask:
+A read returns the current mask for receive overrun interrupt. On a write of 1, the mask for receive overrun interrupt is set which means the interrupt state will be reflected in MIS.RORMIS. A write of 0 clears the mask which means MIS.RORMIS will not reflect the interrupt. " id="RORIM" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RIS" width="32" description="Raw Interrupt Status" id="RIS" offset="0x18">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Raw transmit FIFO interrupt status:
+The transmit interrupt is asserted when there are four or fewer valid entries in the transmit FIFO. The transmit interrupt is not qualified with the SSI enable signal. Therefore one of the following ways can be used:
+ - data can be written to the transmit FIFO prior to enabling the SSI and the
+interrupts.
+ - SSI and interrupts can be enabled so that data can be written to the transmit FIFO by an interrupt service routine." id="TXRIS" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Raw interrupt state of receive FIFO interrupt:
+The receive interrupt is asserted when there are four or more valid entries in the receive FIFO." id="RXRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Raw interrupt state of receive timeout interrupt:
+The receive timeout interrupt is asserted when the receive FIFO is not empty and SSI has remained idle for a fixed 32 bit period. This mechanism can be used to notify the user that data is still present in the receive FIFO and requires servicing. This interrupt is deasserted if the receive FIFO becomes empty by subsequent reads, or if new data is received on RXD.
+It can also be cleared by writing to ICR.RTIC." id="RTRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Raw interrupt state of receive overrun interrupt:
+The receive overrun interrupt is asserted when the FIFO is already full and an additional data frame is received, causing an overrun of the FIFO. Data is over-written in the
+receive shift register, but not the FIFO so the FIFO contents stay valid.
+It can also be cleared by writing to ICR.RORIC." id="RORRIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MIS" width="32" description="Masked Interrupt Status" id="MIS" offset="0x1c">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Masked interrupt state of transmit FIFO interrupt:
+This field returns the masked interrupt state of transmit FIFO interrupt which is the AND product of raw interrupt state RIS.TXRIS and the mask setting IMSC.TXIM." id="TXMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Masked interrupt state of receive FIFO interrupt:
+This field returns the masked interrupt state of receive FIFO interrupt which is the AND product of raw interrupt state RIS.RXRIS and the mask setting IMSC.RXIM." id="RXMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Masked interrupt state of receive timeout interrupt:
+This field returns the masked interrupt state of receive timeout interrupt which is the AND product of raw interrupt state RIS.RTRIS and the mask setting IMSC.RTIM." id="RTMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Masked interrupt state of receive overrun interrupt:
+This field returns the masked interrupt state of receive overrun interrupt which is the AND product of raw interrupt state RIS.RORRIS and the mask setting IMSC.RORIM." id="RORMIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ICR" width="32" description="Interrupt Clear
+On a write of 1, the corresponding interrupt is cleared. A write of 0 has no effect." id="ICR" offset="0x20">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Clear the receive timeout interrupt:
+Writing 1 to this field clears the timeout interrupt (RIS.RTRIS). Writing 0 has no effect." id="RTIC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Clear the receive overrun interrupt:
+Writing 1 to this field clears the overrun error interrupt (RIS.RORRIS). Writing 0 has no effect." id="RORIC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMACR" width="32" description="DMA Control" id="DMACR" offset="0x24">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Transmit DMA enable. If this bit is set to 1, DMA for the transmit FIFO is enabled." id="TXDMAE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Receive DMA enable. If this bit is set to 1, DMA for the receive FIFO is enabled." id="RXDMAE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESERVED1" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" offset="0x28">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RESERVED2" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" offset="0x90">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

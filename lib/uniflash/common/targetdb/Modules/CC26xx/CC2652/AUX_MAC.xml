@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AUX_MAC" HW_revision="" XML_version="1.0" description="The AUX Multiply-Accumulate (AUX_MAC) peripheral enables AUX_SCE with power-efficient and flexible mathematical operations:
+- 2&#39;s complement signed and unsigned sequential multiplication (MUL) with optional accumulation of the result (MAC).
+- 16 or 32-bit 2&#39;s complement signed and unsigned addition of configurable term and accumulator (ADD).
+- Results of ADD, MUL and MAC operations are always stored in the accumulator (ACC).
+
+Software can easily:
+- Access arbitrary 16-bit slice of the 40-bit accumulator.
+- Find the number of leading zero or sign bits. 
+- Perform shift operations on the accumulator.
+
+AUX_SCE must set AUX_SYSIF:PEROPRATE.MAC_OP_RATE to SCE_RATE to access and use AUX_MAC. System CPU must set AUX_SYSIF:PEROPRATE.MAC_OP_RATE to BUS_RATE to access and use AUX_MAC. This guarantees constant execution times for ADD, MUL, and MAC operations.
+
+The ADD operation requires a single peripheral clock cycle to finish. MUL and MAC operations require four peripheral clock periods to finish. An unfinished ADD, MUL, or MAC operation stalls register access to this peripheral. AUX_SCE becomes clock gated if it encounters a bus stall. Software can use this to reduce power consumption during back to back accesses.
+
+Only full word access is supported by the peripheral. An attempt to write a single byte will have no effect." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="OP0S" width="32" description="Signed Operand 0" id="OP0S" offset="0x0">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Signed operand 0.
+
+Operand for multiply, multiply-and-accumulate, or 32-bit add operations." id="OP0_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP0U" width="32" description="Unsigned Operand 0 " id="OP0U" offset="0x4">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Unsigned operand 0.
+
+Operand for multiply, multiply-and-accumulate, or 32-bit add operations." id="OP0_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP1SMUL" width="32" description="Signed Operand 1 and Multiply" id="OP1SMUL" offset="0x8">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Signed operand 1 and multiplication trigger.
+
+Write OP1_VALUE to set signed operand 1 and trigger the following operation:
+
+When operand 0 was written to OP0S.OP0_VALUE: ACC = OP1_VALUE * OP0S.OP0_VALUE.
+When operand 0 was written to OP0U.OP0_VALUE: ACC = OP1_VALUE * OP0U.OP0_VALUE." id="OP1_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP1UMUL" width="32" description="Unsigned Operand 1 and Multiply" id="OP1UMUL" offset="0xc">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Unsigned operand 1 and multiplication trigger.
+
+Write OP1_VALUE to set unsigned operand 1 and trigger the following operation:
+
+When operand 0 was written to OP0S.OP0_VALUE: ACC = OP1_VALUE * OP0S.OP0_VALUE.
+When operand 0 was written to OP0U.OP0_VALUE: ACC = OP1_VALUE * OP0U.OP0_VALUE." id="OP1_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP1SMAC" width="32" description="Signed Operand 1 and Multiply-Accumulate" id="OP1SMAC" offset="0x10">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Signed operand 1 and multiply-accumulation trigger.
+
+Write OP1_VALUE to set signed operand 1 and trigger the following operation:
+
+When operand 0 was written to OP0S.OP0_VALUE:  ACC = ACC + ( OP1_VALUE * OP0S.OP0_VALUE ).
+When operand 0 was written to OP0U.OP0_VALUE:  ACC = ACC + ( OP1_VALUE * OP0U.OP0_VALUE )." id="OP1_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP1UMAC" width="32" description="Unsigned Operand 1 and Multiply-Accumulate" id="OP1UMAC" offset="0x14">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Unsigned operand 1 and multiply-accumulation trigger.
+
+Write OP1_VALUE to set unsigned operand 1 and trigger the following operation:
+
+When operand 0 was written to OP0S.OP0_VALUE:  ACC = ACC + ( OP1_VALUE * OP0S.OP0_VALUE ).
+When operand 0 was written to OP0U.OP0_VALUE:  ACC = ACC + ( OP1_VALUE * OP0U.OP0_VALUE )." id="OP1_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP1SADD16" width="32" description="Signed Operand 1 and 16-bit Addition" id="OP1SADD16" offset="0x18">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Signed operand 1 and 16-bit addition trigger.
+
+Write OP1_VALUE to set signed operand 1 and trigger the following operation:
+
+ACC = ACC + OP1_VALUE." id="OP1_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP1UADD16" width="32" description="Unsigned Operand 1 and 16-bit Addition " id="OP1UADD16" offset="0x1c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Unsigned operand 1 and 16-bit addition trigger.
+
+Write OP1_VALUE to set unsigned operand 1 and trigger the following operation:
+
+ACC = ACC + OP1_VALUE." id="OP1_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP1SADD32" width="32" description="Signed Operand 1 and 32-bit Addition" id="OP1SADD32" offset="0x20">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Upper half of signed 32-bit operand and addition trigger.
+
+Write OP1_VALUE to set upper half of signed 32-bit operand and trigger the following operation:
+
+When lower half of 32-bit operand was written to OP0S.OP0_VALUE: ACC = ACC + (( OP1_VALUE &#60;&#60; 16) | OP0S.OP0_VALUE ).
+When lower half of 32-bit operand was written to OP0U.OP0_VALUE: ACC = ACC + (( OP1_VALUE &#60;&#60; 16) | OP0U.OP0_VALUE )." id="OP1_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OP1UADD32" width="32" description="Unsigned Operand 1 and 32-bit Addition" id="OP1UADD32" offset="0x24">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Upper half of unsigned 32-bit operand and addition trigger.
+
+Write OP1_VALUE to set upper half of unsigned 32-bit operand and trigger the following operation:
+
+When lower half of 32-bit operand was written to OP0S.OP0_VALUE: ACC = ACC + (( OP1_VALUE &#60;&#60; 16) | OP0S.OP0_VALUE ).
+When lower half of 32-bit operand was written to OP0U.OP0_VALUE: ACC = ACC + (( OP1_VALUE &#60;&#60; 16) | OP0U.OP0_VALUE )." id="OP1_VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLZ" width="32" description="Count Leading Zero " id="CLZ" offset="0x28">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RO" description="Number of leading zero bits in the accumulator:
+
+0x00: 0 leading zeros.
+0x01: 1 leading zero.
+... 
+0x28: 40 leading zeros (accumulator value is 0)." id="VALUE" resetval="0x28">
+      </bitfield>
+   </register>
+   <register acronym="CLS" width="32" description="Count Leading Sign" id="CLS" offset="0x2c">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RO" description="Number of leading sign bits in the accumulator.
+
+When MSB of accumulator is 0, VALUE is number of leading zeros, MSB included.
+When MSB of accumulator is 1, VALUE is number of leading ones, MSB included.
+
+VALUE range is 1 thru 40." id="VALUE" resetval="0x28">
+      </bitfield>
+   </register>
+   <register acronym="ACCSHIFT" width="32" description="Accumulator Shift 
+
+Only one shift operation can be triggered per register write." id="ACCSHIFT" offset="0x30">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Logic shift left by 1 bit.
+
+Write 1 to shift the accumulator one bit to the left, 0 inserted at bit 0. " id="LSL1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Logic shift right by 1 bit.
+
+Write 1 to shift the accumulator one bit to the right, 0 inserted at bit 39. " id="LSR1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Arithmetic shift right by 1 bit.
+
+Write 1 to shift the accumulator one bit to the right, previous sign bit inserted at bit 39. " id="ASR1" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACCRESET" width="32" description="Accumulator Reset" id="ACCRESET" offset="0x34">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="WO" description="Write any value to this register to trigger a reset of all bits in the accumulator." id="TRG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC15_0" width="32" description="Accumulator Bits 15:0" id="ACC15_0" offset="0x38">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Value of the accumulator, bits 15:0.
+
+Write VALUE to initialize bits 15:0 of accumulator." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC16_1" width="32" description="Accumulator Bits 16:1" id="ACC16_1" offset="0x3c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 16:1." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC17_2" width="32" description="Accumulator Bits 17:2" id="ACC17_2" offset="0x40">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 17:2." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC18_3" width="32" description="Accumulator Bits 18:3" id="ACC18_3" offset="0x44">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 18:3." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC19_4" width="32" description="Accumulator Bits 19:4" id="ACC19_4" offset="0x48">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 19:4." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC20_5" width="32" description="Accumulator Bits 20:5" id="ACC20_5" offset="0x4c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 20:5." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC21_6" width="32" description="Accumulator Bits 21:6" id="ACC21_6" offset="0x50">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 21:6." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC22_7" width="32" description="Accumulator Bits 22:7" id="ACC22_7" offset="0x54">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 22:7." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC23_8" width="32" description="Accumulator Bits 23:8" id="ACC23_8" offset="0x58">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 23:8." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC24_9" width="32" description="Accumulator Bits 24:9" id="ACC24_9" offset="0x5c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 24:9." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC25_10" width="32" description="Accumulator Bits 25:10" id="ACC25_10" offset="0x60">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 25:10." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC26_11" width="32" description="Accumulator Bits 26:11" id="ACC26_11" offset="0x64">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 26:11." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC27_12" width="32" description="Accumulator Bits 27:12" id="ACC27_12" offset="0x68">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 27:12." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC28_13" width="32" description="Accumulator Bits 28:13" id="ACC28_13" offset="0x6c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 28:13." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC29_14" width="32" description="Accumulator Bits 29:14" id="ACC29_14" offset="0x70">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 29:14." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC30_15" width="32" description="Accumulator Bits 30:15" id="ACC30_15" offset="0x74">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 30:15." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC31_16" width="32" description="Accumulator Bits 31:16" id="ACC31_16" offset="0x78">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Value of the accumulator, bits 31:16.
+
+Write VALUE to initialize bits 31:16 of accumulator." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC32_17" width="32" description="Accumulator Bits 32:17" id="ACC32_17" offset="0x7c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 32:17." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC33_18" width="32" description="Accumulator Bits 33:18" id="ACC33_18" offset="0x80">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 33:18." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC34_19" width="32" description="Accumulator Bits 34:19" id="ACC34_19" offset="0x84">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 34:19." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC35_20" width="32" description="Accumulator Bits 35:20" id="ACC35_20" offset="0x88">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 35:20." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC36_21" width="32" description="Accumulator Bits 36:21" id="ACC36_21" offset="0x8c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 36:21." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC37_22" width="32" description="Accumulator Bits 37:22" id="ACC37_22" offset="0x90">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 37:22." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC38_23" width="32" description="Accumulator Bits 38:23" id="ACC38_23" offset="0x94">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 38:23." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC39_24" width="32" description="Accumulator Bits 39:24" id="ACC39_24" offset="0x98">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Value of the accumulator, bits 39:24." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ACC39_32" width="32" description="Accumulator Bits 39:32" id="ACC39_32" offset="0x9c">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Value of the accumulator, bits 39:32.
+
+Write VALUE to initialize bits 39:32 of accumulator." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

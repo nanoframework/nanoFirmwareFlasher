@@ -1,0 +1,16 @@
+/* \file        cc26xx_jlink.gel
+ * \brief       GEL script for CC13x0/2/4 & CC26x0/2/4 device family + Segger J-Link.
+ *
+ * \revision    $Revision$
+ */
+
+OnTargetConnect()
+{
+    SetUpResets();
+}
+
+SetUpResets()
+{
+    // Remove unsupported resets
+    DEBUG_RemoveResets(2);
+}

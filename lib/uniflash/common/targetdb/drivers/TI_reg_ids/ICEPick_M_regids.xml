@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<register_ids id="ICEPICK?" XML_version="2.0">
+
+	<register_id id="IP_TAPID" value="1" address="0" page="0"/>
+	<register_id id="IP_IDCODE" value="70" address="0" page="0"/>
+	<register_id id="IP_USERCODE" value="71" address="0" page="0"/>
+	<register_id id="IP_CONNECT" value="69" address="0" page="0"/>
+	<register_id id="IP_DBGCNTL" value="34" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_0" value="2" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_1" value="3" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_2" value="4" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_3" value="5" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_4" value="6" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_5" value="7" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_6" value="8" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_7" value="9" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_8" value="10" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_9" value="11" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_10" value="12" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_11" value="13" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_12" value="14" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_13" value="15" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_14" value="16" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_15" value="17" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_16" value="18" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_17" value="19" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_18" value="20" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_19" value="21" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_20" value="22" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_21" value="23" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_22" value="24" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_23" value="25" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_24" value="26" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_25" value="27" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_26" value="28" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_27" value="29" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_28" value="30" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_29" value="31" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_30" value="32" address="0" page="0"/>
+	<register_id id="IP_DBGTAP_CNTL_31" value="33" address="0" page="0"/>
+
+</register_ids>

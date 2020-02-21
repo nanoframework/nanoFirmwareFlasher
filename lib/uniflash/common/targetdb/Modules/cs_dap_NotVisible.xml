@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="Hidden" HW_revision="1" XML_version="1" description="" hidden="true">
+	<register id="DP_RESET" acronym="DP_RESET" width="32" description=""/>
+</module>

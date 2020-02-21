@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <!-- TMS470REX Nodes-->
+    <node id="FlashProgrammerNode">
+        <name>MSP432E4 Flash Settings</name>
+        <children>
+            <child>FlashResetGroup</child>
+            <child>FlashEraseGroup</child>
+            <child>FlashMACAddressModeGroup</child>
+            <child>UserRegisterGroup</child>
+        </children>
+    </node>
+
+    <!-- TMS470REX Groups -->
+    <group id="FlashResetGroup">
+        <name>Reset Configuration</name>
+        <children>
+            <child>FlashResetBeforeLoadSetting</child>
+            <child>FlashResetAfterLoadSetting</child>
+            <child>FlashResetType</child>
+        </children>
+    </group>
+
+    <group id="FlashEraseGroup">
+        <name>Erase Configuration</name>
+        <children>
+            <child>FlashEraseSelection</child>
+            <child>FlashVerification</child>
+            <child>BlankCheck</child>
+        </children>
+    </group>
+
+    <group id="FlashMACAddressModeGroup">
+        <name>MAC Address Operations</name>
+        <children>
+            <child>FlashMACAddrText</child>
+            <child>FlashMACAddrInput</child>
+            <child>FlashMACAddrProgramButton</child>
+            <child>FlashMACAddrGetValueButton</child>
+        </children>
+    </group>
+
+    <group id="UserRegisterGroup">
+        <name>User Register Operations</name>
+        <children>
+            <child>UserRegisterSelection</child>
+            <child>UserRegisterValueInput</child>
+            <child>UserRegisterProgramButton</child>
+            <child>UserRegisterGetValueButton</child>
+            <child>DeviceLockButton</child>
+        </children>
+    </group>
+    <!-- Reset Settings -->
+    <property id="FlashResetBeforeLoadSetting">
+        <target>TMS470REX</target>
+        <name>Reset target before program load</name>
+        <valueType>Boolean</valueType>
+        <defaultValue>1</defaultValue>
+    </property>
+    <property id="FlashResetAfterLoadSetting">
+        <target>TMS470REX</target>
+        <name>Reset target after program load</name>
+        <valueType>Boolean</valueType>
+        <defaultValue>1</defaultValue>
+    </property>
+    <property id="FlashResetType">
+        <target>TMS470REX</target>
+        <name>Reset Type</name>
+        <valueType>ChoiceList</valueType>
+        <values>
+            <value>Soft reset</value>
+            <value>Hard reset</value>
+        </values>
+        <defaultValue>Hard reset</defaultValue>
+        <disableIf>
+            <property id="FlashResetBeforeLoadSetting">0</property>
+            <property id="FlashResetAfterLoadSetting">0</property>
+        </disableIf>
+    </property>
+
+    <!-- Erase Settings -->
+    <property id="FlashEraseSelection">
+        <target>TMS470REX</target>
+        <name>Erase Method</name>
+        <valueType>ChoiceList</valueType>
+        <values>
+            <value>Erase main memory only</value>
+            <value>Erase and download necessary segments only</value>
+            <value>Do not erase Flash memory</value>
+        </values>
+        <defaultValue>Erase main memory only</defaultValue>
+    </property>
+    <property id="FlashVerification">
+        <target>TMS470REX</target>
+        <name>Perform CRC verification</name>
+        <valueType>Boolean</valueType>
+        <defaultValue>1</defaultValue>
+    </property>
+    <property id="BlankCheck">
+        <target>generic</target>
+        <name>Perform Blank Check</name>
+        <valueType>Button</valueType>
+        <action>DPActiveDebugSession.flash.performOperation("BlankCheck")</action>
+    </property>
+
+    <!-- Mac address operations -->
+    <property id="FlashMACAddrInput">
+        <target>TMS470REX</target>
+        <name>MAC Address:</name>
+        <valueType>String</valueType>
+        <defaultValue></defaultValue>
+    </property>
+
+    <property id="FlashMACAddrProgramButton">
+        <target>TMS470REX</target>
+        <name>Program MAC Address</name>
+        <valueType>Button</valueType>
+        <action>DPActiveDebugSession.flash.performOperation("ProgramMACAddress")</action>
+    </property>
+
+    <property id="FlashMACAddrGetValueButton">
+        <target>TMS470REX</target>
+        <name>Read MAC Address Value</name>
+        <valueType>Button</valueType>
+        <action>DPActiveDebugSession.flash.performOperation("ReadMACAddress")</action>
+    </property>
+
+    <property id="FlashMACAddrText">
+        <target>TMS470REX</target>
+        <name>The MAC Address will be stored in the User0 and User1 registers.
+Example: MAC Address of 00-1A-B6-00-02-74 will be stored as
+User 0 = 0x00B61A00 User 1 = 0x00740200</name>
+        <valueType>Text</valueType>
+    </property>
+
+    <!-- User Register operations -->
+    <property id="UserRegisterSelection">
+        <target>TMS470REX</target>
+        <name>Select the User Register</name>
+        <valueType>ChoiceList</valueType>
+        <values>
+            <value>USER_REG0</value>
+            <value>USER_REG1</value>
+            <value>USER_REG2</value>
+            <value>USER_REG3</value>
+        </values>
+        <defaultValue>USER_REG0</defaultValue>
+    </property>
+
+    <property id="UserRegisterValueInput">
+        <target>TMS470REX</target>
+        <name>User Register Value:</name>
+        <valueType>String</valueType>
+        <defaultValue>0x</defaultValue>
+    </property>
+
+    <property id="UserRegisterProgramButton">
+        <target>TMS470REX</target>
+        <name>Program Register Value</name>
+        <valueType>Button</valueType>
+        <action>DPActiveDebugSession.flash.performOperation("ProgrammUserReg")</action>
+    </property>
+
+    <property id="UserRegisterGetValueButton">
+        <target>TMS470REX</target>
+        <name>Read Register Value</name>
+        <valueType>Button</valueType>
+        <action>DPActiveDebugSession.flash.performOperation("ReadUserReg")</action>
+    </property>
+    
+    <property id="DeviceLockButton">
+        <target>TMS470REX</target>
+        <name>Lock Device</name>
+        <valueType>Button</valueType>
+        <action>DPActiveDebugSession.flash.performOperation("LockDevice")</action>
+    </property>
+
+    <property id="FlashAlignCombineToggle">
+        <target>TMS470REX</target>
+        <name>Align program segments to 32 word memory regions (for buffered flash write)</name>
+        <valueType>Boolean</valueType>
+        <defaultValue>1</defaultValue>
+        <hidden />
+    </property>
+
+    <property id="FlashAlignmentSize">
+        <target>TMS470REX</target>
+        <name>Alignment Size: 0x</name>
+        <valueType>String</valueType>
+        <defaultValue>80</defaultValue>
+        <hidden />
+    </property>
+</PropertyList>

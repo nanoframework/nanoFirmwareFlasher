@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="TRNG" HW_revision="" XML_version="1.0" description="True Random Number Generator
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="OUT0" width="32" description="Random Number Lower Word Readout Value" id="OUT0" offset="0x0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="LSW of 64- bit random value. New value ready when IRQFLAGSTAT.RDY = 1." id="VALUE_31_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="OUT1" width="32" description="Random Number Upper Word Readout Value" id="OUT1" offset="0x4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="MSW of 64-bit random value. New value ready when IRQFLAGSTAT.RDY = 1." id="VALUE_63_32" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQFLAGSTAT" width="32" description="Interrupt Status
+
+" id="IRQFLAGSTAT" offset="0x8">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="1: Indicates that the TRNG is busy generating entropy or is in one of its test modes - clocks may not be turned off and the power supply voltage must be kept stable. 
+0: TRNG is idle and can be shut down
+
+" id="NEED_CLOCK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="29" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="1: The number of FROs shut down (i.e. the number of &#39;1&#39; bits in the ALARMSTOP register) has exceeded the threshold set by ALARMCNT.SHUTDOWN_THR 
+
+Writing &#39;1&#39; to IRQFLAGCLR.SHUTDOWN_OVF clears this bit to &#39;0&#39; again." id="SHUTDOWN_OVF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="1: Data are available in OUT0 and OUT1.
+
+Acknowledging this state by writing &#39;1&#39; to IRQFLAGCLR.RDY clears this bit to &#39;0&#39;. 
+If a new number is already available in the internal register of the TRNG, the number is directly clocked into the result register. In this case the status bit is asserted again, after one clock cycle." id="RDY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQFLAGMASK" width="32" description="Interrupt Mask" id="IRQFLAGMASK" offset="0xc">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="1: Allow IRQFLAGSTAT.SHUTDOWN_OVF to activate the interrupt from this module.
+" id="SHUTDOWN_OVF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="1: Allow IRQFLAGSTAT.RDY to activate the interrupt from this module.
+" id="RDY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQFLAGCLR" width="32" description="Interrupt Flag Clear" id="IRQFLAGCLR" offset="0x10">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="1: Clear IRQFLAGSTAT.SHUTDOWN_OVF. " id="SHUTDOWN_OVF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="1: Clear IRQFLAGSTAT.RDY. " id="RDY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CTL" width="32" description="Control" id="CTL" offset="0x14">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="This field determines the number of samples (between 2^8 and 2^24) taken to gather entropy from the FROs during startup. If the written value of this field is zero, the number of samples is 2^24, otherwise the number of samples equals the written value times 2^8.
+
+0x0000: 2^24 samples
+0x0001: 1*2^8 samples
+0x0002: 2*2^8 samples
+0x0003: 3*2^8 samples
+...
+0x8000: 32768*2^8 samples
+0xC000: 49152*2^8 samples
+...
+0xFFFF: 65535*2^8 samples
+
+This field can only be modified while TRNG_EN is 0. If 1 an update will be ignored." id="STARTUP_CYCLES" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="5" end="11" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="0: Forces all TRNG logic back into the idle state immediately.
+1: Starts TRNG, gathering entropy from the FROs for the number of samples determined by STARTUP_CYCLES. " id="TRNG_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="7" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="1: Remove XNOR feedback from the main LFSR, converting it into a normal shift register for the XOR-ed outputs of the FROs (shifting data in on the LSB side). A &#39;1&#39; also forces the LFSR to sample continuously. 
+
+This bit can only be set to &#39;1&#39; when TEST_MODE is also set to &#39;1&#39; and should not be used for other than test purposes" id="NO_LFSR_FB" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="1: Enables access to the TESTCNT and LFSR0/LFSR1/LFSR2 registers (the latter are automatically cleared before enabling access)  and keeps IRQFLAGSTAT.NEED_CLOCK at &#39;1&#39;. 
+
+This bit shall not be used unless you need to change the LFSR seed prior to creating a new random value. All other testing is done external to register control." id="TEST_MODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CFG0" width="32" description="Configuration 0" id="CFG0" offset="0x18">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="This field determines the maximum number of samples (between 2^8 and 2^24) taken to re-generate entropy from the FROs after reading out a 64 bits random number. If the written value of this field is zero, the number of samples is 2^24, otherwise the number of samples equals the written value times 2^8.
+
+0x0000: 2^24 samples
+0x0001: 1*2^8 samples
+0x0002: 2*2^8 samples
+0x0003: 3*2^8 samples
+...
+0x8000: 32768*2^8 samples
+0xC000: 49152*2^8 samples
+...
+0xFFFF: 65535*2^8 samples
+
+This field can only be modified while CTL.TRNG_EN is 0." id="MAX_REFILL_CYCLES" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="4" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="4" end="8" rwaccess="RW" description="This field directly controls the number of clock cycles between samples taken from the FROs. Default value 0 indicates that samples are taken every clock cycle,
+maximum value 0xF takes one sample every 16 clock cycles.
+This field must be set to a value such that the slowest FRO (even under worst-case
+conditions) has a cycle time less than twice the sample period.
+
+This field can only be modified while CTL.TRNG_EN is &#39;0&#39;." id="SMPL_DIV" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="This field determines the minimum number of samples (between 2^6 and 2^14) taken to re-generate entropy from the FROs after reading out a 64 bits random number. If the value of this field is zero, the number of samples is fixed to the value determined by the MAX_REFILL_CYCLES field, otherwise the minimum number of samples equals the written value times 64 (which can be up to 2^14). To ensure same entropy in all generated random numbers the value 0 should be used. Then MAX_REFILL_CYCLES controls the minimum refill interval. The number of samples defined here cannot be higher than the number defined by the &#39;max_refill_cycles&#39; field (i.e. that field takes precedence). No random value will be created if min refill &#62; max refill.
+
+This field can only be modified while CTL.TRNG_EN = 0.
+
+0x00: Minimum samples = MAX_REFILL_CYCLES (all numbers have same entropy)
+0x01: 1*2^6 samples
+0x02: 2*2^6 samples
+...
+0xFF: 255*2^6 samples
+" id="MIN_REFILL_CYCLES" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ALARMCNT" width="32" description="Alarm Control
+
+" id="ALARMCNT" offset="0x1c">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="6" end="24" rwaccess="RW" description="Read-only, indicates the number of &#39;1&#39; bits in ALARMSTOP register.
+The maximum value equals the number of FROs." id="SHUTDOWN_CNT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="3" end="21" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="5" end="16" rwaccess="RW" description="Threshold setting for generating IRQFLAGSTAT.SHUTDOWN_OVF interrupt. The interrupt is triggered when SHUTDOWN_CNT value exceeds this bit field." id="SHUTDOWN_THR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Alarm detection threshold for the repeating pattern detectors on each FRO. An FRO &#39;alarm event&#39; is declared when a repeating pattern (of up to four samples length) is detected continuously for the number of samples defined by this field&#39;s value. Reset value 0xFF should keep the number of &#39;alarm events&#39; to a manageable level." id="ALARM_THR" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="FROEN" width="32" description="FRO Enable" id="FROEN" offset="0x20">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RW" description="Enable bits for the individual FROs. A &#39;1&#39; in bit [n] enables FRO &#39;n&#39;. Default state is all &#39;1&#39;s to enable all FROs after power-up. Note that they are not actually started up before the CTL.TRNG_EN bit  is set to &#39;1&#39;.
+
+Bits are automatically forced to &#39;0&#39; here (and cannot be written to &#39;1&#39;) while the corresponding bit in  ALARMSTOP.FRO_FLAGS has value &#39;1&#39;." id="FRO_MASK" resetval="0xffffff">
+      </bitfield>
+   </register>
+   <register acronym="FRODETUNE" width="32" description="FRO De-tune Bit" id="FRODETUNE" offset="0x24">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RW" description="De-tune bits for the individual FROs. A &#39;1&#39; in bit [n] lets FRO &#39;n&#39; run approximately 5% faster. The value of one of these bits may only be changed while the corresponding FRO is turned off (by temporarily writing a &#39;0&#39; in the corresponding
+bit of the FROEN.FRO_MASK register)." id="FRO_MASK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ALARMMASK" width="32" description="Alarm Event" id="ALARMMASK" offset="0x28">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RW" description="Logging bits for the &#39;alarm events&#39; of individual FROs. A &#39;1&#39; in bit [n] indicates FRO &#39;n&#39; experienced an &#39;alarm event&#39;." id="FRO_MASK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ALARMSTOP" width="32" description="Alarm Shutdown" id="ALARMSTOP" offset="0x2c">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RW" description="Logging bits for the &#39;alarm events&#39; of individual FROs. A &#39;1&#39; in bit [n] indicates FRO &#39;n&#39; experienced more than one &#39;alarm event&#39; in quick succession and has been turned off. A &#39;1&#39; in this field forces the corresponding bit in FROEN.FRO_MASK to &#39;0&#39;." id="FRO_FLAGS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LFSR0" width="32" description="LFSR Readout Value" id="LFSR0" offset="0x30">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Bits [31:0] of the main entropy accumulation LFSR. Register can only be accessed when CTL.TEST_MODE  = 1.
+Register contents will be cleared to zero before access is enabled." id="LFSR_31_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LFSR1" width="32" description="LFSR Readout Value" id="LFSR1" offset="0x34">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Bits [63:32] of the main entropy accumulation LFSR. Register can only be accessed when CTL.TEST_MODE = 1. 
+Register contents will be cleared to zero before access is enabled." id="LFSR_63_32" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LFSR2" width="32" description="LFSR Readout Value" id="LFSR2" offset="0x38">
+      <bitfield range="" begin="31" width="15" end="17" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="17" end="0" rwaccess="RW" description="Bits [80:64] of the main entropy accumulation LFSR. Register can only be accessed when CTL.TEST_MODE = 1. 
+Register contents will be cleared to zero before access is enabled." id="LFSR_80_64" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HWOPT" width="32" description="TRNG Engine Options Information" id="HWOPT" offset="0x78">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="6" end="6" rwaccess="RO" description="Number of FROs implemented in this TRNG, value 24 (decimal)." id="NR_OF_FROS" resetval="0x18">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HWVER0" width="32" description="HW Version 0
+EIP Number And Core Revision" id="HWVER0" offset="0x7c">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="4" end="24" rwaccess="RO" description="4 bits binary encoding of the major hardware revision number." id="HW_MAJOR_VER" resetval="0x2">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="4 bits binary encoding of the minor hardware revision number." id="HW_MINOR_VER" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="4 bits binary encoding of the hardware patch level, initial release will carry value zero." id="HW_PATCH_LVL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Bit-by-bit logic complement of bits [7:0]. This TRNG gives 0xB4." id="EIP_NUM_COMPL" resetval="0xb4">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="8 bits binary encoding of the module number. This TRNG gives 0x4B." id="EIP_NUM" resetval="0x4b">
+      </bitfield>
+   </register>
+   <register acronym="IRQSTATMASK" width="32" description="Interrupt Status After Masking" id="IRQSTATMASK" offset="0x1fd8">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Shutdown Overflow (result of IRQFLAGSTAT.SHUTDOWN_OVF AND&#39;ed with IRQFLAGMASK.SHUTDOWN_OVF)" id="SHUTDOWN_OVF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="New random value available (result of IRQFLAGSTAT.RDY AND&#39;ed with IRQFLAGMASK.RDY)" id="RDY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HWVER1" width="32" description="HW Version 1
+TRNG Revision Number" id="HWVER1" offset="0x1fe0">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="The revision number of this module is Rev 2.0." id="REV" resetval="0x20">
+      </bitfield>
+   </register>
+   <register acronym="IRQSET" width="32" description="Interrupt Set" id="IRQSET" offset="0x1fec">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RDY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SWRESET" width="32" description="SW Reset Control
+
+" id="SWRESET" offset="0x1ff0">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Write &#39;1&#39; to soft reset , reset will be low for 4-5 clock cycles. Poll to 0 for reset to be completed." id="RESET" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="IRQSTAT" width="32" description="Interrupt Status" id="IRQSTAT" offset="0x1ff8">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="TRNG Interrupt status. OR&#39;ed version of IRQFLAGSTAT.SHUTDOWN_OVF and IRQFLAGSTAT.RDY" id="STAT" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

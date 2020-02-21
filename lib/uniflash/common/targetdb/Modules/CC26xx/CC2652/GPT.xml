@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="GPT" HW_revision="" XML_version="1.0" description="General Purpose Timer.
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="CFG" width="32" description="Configuration" id="CFG" offset="0x0">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="GPT Configuration
+0x2- 0x3 - Reserved
+0x5- 0x7 - Reserved" id="CFG" resetval="0x0">
+         <bitenum id="16BIT_TIMER" value="4" token="16-bit timer configuration.  
+Configure for two 16-bit timers.
+Also see TAMR.TAMR and TBMR.TBMR." description="16-bit timer configuration.  
+Configure for two 16-bit timers.
+Also see TAMR.TAMR and TBMR.TBMR."/>
+         <bitenum id="32BIT_TIMER" value="0" token="32-bit timer configuration" description="32-bit timer configuration"/>
+      </bitfield>
+   </register>
+   <register acronym="TAMR" width="32" description="Timer A Mode
+
+" id="TAMR" offset="0x4">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="3" end="13" rwaccess="RW" description="Timer Compare Action Select 
+" id="TCACT" resetval="0x0">
+         <bitenum id="CLRSET_ON_TO" value="7" token="Clear CCP output pin immediately and set on Time-Out" description="Clear CCP output pin immediately and set on Time-Out"/>
+         <bitenum id="SETCLR_ON_TO" value="6" token="Set CCP output pin immediately and clear on Time-Out" description="Set CCP output pin immediately and clear on Time-Out"/>
+         <bitenum id="CLRTOG_ON_TO" value="5" token="Clear CCP output pin immediately and toggle on Time-Out" description="Clear CCP output pin immediately and toggle on Time-Out"/>
+         <bitenum id="SETTOG_ON_TO" value="4" token="Set CCP output pin immediately and toggle on Time-Out" description="Set CCP output pin immediately and toggle on Time-Out"/>
+         <bitenum id="SET_ON_TO" value="3" token="Set CCP output pin on Time-Out " description="Set CCP output pin on Time-Out "/>
+         <bitenum id="CLR_ON_TO" value="2" token="Clear CCP output pin on Time-Out" description="Clear CCP output pin on Time-Out"/>
+         <bitenum id="TOG_ON_TO" value="1" token="Toggle State on Time-Out" description="Toggle State on Time-Out"/>
+         <bitenum id="DIS_CMP" value="0" token="Disable compare operations" description="Disable compare operations"/>
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="One-Shot/Periodic Interrupt Disable" id="TACINTD" resetval="0x0">
+         <bitenum id="DIS_TO_INTR" value="1" token="Time-out interrupt are disabled" description="Time-out interrupt are disabled"/>
+         <bitenum id="EN_TO_INTR" value="0" token="Time-out interrupt function as normal" description="Time-out interrupt function as normal"/>
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="GPTM Timer A PWM Legacy Operation
+
+0  Legacy operation with CCP pin driven Low when the TAILR 
+register is reloaded after the timer reaches 0.
+
+1 CCP is driven High when the TAILR  register is reloaded after the timer reaches 0.
+
+This bit is only valid in PWM mode." id="TAPLO" resetval="0x0">
+         <bitenum id="CCP_ON_TO" value="1" token="CCP output pin is set to 1 on time-out" description="CCP output pin is set to 1 on time-out"/>
+         <bitenum id="LEGACY" value="0" token="Legacy operation" description="Legacy operation"/>
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Timer A Match Register Update mode
+ 
+This bit defines when the TAMATCHR and TAPR registers are updated.
+
+If the timer is disabled (CTL.TAEN = 0) when this bit is set, TAMATCHR and TAPR are updated when the timer is enabled.
+If the timer is stalled (CTL.TASTALL = 1) when this bit is set, TAMATCHR and TAPR are updated according to the configuration of this bit." id="TAMRSU" resetval="0x0">
+         <bitenum id="TOUPDATE" value="1" token="Update TAMATCHR and TAPR, if used, on the next time-out. " description="Update TAMATCHR and TAPR, if used, on the next time-out. "/>
+         <bitenum id="CYCLEUPDATE" value="0" token="Update TAMATCHR and TAPR, if used, on the next cycle." description="Update TAMATCHR and TAPR, if used, on the next cycle."/>
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="GPTM Timer A PWM Interrupt Enable
+This bit enables interrupts in PWM mode on rising, falling, or both edges of the CCP output, as defined by the CTL.TAEVENT
+In addition, when this bit is set and a capture event occurs, Timer A
+automatically generates triggers to the DMA if the trigger capability is enabled by setting the CTL.TAOTE bit and the DMAEV.CAEDMAEN bit respectively.
+
+0 Capture event interrupt is disabled.
+1 Capture event interrupt is enabled.
+This bit is only valid in PWM mode." id="TAPWMIE" resetval="0x0">
+         <bitenum id="EN" value="1" token="Interrupt is enabled.  This bit is only valid in PWM mode." description="Interrupt is enabled.  This bit is only valid in PWM mode."/>
+         <bitenum id="DIS" value="0" token="Interrupt is disabled.  " description="Interrupt is disabled.  "/>
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="GPT Timer A PWM Interval Load Write " id="TAILD" resetval="0x0">
+         <bitenum id="TOUPDATE" value="1" token="Update the TAR register with the value in the TAILR register on the next timeout. If the prescaler is used, update the TAPS register with the value in the TAPR register on the next timeout." description="Update the TAR register with the value in the TAILR register on the next timeout. If the prescaler is used, update the TAPS register with the value in the TAPR register on the next timeout."/>
+         <bitenum id="CYCLEUPDATE" value="0" token="Update the TAR register with the value in the TAILR register on the next clock cycle. If the pre-scaler is used, update the TAPS register with the value in the TAPR register on the next clock cycle. " description="Update the TAR register with the value in the TAILR register on the next clock cycle. If the pre-scaler is used, update the TAPS register with the value in the TAPR register on the next clock cycle. "/>
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="GPT Timer A Snap-Shot Mode " id="TASNAPS" resetval="0x0">
+         <bitenum id="EN" value="1" token="If Timer A is configured in the periodic mode, the actual free-running value of Timer A is loaded at the time-out event into the GPT Timer A (TAR) register." description="If Timer A is configured in the periodic mode, the actual free-running value of Timer A is loaded at the time-out event into the GPT Timer A (TAR) register."/>
+         <bitenum id="DIS" value="0" token="Snap-shot mode is disabled.  " description="Snap-shot mode is disabled.  "/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="GPT Timer A Wait-On-Trigger " id="TAWOT" resetval="0x0">
+         <bitenum id="WAIT" value="1" token="If Timer A is enabled (CTL.TAEN = 1), Timer A does not begin counting until it receives a trigger from the timer in the previous position in the daisy chain. This bit must be clear for GPT Module 0, Timer A. This function is valid for one-shot, periodic, and PWM modes" description="If Timer A is enabled (CTL.TAEN = 1), Timer A does not begin counting until it receives a trigger from the timer in the previous position in the daisy chain. This bit must be clear for GPT Module 0, Timer A. This function is valid for one-shot, periodic, and PWM modes"/>
+         <bitenum id="NOWAIT" value="0" token="Timer A begins counting as soon as it is enabled." description="Timer A begins counting as soon as it is enabled."/>
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="GPT Timer A Match Interrupt Enable " id="TAMIE" resetval="0x0">
+         <bitenum id="EN" value="1" token="An interrupt is generated when the match value in TAMATCHR is reached in the one-shot and periodic modes." description="An interrupt is generated when the match value in TAMATCHR is reached in the one-shot and periodic modes."/>
+         <bitenum id="DIS" value="0" token="The match interrupt is disabled for match events. Additionally, output triggers on match events are prevented." description="The match interrupt is disabled for match events. Additionally, output triggers on match events are prevented."/>
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="GPT Timer A Count Direction " id="TACDIR" resetval="0x0">
+         <bitenum id="UP" value="1" token="The timer counts up. When counting up, the timer starts from a value of 0x0." description="The timer counts up. When counting up, the timer starts from a value of 0x0."/>
+         <bitenum id="DOWN" value="0" token="The timer counts down. " description="The timer counts down. "/>
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="GPT Timer A Alternate Mode 
+
+Note: To enable PWM mode, you must also clear TACM and then configure TAMR field to 0x2." id="TAAMS" resetval="0x0">
+         <bitenum id="PWM" value="1" token="PWM mode is enabled" description="PWM mode is enabled"/>
+         <bitenum id="CAP_COMP" value="0" token="Capture/Compare mode is enabled." description="Capture/Compare mode is enabled."/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="GPT Timer A Capture Mode " id="TACM" resetval="0x0">
+         <bitenum id="EDGTIME" value="1" token="Edge-Time mode" description="Edge-Time mode"/>
+         <bitenum id="EDGCNT" value="0" token="Edge-Count mode" description="Edge-Count mode"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="GPT Timer A Mode
+
+0x0 Reserved
+0x1 One-Shot Timer mode
+0x2 Periodic Timer mode
+0x3 Capture mode
+The Timer mode is based on the timer configuration defined by bits 2:0 in the CFG register
+
+" id="TAMR" resetval="0x0">
+         <bitenum id="CAPTURE" value="3" token="Capture mode" description="Capture mode"/>
+         <bitenum id="PERIODIC" value="2" token="Periodic Timer mode " description="Periodic Timer mode "/>
+         <bitenum id="ONE_SHOT" value="1" token="One-Shot Timer mode" description="One-Shot Timer mode"/>
+      </bitfield>
+   </register>
+   <register acronym="TBMR" width="32" description="Timer B Mode
+
+" id="TBMR" offset="0x8">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="3" end="13" rwaccess="RW" description="Timer Compare Action Select " id="TCACT" resetval="0x0">
+         <bitenum id="CLRSET_ON_TO" value="7" token="Clear CCP output pin immediately and set on Time-Out" description="Clear CCP output pin immediately and set on Time-Out"/>
+         <bitenum id="SETCLR_ON_TO" value="6" token="Set CCP output pin immediately and clear on Time-Out" description="Set CCP output pin immediately and clear on Time-Out"/>
+         <bitenum id="CLRTOG_ON_TO" value="5" token="Clear CCP output pin immediately and toggle on Time-Out" description="Clear CCP output pin immediately and toggle on Time-Out"/>
+         <bitenum id="SETTOG_ON_TO" value="4" token="Set CCP output pin immediately and toggle on Time-Out" description="Set CCP output pin immediately and toggle on Time-Out"/>
+         <bitenum id="SET_ON_TO" value="3" token="Set CCP output pin on Time-Out " description="Set CCP output pin on Time-Out "/>
+         <bitenum id="CLR_ON_TO" value="2" token="Clear CCP output pin on Time-Out" description="Clear CCP output pin on Time-Out"/>
+         <bitenum id="TOG_ON_TO" value="1" token="Toggle State on Time-Out" description="Toggle State on Time-Out"/>
+         <bitenum id="DIS_CMP" value="0" token="Disable compare operations" description="Disable compare operations"/>
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="One-Shot/Periodic Interrupt Mode" id="TBCINTD" resetval="0x0">
+         <bitenum id="DIS_TO_INTR" value="1" token="Mask Time-Out Interrupt" description="Mask Time-Out Interrupt"/>
+         <bitenum id="EN_TO_INTR" value="0" token="Normal Time-Out Interrupt " description="Normal Time-Out Interrupt "/>
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="GPTM Timer B PWM Legacy Operation
+
+0  Legacy operation with CCP pin driven Low when the TBILR 
+register is reloaded after the timer reaches 0.
+
+1 CCP is driven High when the TBILR  register is reloaded after the timer reaches 0.
+
+This bit is only valid in PWM mode." id="TBPLO" resetval="0x0">
+         <bitenum id="CCP_ON_TO" value="1" token="CCP output pin is set to 1 on time-out" description="CCP output pin is set to 1 on time-out"/>
+         <bitenum id="LEGACY" value="0" token="Legacy operation" description="Legacy operation"/>
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Timer B Match Register Update mode
+ 
+This bit defines when the TBMATCHR and TBPR registers are updated
+
+If the timer is disabled (CTL.TBEN is clear) when this bit is set, TBMATCHR and TBPR are updated when the timer is enabled.
+If the timer is stalled (CTL.TBSTALL is set) when this bit is set, TBMATCHR and TBPR are updated according to the configuration of this bit." id="TBMRSU" resetval="0x0">
+         <bitenum id="TOUPDATE" value="1" token="Update TBMATCHR and TBPR, if used, on the next time-out. " description="Update TBMATCHR and TBPR, if used, on the next time-out. "/>
+         <bitenum id="CYCLEUPDATE" value="0" token="Update TBMATCHR and TBPR, if used, on the next cycle. " description="Update TBMATCHR and TBPR, if used, on the next cycle. "/>
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="GPTM Timer B PWM Interrupt Enable
+This bit enables interrupts in PWM mode on rising, falling, or both edges of the CCP output, as defined by the CTL.TBEVENT
+In addition, when this bit is set and a capture event occurs, Timer A
+automatically generates triggers to the DMA if the trigger capability is enabled by setting the CTL.TBOTE bit and the DMAEV.CBEDMAEN bit respectively.
+
+0 Capture event interrupt is disabled.
+1 Capture event interrupt is enabled.
+This bit is only valid in PWM mode." id="TBPWMIE" resetval="0x0">
+         <bitenum id="EN" value="1" token="Interrupt is enabled.  This bit is only valid in PWM mode." description="Interrupt is enabled.  This bit is only valid in PWM mode."/>
+         <bitenum id="DIS" value="0" token="Interrupt is disabled.  " description="Interrupt is disabled.  "/>
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="GPT Timer B PWM Interval Load Write " id="TBILD" resetval="0x0">
+         <bitenum id="TOUPDATE" value="1" token="Update the TBR register with the value in the TBILR register on the next timeout. If the prescaler is used, update the TBPS register with the value in the TBPR register on the next timeout." description="Update the TBR register with the value in the TBILR register on the next timeout. If the prescaler is used, update the TBPS register with the value in the TBPR register on the next timeout."/>
+         <bitenum id="CYCLEUPDATE" value="0" token="Update the TBR register with the value in the TBILR register on the next clock cycle. If the pre-scaler is used, update the TBPS register with the value in the TBPR register on the next clock cycle. " description="Update the TBR register with the value in the TBILR register on the next clock cycle. If the pre-scaler is used, update the TBPS register with the value in the TBPR register on the next clock cycle. "/>
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="GPT Timer B Snap-Shot Mode" id="TBSNAPS" resetval="0x0">
+         <bitenum id="EN" value="1" token="If Timer B is configured in the periodic mode" description="If Timer B is configured in the periodic mode"/>
+         <bitenum id="DIS" value="0" token="Snap-shot mode is disabled. " description="Snap-shot mode is disabled. "/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="GPT Timer B Wait-On-Trigger" id="TBWOT" resetval="0x0">
+         <bitenum id="WAIT" value="1" token="If Timer B is enabled (CTL.TBEN is set), Timer B does not begin counting until it receives a trigger from the timer in the previous position in the daisy chain. This function is valid for one-shot, periodic, and PWM modes" description="If Timer B is enabled (CTL.TBEN is set), Timer B does not begin counting until it receives a trigger from the timer in the previous position in the daisy chain. This function is valid for one-shot, periodic, and PWM modes"/>
+         <bitenum id="NOWAIT" value="0" token="Timer B begins counting as soon as it is enabled. " description="Timer B begins counting as soon as it is enabled. "/>
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="GPT Timer B Match Interrupt Enable." id="TBMIE" resetval="0x0">
+         <bitenum id="EN" value="1" token="An interrupt is generated when the match value in the TBMATCHR register is reached in the one-shot and periodic modes. " description="An interrupt is generated when the match value in the TBMATCHR register is reached in the one-shot and periodic modes. "/>
+         <bitenum id="DIS" value="0" token="The match interrupt is disabled for match events. Additionally, output triggers on match events are prevented." description="The match interrupt is disabled for match events. Additionally, output triggers on match events are prevented."/>
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="GPT Timer B Count Direction" id="TBCDIR" resetval="0x0">
+         <bitenum id="UP" value="1" token="The timer counts up. When counting up, the timer starts from a value of 0x0." description="The timer counts up. When counting up, the timer starts from a value of 0x0."/>
+         <bitenum id="DOWN" value="0" token="The timer counts down. " description="The timer counts down. "/>
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="GPT Timer B Alternate Mode 
+
+Note: To enable PWM mode, you must also clear TBCM bit and configure TBMR field to 0x2." id="TBAMS" resetval="0x0">
+         <bitenum id="PWM" value="1" token="PWM mode is enabled" description="PWM mode is enabled"/>
+         <bitenum id="CAP_COMP" value="0" token="Capture/Compare mode is enabled." description="Capture/Compare mode is enabled."/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="GPT Timer B Capture Mode" id="TBCM" resetval="0x0">
+         <bitenum id="EDGTIME" value="1" token="Edge-Time mode" description="Edge-Time mode"/>
+         <bitenum id="EDGCNT" value="0" token="Edge-Count mode" description="Edge-Count mode"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="GPT Timer B Mode
+
+0x0 Reserved
+0x1 One-Shot Timer mode
+0x2 Periodic Timer mode
+0x3 Capture mode
+The Timer mode is based on the timer configuration defined by bits 2:0 in the CFG register
+" id="TBMR" resetval="0x0">
+         <bitenum id="CAPTURE" value="3" token="Capture mode" description="Capture mode"/>
+         <bitenum id="PERIODIC" value="2" token="Periodic Timer mode " description="Periodic Timer mode "/>
+         <bitenum id="ONE_SHOT" value="1" token="One-Shot Timer mode" description="One-Shot Timer mode"/>
+      </bitfield>
+   </register>
+   <register acronym="CTL" width="32" description="Control" id="CTL" offset="0xc">
+      <bitfield range="" begin="31" width="17" end="15" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="GPT Timer B PWM Output Level
+
+0: Output is unaffected. 
+1: Output is inverted. " id="TBPWML" resetval="0x0">
+         <bitenum id="INVERTED" value="1" token="Inverted" description="Inverted"/>
+         <bitenum id="NORMAL" value="0" token="Not inverted" description="Not inverted"/>
+      </bitfield>
+      <bitfield range="" begin="13" width="2" end="12" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="2" end="10" rwaccess="RW" description="GPT Timer B Event Mode
+
+The values in this register are defined as follows:
+Value Description
+0x0 Positive edge
+0x1 Negative edge
+0x2 Reserved
+0x3 Both edges
+Note: If PWM output inversion is enabled, edge detection interrupt
+behavior is reversed. Thus, if a positive-edge interrupt trigger
+has been set and the PWM inversion generates a postive
+edge, no event-trigger interrupt asserts. Instead, the interrupt
+is generated on the negative edge of the PWM signal." id="TBEVENT" resetval="0x0">
+         <bitenum id="BOTH" value="3" token="Both edges" description="Both edges"/>
+         <bitenum id="NEG" value="1" token="Negative edge " description="Negative edge "/>
+         <bitenum id="POS" value="0" token="Positive edge" description="Positive edge"/>
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="GPT Timer B Stall Enable" id="TBSTALL" resetval="0x0">
+         <bitenum id="EN" value="1" token="Timer B freezes counting while the processor is halted by the debugger. " description="Timer B freezes counting while the processor is halted by the debugger. "/>
+         <bitenum id="DIS" value="0" token="Timer B continues counting while the processor is halted by the debugger. " description="Timer B continues counting while the processor is halted by the debugger. "/>
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="GPT Timer B Enable" id="TBEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="Timer B is enabled and begins counting or the capture logic is enabled based on CFG register. " description="Timer B is enabled and begins counting or the capture logic is enabled based on CFG register. "/>
+         <bitenum id="DIS" value="0" token="Timer B is disabled. " description="Timer B is disabled. "/>
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="GPT Timer A PWM Output Level" id="TAPWML" resetval="0x0">
+         <bitenum id="INVERTED" value="1" token="Inverted" description="Inverted"/>
+         <bitenum id="NORMAL" value="0" token="Not inverted" description="Not inverted"/>
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RW" description="GPT Timer A Event Mode
+
+The values in this register are defined as follows:
+Value Description
+0x0 Positive edge
+0x1 Negative edge
+0x2 Reserved
+0x3 Both edges
+Note: If PWM output inversion is enabled, edge detection interrupt
+behavior is reversed. Thus, if a positive-edge interrupt trigger
+has been set and the PWM inversion generates a postive
+edge, no event-trigger interrupt asserts. Instead, the interrupt
+is generated on the negative edge of the PWM signal." id="TAEVENT" resetval="0x0">
+         <bitenum id="BOTH" value="3" token="Both edges" description="Both edges"/>
+         <bitenum id="NEG" value="1" token="Negative edge " description="Negative edge "/>
+         <bitenum id="POS" value="0" token="Positive edge" description="Positive edge"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="GPT Timer A Stall Enable" id="TASTALL" resetval="0x0">
+         <bitenum id="EN" value="1" token="Timer A freezes counting while the processor is halted by the debugger. " description="Timer A freezes counting while the processor is halted by the debugger. "/>
+         <bitenum id="DIS" value="0" token="Timer A continues counting while the processor is halted by the debugger. " description="Timer A continues counting while the processor is halted by the debugger. "/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="GPT Timer A Enable" id="TAEN" resetval="0x0">
+         <bitenum id="EN" value="1" token="Timer A is enabled and begins counting or the capture logic is enabled based on the CFG register. " description="Timer A is enabled and begins counting or the capture logic is enabled based on the CFG register. "/>
+         <bitenum id="DIS" value="0" token="Timer A is disabled. " description="Timer A is disabled. "/>
+      </bitfield>
+   </register>
+   <register acronym="SYNC" width="32" description="Synch Register
+
+" id="SYNC" offset="0x10">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="WO" description="Synchronize GPT Timer 3." id="SYNC3" resetval="0x0">
+         <bitenum id="BOTH" value="3" token="A timeout event for both Timer A and Timer B of GPT3 is triggered" description="A timeout event for both Timer A and Timer B of GPT3 is triggered"/>
+         <bitenum id="TIMERB" value="2" token="A timeout event for Timer B of GPT3 is triggered" description="A timeout event for Timer B of GPT3 is triggered"/>
+         <bitenum id="TIMERA" value="1" token="A timeout event for Timer A of GPT3 is triggered" description="A timeout event for Timer A of GPT3 is triggered"/>
+         <bitenum id="NOSYNC" value="0" token="No Sync. GPT3 is not affected. " description="No Sync. GPT3 is not affected. "/>
+      </bitfield>
+      <bitfield range="" begin="5" width="2" end="4" rwaccess="WO" description="Synchronize GPT Timer 2." id="SYNC2" resetval="0x0">
+         <bitenum id="BOTH" value="3" token="A timeout event for both Timer A and Timer B of GPT2 is triggered" description="A timeout event for both Timer A and Timer B of GPT2 is triggered"/>
+         <bitenum id="TIMERB" value="2" token="A timeout event for Timer B of GPT2 is triggered" description="A timeout event for Timer B of GPT2 is triggered"/>
+         <bitenum id="TIMERA" value="1" token="A timeout event for Timer A of GPT2 is triggered" description="A timeout event for Timer A of GPT2 is triggered"/>
+         <bitenum id="NOSYNC" value="0" token="No Sync. GPT2 is not affected. " description="No Sync. GPT2 is not affected. "/>
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="WO" description="Synchronize GPT Timer 1" id="SYNC1" resetval="0x0">
+         <bitenum id="BOTH" value="3" token="A timeout event for both Timer A and Timer B of GPT1 is triggered" description="A timeout event for both Timer A and Timer B of GPT1 is triggered"/>
+         <bitenum id="TIMERB" value="2" token="A timeout event for Timer B of GPT1 is triggered" description="A timeout event for Timer B of GPT1 is triggered"/>
+         <bitenum id="TIMERA" value="1" token="A timeout event for Timer A of GPT1 is triggered" description="A timeout event for Timer A of GPT1 is triggered"/>
+         <bitenum id="NOSYNC" value="0" token="No Sync. GPT1 is not affected. " description="No Sync. GPT1 is not affected. "/>
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="WO" description="Synchronize GPT Timer 0" id="SYNC0" resetval="0x0">
+         <bitenum id="BOTH" value="3" token="A timeout event for both Timer A and Timer B of GPT0 is triggered" description="A timeout event for both Timer A and Timer B of GPT0 is triggered"/>
+         <bitenum id="TIMERB" value="2" token="A timeout event for Timer B of GPT0 is triggered" description="A timeout event for Timer B of GPT0 is triggered"/>
+         <bitenum id="TIMERA" value="1" token="A timeout event for Timer A of GPT0 is triggered" description="A timeout event for Timer A of GPT0 is triggered"/>
+         <bitenum id="NOSYNC" value="0" token="No Sync. GPT0 is not affected. " description="No Sync. GPT0 is not affected. "/>
+      </bitfield>
+   </register>
+   <register acronym="IMR" width="32" description="Interrupt Mask
+This register is used to enable the interrupts.
+Associated registers:
+RIS, MIS, ICLR
+
+" id="IMR" offset="0x18">
+      <bitfield range="" begin="31" width="18" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Enabling this bit will make the RIS.DMABRIS interrupt propagate to MIS.DMABMIS" id="DMABIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Enabling this bit will make the RIS.TBMRIS interrupt propagate to MIS.TBMMIS" id="TBMIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Enabling this bit will make the RIS.CBERIS interrupt propagate to MIS.CBEMIS" id="CBEIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Enabling this bit will make the RIS.CBMRIS interrupt propagate to MIS.CBMMIS" id="CBMIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Enabling this bit will make the RIS.TBTORIS interrupt propagate to MIS.TBTOMIS" id="TBTOIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Enabling this bit will make the RIS.DMAARIS interrupt propagate to MIS.DMAAMIS" id="DMAAIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Enabling this bit will make the RIS.TAMRIS interrupt propagate to MIS.TAMMIS" id="TAMIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Enabling this bit will make the RIS.CAERIS interrupt propagate to MIS.CAEMIS" id="CAEIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Enabling this bit will make the RIS.CAMRIS interrupt propagate to MIS.CAMMIS" id="CAMIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Enabling this bit will make the RIS.TATORIS interrupt propagate to MIS.TATOMIS" id="TATOIM" resetval="0x0">
+         <bitenum id="EN" value="1" token="Enable Interrupt" description="Enable Interrupt"/>
+         <bitenum id="DIS" value="0" token="Disable Interrupt" description="Disable Interrupt"/>
+      </bitfield>
+   </register>
+   <register acronym="RIS" width="32" description="Raw Interrupt Status
+Associated registers:
+IMR, MIS, ICLR
+
+" id="RIS" offset="0x1c">
+      <bitfield range="" begin="31" width="18" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="GPT Timer B DMA Done Raw Interrupt Status
+
+0: Transfer has not completed
+1: Transfer has completed" id="DMABRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="GPT Timer B Match Raw  Interrupt
+
+0:  The match value has not been reached
+1:  The match value is reached.
+
+TBMR.TBMIE is set, and the match values in TBMATCHR and optionally TBPMR have been reached when configured in one-shot or periodic mode." id="TBMRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="GPT Timer B Capture Mode Event Raw Interrupt
+
+0:  The event has not occured.
+1:  The event has occured.
+
+This interrupt asserts when the subtimer is configured in Input Edge-Time mode" id="CBERIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="GPT Timer B Capture Mode Match Raw Interrupt
+
+0:  The capture mode match for Timer B has not occurred.
+1:  A capture mode match has occurred for Timer B. This interrupt
+asserts when the values in the TBR and TBPR
+match the values in the TBMATCHR and TBPMR
+when configured in Input Edge-Time mode.
+
+This bit is cleared by writing a 1 to the ICLR.CBMCINT bit." id="CBMRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="GPT Timer B Time-out Raw Interrupt
+
+0:  Timer B has not timed out
+1:  Timer B has timed out. 
+
+This interrupt is asserted when a one-shot or periodic mode timer reaches its count limit. The count limit is 0 or the value loaded into TBILR, depending on the count direction." id="TBTORIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="GPT Timer A DMA Done Raw Interrupt Status
+
+0: Transfer has not completed
+1: Transfer has completed" id="DMAARIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="GPT Timer A Match Raw  Interrupt
+
+0:  The match value has not been reached
+1:  The match value is reached.
+
+TAMR.TAMIE is set, and the match values in TAMATCHR and optionally TAPMR have been reached when configured in one-shot or periodic mode." id="TAMRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="GPT Timer A Capture Mode Event Raw Interrupt
+
+0:  The event has not occured.
+1:  The event has occured.
+
+This interrupt asserts when the subtimer is configured in Input Edge-Time mode" id="CAERIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="GPT Timer A Capture Mode Match Raw Interrupt
+
+0:  The capture mode match for Timer A has not occurred.
+1:  A capture mode match has occurred for Timer A. This interrupt
+asserts when the values in the TAR and TAPR
+match the values in the TAMATCHR and TAPMR
+when configured in Input Edge-Time mode.
+
+This bit is cleared by writing a 1 to the ICLR.CAMCINT bit." id="CAMRIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="GPT Timer A Time-out Raw Interrupt
+
+0:  Timer A has not timed out
+1:  Timer A has timed out. 
+
+This interrupt is asserted when a one-shot or periodic mode timer reaches its count limit. The count limit is 0 or the value loaded into TAILR, depending on the count direction." id="TATORIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MIS" width="32" description="Masked Interrupt Status
+Values are result of bitwise AND operation between RIS and IMR
+Assosciated clear register: ICLR
+
+" id="MIS" offset="0x20">
+      <bitfield range="" begin="31" width="18" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.DMABRIS = 1 &#38;&#38; IMR.DMABIM = 1" id="DMABMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.TBMRIS = 1 &#38;&#38; IMR.TBMIM = 1" id="TBMMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.CBERIS = 1 &#38;&#38; IMR.CBEIM = 1" id="CBEMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.CBMRIS = 1 &#38;&#38; IMR.CBMIM = 1" id="CBMMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.TBTORIS = 1 &#38;&#38; IMR.TBTOIM = 1" id="TBTOMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.DMAARIS = 1 &#38;&#38; IMR.DMAAIM = 1" id="DMAAMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.TAMRIS = 1 &#38;&#38; IMR.TAMIM = 1" id="TAMMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.CAERIS = 1 &#38;&#38; IMR.CAEIM = 1" id="CAEMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.CAMRIS = 1 &#38;&#38; IMR.CAMIM = 1" id="CAMMIS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="0: No interrupt or interrupt not enabled
+1: RIS.TATORIS = 1 &#38;&#38; IMR.TATOIM = 1" id="TATOMIS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ICLR" width="32" description="Interrupt Clear
+This register is used to clear status bits in the RIS and MIS registers" id="ICLR" offset="0x24">
+      <bitfield range="" begin="31" width="18" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.DMABRIS and MIS.DMABMIS" id="DMABINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.TBMRIS and MIS.TBMMIS" id="TBMCINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.CBERIS and MIS.CBEMIS" id="CBECINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.CBMRIS and MIS.CBMMIS" id="CBMCINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.TBTORIS and MIS.TBTOMIS" id="TBTOCINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.DMAARIS and MIS.DMAAMIS" id="DMAAINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.TAMRIS and MIS.TAMMIS" id="TAMCINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.CAERIS and MIS.CAEMIS" id="CAECINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.CAMRIS and MIS.CAMMIS" id="CAMCINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="0: Do nothing.
+1: Clear RIS.TATORIS and MIS.TATOMIS" id="TATOCINT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TAILR" width="32" description="Timer A Interval Load  Register" id="TAILR" offset="0x28">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="GPT Timer A Interval Load  Register
+
+Writing this field loads the counter for Timer A. A read returns the current value of TAILR." id="TAILR" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="TBILR" width="32" description="Timer B Interval Load  Register" id="TBILR" offset="0x2c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="GPT Timer B Interval Load  Register
+
+Writing this field loads the counter for Timer B. A read returns the current value of TBILR." id="TBILR" resetval="0xffff">
+      </bitfield>
+   </register>
+   <register acronym="TAMATCHR" width="32" description="Timer A Match Register
+
+Interrupts can be generated when the timer value is equal to the value in this register in one-shot or periodic mode.
+
+In Edge-Count mode, this register along with TAILR, determines how many edge events are counted.
+The total number of edge events counted is equal to the value in TAILR minus this value.
+
+Note that in edge-count mode, when executing an up-count, the value of TAPR and TAILR must be greater than the value of TAPMR and this register.
+
+In PWM mode, this value along with TAILR, determines the duty cycle of the output PWM signal.
+
+When a 16/32-bit GPT is configured to one of the 32-bit modes, TAMATCHR appears as a 32-bit register. (The upper 16-bits correspond to the contents TBMATCHR).
+
+In a 16-bit mode, the upper 16 bits of this register read as 0s and have no effect on the state of TBMATCHR.
+
+Note : This register is updated internally (takes effect) based on TAMR.TAMRSU
+" id="TAMATCHR" offset="0x30">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="GPT Timer A Match Register" id="TAMATCHR" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="TBMATCHR" width="32" description="Timer B Match Register
+
+ When a GPT is configured to one of the 32-bit modes, the contents of bits 15:0 in this register are loaded into the upper 16 bits of  TAMATCHR.
+Reads from this register return the current match value of Timer B and writes are ignored.
+In a 16-bit mode, bits 15:0 are used for the match value. Bits 31:16 are reserved in both cases.
+
+Note : This register is updated internally (takes effect) based on TBMR.TBMRSU" id="TBMATCHR" offset="0x34">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="GPT Timer B Match Register" id="TBMATCHR" resetval="0xffff">
+      </bitfield>
+   </register>
+   <register acronym="TAPR" width="32" description="Timer A Pre-scale
+This register allows software to extend the range of the timers when they are used individually.
+When in one-shot or periodic down count modes, this register acts as a true prescaler for the timer counter.
+When acting as a true prescaler, the prescaler counts down to 0 before the value in TAR and TAV registers are incremented.
+In all other individual/split modes, this register is a linear extension of the upper range of the timer counter, holding bits 23:16 in the 16-bit modes of the 16/32-bit GPT.
+
+" id="TAPR" offset="0x38">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Timer A Pre-scale.
+
+Prescaler ratio in one-shot and periodic count mode is TAPSR + 1, that is:
+
+0: Prescaler ratio = 1
+1: Prescaler ratio = 2
+2: Prescaler ratio = 3
+...
+255: Prescaler ratio = 256" id="TAPSR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TBPR" width="32" description="Timer B Pre-scale
+This register allows software to extend the range of the timers when they are used individually.
+When in one-shot or periodic down count modes, this register acts as a true prescaler for the timer counter.
+When acting as a true prescaler, the prescaler counts down to 0 before the value in TBR and TBV registers are incremented.
+In all other individual/split modes, this register is a linear extension of the upper range of the timer counter, holding bits 23:16 in the 16-bit modes of the 16/32-bit GPT.
+
+" id="TBPR" offset="0x3c">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Timer B Pre-scale.
+
+Prescale ratio in one-shot and periodic count mode is TBPSR + 1, that is:
+
+0: Prescaler ratio = 1
+1: Prescaler ratio = 2
+2: Prescaler ratio = 3
+...
+255: Prescaler ratio = 256" id="TBPSR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TAPMR" width="32" description="Timer A Pre-scale Match
+This register allows software to extend the range of the TAMATCHR when used individually.  
+
+" id="TAPMR" offset="0x40">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="GPT Timer A Pre-scale Match.  In 16 bit mode this field holds bits 23 to 16." id="TAPSMR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TBPMR" width="32" description="Timer B Pre-scale Match
+This register allows software to extend the range of the TBMATCHR when used individually.  
+
+" id="TBPMR" offset="0x44">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="GPT Timer B Pre-scale Match Register.  In 16 bit mode this field holds bits 23 to 16." id="TBPSMR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TAR" width="32" description="Timer A Register
+This register shows the current value of the Timer A counter in all cases except for Input Edge Count and Time modes. In the Input Edge Count mode, this register contains the number of edges that
+have occurred. In the Input Edge Time mode, this register contains the time at which the last edge event took place.
+
+When a GPT is configured to one of the 32-bit modes, this register appears as a 32-bit register (the upper 16-bits correspond to the contents of the Timer B (TBR) register). In
+the16-bit Input Edge Count, Input Edge Time, and PWM modes, bits 15:0 contain the value of the counter and bits 23:16 contain the value of the prescaler, which is the upper 8 bits of the count. Bits
+31:24 always read as 0. To read the value of the prescaler in 16-bit One-Shot and Periodic modes, read bits [23:16] in the TAV register. To read the value of the prescalar in periodic snapshot
+mode, read the Timer A Prescale Snapshot (TAPS) register.
+" id="TAR" offset="0x48">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="GPT Timer A Register    
+
+Based on the value in the register field TAMR.TAILD, this register is updated with the value from TAILR register either on the next cycle or on the next timeout.
+
+A read returns the current value of the Timer A Count Register, in all cases except for Input Edge count and Timer modes. 
+In the Input Edge Count Mode, this register contains the number of edges that have occurred. In the Input Edge Time mode, this register contains the time at which the last edge event took place." id="TAR" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="TBR" width="32" description="Timer B Register
+This register shows the current value of the Timer B counter in all cases except for Input Edge Count and Time modes. In the Input Edge Count mode, this register contains the number of edges that
+have occurred. In the Input Edge Time mode, this register contains the time at which the last edge event took place.
+
+When a GPTM is configured to one of the 32-bit modes, the contents of bits 15:0 in this register are loaded into the upper 16 bits of the TAR register. Reads from this register return the current
+value of Timer B. In a 16-bit mode, bits 15:0 contain the value of the counter and bits 23:16 contain the value of the prescaler in Input Edge Count, Input Edge Time, and PWM modes, which is the
+upper 8 bits of the count. Bits 31:24 always read as 0. To read the value of the prescaler in 16-bit One-Shot and Periodic modes, read bits [23:16] in the TBV register. To read the value of the
+prescalar in periodic snapshot mode, read the Timer B Prescale Snapshot (TBPS) register.
+" id="TBR" offset="0x4c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="GPT Timer B Register
+
+Based on the value in the register field TBMR.TBILD, this register is updated with the value from TBILR register either on the next cycle or on the next timeout.
+
+A read returns the current value of the Timer B Count Register, in all cases except for Input Edge count and Timer modes. 
+In the Input Edge Count Mode, this register contains the number of edges that have occurred. In the Input Edge Time mode, this register contains the time at which the last edge event took place." id="TBR" resetval="0xffff">
+      </bitfield>
+   </register>
+   <register acronym="TAV" width="32" description="Timer A Value 
+When read, this register shows the current, free-running value of Timer A in all modes. Softwarecan use this value to determine the time elapsed between an interrupt and the ISR entry when using
+the snapshot feature with the periodic operating mode. When written, the value written into this register is loaded into the TAR register on the next clock cycle.
+
+When a 16/32-bit GPTM is configured to one of the 32-bit modes, this register appears as a 32-bit register (the upper 16-bits correspond to the contents of the GPTM Timer B Value (TBV) register). In a 16-bit mode, bits 15:0 contain the value of the counter and bits 23:16 contain the current, free-running value of the prescaler, which is the upper 8 bits of the count in Input Edge Count, Input Edge Time, PWM and one-shot or periodic up count modes. In one-shot or periodic
+down count modes, the prescaler stored in 23:16 is a true prescaler, meaning bits 23:16 count down before decrementing the value in bits 15:0. The prescaler in bits 31:24 always reads as 0." id="TAV" offset="0x50">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="GPT Timer A Register
+A read returns the current, free-running value of Timer A in all modes.
+When written, the value written into this register is loaded into the
+TAR register on the next clock cycle.
+Note: In 16-bit mode, only the lower 16-bits of this
+register can be written with a new value. Writes to the prescaler bits have no effect" id="TAV" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="TBV" width="32" description="Timer B Value 
+When read, this register shows the current, free-running value of Timer B in all modes. Software can use this value to determine the time elapsed between an interrupt and the ISR entry. When
+written, the value written into this register is loaded into the TBR register on the next clock cycle.
+
+When a 16/32-bit GPTM is configured to one of the 32-bit modes, the contents of bits 15:0 in this register are loaded into the upper 16 bits of the TAV register. Reads from this register return
+the current free-running value of Timer B. In a 16-bit mode, bits 15:0 contain the value of the counter and bits 23:16 contain the current, free-running value of the prescaler, which is the upper 8 bits of
+the count in Input Edge Count, Input Edge Time, PWM and one-shot or periodic up count modes.
+In one-shot or periodic down count modes, the prescaler stored in 23:16 is a true prescaler, meaning bits 23:16 count down before decrementing the value in bits 15:0. The prescaler in bits 31:24 always reads as 0." id="TBV" offset="0x54">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="GPT Timer B Register
+A read returns the current, free-running value of Timer B in all modes.
+When written, the value written into this register is loaded into the
+TBR register on the next clock cycle.
+Note: In 16-bit mode, only the lower 16-bits of this
+register can be written with a new value. Writes to the prescaler bits have no effect" id="TBV" resetval="0xffff">
+      </bitfield>
+   </register>
+   <register acronym="TAPS" width="32" description="Timer A Pre-scale Snap-shot 
+
+Based on the value in the register field TAMR.TAILD, this register is updated with the value from TAPR register either on the next cycle or on the next timeout.
+
+
+This register shows the current value of the Timer A pre-scaler in the 16-bit mode. " id="TAPS" offset="0x5c">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="GPT Timer A Pre-scaler" id="PSS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TBPS" width="32" description="Timer B Pre-scale Snap-shot 
+
+Based on the value in the register field TBMR.TBILD, this register is updated with the value from TBPR register either on the next cycle or on the next timeout.
+
+This register shows the current value of the Timer B pre-scaler in the 16-bit mode." id="TBPS" offset="0x60">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="GPT Timer B Pre-scaler " id="PSS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TAPV" width="32" description="Timer A Pre-scale Value 
+This register shows the current value of the Timer A free running pre-scaler in the 16-bit mode." id="TAPV" offset="0x64">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="GPT Timer A Pre-scaler Value" id="PSV" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TBPV" width="32" description="Timer B Pre-scale Value 
+This register shows the current value of the Timer B free running pre-scaler in the 16-bit mode." id="TBPV" offset="0x68">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="GPT Timer B Pre-scaler Value " id="PSV" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DMAEV" width="32" description="DMA Event 
+This register allows software to enable/disable GPT DMA trigger events. " id="DMAEV" offset="0x6c">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved field.  Writing any other value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="GPT Timer B Match DMA Trigger Enable" id="TBMDMAEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="GPT Timer B Capture Event DMA Trigger Enable " id="CBEDMAEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="GPT Timer B Capture Match DMA Trigger Enable " id="CBMDMAEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="GPT Timer B Time-Out DMA Trigger Enable " id="TBTODMAEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="3" end="5" rwaccess="RW" description="Software should not rely on the value of a reserved field.  Writing any other value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="GPT Timer A Match DMA Trigger Enable" id="TAMDMAEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="GPT Timer A Capture Event DMA Trigger Enable " id="CAEDMAEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="GPT Timer A Capture Match DMA Trigger Enable " id="CAMDMAEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="GPT Timer A Time-Out DMA Trigger Enable  " id="TATODMAEN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="VERSION" width="32" description="Peripheral Version
+This register provides information regarding the GPT version" id="VERSION" offset="0xfb0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Timer Revision. " id="VERSION" resetval="0x400">
+      </bitfield>
+   </register>
+   <register acronym="ANDCCP" width="32" description="Combined CCP Output
+This register is used to logically AND CCP output pairs for each timer" id="ANDCCP" offset="0xfb4">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="PWM assertion would happen at timeout
+
+0: PWM assertion happens when counter matches load value
+1: PWM assertion happens at timeout of the counter" id="LD_TO_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Enables AND operation of the CCP outputs for timers A and B.
+
+0 : PWM outputs of Timer A and Timer B are the internal generated PWM signals of the respective timers.
+1 : PWM output of Timer A is ANDed version of Timer A and Timer B PWM signals and Timer B PWM ouput is Timer B PWM signal only." id="CCP_AND_EN" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

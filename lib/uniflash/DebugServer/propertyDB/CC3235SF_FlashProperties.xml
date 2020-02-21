@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <!-- TMS470REX Nodes-->
+    <node id="FlashProgrammerNode">
+        <name>Flash Settings</name>
+        <children>
+            <child>FlashSettings</child>
+            <child>FlashProgramOption</child>
+            <child>FlashEraseGroup</child>
+        </children>
+    </node>
+
+    <!-- TMS470REX Groups -->
+    <group id="FlashSettings">
+        <name>Flash Settings</name>
+        <children>
+            <child>FlashCrystalFreq</child>
+            <child>FlashResetSetting</child>
+            <child>FlashUseBuffer</child>
+        </children>
+    </group>
+
+    <group id="FlashEraseGroup">
+        <name>Erase</name>
+        <children>
+            <child>FlashEraseType</child>
+            <child>FlashEraseStartAddr</child>
+            <child>FlashEraseEndAddr</child>
+            <child>FlashEraseButton</child>
+        </children>
+    </group>
+
+    <!-- TMS470REX Property Definitions -->
+    <property id="FlashCrystalFreq">
+        <target>TMS470REX</target>
+        <name>Crystal Frequency: (MHz)</name>
+        <valueType>Numeric</valueType>
+        <defaultValue>8</defaultValue>
+    </property>
+
+    <property id="FlashResetSetting">
+        <target>TMS470REX</target>
+        <name>Reset target during program load to Flash memory</name>
+        <valueType>Boolean</valueType>
+        <defaultValue>0</defaultValue>
+    </property>
+
+    <!--
+        <property id="FlashUseBuffer">
+            <target>TMS470REX</target>
+            <name>Use Flash Buffer if available</name>
+            <valueType>Boolean</valueType>
+            <defaultValue>1</defaultValue>
+         </property>
+    -->
+
+    <property id="FlashProgramOption">
+        <target>TMS470REX</target>
+        <name>Program Load - Erase Method</name>
+        <valueType>ChoiceList</valueType>
+        <values>
+            <value>Necessary Pages Only</value>
+            <value>Use the Erase Options Specified Below</value>
+            <value>Do Not Erase Flash Memory</value>
+        </values>
+        <defaultValue>Necessary Pages Only</defaultValue>
+    </property>
+
+    <property id="FlashEraseType">
+        <target>TMS470REX</target>
+        <name></name>
+        <valueType>ChoiceList</valueType>
+        <values>
+            <value>Entire Flash</value>
+            <value>By Address Range</value>
+        </values>
+        <defaultValue>Entire Flash</defaultValue>
+    </property>
+
+    <property id="FlashEraseStartAddr">
+        <target>TMS470REX</target>
+        <name>Start Address: 0x</name>
+        <valueType>String</valueType>
+        <defaultValue>0</defaultValue>
+        <enableIf>
+            <property id="FlashEraseType">By Address Range</property>
+        </enableIf>
+    </property>
+
+    <property id="FlashEraseEndAddr">
+        <target>TMS470REX</target>
+        <name>End Address: 0x</name>
+        <valueType>String</valueType>
+        <defaultValue>0</defaultValue>
+        <enableIf>
+            <property id="FlashEraseType">By Address Range</property>
+        </enableIf>
+    </property>
+
+    <property id="FlashEraseButton">
+        <target>TMS470REX</target>
+        <name>Erase Flash</name>
+        <valueType>Button</valueType>
+        <action>DPActiveDebugSession.flash.performOperation("Erase")</action>
+    </property>
+
+    <!-- fin -->
+</PropertyList>

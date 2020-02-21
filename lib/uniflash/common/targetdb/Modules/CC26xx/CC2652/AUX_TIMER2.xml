@@ -1,0 +1,1749 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AUX_TIMER2" HW_revision="" XML_version="1.0" description="AUX Timer2 (AUX_TIMER2) offers flexible: 
+- generation of waveforms and events.
+- capture of signal period and duty cycle. 
+- generation of single clock pulse.
+
+It consists of a: 
+- 16-bit counter.
+- 4 capture compare channels.
+- 4 event outputs, which are mapped to AUX event bus, see EVCTL.
+
+Each channel subscribes to the asynchronous AUX event bus. They can control one or more event outputs in both capture and compare modes.  AUX_SYSIF:TIMER2CLKCTL.SRC selects clock source for the timer. " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="CTL" width="32" description="Timer Control" id="CTL" offset="0x0">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Channel 3 reset.
+
+0: No effect.
+1: Reset CH3CC, CH3PCC, CH3EVCFG, and CH3CCFG.
+
+Read returns 0." id="CH3_RESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Channel 2 reset.
+
+0: No effect.
+1: Reset CH2CC, CH2PCC, CH2EVCFG, and CH2CCFG.
+
+Read returns 0." id="CH2_RESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Channel 1 reset.
+
+0: No effect.
+1: Reset CH1CC, CH1PCC, CH1EVCFG, and CH1CCFG.
+
+Read returns 0." id="CH1_RESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Channel 0 reset.
+
+0: No effect.
+1: Reset CH0CC, CH0PCC, CH0EVCFG, and CH0CCFG.
+
+Read returns 0." id="CH0_RESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Select counter target value.
+
+You must select TARGET to use shadow target functionality." id="TARGET_EN" resetval="0x0">
+         <bitenum id="TARGET" value="1" token="TARGET.VALUE" description="TARGET.VALUE"/>
+         <bitenum id="CNTR_MAX" value="0" token="65535" description="65535"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Timer mode control.
+
+The timer restarts from 0 when you set MODE to UP_ONCE, UP_PER, or UPDWN_PER.  
+
+When you write MODE all internally queued updates to [CHnCC.*] and TARGET clear.
+" id="MODE" resetval="0x0">
+         <bitenum id="UPDWN_PER" value="3" token="Count up and down periodically. The timer counts from 0 to target value and back to 0, repeatedly.
+
+Period =  (target value * 2) * timer clock period" description="Count up and down periodically. The timer counts from 0 to target value and back to 0, repeatedly.
+
+Period =  (target value * 2) * timer clock period"/>
+         <bitenum id="UP_PER" value="2" token="Count up periodically. The timer increments from 0 to target value, repeatedly.
+
+Period = (target value + 1) * timer clock period" description="Count up periodically. The timer increments from 0 to target value, repeatedly.
+
+Period = (target value + 1) * timer clock period"/>
+         <bitenum id="UP_ONCE" value="1" token="Count up once. The timer increments from 0 to target value,  then stops and sets MODE to DIS." description="Count up once. The timer increments from 0 to target value,  then stops and sets MODE to DIS."/>
+         <bitenum id="DIS" value="0" token="Disable timer. Updates to counter, channels, and events stop." description="Disable timer. Updates to counter, channels, and events stop."/>
+      </bitfield>
+   </register>
+   <register acronym="TARGET" width="32" description="Target
+
+User defined counter target." id="TARGET" offset="0x4">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="16 bit user defined counter target value, which is used when selected by CTL.TARGET_EN." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SHDWTARGET" width="32" description="Shadow Target " id="SHDWTARGET" offset="0x8">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Target value for next counter period.
+
+The timer copies VALUE to TARGET.VALUE when CNTR.VALUE becomes 0. The copy does not happen when you restart the timer.
+
+This is useful to avoid period jitter in PWM applications with time-varying period, sometimes referenced as phase corrected PWM." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CNTR" width="32" description="Counter" id="CNTR" offset="0xc">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="16 bit current counter value." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PRECFG" width="32" description="Clock Prescaler Configuration" id="PRECFG" offset="0x10">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Clock division.
+
+CLKDIV determines the timer clock frequency for counter, synchronization, and timer event updates. The timer clock frequency is the clock selected by AUX_SYSIF:TIMER2CLKCTL.SRC divided by (CLKDIV + 1). This inverse is the timer clock period.
+
+0x00: Divide by 1.
+0x01: Divide by 2.
+... 
+0xFF: Divide by 256." id="CLKDIV" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="EVCTL" width="32" description="Event Control 
+
+Set and clear individual events manually. Manual update of an event takes priority over automatic channel updates to the same event. You cannot set and clear an event at the same time, such requests will be neglected.
+
+An event can be automatically cleared, set, toggled, or pulsed by each channel, listed in decreasing order of priority. The action with highest priority happens when multiple channels want to update an event at the same time.
+
+The four events connect to the asynchronous AUX event bus: 
+- Event 0 connects to AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0.
+- Event 1 connects to AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1.
+- Event 2 connects to AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2.
+- Event 3 connects to AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3." id="EVCTL" offset="0x14">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="WO" description="Set event 3.
+
+Write 1 to set event 3." id="EV3_SET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="WO" description="Clear event 3.
+
+Write 1 to clear event 3." id="EV3_CLR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="WO" description="Set event 2.
+
+Write 1 to set event 2." id="EV2_SET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="WO" description="Clear event 2.
+
+Write 1 to clear event 2." id="EV2_CLR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="Set event 1.
+
+Write 1 to set event 1." id="EV1_SET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Clear event 1.
+
+Write 1 to clear event 1." id="EV1_CLR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Set event 0.
+
+Write 1 to set event 0." id="EV0_SET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Clear event 0.
+
+Write 1 to clear event 0." id="EV0_CLR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PULSETRIG" width="32" description="Pulse Trigger" id="PULSETRIG" offset="0x18">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Pulse trigger.
+
+Write 1 to generate a pulse to AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE. Pulse width equals the duty cycle of AUX_SYSIF:TIMER2CLKCTL.SRC." id="TRIG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CH0EVCFG" width="32" description="Channel 0 Event Configuration
+
+This register configures channel function and enables event outputs.
+
+Each channel has an edge-detection circuit with memory. The circuit is: 
+ - enabled while CCACT selects a capture function and CTL.MODE is different from DIS. 
+ - flushed while CCACT selects a capture function and you change CTL.MODE from DIS to another mode. 
+ 
+The flush action uses two AUX_SYSIF:TIMER2CLKCTL.SRC clock periods. It prevents capture events caused by expired signal values stored in the edge-detection circuit." id="CH0EVCFG" offset="0x80">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Event 3 enable.
+
+0: Channel 0 does not control event 3.
+1: Channel 0 controls event 3.
+
+ When 0 &#60; CCACT &#60; 8, EV3_GEN becomes zero after a capture or compare event." id="EV3_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Event 2 enable.
+
+0: Channel 0 does not control event 2.
+1: Channel 0 controls event 2.
+
+ When 0 &#60; CCACT &#60; 8, EV2_GEN becomes zero after a capture or compare event." id="EV2_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Event 1 enable.
+
+0: Channel 0 does not control event 1.
+1: Channel 0 controls event 1.
+
+ When 0 &#60; CCACT &#60; 8, EV1_GEN becomes zero after a capture or compare event." id="EV1_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Event 0 enable.
+
+0: Channel 0 does not control event 0.
+1: Channel 0 controls event 0.
+
+ When 0 &#60; CCACT &#60; 8, EV0_GEN becomes zero after a capture or compare event." id="EV0_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Capture-Compare action.
+
+Capture-Compare action defines 15 different channel functions that utilize capture, compare, and zero events. " id="CCACT" resetval="0x0">
+         <bitenum id="PULSE_ON_CMP" value="15" token="Pulse on compare repeatedly. 
+
+Channel function sequence: 
+- Pulse enabled events when CH0CC.VALUE = CNTR.VALUE.
+
+ The event is high for two timer clock periods." description="Pulse on compare repeatedly. 
+
+Channel function sequence: 
+- Pulse enabled events when CH0CC.VALUE = CNTR.VALUE.
+
+ The event is high for two timer clock periods."/>
+         <bitenum id="TGL_ON_CMP" value="14" token="Toggle on compare repeatedly.
+
+Channel function sequence: 
+- Toggle enabled events  when CH0CC.VALUE = CNTR.VALUE." description="Toggle on compare repeatedly.
+
+Channel function sequence: 
+- Toggle enabled events  when CH0CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="SET_ON_CMP" value="13" token="Set on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events  when CH0CC.VALUE = CNTR.VALUE." description="Set on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events  when CH0CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="CLR_ON_CMP" value="12" token="Clear on compare repeatedly.
+
+Channel function sequence: 
+- Clear enabled events  when CH0CC.VALUE = CNTR.VALUE." description="Clear on compare repeatedly.
+
+Channel function sequence: 
+- Clear enabled events  when CH0CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="SET_ON_0_TGL_ON_CMP" value="11" token="Set on zero, toggle on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UP_PER for edge-aligned PWM generation. Duty cycle is given by: 
+
+When CH0CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = CH0CC.VALUE / ( TARGET.VALUE + 1 ).
+
+When CH0CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 1.
+
+Enabled events are cleared when CH0CC.VALUE = 0 and CNTR.VALUE = 0." description="Set on zero, toggle on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UP_PER for edge-aligned PWM generation. Duty cycle is given by: 
+
+When CH0CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = CH0CC.VALUE / ( TARGET.VALUE + 1 ).
+
+When CH0CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 1.
+
+Enabled events are cleared when CH0CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="CLR_ON_0_TGL_ON_CMP" value="10" token="Clear on zero, toggle on compare repeatedly.
+ 
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UPDWN_PER for center-aligned PWM generation. Duty cycle is given by: 
+
+When CH0CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = 1 - ( CH0CC.VALUE / TARGET.VALUE ).
+
+When CH0CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 0.
+
+Enabled events are set when CH0CC.VALUE = 0 and CNTR.VALUE = 0." description="Clear on zero, toggle on compare repeatedly.
+ 
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UPDWN_PER for center-aligned PWM generation. Duty cycle is given by: 
+
+When CH0CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = 1 - ( CH0CC.VALUE / TARGET.VALUE ).
+
+When CH0CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 0.
+
+Enabled events are set when CH0CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="SET_ON_CAPT" value="9" token="Set on capture repeatedly.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH0CC.VALUE.
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Select this function with no event enable.
+ - Configure CH0CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you enable events.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit." description="Set on capture repeatedly.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH0CC.VALUE.
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Select this function with no event enable.
+ - Configure CH0CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you enable events.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit."/>
+         <bitenum id="PER_PULSE_WIDTH_MEAS" value="8" token="Period and pulse width measurement.
+
+Continuously capture period and pulse width of the signal selected by CH0CCFG.CAPT_SRC relative to the signal edge given by CH0CCFG.EDGE. 
+
+Set enabled events when CH0CC.VALUE contains signal period and CH0PCC.VALUE contains signal pulse width. 
+
+Notes: 
+- Make sure that you configure CH0CCFG.CAPT_SRC and CCACT when CTL.MODE equals DIS, then set CTL.MODE to UP_ONCE or UP_PER. 
+- The counter restarts in the selected timer mode when CH0CC.VALUE contains the signal period.
+- If more than one channel uses this function, the channels will perform this function one at a time. The channel with lowest number has priority and performs the function first. Next measurement starts when current measurement completes successfully or times out. A timeout occurs when counter equals target. 
+- If you want to observe a timeout event configure another channel to SET_ON_CAPT.
+
+Signal property requirements:
+- Signal Period &#62;= 2 * ( 1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal Period &#60;= 65535 * (1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal low and high phase &#62;= (1 + PRECFG.CLKDIV ) * timer clock period. " description="Period and pulse width measurement.
+
+Continuously capture period and pulse width of the signal selected by CH0CCFG.CAPT_SRC relative to the signal edge given by CH0CCFG.EDGE. 
+
+Set enabled events when CH0CC.VALUE contains signal period and CH0PCC.VALUE contains signal pulse width. 
+
+Notes: 
+- Make sure that you configure CH0CCFG.CAPT_SRC and CCACT when CTL.MODE equals DIS, then set CTL.MODE to UP_ONCE or UP_PER. 
+- The counter restarts in the selected timer mode when CH0CC.VALUE contains the signal period.
+- If more than one channel uses this function, the channels will perform this function one at a time. The channel with lowest number has priority and performs the function first. Next measurement starts when current measurement completes successfully or times out. A timeout occurs when counter equals target. 
+- If you want to observe a timeout event configure another channel to SET_ON_CAPT.
+
+Signal property requirements:
+- Signal Period &#62;= 2 * ( 1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal Period &#60;= 65535 * (1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal low and high phase &#62;= (1 + PRECFG.CLKDIV ) * timer clock period. "/>
+         <bitenum id="PULSE_ON_CMP_DIS" value="7" token="Pulse on compare, and then disable channel.
+
+Channel function sequence: 
+- Pulse enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+ The event is high for two timer clock periods." description="Pulse on compare, and then disable channel.
+
+Channel function sequence: 
+- Pulse enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+ The event is high for two timer clock periods."/>
+         <bitenum id="TGL_ON_CMP_DIS" value="6" token="Toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="SET_ON_CMP_DIS" value="5" token="Set on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Set on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="CLR_ON_CMP_DIS" value="4" token="Clear on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Clear on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="SET_ON_0_TGL_ON_CMP_DIS" value="3" token="Set on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are cleared when CH0CC.VALUE = 0 and CNTR.VALUE = 0." description="Set on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are cleared when CH0CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="CLR_ON_0_TGL_ON_CMP_DIS" value="2" token="Clear on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are set when CH0CC.VALUE = 0 and CNTR.VALUE = 0." description="Clear on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH0CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are set when CH0CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="SET_ON_CAPT_DIS" value="1" token="Set on capture, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH0CC.VALUE.
+- Disable channel. 
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS:  
+ - Set CCACT to SET_ON_CAPT with no event enable.
+ - Configure CH0CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you set CCACT to SET_ON_CAPT_DIS. Event enable is optional.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit." description="Set on capture, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH0CC.VALUE.
+- Disable channel. 
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS:  
+ - Set CCACT to SET_ON_CAPT with no event enable.
+ - Configure CH0CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you set CCACT to SET_ON_CAPT_DIS. Event enable is optional.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit."/>
+         <bitenum id="DIS" value="0" token="Disable channel." description="Disable channel."/>
+      </bitfield>
+   </register>
+   <register acronym="CH0CCFG" width="32" description="Channel 0 Capture Configuration" id="CH0CCFG" offset="0x84">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="6" end="1" rwaccess="RW" description="Select capture signal source from the asynchronous AUX event bus. 
+
+The selected signal enters the edge-detection circuit. False capture events can occur when:  
+- the edge-detection circuit contains expired signal samples and the circuit is enabled without flush as described in CH0EVCFG
+- this register is reconfigured while CTL.MODE is different from DIS.
+
+You can avoid false capture events. When wanted channel function is: 
+- SET_ON_CAPT_DIS, see description for SET_ON_CAPT_DIS in CH0EVCFG.CCACT.
+- SET_ON_CAPT, see description for SET_ON_CAPT in CH0EVCFG.CCACT.
+- PER_PULSE_WIDTH_MEAS, see description for PER_PULSE_WIDTH_MEAS in CH0EVCFG.CCACT.
+
+If you write a non-enumerated value the behavior is identical to NO_EVENT. The written value is returned when read." id="CAPT_SRC" resetval="0x0">
+         <bitenum id="NO_EVENT" value="63" token="No event." description="No event."/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              "/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                  "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                  "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                     " description="AUX_EVCTL:EVSTAT2.MCU_EV                     "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                   " description="AUX_EVCTL:EVSTAT2.ACLK_REF                   "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                    " description="AUX_EVCTL:EVSTAT2.PWR_DWN                    "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                    " description="AUX_EVCTL:EVSTAT2.SCLK_LF                    "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                    " description="AUX_EVCTL:EVSTAT1.AUXIO31                    "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                    " description="AUX_EVCTL:EVSTAT1.AUXIO30                    "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                    " description="AUX_EVCTL:EVSTAT1.AUXIO29                    "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                    " description="AUX_EVCTL:EVSTAT1.AUXIO28                    "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                    " description="AUX_EVCTL:EVSTAT1.AUXIO27                    "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                    " description="AUX_EVCTL:EVSTAT1.AUXIO26                    "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                    " description="AUX_EVCTL:EVSTAT1.AUXIO25                    "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                    " description="AUX_EVCTL:EVSTAT1.AUXIO24                    "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                    " description="AUX_EVCTL:EVSTAT1.AUXIO23                    "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                    " description="AUX_EVCTL:EVSTAT1.AUXIO22                    "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                    " description="AUX_EVCTL:EVSTAT1.AUXIO21                    "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                    " description="AUX_EVCTL:EVSTAT1.AUXIO20                    "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                    " description="AUX_EVCTL:EVSTAT1.AUXIO19                    "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                    " description="AUX_EVCTL:EVSTAT1.AUXIO18                    "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                    " description="AUX_EVCTL:EVSTAT1.AUXIO17                    "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                    " description="AUX_EVCTL:EVSTAT1.AUXIO16                    "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                    " description="AUX_EVCTL:EVSTAT0.AUXIO15                    "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                    " description="AUX_EVCTL:EVSTAT0.AUXIO14                    "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                    " description="AUX_EVCTL:EVSTAT0.AUXIO13                    "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                    " description="AUX_EVCTL:EVSTAT0.AUXIO12                    "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                    " description="AUX_EVCTL:EVSTAT0.AUXIO11                    "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                    " description="AUX_EVCTL:EVSTAT0.AUXIO10                    "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                     " description="AUX_EVCTL:EVSTAT0.AUXIO9                     "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                     " description="AUX_EVCTL:EVSTAT0.AUXIO8                     "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                     " description="AUX_EVCTL:EVSTAT0.AUXIO7                     "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                     " description="AUX_EVCTL:EVSTAT0.AUXIO6                     "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                     " description="AUX_EVCTL:EVSTAT0.AUXIO5                     "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                     " description="AUX_EVCTL:EVSTAT0.AUXIO4                     "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                     " description="AUX_EVCTL:EVSTAT0.AUXIO3                     "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                     " description="AUX_EVCTL:EVSTAT0.AUXIO2                     "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                     " description="AUX_EVCTL:EVSTAT0.AUXIO1                     "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                     " description="AUX_EVCTL:EVSTAT0.AUXIO0                     "/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Edge configuration.
+
+Channel captures counter value at selected edge on signal source selected by CAPT_SRC. See CH0EVCFG.CCACT." id="EDGE" resetval="0x0">
+         <bitenum id="RISING" value="1" token="Capture CNTR.VALUE at rising edge of CAPT_SRC." description="Capture CNTR.VALUE at rising edge of CAPT_SRC."/>
+         <bitenum id="FALLING" value="0" token="Capture CNTR.VALUE at falling edge of CAPT_SRC." description="Capture CNTR.VALUE at falling edge of CAPT_SRC."/>
+      </bitfield>
+   </register>
+   <register acronym="CH0PCC" width="32" description="Channel 0 Pipeline Capture Compare " id="CH0PCC" offset="0x88">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Pipeline Capture Compare value.
+
+16-bit user defined pipeline compare value or channel-updated capture value.
+
+Compare mode: 
+An update of VALUE will be transferred to CH0CC.VALUE when the next CNTR.VALUE is zero and CTL.MODE is different from DIS. This is useful for PWM generation and prevents jitter on the edges of the generated signal.
+
+Capture mode: 
+When CH0EVCFG.CCACT equals PER_PULSE_WIDTH_MEAS then VALUE contains the width of the low or high phase of the selected signal. This is specified by CH0CCFG.EDGE and CH0CCFG.CAPT_SRC." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CH0CC" width="32" description="Channel 0 Capture Compare" id="CH0CC" offset="0x8c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Capture Compare value.
+
+16-bit user defined compare value or channel-updated capture value.
+
+Compare mode: 
+VALUE is compared against CNTR.VALUE and an event is generated as specified by CH0EVCFG.CCACT when these are equal. 
+
+Capture mode: 
+The current counter value is stored in VALUE when a capture event occurs. CH0EVCFG.CCACT determines if VALUE is a signal period or a regular capture value." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CH1EVCFG" width="32" description="Channel 1 Event Configuration
+
+This register configures channel function and enables event outputs.
+
+Each channel has an edge-detection circuit with memory. The circuit is:  
+ - enabled while CCACT selects a capture function and CTL.MODE is different from DIS. 
+ - flushed while CCACT selects a capture function and you change CTL.MODE from DIS to another mode. 
+ 
+The flush action uses two AUX_SYSIF:TIMER2CLKCTL.SRC clock periods. It prevents capture events caused by expired signal values stored in the edge-detection circuit." id="CH1EVCFG" offset="0x90">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Event 3 enable.
+
+0: Channel 1 does not control event 3.
+1: Channel 1 controls event 3.
+
+ When 0 &#60; CCACT &#60; 8, EV3_GEN becomes zero after a capture or compare event." id="EV3_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Event 2 enable.
+
+0: Channel 1 does not control event 2.
+1: Channel 1 controls event 2.
+
+ When 0 &#60; CCACT &#60; 8, EV2_GEN becomes zero after a capture or compare event." id="EV2_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Event 1 enable.
+
+0: Channel 1 does not control event 1.
+1: Channel 1 controls event 1.
+
+ When 0 &#60; CCACT &#60; 8, EV1_GEN becomes zero after a capture or compare event." id="EV1_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Event 0 enable.
+
+0: Channel 1 does not control event 0.
+1: Channel 1 controls event 0.
+
+ When 0 &#60; CCACT &#60; 8, EV0_GEN becomes zero after a capture or compare event." id="EV0_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Capture-Compare action.
+
+Capture-Compare action defines 15 different channel functions that utilize capture, compare, and zero events. " id="CCACT" resetval="0x0">
+         <bitenum id="PULSE_ON_CMP" value="15" token="Pulse on compare repeatedly. 
+
+Channel function sequence: 
+- Pulse enabled events when CH1CC.VALUE = CNTR.VALUE.
+
+ The event is high for two timer clock periods." description="Pulse on compare repeatedly. 
+
+Channel function sequence: 
+- Pulse enabled events when CH1CC.VALUE = CNTR.VALUE.
+
+ The event is high for two timer clock periods."/>
+         <bitenum id="TGL_ON_CMP" value="14" token="Toggle on compare repeatedly.
+
+Channel function sequence: 
+- Toggle enabled events  when CH1CC.VALUE = CNTR.VALUE." description="Toggle on compare repeatedly.
+
+Channel function sequence: 
+- Toggle enabled events  when CH1CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="SET_ON_CMP" value="13" token="Set on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events  when CH1CC.VALUE = CNTR.VALUE." description="Set on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events  when CH1CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="CLR_ON_CMP" value="12" token="Clear on compare repeatedly.
+
+Channel function sequence: 
+- Clear enabled events  when CH1CC.VALUE = CNTR.VALUE." description="Clear on compare repeatedly.
+
+Channel function sequence: 
+- Clear enabled events  when CH1CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="SET_ON_0_TGL_ON_CMP" value="11" token="Set on zero, toggle on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UP_PER for edge-aligned PWM generation. Duty cycle is given by: 
+
+When CH1CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = CH1CC.VALUE / ( TARGET.VALUE + 1 ).
+
+When CH1CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 1.
+
+Enabled events are cleared when CH1CC.VALUE = 0 and CNTR.VALUE = 0." description="Set on zero, toggle on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UP_PER for edge-aligned PWM generation. Duty cycle is given by: 
+
+When CH1CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = CH1CC.VALUE / ( TARGET.VALUE + 1 ).
+
+When CH1CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 1.
+
+Enabled events are cleared when CH1CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="CLR_ON_0_TGL_ON_CMP" value="10" token="Clear on zero, toggle on compare repeatedly.
+ 
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UPDWN_PER for center-aligned PWM generation. Duty cycle is given by: 
+
+When CH1CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = 1 - ( CH1CC.VALUE / TARGET.VALUE ).
+
+When CH1CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 0.
+
+Enabled events are set when CH1CC.VALUE = 0 and CNTR.VALUE = 0." description="Clear on zero, toggle on compare repeatedly.
+ 
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UPDWN_PER for center-aligned PWM generation. Duty cycle is given by: 
+
+When CH1CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = 1 - ( CH1CC.VALUE / TARGET.VALUE ).
+
+When CH1CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 0.
+
+Enabled events are set when CH1CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="SET_ON_CAPT" value="9" token="Set on capture repeatedly.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH1CC.VALUE.
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Select this function with no event enable.
+ - Configure CH1CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you enable events.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit." description="Set on capture repeatedly.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH1CC.VALUE.
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Select this function with no event enable.
+ - Configure CH1CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you enable events.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit."/>
+         <bitenum id="PER_PULSE_WIDTH_MEAS" value="8" token="Period and pulse width measurement.
+
+Continuously capture period and pulse width of the signal selected by CH1CCFG.CAPT_SRC relative to the signal edge given by CH1CCFG.EDGE. 
+
+Set enabled events when CH1CC.VALUE contains signal period and CH1PCC.VALUE contains signal pulse width. 
+
+Notes: 
+- Make sure that you configure CH1CCFG.CAPT_SRC and CCACT when CTL.MODE equals DIS, then set CTL.MODE to UP_ONCE or UP_PER. 
+- The counter restarts in the selected timer mode when CH1CC.VALUE contains the signal period.
+- If more than one channel uses this function, the channels will perform this function one at a time. The channel with lowest number has priority and performs the function first. Next measurement starts when current measurement completes successfully or times out. A timeout occurs when counter equals target. 
+- If you want to observe a timeout event configure another channel to SET_ON_CAPT.
+
+Signal property requirements:
+- Signal Period &#62;= 2 * ( 1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal Period &#60;= 65535 * (1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal low and high phase &#62;= (1 + PRECFG.CLKDIV ) * timer clock period. " description="Period and pulse width measurement.
+
+Continuously capture period and pulse width of the signal selected by CH1CCFG.CAPT_SRC relative to the signal edge given by CH1CCFG.EDGE. 
+
+Set enabled events when CH1CC.VALUE contains signal period and CH1PCC.VALUE contains signal pulse width. 
+
+Notes: 
+- Make sure that you configure CH1CCFG.CAPT_SRC and CCACT when CTL.MODE equals DIS, then set CTL.MODE to UP_ONCE or UP_PER. 
+- The counter restarts in the selected timer mode when CH1CC.VALUE contains the signal period.
+- If more than one channel uses this function, the channels will perform this function one at a time. The channel with lowest number has priority and performs the function first. Next measurement starts when current measurement completes successfully or times out. A timeout occurs when counter equals target. 
+- If you want to observe a timeout event configure another channel to SET_ON_CAPT.
+
+Signal property requirements:
+- Signal Period &#62;= 2 * ( 1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal Period &#60;= 65535 * (1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal low and high phase &#62;= (1 + PRECFG.CLKDIV ) * timer clock period. "/>
+         <bitenum id="PULSE_ON_CMP_DIS" value="7" token="Pulse on compare, and then disable channel.
+
+Channel function sequence: 
+- Pulse enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+ The event is high for two timer clock periods." description="Pulse on compare, and then disable channel.
+
+Channel function sequence: 
+- Pulse enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+ The event is high for two timer clock periods."/>
+         <bitenum id="TGL_ON_CMP_DIS" value="6" token="Toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="SET_ON_CMP_DIS" value="5" token="Set on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Set on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="CLR_ON_CMP_DIS" value="4" token="Clear on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Clear on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="SET_ON_0_TGL_ON_CMP_DIS" value="3" token="Set on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are cleared when CH1CC.VALUE = 0 and CNTR.VALUE = 0." description="Set on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are cleared when CH1CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="CLR_ON_0_TGL_ON_CMP_DIS" value="2" token="Clear on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are set when CH1CC.VALUE = 0 and CNTR.VALUE = 0." description="Clear on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH1CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are set when CH1CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="SET_ON_CAPT_DIS" value="1" token="Set on capture, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH1CC.VALUE.
+- Disable channel. 
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Set CCACT to SET_ON_CAPT with no event enable.
+ - Configure CH1CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you set CCACT to SET_ON_CAPT_DIS. Event enable is optional.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit." description="Set on capture, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH1CC.VALUE.
+- Disable channel. 
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Set CCACT to SET_ON_CAPT with no event enable.
+ - Configure CH1CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you set CCACT to SET_ON_CAPT_DIS. Event enable is optional.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit."/>
+         <bitenum id="DIS" value="0" token="Disable channel." description="Disable channel."/>
+      </bitfield>
+   </register>
+   <register acronym="CH1CCFG" width="32" description="Channel 1 Capture Configuration" id="CH1CCFG" offset="0x94">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="6" end="1" rwaccess="RW" description="Select capture signal source from the asynchronous AUX event bus. 
+
+The selected signal enters the edge-detection circuit. False capture events can occur when:  
+- the edge-detection circuit contains expired signal samples and the circuit is enabled without flush as described in CH1EVCFG
+- this register is reconfigured while CTL.MODE is different from DIS.
+
+You can avoid false capture events. When wanted channel function is: 
+- SET_ON_CAPT_DIS, see description for SET_ON_CAPT_DIS in CH1EVCFG.CCACT.
+- SET_ON_CAPT, see description for SET_ON_CAPT in CH1EVCFG.CCACT.
+- PER_PULSE_WIDTH_MEAS, see description for PER_PULSE_WIDTH_MEAS in CH1EVCFG.CCACT.
+
+If you write a non-enumerated value the behavior is identical to NO_EVENT. The written value is returned when read." id="CAPT_SRC" resetval="0x0">
+         <bitenum id="NO_EVENT" value="63" token="No event." description="No event."/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              "/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                  "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                  "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                     " description="AUX_EVCTL:EVSTAT2.MCU_EV                     "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                   " description="AUX_EVCTL:EVSTAT2.ACLK_REF                   "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                    " description="AUX_EVCTL:EVSTAT2.PWR_DWN                    "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                    " description="AUX_EVCTL:EVSTAT2.SCLK_LF                    "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                    " description="AUX_EVCTL:EVSTAT1.AUXIO31                    "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                    " description="AUX_EVCTL:EVSTAT1.AUXIO30                    "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                    " description="AUX_EVCTL:EVSTAT1.AUXIO29                    "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                    " description="AUX_EVCTL:EVSTAT1.AUXIO28                    "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                    " description="AUX_EVCTL:EVSTAT1.AUXIO27                    "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                    " description="AUX_EVCTL:EVSTAT1.AUXIO26                    "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                    " description="AUX_EVCTL:EVSTAT1.AUXIO25                    "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                    " description="AUX_EVCTL:EVSTAT1.AUXIO24                    "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                    " description="AUX_EVCTL:EVSTAT1.AUXIO23                    "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                    " description="AUX_EVCTL:EVSTAT1.AUXIO22                    "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                    " description="AUX_EVCTL:EVSTAT1.AUXIO21                    "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                    " description="AUX_EVCTL:EVSTAT1.AUXIO20                    "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                    " description="AUX_EVCTL:EVSTAT1.AUXIO19                    "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                    " description="AUX_EVCTL:EVSTAT1.AUXIO18                    "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                    " description="AUX_EVCTL:EVSTAT1.AUXIO17                    "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                    " description="AUX_EVCTL:EVSTAT1.AUXIO16                    "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                    " description="AUX_EVCTL:EVSTAT0.AUXIO15                    "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                    " description="AUX_EVCTL:EVSTAT0.AUXIO14                    "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                    " description="AUX_EVCTL:EVSTAT0.AUXIO13                    "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                    " description="AUX_EVCTL:EVSTAT0.AUXIO12                    "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                    " description="AUX_EVCTL:EVSTAT0.AUXIO11                    "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                    " description="AUX_EVCTL:EVSTAT0.AUXIO10                    "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                     " description="AUX_EVCTL:EVSTAT0.AUXIO9                     "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                     " description="AUX_EVCTL:EVSTAT0.AUXIO8                     "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                     " description="AUX_EVCTL:EVSTAT0.AUXIO7                     "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                     " description="AUX_EVCTL:EVSTAT0.AUXIO6                     "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                     " description="AUX_EVCTL:EVSTAT0.AUXIO5                     "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                     " description="AUX_EVCTL:EVSTAT0.AUXIO4                     "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                     " description="AUX_EVCTL:EVSTAT0.AUXIO3                     "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                     " description="AUX_EVCTL:EVSTAT0.AUXIO2                     "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                     " description="AUX_EVCTL:EVSTAT0.AUXIO1                     "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                     " description="AUX_EVCTL:EVSTAT0.AUXIO0                     "/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Edge configuration.
+
+Channel captures counter value at selected edge on signal source selected by CAPT_SRC. See CH1EVCFG.CCACT." id="EDGE" resetval="0x0">
+         <bitenum id="RISING" value="1" token="Capture CNTR.VALUE at rising edge of CAPT_SRC." description="Capture CNTR.VALUE at rising edge of CAPT_SRC."/>
+         <bitenum id="FALLING" value="0" token="Capture CNTR.VALUE at falling edge of CAPT_SRC." description="Capture CNTR.VALUE at falling edge of CAPT_SRC."/>
+      </bitfield>
+   </register>
+   <register acronym="CH1PCC" width="32" description="Channel 1 Pipeline Capture Compare " id="CH1PCC" offset="0x98">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Pipeline Capture Compare value.
+
+16-bit user defined pipeline compare value or channel-updated capture value.
+
+Compare mode: 
+An update of VALUE will be transferred to CH1CC.VALUE when the next CNTR.VALUE is zero and CTL.MODE is different from DIS. This is useful for PWM generation and prevents jitter on the edges of the generated signal.
+
+Capture mode: 
+When CH1EVCFG.CCACT equals PER_PULSE_WIDTH_MEAS then VALUE contains the width of the low or high phase of the selected signal. This is specified by CH1CCFG.EDGE and CH1CCFG.CAPT_SRC." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CH1CC" width="32" description="Channel 1 Capture Compare" id="CH1CC" offset="0x9c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Capture Compare value.
+
+16-bit user defined compare value or channel-updated capture value.
+
+Compare mode: 
+VALUE is compared against CNTR.VALUE and an event is generated as specified by CH1EVCFG.CCACT when these are equal. 
+
+Capture mode: 
+The current counter value is stored in VALUE when a capture event occurs. CH1EVCFG.CCACT determines if VALUE is a signal period or a regular capture value." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CH2EVCFG" width="32" description="Channel 2 Event Configuration
+
+This register configures channel function and enables event outputs.
+
+Each channel has an edge-detection circuit with memory. The circuit is:  
+ - enabled while CCACT selects a capture function and CTL.MODE is different from DIS. 
+ - flushed while CCACT selects a capture function and you change CTL.MODE from DIS to another mode. 
+ 
+The flush action uses two AUX_SYSIF:TIMER2CLKCTL.SRC clock periods. It prevents capture events caused by expired signal values stored in the edge-detection circuit." id="CH2EVCFG" offset="0xa0">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Event 3 enable.
+
+0: Channel 2 does not control event 3.
+1: Channel 2 controls event 3.
+
+ When 0 &#60; CCACT &#60; 8, EV3_GEN becomes zero after a capture or compare event." id="EV3_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Event 2 enable.
+
+0: Channel 2 does not control event 2.
+1: Channel 2 controls event 2.
+
+ When 0 &#60; CCACT &#60; 8, EV2_GEN becomes zero after a capture or compare event." id="EV2_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Event 1 enable.
+
+0: Channel 2 does not control event 1.
+1: Channel 2 controls event 1.
+
+ When 0 &#60; CCACT &#60; 8, EV1_GEN becomes zero after a capture or compare event." id="EV1_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Event 0 enable.
+
+0: Channel 2 does not control event 0.
+1: Channel 2 controls event 0.
+
+ When 0 &#60; CCACT &#60; 8, EV0_GEN becomes zero after a capture or compare event." id="EV0_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Capture-Compare action.
+
+Capture-Compare action defines 15 different channel functions that utilize capture, compare, and zero events. " id="CCACT" resetval="0x0">
+         <bitenum id="PULSE_ON_CMP" value="15" token="Pulse on compare repeatedly. 
+
+Channel function sequence: 
+- Pulse enabled events when CH2CC.VALUE = CNTR.VALUE.
+
+ The event is high for two timer clock periods." description="Pulse on compare repeatedly. 
+
+Channel function sequence: 
+- Pulse enabled events when CH2CC.VALUE = CNTR.VALUE.
+
+ The event is high for two timer clock periods."/>
+         <bitenum id="TGL_ON_CMP" value="14" token="Toggle on compare repeatedly.
+
+Channel function sequence: 
+- Toggle enabled events  when CH2CC.VALUE = CNTR.VALUE." description="Toggle on compare repeatedly.
+
+Channel function sequence: 
+- Toggle enabled events  when CH2CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="SET_ON_CMP" value="13" token="Set on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events  when CH2CC.VALUE = CNTR.VALUE." description="Set on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events  when CH2CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="CLR_ON_CMP" value="12" token="Clear on compare repeatedly.
+
+Channel function sequence: 
+- Clear enabled events  when CH2CC.VALUE = CNTR.VALUE." description="Clear on compare repeatedly.
+
+Channel function sequence: 
+- Clear enabled events  when CH2CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="SET_ON_0_TGL_ON_CMP" value="11" token="Set on zero, toggle on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UP_PER for edge-aligned PWM generation. Duty cycle is given by: 
+
+When CH2CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = CH2CC.VALUE / ( TARGET.VALUE + 1 ).
+
+When CH2CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 1.
+
+Enabled events are cleared when CH2CC.VALUE = 0 and CNTR.VALUE = 0." description="Set on zero, toggle on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UP_PER for edge-aligned PWM generation. Duty cycle is given by: 
+
+When CH2CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = CH2CC.VALUE / ( TARGET.VALUE + 1 ).
+
+When CH2CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 1.
+
+Enabled events are cleared when CH2CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="CLR_ON_0_TGL_ON_CMP" value="10" token="Clear on zero, toggle on compare repeatedly.
+ 
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UPDWN_PER for center-aligned PWM generation. Duty cycle is given by: 
+
+When CH2CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = 1 - ( CH2CC.VALUE / TARGET.VALUE ).
+
+When CH2CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 0.
+
+Enabled events are set when CH2CC.VALUE = 0 and CNTR.VALUE = 0." description="Clear on zero, toggle on compare repeatedly.
+ 
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UPDWN_PER for center-aligned PWM generation. Duty cycle is given by: 
+
+When CH2CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = 1 - ( CH2CC.VALUE / TARGET.VALUE ).
+
+When CH2CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 0.
+
+Enabled events are set when CH2CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="SET_ON_CAPT" value="9" token="Set on capture repeatedly.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH2CC.VALUE.
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Select this function with no event enable.
+ - Configure CH2CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you enable events.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit." description="Set on capture repeatedly.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH2CC.VALUE.
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Select this function with no event enable.
+ - Configure CH2CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you enable events.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit."/>
+         <bitenum id="PER_PULSE_WIDTH_MEAS" value="8" token="Period and pulse width measurement.
+
+Continuously capture period and pulse width of the signal selected by CH2CCFG.CAPT_SRC relative to the signal edge given by CH2CCFG.EDGE. 
+
+Set enabled events when CH2CC.VALUE contains signal period and CH2PCC.VALUE contains signal pulse width. 
+
+Notes: 
+- Make sure that you configure CH2CCFG.CAPT_SRC and CCACT when CTL.MODE equals DIS, then set CTL.MODE to UP_ONCE or UP_PER. 
+- The counter restarts in the selected timer mode when CH2CC.VALUE contains the signal period.
+- If more than one channel uses this function, the channels will perform this function one at a time. The channel with lowest number has priority and performs the function first. Next measurement starts when current measurement completes successfully or times out. A timeout occurs when counter equals target. 
+- If you want to observe a timeout event configure another channel to SET_ON_CAPT.
+
+Signal property requirements:
+- Signal Period &#62;= 2 * ( 1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal Period &#60;= 65535 * (1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal low and high phase &#62;= (1 + PRECFG.CLKDIV ) * timer clock period. " description="Period and pulse width measurement.
+
+Continuously capture period and pulse width of the signal selected by CH2CCFG.CAPT_SRC relative to the signal edge given by CH2CCFG.EDGE. 
+
+Set enabled events when CH2CC.VALUE contains signal period and CH2PCC.VALUE contains signal pulse width. 
+
+Notes: 
+- Make sure that you configure CH2CCFG.CAPT_SRC and CCACT when CTL.MODE equals DIS, then set CTL.MODE to UP_ONCE or UP_PER. 
+- The counter restarts in the selected timer mode when CH2CC.VALUE contains the signal period.
+- If more than one channel uses this function, the channels will perform this function one at a time. The channel with lowest number has priority and performs the function first. Next measurement starts when current measurement completes successfully or times out. A timeout occurs when counter equals target. 
+- If you want to observe a timeout event configure another channel to SET_ON_CAPT.
+
+Signal property requirements:
+- Signal Period &#62;= 2 * ( 1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal Period &#60;= 65535 * (1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal low and high phase &#62;= (1 + PRECFG.CLKDIV ) * timer clock period. "/>
+         <bitenum id="PULSE_ON_CMP_DIS" value="7" token="Pulse on compare, and then disable channel.
+
+Channel function sequence: 
+- Pulse enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+ The event is high for two timer clock periods." description="Pulse on compare, and then disable channel.
+
+Channel function sequence: 
+- Pulse enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+ The event is high for two timer clock periods."/>
+         <bitenum id="TGL_ON_CMP_DIS" value="6" token="Toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="SET_ON_CMP_DIS" value="5" token="Set on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Set on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="CLR_ON_CMP_DIS" value="4" token="Clear on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Clear on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="SET_ON_0_TGL_ON_CMP_DIS" value="3" token="Set on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are cleared when CH2CC.VALUE = 0 and CNTR.VALUE = 0." description="Set on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are cleared when CH2CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="CLR_ON_0_TGL_ON_CMP_DIS" value="2" token="Clear on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are set when CH2CC.VALUE = 0 and CNTR.VALUE = 0." description="Clear on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH2CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are set when CH2CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="SET_ON_CAPT_DIS" value="1" token="Set on capture, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH2CC.VALUE.
+- Disable channel. 
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Set to SET_ON_CAPT with no event enable.
+ - Configure CH2CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you set to SET_ON_CAPT_DIS. Event enable is optional.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit." description="Set on capture, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH2CC.VALUE.
+- Disable channel. 
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Set to SET_ON_CAPT with no event enable.
+ - Configure CH2CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you set to SET_ON_CAPT_DIS. Event enable is optional.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit."/>
+         <bitenum id="DIS" value="0" token="Disable channel." description="Disable channel."/>
+      </bitfield>
+   </register>
+   <register acronym="CH2CCFG" width="32" description="Channel 2 Capture Configuration" id="CH2CCFG" offset="0xa4">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="6" end="1" rwaccess="RW" description="Select capture signal source from the asynchronous AUX event bus. 
+
+The selected signal enters the edge-detection circuit. False capture events can occur when:  
+- the edge-detection circuit contains expired signal samples and the circuit is enabled without flush as described in CH2EVCFG
+- this register is reconfigured while CTL.MODE is different from DIS.
+
+You can avoid false capture events. When wanted channel function is: 
+- SET_ON_CAPT_DIS, see description for SET_ON_CAPT_DIS in CH2EVCFG.CCACT.
+- SET_ON_CAPT, see description for SET_ON_CAPT in CH2EVCFG.CCACT.
+- PER_PULSE_WIDTH_MEAS, see description for PER_PULSE_WIDTH_MEAS in CH2EVCFG.CCACT.
+
+If you write a non-enumerated value the behavior is identical to NO_EVENT. The written value is returned when read." id="CAPT_SRC" resetval="0x0">
+         <bitenum id="NO_EVENT" value="63" token="No event." description="No event."/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              "/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                  "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                  "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                     " description="AUX_EVCTL:EVSTAT2.MCU_EV                     "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                   " description="AUX_EVCTL:EVSTAT2.ACLK_REF                   "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                    " description="AUX_EVCTL:EVSTAT2.PWR_DWN                    "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                    " description="AUX_EVCTL:EVSTAT2.SCLK_LF                    "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                    " description="AUX_EVCTL:EVSTAT1.AUXIO31                    "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                    " description="AUX_EVCTL:EVSTAT1.AUXIO30                    "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                    " description="AUX_EVCTL:EVSTAT1.AUXIO29                    "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                    " description="AUX_EVCTL:EVSTAT1.AUXIO28                    "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                    " description="AUX_EVCTL:EVSTAT1.AUXIO27                    "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                    " description="AUX_EVCTL:EVSTAT1.AUXIO26                    "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                    " description="AUX_EVCTL:EVSTAT1.AUXIO25                    "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                    " description="AUX_EVCTL:EVSTAT1.AUXIO24                    "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                    " description="AUX_EVCTL:EVSTAT1.AUXIO23                    "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                    " description="AUX_EVCTL:EVSTAT1.AUXIO22                    "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                    " description="AUX_EVCTL:EVSTAT1.AUXIO21                    "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                    " description="AUX_EVCTL:EVSTAT1.AUXIO20                    "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                    " description="AUX_EVCTL:EVSTAT1.AUXIO19                    "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                    " description="AUX_EVCTL:EVSTAT1.AUXIO18                    "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                    " description="AUX_EVCTL:EVSTAT1.AUXIO17                    "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                    " description="AUX_EVCTL:EVSTAT1.AUXIO16                    "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                    " description="AUX_EVCTL:EVSTAT0.AUXIO15                    "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                    " description="AUX_EVCTL:EVSTAT0.AUXIO14                    "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                    " description="AUX_EVCTL:EVSTAT0.AUXIO13                    "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                    " description="AUX_EVCTL:EVSTAT0.AUXIO12                    "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                    " description="AUX_EVCTL:EVSTAT0.AUXIO11                    "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                    " description="AUX_EVCTL:EVSTAT0.AUXIO10                    "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                     " description="AUX_EVCTL:EVSTAT0.AUXIO9                     "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                     " description="AUX_EVCTL:EVSTAT0.AUXIO8                     "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                     " description="AUX_EVCTL:EVSTAT0.AUXIO7                     "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                     " description="AUX_EVCTL:EVSTAT0.AUXIO6                     "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                     " description="AUX_EVCTL:EVSTAT0.AUXIO5                     "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                     " description="AUX_EVCTL:EVSTAT0.AUXIO4                     "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                     " description="AUX_EVCTL:EVSTAT0.AUXIO3                     "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                     " description="AUX_EVCTL:EVSTAT0.AUXIO2                     "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                     " description="AUX_EVCTL:EVSTAT0.AUXIO1                     "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                     " description="AUX_EVCTL:EVSTAT0.AUXIO0                     "/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Edge configuration.
+
+Channel captures counter value at selected edge on signal source selected by CAPT_SRC. See CH2EVCFG.CCACT." id="EDGE" resetval="0x0">
+         <bitenum id="RISING" value="1" token="Capture CNTR.VALUE at rising edge of CAPT_SRC." description="Capture CNTR.VALUE at rising edge of CAPT_SRC."/>
+         <bitenum id="FALLING" value="0" token="Capture CNTR.VALUE at falling edge of CAPT_SRC." description="Capture CNTR.VALUE at falling edge of CAPT_SRC."/>
+      </bitfield>
+   </register>
+   <register acronym="CH2PCC" width="32" description="Channel 2 Pipeline Capture Compare " id="CH2PCC" offset="0xa8">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Pipeline Capture Compare value.
+
+16-bit user defined pipeline compare value or channel-updated capture value.
+
+Compare mode: 
+An update of VALUE will be transferred to CH2CC.VALUE when the next CNTR.VALUE is zero and CTL.MODE is different from DIS. This is useful for PWM generation and prevents jitter on the edges of the generated signal.
+
+Capture mode: 
+When CH2EVCFG.CCACT equals PER_PULSE_WIDTH_MEAS then VALUE contains the width of the low or high phase of the selected signal. This is specified by CH2CCFG.EDGE and CH2CCFG.CAPT_SRC." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CH2CC" width="32" description="Channel 2 Capture Compare" id="CH2CC" offset="0xac">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Capture Compare value.
+
+16-bit user defined compare value or channel-updated capture value.
+
+Compare mode: 
+VALUE is compared against CNTR.VALUE and an event is generated as specified by CH2EVCFG.CCACT when these are equal. 
+
+Capture mode: 
+The current counter value is stored in VALUE when a capture event occurs. CH2EVCFG.CCACT determines if VALUE is a signal period or a regular capture value." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CH3EVCFG" width="32" description="Channel 3 Event Configuration
+
+This register configures channel function and enables event outputs.
+
+Each channel has an edge-detection circuit with memory. The circuit is:  
+ - enabled while CCACT selects a capture function and CTL.MODE is different from DIS. 
+ - flushed while CCACT selects a capture function and you change CTL.MODE from DIS to another mode. 
+ 
+The flush action uses two AUX_SYSIF:TIMER2CLKCTL.SRC clock periods. It prevents capture events caused by expired signal values stored in the edge-detection circuit." id="CH3EVCFG" offset="0xb0">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Event 3 enable.
+
+0: Channel 3 does not control event 3.
+1: Channel 3 controls event 3.
+
+ When 0 &#60; CCACT &#60; 8, EV3_GEN becomes zero after a capture or compare event." id="EV3_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Event 2 enable.
+
+0: Channel 3 does not control event 2.
+1: Channel 3 controls event 2.
+
+ When 0 &#60; CCACT &#60; 8, EV2_GEN becomes zero after a capture or compare event." id="EV2_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Event 1 enable.
+
+0: Channel 3 does not control event 1.
+1: Channel 3 controls event 1.
+
+ When 0 &#60; CCACT &#60; 8, EV1_GEN becomes zero after a capture or compare event." id="EV1_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Event 0 enable.
+
+0: Channel 3 does not control event 0.
+1: Channel 3 controls event 0.
+
+ When 0 &#60; CCACT &#60; 8, EV0_GEN becomes zero after a capture or compare event." id="EV0_GEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Capture-Compare action.
+
+Capture-Compare action defines 15 different channel functions that utilize capture, compare, and zero events. " id="CCACT" resetval="0x0">
+         <bitenum id="PULSE_ON_CMP" value="15" token="Pulse on compare repeatedly. 
+
+Channel function sequence: 
+- Pulse enabled events when CH3CC.VALUE = CNTR.VALUE.
+
+ The event is high for two timer clock periods." description="Pulse on compare repeatedly. 
+
+Channel function sequence: 
+- Pulse enabled events when CH3CC.VALUE = CNTR.VALUE.
+
+ The event is high for two timer clock periods."/>
+         <bitenum id="TGL_ON_CMP" value="14" token="Toggle on compare repeatedly.
+
+Channel function sequence: 
+- Toggle enabled events  when CH3CC.VALUE = CNTR.VALUE." description="Toggle on compare repeatedly.
+
+Channel function sequence: 
+- Toggle enabled events  when CH3CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="SET_ON_CMP" value="13" token="Set on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events  when CH3CC.VALUE = CNTR.VALUE." description="Set on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events  when CH3CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="CLR_ON_CMP" value="12" token="Clear on compare repeatedly.
+
+Channel function sequence: 
+- Clear enabled events  when CH3CC.VALUE = CNTR.VALUE." description="Clear on compare repeatedly.
+
+Channel function sequence: 
+- Clear enabled events  when CH3CC.VALUE = CNTR.VALUE."/>
+         <bitenum id="SET_ON_0_TGL_ON_CMP" value="11" token="Set on zero, toggle on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UP_PER for edge-aligned PWM generation. Duty cycle is given by: 
+
+When CH3CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = CH3CC.VALUE / ( TARGET.VALUE + 1 ).
+
+When CH3CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 1.
+
+Enabled events are cleared when CH3CC.VALUE = 0 and CNTR.VALUE = 0." description="Set on zero, toggle on compare repeatedly.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UP_PER for edge-aligned PWM generation. Duty cycle is given by: 
+
+When CH3CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = CH3CC.VALUE / ( TARGET.VALUE + 1 ).
+
+When CH3CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 1.
+
+Enabled events are cleared when CH3CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="CLR_ON_0_TGL_ON_CMP" value="10" token="Clear on zero, toggle on compare repeatedly.
+ 
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UPDWN_PER for center-aligned PWM generation. Duty cycle is given by: 
+
+When CH3CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = 1 - ( CH3CC.VALUE / TARGET.VALUE ).
+
+When CH3CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 0.
+
+Enabled events are set when CH3CC.VALUE = 0 and CNTR.VALUE = 0." description="Clear on zero, toggle on compare repeatedly.
+ 
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+
+Set CTL.MODE to UPDWN_PER for center-aligned PWM generation. Duty cycle is given by: 
+
+When CH3CC.VALUE &#60;= TARGET.VALUE: 
+   Duty cycle = 1 - ( CH3CC.VALUE / TARGET.VALUE ).
+
+When CH3CC.VALUE &#62; TARGET.VALUE: 
+   Duty cycle = 0.
+
+Enabled events are set when CH3CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="SET_ON_CAPT" value="9" token="Set on capture repeatedly.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH3CC.VALUE.
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Select this function with no event enable.
+ - Configure CH3CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you enable events.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit." description="Set on capture repeatedly.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH3CC.VALUE.
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Select this function with no event enable.
+ - Configure CH3CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you enable events.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit."/>
+         <bitenum id="PER_PULSE_WIDTH_MEAS" value="8" token="Period and pulse width measurement.
+
+Continuously capture period and pulse width of the signal selected by CH3CCFG.CAPT_SRC relative to the signal edge given by CH3CCFG.EDGE. 
+
+Set enabled events when CH3CC.VALUE contains signal period and CH3PCC.VALUE contains signal pulse width. 
+
+Notes: 
+- Make sure that you configure CH3CCFG.CAPT_SRC and CCACT when CTL.MODE equals DIS, then set CTL.MODE to UP_ONCE or UP_PER. 
+- The counter restarts in the selected timer mode when CH3CC.VALUE contains the signal period.
+- If more than one channel uses this function, the channels will perform this function one at a time. The channel with lowest number has priority and performs the function first. Next measurement starts when current measurement completes successfully or times out. A timeout occurs when counter equals target. 
+- If you want to observe a timeout event configure another channel to SET_ON_CAPT.
+
+Signal property requirements:
+- Signal Period &#62;= 2 * ( 1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal Period &#60;= 65535 * (1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal low and high phase &#62;= (1 + PRECFG.CLKDIV ) * timer clock period. " description="Period and pulse width measurement.
+
+Continuously capture period and pulse width of the signal selected by CH3CCFG.CAPT_SRC relative to the signal edge given by CH3CCFG.EDGE. 
+
+Set enabled events when CH3CC.VALUE contains signal period and CH3PCC.VALUE contains signal pulse width. 
+
+Notes: 
+- Make sure that you configure CH3CCFG.CAPT_SRC and CCACT when CTL.MODE equals DIS, then set CTL.MODE to UP_ONCE or UP_PER. 
+- The counter restarts in the selected timer mode when CH3CC.VALUE contains the signal period.
+- If more than one channel uses this function, the channels will perform this function one at a time. The channel with lowest number has priority and performs the function first. Next measurement starts when current measurement completes successfully or times out. A timeout occurs when counter equals target. 
+- If you want to observe a timeout event configure another channel to SET_ON_CAPT.
+
+Signal property requirements:
+- Signal Period &#62;= 2 * ( 1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal Period &#60;= 65535 * (1 + PRECFG.CLKDIV ) * timer clock period.
+- Signal low and high phase &#62;= (1 + PRECFG.CLKDIV ) * timer clock period. "/>
+         <bitenum id="PULSE_ON_CMP_DIS" value="7" token="Pulse on compare, and then disable channel.
+
+Channel function sequence: 
+- Pulse enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+ The event is high for two timer clock periods." description="Pulse on compare, and then disable channel.
+
+Channel function sequence: 
+- Pulse enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+ The event is high for two timer clock periods."/>
+         <bitenum id="TGL_ON_CMP_DIS" value="6" token="Toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="SET_ON_CMP_DIS" value="5" token="Set on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Set on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="CLR_ON_CMP_DIS" value="4" token="Clear on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel." description="Clear on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel."/>
+         <bitenum id="SET_ON_0_TGL_ON_CMP_DIS" value="3" token="Set on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are cleared when CH3CC.VALUE = 0 and CNTR.VALUE = 0." description="Set on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are cleared when CH3CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="CLR_ON_0_TGL_ON_CMP_DIS" value="2" token="Clear on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are set when CH3CC.VALUE = 0 and CNTR.VALUE = 0." description="Clear on zero, toggle on compare, and then disable channel.
+
+Channel function sequence: 
+- Clear enabled events when CNTR.VALUE = 0.
+- Toggle enabled events when CH3CC.VALUE = CNTR.VALUE.
+- Disable channel.
+
+Enabled events are set when CH3CC.VALUE = 0 and CNTR.VALUE = 0."/>
+         <bitenum id="SET_ON_CAPT_DIS" value="1" token="Set on capture, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH3CC.VALUE.
+- Disable channel. 
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Set CCACT to SET_ON_CAPT with no event enable.
+ - Configure CH3CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you set CCACT to SET_ON_CAPT_DIS.  Event enable is optional.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit." description="Set on capture, and then disable channel.
+
+Channel function sequence: 
+- Set enabled events on capture event and copy CNTR.VALUE to CH3CC.VALUE.
+- Disable channel. 
+
+Primary use scenario is to select this function before you start the timer.
+Follow these steps if you need to select this function while CTL.MODE is different from DIS: 
+ - Set CCACT to SET_ON_CAPT with no event enable.
+ - Configure CH3CCFG (optional).
+ - Wait for three timer clock periods as defined in PRECFG before you set CCACT to SET_ON_CAPT_DIS.  Event enable is optional.
+
+These steps prevent capture events caused by expired signal values in edge-detection circuit."/>
+         <bitenum id="DIS" value="0" token="Disable channel." description="Disable channel."/>
+      </bitfield>
+   </register>
+   <register acronym="CH3CCFG" width="32" description="Channel 3 Capture Configuration" id="CH3CCFG" offset="0xb4">
+      <bitfield range="" begin="31" width="25" end="7" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="6" end="1" rwaccess="RW" description="Select capture signal source from the asynchronous AUX event bus. 
+
+The selected signal enters the edge-detection circuit. False capture events can occur when:  
+- the edge-detection circuit contains expired signal samples and the circuit is enabled without flush as described in CH3EVCFG
+- this register is reconfigured while CTL.MODE is different from DIS.
+
+You can avoid false capture events. When wanted channel function: 
+- SET_ON_CAPT_DIS, see description for SET_ON_CAPT_DIS in CH3EVCFG.CCACT.
+- SET_ON_CAPT, see description for SET_ON_CAPT in CH3EVCFG.CCACT.
+- PER_PULSE_WIDTH_MEAS, see description for PER_PULSE_WIDTH_MEAS in CH3EVCFG.CCACT.
+
+If you write a non-enumerated value the behavior is identical to NO_EVENT. The written value is returned when read." id="CAPT_SRC" resetval="0x0">
+         <bitenum id="NO_EVENT" value="63" token="No event." description="No event."/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              "/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                  "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                  "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                     " description="AUX_EVCTL:EVSTAT2.MCU_EV                     "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                   " description="AUX_EVCTL:EVSTAT2.ACLK_REF                   "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                    " description="AUX_EVCTL:EVSTAT2.PWR_DWN                    "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                    " description="AUX_EVCTL:EVSTAT2.SCLK_LF                    "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                    " description="AUX_EVCTL:EVSTAT1.AUXIO31                    "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                    " description="AUX_EVCTL:EVSTAT1.AUXIO30                    "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                    " description="AUX_EVCTL:EVSTAT1.AUXIO29                    "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                    " description="AUX_EVCTL:EVSTAT1.AUXIO28                    "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                    " description="AUX_EVCTL:EVSTAT1.AUXIO27                    "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                    " description="AUX_EVCTL:EVSTAT1.AUXIO26                    "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                    " description="AUX_EVCTL:EVSTAT1.AUXIO25                    "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                    " description="AUX_EVCTL:EVSTAT1.AUXIO24                    "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                    " description="AUX_EVCTL:EVSTAT1.AUXIO23                    "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                    " description="AUX_EVCTL:EVSTAT1.AUXIO22                    "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                    " description="AUX_EVCTL:EVSTAT1.AUXIO21                    "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                    " description="AUX_EVCTL:EVSTAT1.AUXIO20                    "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                    " description="AUX_EVCTL:EVSTAT1.AUXIO19                    "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                    " description="AUX_EVCTL:EVSTAT1.AUXIO18                    "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                    " description="AUX_EVCTL:EVSTAT1.AUXIO17                    "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                    " description="AUX_EVCTL:EVSTAT1.AUXIO16                    "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                    " description="AUX_EVCTL:EVSTAT0.AUXIO15                    "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                    " description="AUX_EVCTL:EVSTAT0.AUXIO14                    "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                    " description="AUX_EVCTL:EVSTAT0.AUXIO13                    "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                    " description="AUX_EVCTL:EVSTAT0.AUXIO12                    "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                    " description="AUX_EVCTL:EVSTAT0.AUXIO11                    "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                    " description="AUX_EVCTL:EVSTAT0.AUXIO10                    "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                     " description="AUX_EVCTL:EVSTAT0.AUXIO9                     "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                     " description="AUX_EVCTL:EVSTAT0.AUXIO8                     "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                     " description="AUX_EVCTL:EVSTAT0.AUXIO7                     "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                     " description="AUX_EVCTL:EVSTAT0.AUXIO6                     "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                     " description="AUX_EVCTL:EVSTAT0.AUXIO5                     "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                     " description="AUX_EVCTL:EVSTAT0.AUXIO4                     "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                     " description="AUX_EVCTL:EVSTAT0.AUXIO3                     "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                     " description="AUX_EVCTL:EVSTAT0.AUXIO2                     "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                     " description="AUX_EVCTL:EVSTAT0.AUXIO1                     "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                     " description="AUX_EVCTL:EVSTAT0.AUXIO0                     "/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Edge configuration.
+
+Channel captures counter value at selected edge on signal source selected by CAPT_SRC. See CH3EVCFG.CCACT." id="EDGE" resetval="0x0">
+         <bitenum id="RISING" value="1" token="Capture CNTR.VALUE at rising edge of CAPT_SRC." description="Capture CNTR.VALUE at rising edge of CAPT_SRC."/>
+         <bitenum id="FALLING" value="0" token="Capture CNTR.VALUE at falling edge of CAPT_SRC." description="Capture CNTR.VALUE at falling edge of CAPT_SRC."/>
+      </bitfield>
+   </register>
+   <register acronym="CH3PCC" width="32" description="Channel 3 Pipeline Capture Compare " id="CH3PCC" offset="0xb8">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Pipeline Capture Compare value.
+
+16-bit user defined pipeline compare value or channel-updated capture value.
+
+Compare mode: 
+An update of VALUE will be transferred to CH3CC.VALUE when the next CNTR.VALUE is zero and CTL.MODE is different from DIS. This is useful for PWM generation and prevents jitter on the edges of the generated signal.
+
+Capture mode: 
+When CH3EVCFG.CCACT equals PER_PULSE_WIDTH_MEAS then VALUE contains the width of the low or high phase of the selected signal. This is specified by CH3CCFG.EDGE and CH3CCFG.CAPT_SRC." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CH3CC" width="32" description="Channel 3 Capture Compare" id="CH3CC" offset="0xbc">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="Capture Compare value.
+
+16-bit user defined compare value or channel-updated capture value.
+
+Compare mode: 
+VALUE is compared against CNTR.VALUE and an event is generated as specified by CH3EVCFG.CCACT when these are equal. 
+
+Capture mode: 
+The current counter value is stored in VALUE when a capture event occurs. CH3EVCFG.CCACT determines if VALUE is a signal period or a regular capture value." id="VALUE" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

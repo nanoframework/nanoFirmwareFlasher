@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<cpu HW_revision="1.0" XML_version="1.2" id="Cortex_M4" isa="Cortex_M4" desc="Cortex_M4" description="Cortex_M4 CPU">
+
+	<register id="PC" acronym="PC" width="32" description="Program Counter" />
+	<register id="SP" acronym="R13" width="32" description="General Purpose Register 13 - Stack Pointer" />
+	<register id="LR" acronym="R14" width="32" description="General Purpose Register 14 - Link Register" />
+
+	<register id="xPSR" acronym="xPSR" width="32" description="Stores the status of interrupt enables and critical processor status signals">
+		<bitfield id="N" width="1" begin="31" end="31" resetval="0" description="Stores bit 31 of the result of the instruction. In other words stores the sign of the number" range="" rwaccess="R" />
+		<bitfield id="Z" width="1" begin="30" end="30" resetval="0" description="Is set to 1 if the result of the operation is zero else stays 0" range="" rwaccess="R" />
+		<bitfield id="C" width="1" begin="29" end="29" resetval="0" description="Stores the value of the carry bit if it occurred in an addition or the borrow bit in a subtraction. In a shift stores the last bit shifted out." range="" rwaccess="R" />
+		<bitfield id="V" width="1" begin="28" end="28" resetval="0" description="Set to 1 if an overflow occurred " range="" rwaccess="R" />
+		<bitfield id="Q" width="1" begin="27" end="27" resetval="0" description="Indicates whether an overflow/saturation occurred in the enhanced DSP instructions" range="" rwaccess="R" />
+		<bitfield id="ICI_IT_2" width="2" begin="26" end="25" resetval="0" description="ICI/IT - bit26-bit25 " range="" rwaccess="R" />
+		<bitfield id="T" width="1" begin="24" end="24" resetval="1" description="Thumb State " range="" rwaccess="R" />
+		<bitfield id="RESV" width="8" begin="23" end="16" resetval="0" description="Reserved " range="" rwaccess="R" />
+		<bitfield id="ICI_IT_1" width="6" begin="15" end="10" resetval="0" description="ICI/IT - bit15-bit10 " range="" rwaccess="R" />
+		<bitfield id="RESV2" width="1" begin="9" end="9" resetval="0" description="Reserved " range="" rwaccess="R" />
+		<bitfield id="EXCEPTION" width="9" begin="8" end="0" resetval="0" description="Exception Number " range="" rwaccess="R" />
+	</register>
+
+	<register id="R0" acronym="R0" width="32" description="General Purpose Register 0" />
+	<register id="R1" acronym="R1" width="32" description="General Purpose Register 1" />
+	<register id="R2" acronym="R2" width="32" description="General Purpose Register 2" />
+	<register id="R3" acronym="R3" width="32" description="General Purpose Register 3" />
+	<register id="R4" acronym="R4" width="32" description="General Purpose Register 4" />
+	<register id="R5" acronym="R5" width="32" description="General Purpose Register 5" />
+	<register id="R6" acronym="R6" width="32" description="General Purpose Register 6" />
+	<register id="R7" acronym="R7" width="32" description="General Purpose Register 7" />
+	<register id="R8" acronym="R8" width="32" description="General Purpose Register 8" />
+	<register id="R9" acronym="R9" width="32" description="General Purpose Register 9" />
+	<register id="R10" acronym="R10" width="32" description="General Purpose Register 10" />
+	<register id="R11" acronym="R11" width="32" description="General Purpose Register 11" />
+	<register id="R12" acronym="R12" width="32" description="General Purpose Register 12" />
+	<register id="R13" acronym="R13" width="32" description="General Purpose Register 13" />
+	<register id="R14" acronym="R14" width="32" description="General Purpose Register 14" />
+
+	<register id="MSP" acronym="MSP" width="32" description="MSP Register" />
+	<register id="PSP" acronym="PSP" width="32" description="PSP Register" />
+	<register id="DSP" acronym="DSP" width="32" description="DSP Register" />
+
+	<register id="CTRL_FAULT_BASE_PRI" acronym="CTRL_FAULT_BASE_PRI" width="32" description="CM4 Special Registers" >
+        <bitfield id="CONTROL" width="8" begin="31" end="24" resetval="0" description="Control" range="" rwaccess="RW"/>    
+        <bitfield id="FAULTMASK" width="8" begin="23" end="16" resetval="0" description="Faultmask" range="" rwaccess="RW"/>    
+        <bitfield id="BASEPRI" width="8" begin="15" end="8" resetval="0" description="Basepri" range="" rwaccess="RW"/>    
+        <bitfield id="PRIMASK" width="8" begin="7" end="0" resetval="0" description="Primask" range="" rwaccess="RW"/>    
+        </register>
+
+	<instance href="..\Modules\cortexM4_NotVisible.xml" id="" xml="cortexM4_NotVisible.xml" xmlpath="..\Modules\" HW_revision="1.0" description="" requestor="Cortex_M4" baseaddr="0" size="00" accessnumbytes="4" permissions="p" />
+
+</cpu>

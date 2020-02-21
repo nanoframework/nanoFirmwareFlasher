@@ -1,0 +1,15 @@
+{"command":"getVersion", "log":["DSLite version %s\n", "version"]}
+{"command":"logMessage", "data":["DSLite [operation] [Args...]\n\n"]}
+{"command":"logMessage", "data":["\tload\n"]}
+{"command":"logMessage", "data":["\t\tLoads the specified file and exits, leaving the\n"]}
+{"command":"logMessage", "data":["\t\ttarget running\n"]}
+{"command":"logMessage", "data":["\tflash\n"]}
+{"command":"logMessage", "data":["\t\tPerforms multiple flash-based operations as\n"]}
+{"command":"logMessage", "data":["\t\tspecified on the command line including\n"]}
+{"command":"logMessage", "data":["\t\terasing, loading, verifying, and device-\n"]}
+{"command":"logMessage", "data":["\t\tspecific flash operations\n"]}
+{"command":"logMessage", "data":["\tmemory\n"]}
+{"command":"logMessage", "data":["\t\tExtracts memory from the target into a coff or\n"]}
+{"command":"logMessage", "data":["\t\tbinary file\n"]}
+{"command":"logMessage", "data":["\thelp\n"]}
+{"command":"logMessage", "data":["\t\tPrints this message\n"]}

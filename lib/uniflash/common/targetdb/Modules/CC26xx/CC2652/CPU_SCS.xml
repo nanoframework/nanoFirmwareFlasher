@@ -1,0 +1,1508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="CPU_SCS" HW_revision="" XML_version="1.0" description="Cortex-M&#39;s System Control Space (SCS)
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="RESERVED000" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED000" offset="0x0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ICTR" width="32" description="Interrupt Control Type
+Read this register to see the number of interrupt lines that the NVIC supports." id="ICTR" offset="0x4">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RO" description="Total number of interrupt lines in groups of 32.
+
+0: 0...32
+1: 33...64
+2: 65...96
+3: 97...128
+4: 129...160
+5: 161...192
+6: 193...224
+7: 225...256
+
+" id="INTLINESNUM" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="ACTLR" width="32" description="Auxiliary Control
+This register is used to disable certain aspects of functionality within the processor" id="ACTLR" offset="0x8">
+      <bitfield range="" begin="31" width="22" end="10" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Disables floating point instructions completing out of order with respect to integer instructions." id="DISOOFP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Disable automatic update of CONTROL.FPCA" id="DISFPCA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Disables folding of IT instruction." id="DISFOLD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Disables write buffer use during default memory map accesses. This causes all bus faults to be precise bus faults but decreases the performance of the processor because the stores to memory have to complete before the next instruction can be executed." id="DISDEFWBUF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Disables interruption of multi-cycle instructions. This increases the interrupt latency of the processor becuase LDM/STM completes before interrupt stacking occurs." id="DISMCYCINT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STCSR" width="32" description="SysTick Control and Status
+This register enables the SysTick features and returns status flags related to SysTick." id="STCSR" offset="0x10">
+      <bitfield range="" begin="31" width="15" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="Returns 1 if timer counted to 0 since last time this was read. Clears on read by application of any part of the SysTick Control and Status Register. If read by the debugger using the DAP, this bit is cleared on read-only if the MasterType bit in the **AHB-AP** Control Register is set to 0. Otherwise, COUNTFLAG is not changed by the debugger read." id="COUNTFLAG" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="13" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Clock source:
+
+0: External reference clock.
+1: Core clock
+
+External clock is not available in this device. Writes to this field will be ignored." id="CLKSOURCE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="0: Counting down to zero does not pend the SysTick handler. Software can use COUNTFLAG to determine if the SysTick handler has ever counted to zero.
+1: Counting down to zero pends the SysTick handler." id="TICKINT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Enable SysTick counter
+
+0: Counter disabled
+1: Counter operates in a multi-shot way. That is, counter loads with the Reload value STRVR.RELOAD and then begins counting down. On reaching 0, it sets COUNTFLAG to 1 and optionally pends the SysTick handler, based on TICKINT. It then loads STRVR.RELOAD again, and begins counting." id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STRVR" width="32" description="SysTick Reload Value
+This register is used to specify the start value to load into the current value register STCVR.CURRENT when the counter reaches 0. It can be any value between 1 and 0x00FFFFFF. A start value of 0 is possible, but has no effect because the SysTick interrupt and STCSR.COUNTFLAG are activated when counting from 1 to 0." id="STRVR" offset="0x14">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RW" description="Value to load into the SysTick Current Value Register STCVR.CURRENT when the counter reaches 0." id="RELOAD" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STCVR" width="32" description="SysTick Current Value
+Read from this register returns the current value of SysTick counter. Writing to this register resets the SysTick counter (as well as  STCSR.COUNTFLAG)." id="STCVR" offset="0x18">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RW" description="Current value at the time the register is accessed. No read-modify-write protection is provided, so change with care. Writing to it with any value clears the register to 0. Clearing this register also clears STCSR.COUNTFLAG." id="CURRENT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STCR" width="32" description="SysTick Calibration Value
+Used to enable software to scale to any required speed using divide and multiply." id="STCR" offset="0x1c">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="Reads as one. Indicates that no separate reference clock is provided." id="NOREF" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RO" description="Reads as one. The calibration value is not exactly 10ms because of clock frequency. This could affect its suitability as a software real time clock." id="SKEW" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="29" width="6" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RO" description="An optional Reload value to be used for 10ms (100Hz) timing, subject to system clock skew errors. The value read is valid only when core clock is at 48MHz." id="TENMS" resetval="0x75300">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_ISER0" width="32" description="Irq 0 to 31 Set Enable
+This register is used to enable interrupts and determine which interrupts are currently enabled." id="NVIC_ISER0" offset="0x100">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 31 (See EVENT:CPUIRQSEL31.EV for details). Reading the bit returns its current enable state." id="SETENA31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 30 (See EVENT:CPUIRQSEL30.EV for details). Reading the bit returns its current enable state." id="SETENA30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 29 (See EVENT:CPUIRQSEL29.EV for details). Reading the bit returns its current enable state." id="SETENA29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 28 (See EVENT:CPUIRQSEL28.EV for details). Reading the bit returns its current enable state." id="SETENA28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 27 (See EVENT:CPUIRQSEL27.EV for details). Reading the bit returns its current enable state." id="SETENA27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 26 (See EVENT:CPUIRQSEL26.EV for details). Reading the bit returns its current enable state." id="SETENA26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 25 (See EVENT:CPUIRQSEL25.EV for details). Reading the bit returns its current enable state." id="SETENA25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 24 (See EVENT:CPUIRQSEL24.EV for details). Reading the bit returns its current enable state." id="SETENA24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 23 (See EVENT:CPUIRQSEL23.EV for details). Reading the bit returns its current enable state." id="SETENA23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 22 (See EVENT:CPUIRQSEL22.EV for details). Reading the bit returns its current enable state." id="SETENA22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 21 (See EVENT:CPUIRQSEL21.EV for details). Reading the bit returns its current enable state." id="SETENA21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 20 (See EVENT:CPUIRQSEL20.EV for details). Reading the bit returns its current enable state." id="SETENA20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 19 (See EVENT:CPUIRQSEL19.EV for details). Reading the bit returns its current enable state." id="SETENA19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 18 (See EVENT:CPUIRQSEL18.EV for details). Reading the bit returns its current enable state." id="SETENA18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 17 (See EVENT:CPUIRQSEL17.EV for details). Reading the bit returns its current enable state." id="SETENA17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 16 (See EVENT:CPUIRQSEL16.EV for details). Reading the bit returns its current enable state." id="SETENA16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 15 (See EVENT:CPUIRQSEL15.EV for details). Reading the bit returns its current enable state." id="SETENA15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 14 (See EVENT:CPUIRQSEL14.EV for details). Reading the bit returns its current enable state." id="SETENA14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 13 (See EVENT:CPUIRQSEL13.EV for details). Reading the bit returns its current enable state." id="SETENA13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 12 (See EVENT:CPUIRQSEL12.EV for details). Reading the bit returns its current enable state." id="SETENA12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 11 (See EVENT:CPUIRQSEL11.EV for details). Reading the bit returns its current enable state." id="SETENA11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 10 (See EVENT:CPUIRQSEL10.EV for details). Reading the bit returns its current enable state." id="SETENA10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 9 (See EVENT:CPUIRQSEL9.EV for details). Reading the bit returns its current enable state." id="SETENA9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 8 (See EVENT:CPUIRQSEL8.EV for details). Reading the bit returns its current enable state." id="SETENA8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 7 (See EVENT:CPUIRQSEL7.EV for details). Reading the bit returns its current enable state." id="SETENA7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 6 (See EVENT:CPUIRQSEL6.EV for details). Reading the bit returns its current enable state." id="SETENA6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 5 (See EVENT:CPUIRQSEL5.EV for details). Reading the bit returns its current enable state." id="SETENA5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 4 (See EVENT:CPUIRQSEL4.EV for details). Reading the bit returns its current enable state." id="SETENA4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 3 (See EVENT:CPUIRQSEL3.EV for details). Reading the bit returns its current enable state." id="SETENA3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 2 (See EVENT:CPUIRQSEL2.EV for details). Reading the bit returns its current enable state." id="SETENA2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 1 (See EVENT:CPUIRQSEL1.EV for details). Reading the bit returns its current enable state." id="SETENA1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 0 (See EVENT:CPUIRQSEL0.EV for details). Reading the bit returns its current enable state." id="SETENA0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_ISER1" width="32" description="Irq 32 to 63 Set Enable
+This register is used to enable interrupts and determine which interrupts are currently enabled." id="NVIC_ISER1" offset="0x104">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 37 (See EVENT:CPUIRQSEL37.EV for details). Reading the bit returns its current enable state." id="SETENA37" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 36 (See EVENT:CPUIRQSEL36.EV for details). Reading the bit returns its current enable state." id="SETENA36" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 35 (See EVENT:CPUIRQSEL35.EV for details). Reading the bit returns its current enable state." id="SETENA35" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 34 (See EVENT:CPUIRQSEL34.EV for details). Reading the bit returns its current enable state." id="SETENA34" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 33 (See EVENT:CPUIRQSEL33.EV for details). Reading the bit returns its current enable state." id="SETENA33" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit enables the interrupt number 32 (See EVENT:CPUIRQSEL32.EV for details). Reading the bit returns its current enable state." id="SETENA32" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_ICER0" width="32" description="Irq 0 to 31 Clear Enable
+This register is used to disable interrupts and determine which interrupts are currently enabled." id="NVIC_ICER0" offset="0x180">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  31 (See EVENT:CPUIRQSEL31.EV for details). Reading the bit returns its current enable state." id="CLRENA31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  30 (See EVENT:CPUIRQSEL30.EV for details). Reading the bit returns its current enable state." id="CLRENA30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  29 (See EVENT:CPUIRQSEL29.EV for details). Reading the bit returns its current enable state." id="CLRENA29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  28 (See EVENT:CPUIRQSEL28.EV for details). Reading the bit returns its current enable state." id="CLRENA28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  27 (See EVENT:CPUIRQSEL27.EV for details). Reading the bit returns its current enable state." id="CLRENA27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  26 (See EVENT:CPUIRQSEL26.EV for details). Reading the bit returns its current enable state." id="CLRENA26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  25 (See EVENT:CPUIRQSEL25.EV for details). Reading the bit returns its current enable state." id="CLRENA25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  24 (See EVENT:CPUIRQSEL24.EV for details). Reading the bit returns its current enable state." id="CLRENA24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  23 (See EVENT:CPUIRQSEL23.EV for details). Reading the bit returns its current enable state." id="CLRENA23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  22 (See EVENT:CPUIRQSEL22.EV for details). Reading the bit returns its current enable state." id="CLRENA22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  21 (See EVENT:CPUIRQSEL21.EV for details). Reading the bit returns its current enable state." id="CLRENA21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  20 (See EVENT:CPUIRQSEL20.EV for details). Reading the bit returns its current enable state." id="CLRENA20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  19 (See EVENT:CPUIRQSEL19.EV for details). Reading the bit returns its current enable state." id="CLRENA19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  18 (See EVENT:CPUIRQSEL18.EV for details). Reading the bit returns its current enable state." id="CLRENA18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  17 (See EVENT:CPUIRQSEL17.EV for details). Reading the bit returns its current enable state." id="CLRENA17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  16 (See EVENT:CPUIRQSEL16.EV for details). Reading the bit returns its current enable state." id="CLRENA16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  15 (See EVENT:CPUIRQSEL15.EV for details). Reading the bit returns its current enable state." id="CLRENA15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  14 (See EVENT:CPUIRQSEL14.EV for details). Reading the bit returns its current enable state." id="CLRENA14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  13 (See EVENT:CPUIRQSEL13.EV for details). Reading the bit returns its current enable state." id="CLRENA13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  12 (See EVENT:CPUIRQSEL12.EV for details). Reading the bit returns its current enable state." id="CLRENA12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  11 (See EVENT:CPUIRQSEL11.EV for details). Reading the bit returns its current enable state." id="CLRENA11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  10 (See EVENT:CPUIRQSEL10.EV for details). Reading the bit returns its current enable state." id="CLRENA10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  9 (See EVENT:CPUIRQSEL9.EV for details). Reading the bit returns its current enable state." id="CLRENA9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  8 (See EVENT:CPUIRQSEL8.EV for details). Reading the bit returns its current enable state." id="CLRENA8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  7 (See EVENT:CPUIRQSEL7.EV for details). Reading the bit returns its current enable state." id="CLRENA7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  6 (See EVENT:CPUIRQSEL6.EV for details). Reading the bit returns its current enable state." id="CLRENA6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  5 (See EVENT:CPUIRQSEL5.EV for details). Reading the bit returns its current enable state." id="CLRENA5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  4 (See EVENT:CPUIRQSEL4.EV for details). Reading the bit returns its current enable state." id="CLRENA4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  3 (See EVENT:CPUIRQSEL3.EV for details). Reading the bit returns its current enable state." id="CLRENA3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  2 (See EVENT:CPUIRQSEL2.EV for details). Reading the bit returns its current enable state." id="CLRENA2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  1 (See EVENT:CPUIRQSEL1.EV for details). Reading the bit returns its current enable state." id="CLRENA1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  0 (See EVENT:CPUIRQSEL0.EV for details). Reading the bit returns its current enable state." id="CLRENA0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_ICER1" width="32" description="Irq 32 to 63 Clear Enable
+This register is used to disable interrupts and determine which interrupts are currently enabled." id="NVIC_ICER1" offset="0x184">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  37 (See EVENT:CPUIRQSEL37.EV for details). Reading the bit returns its current enable state." id="CLRENA37" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  36 (See EVENT:CPUIRQSEL36.EV for details). Reading the bit returns its current enable state." id="CLRENA36" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  35 (See EVENT:CPUIRQSEL35.EV for details). Reading the bit returns its current enable state." id="CLRENA35" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  34 (See EVENT:CPUIRQSEL34.EV for details). Reading the bit returns its current enable state." id="CLRENA34" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  33 (See EVENT:CPUIRQSEL33.EV for details). Reading the bit returns its current enable state." id="CLRENA33" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit disables the interrupt number  32 (See EVENT:CPUIRQSEL32.EV for details). Reading the bit returns its current enable state." id="CLRENA32" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_ISPR0" width="32" description="Irq 0 to 31 Set Pending
+This register is used to force interrupts into the pending state and determine which interrupts are currently pending." id="NVIC_ISPR0" offset="0x200">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 31 (See EVENT:CPUIRQSEL31.EV for details). Reading the bit returns its current state." id="SETPEND31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 30 (See EVENT:CPUIRQSEL30.EV for details). Reading the bit returns its current state." id="SETPEND30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 29 (See EVENT:CPUIRQSEL29.EV for details). Reading the bit returns its current state." id="SETPEND29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 28 (See EVENT:CPUIRQSEL28.EV for details). Reading the bit returns its current state." id="SETPEND28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 27 (See EVENT:CPUIRQSEL27.EV for details). Reading the bit returns its current state." id="SETPEND27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 26 (See EVENT:CPUIRQSEL26.EV for details). Reading the bit returns its current state." id="SETPEND26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 25 (See EVENT:CPUIRQSEL25.EV for details). Reading the bit returns its current state." id="SETPEND25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 24 (See EVENT:CPUIRQSEL24.EV for details). Reading the bit returns its current state." id="SETPEND24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 23 (See EVENT:CPUIRQSEL23.EV for details). Reading the bit returns its current state." id="SETPEND23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 22 (See EVENT:CPUIRQSEL22.EV for details). Reading the bit returns its current state." id="SETPEND22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 21 (See EVENT:CPUIRQSEL21.EV for details). Reading the bit returns its current state." id="SETPEND21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 20 (See EVENT:CPUIRQSEL20.EV for details). Reading the bit returns its current state." id="SETPEND20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 19 (See EVENT:CPUIRQSEL19.EV for details). Reading the bit returns its current state." id="SETPEND19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 18 (See EVENT:CPUIRQSEL18.EV for details). Reading the bit returns its current state." id="SETPEND18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 17 (See EVENT:CPUIRQSEL17.EV for details). Reading the bit returns its current state." id="SETPEND17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 16 (See EVENT:CPUIRQSEL16.EV for details). Reading the bit returns its current state." id="SETPEND16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 15 (See EVENT:CPUIRQSEL15.EV for details). Reading the bit returns its current state." id="SETPEND15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 14 (See EVENT:CPUIRQSEL14.EV for details). Reading the bit returns its current state." id="SETPEND14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 13 (See EVENT:CPUIRQSEL13.EV for details). Reading the bit returns its current state." id="SETPEND13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 12 (See EVENT:CPUIRQSEL12.EV for details). Reading the bit returns its current state." id="SETPEND12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 11 (See EVENT:CPUIRQSEL11.EV for details). Reading the bit returns its current state." id="SETPEND11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 10 (See EVENT:CPUIRQSEL10.EV for details). Reading the bit returns its current state." id="SETPEND10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 9 (See EVENT:CPUIRQSEL9.EV for details). Reading the bit returns its current state." id="SETPEND9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 8 (See EVENT:CPUIRQSEL8.EV for details). Reading the bit returns its current state." id="SETPEND8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 7 (See EVENT:CPUIRQSEL7.EV for details). Reading the bit returns its current state." id="SETPEND7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 6 (See EVENT:CPUIRQSEL6.EV for details). Reading the bit returns its current state." id="SETPEND6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 5 (See EVENT:CPUIRQSEL5.EV for details). Reading the bit returns its current state." id="SETPEND5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 4 (See EVENT:CPUIRQSEL4.EV for details). Reading the bit returns its current state." id="SETPEND4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 3 (See EVENT:CPUIRQSEL3.EV for details). Reading the bit returns its current state." id="SETPEND3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 2 (See EVENT:CPUIRQSEL2.EV for details). Reading the bit returns its current state." id="SETPEND2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 1 (See EVENT:CPUIRQSEL1.EV for details). Reading the bit returns its current state." id="SETPEND1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 0 (See EVENT:CPUIRQSEL0.EV for details). Reading the bit returns its current state." id="SETPEND0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_ISPR1" width="32" description="Irq 32 to 63 Set Pending
+This register is used to force interrupts into the pending state and determine which interrupts are currently pending." id="NVIC_ISPR1" offset="0x204">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 37 (See EVENT:CPUIRQSEL37.EV for details). Reading the bit returns its current state." id="SETPEND37" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 36 (See EVENT:CPUIRQSEL36.EV for details). Reading the bit returns its current state." id="SETPEND36" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 35 (See EVENT:CPUIRQSEL35.EV for details). Reading the bit returns its current state." id="SETPEND35" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 34 (See EVENT:CPUIRQSEL34.EV for details). Reading the bit returns its current state." id="SETPEND34" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 33 (See EVENT:CPUIRQSEL33.EV for details). Reading the bit returns its current state." id="SETPEND33" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit pends the interrupt number 32 (See EVENT:CPUIRQSEL32.EV for details). Reading the bit returns its current state." id="SETPEND32" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_ICPR0" width="32" description="Irq 0 to 31 Clear Pending
+This register is used to clear pending interrupts and determine which interrupts are currently pending." id="NVIC_ICPR0" offset="0x280">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 31 (See EVENT:CPUIRQSEL31.EV for details). Reading the bit returns its current state." id="CLRPEND31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 30 (See EVENT:CPUIRQSEL30.EV for details). Reading the bit returns its current state." id="CLRPEND30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 29 (See EVENT:CPUIRQSEL29.EV for details). Reading the bit returns its current state." id="CLRPEND29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 28 (See EVENT:CPUIRQSEL28.EV for details). Reading the bit returns its current state." id="CLRPEND28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 27 (See EVENT:CPUIRQSEL27.EV for details). Reading the bit returns its current state." id="CLRPEND27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 26 (See EVENT:CPUIRQSEL26.EV for details). Reading the bit returns its current state." id="CLRPEND26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 25 (See EVENT:CPUIRQSEL25.EV for details). Reading the bit returns its current state." id="CLRPEND25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 24 (See EVENT:CPUIRQSEL24.EV for details). Reading the bit returns its current state." id="CLRPEND24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 23 (See EVENT:CPUIRQSEL23.EV for details). Reading the bit returns its current state." id="CLRPEND23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 22 (See EVENT:CPUIRQSEL22.EV for details). Reading the bit returns its current state." id="CLRPEND22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 21 (See EVENT:CPUIRQSEL21.EV for details). Reading the bit returns its current state." id="CLRPEND21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 20 (See EVENT:CPUIRQSEL20.EV for details). Reading the bit returns its current state." id="CLRPEND20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 19 (See EVENT:CPUIRQSEL19.EV for details). Reading the bit returns its current state." id="CLRPEND19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 18 (See EVENT:CPUIRQSEL18.EV for details). Reading the bit returns its current state." id="CLRPEND18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 17 (See EVENT:CPUIRQSEL17.EV for details). Reading the bit returns its current state." id="CLRPEND17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 16 (See EVENT:CPUIRQSEL16.EV for details). Reading the bit returns its current state." id="CLRPEND16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 15 (See EVENT:CPUIRQSEL15.EV for details). Reading the bit returns its current state." id="CLRPEND15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 14 (See EVENT:CPUIRQSEL14.EV for details). Reading the bit returns its current state." id="CLRPEND14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 13 (See EVENT:CPUIRQSEL13.EV for details). Reading the bit returns its current state." id="CLRPEND13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 12 (See EVENT:CPUIRQSEL12.EV for details). Reading the bit returns its current state." id="CLRPEND12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 11 (See EVENT:CPUIRQSEL11.EV for details). Reading the bit returns its current state." id="CLRPEND11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 10 (See EVENT:CPUIRQSEL10.EV for details). Reading the bit returns its current state." id="CLRPEND10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 9 (See EVENT:CPUIRQSEL9.EV for details). Reading the bit returns its current state." id="CLRPEND9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 8 (See EVENT:CPUIRQSEL8.EV for details). Reading the bit returns its current state." id="CLRPEND8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 7 (See EVENT:CPUIRQSEL7.EV for details). Reading the bit returns its current state." id="CLRPEND7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 6 (See EVENT:CPUIRQSEL6.EV for details). Reading the bit returns its current state." id="CLRPEND6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 5 (See EVENT:CPUIRQSEL5.EV for details). Reading the bit returns its current state." id="CLRPEND5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 4 (See EVENT:CPUIRQSEL4.EV for details). Reading the bit returns its current state." id="CLRPEND4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 3 (See EVENT:CPUIRQSEL3.EV for details). Reading the bit returns its current state." id="CLRPEND3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 2 (See EVENT:CPUIRQSEL2.EV for details). Reading the bit returns its current state." id="CLRPEND2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 1 (See EVENT:CPUIRQSEL1.EV for details). Reading the bit returns its current state." id="CLRPEND1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 0 (See EVENT:CPUIRQSEL0.EV for details). Reading the bit returns its current state." id="CLRPEND0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_ICPR1" width="32" description="Irq 32 to 63 Clear Pending
+This register is used to clear pending interrupts and determine which interrupts are currently pending." id="NVIC_ICPR1" offset="0x284">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 37 (See EVENT:CPUIRQSEL37.EV for details). Reading the bit returns its current state." id="CLRPEND37" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 36 (See EVENT:CPUIRQSEL36.EV for details). Reading the bit returns its current state." id="CLRPEND36" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 35 (See EVENT:CPUIRQSEL35.EV for details). Reading the bit returns its current state." id="CLRPEND35" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 34 (See EVENT:CPUIRQSEL34.EV for details). Reading the bit returns its current state." id="CLRPEND34" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 33 (See EVENT:CPUIRQSEL33.EV for details). Reading the bit returns its current state." id="CLRPEND33" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Writing 0 to this bit has no effect, writing 1 to this bit clears the corresponding pending interrupt 32 (See EVENT:CPUIRQSEL32.EV for details). Reading the bit returns its current state." id="CLRPEND32" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IABR0" width="32" description="Irq 0 to 31 Active Bit
+This register is used to determine which interrupts are active. Each flag in the register corresponds to one interrupt." id="NVIC_IABR0" offset="0x300">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 31 is not active. Reading 1 from this bit implies that the interrupt line 31 is active (See EVENT:CPUIRQSEL31.EV for details)." id="ACTIVE31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 30 is not active. Reading 1 from this bit implies that the interrupt line 30 is active (See EVENT:CPUIRQSEL30.EV for details)." id="ACTIVE30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 29 is not active. Reading 1 from this bit implies that the interrupt line 29 is active (See EVENT:CPUIRQSEL29.EV for details)." id="ACTIVE29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 28 is not active. Reading 1 from this bit implies that the interrupt line 28 is active (See EVENT:CPUIRQSEL28.EV for details)." id="ACTIVE28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 27 is not active. Reading 1 from this bit implies that the interrupt line 27 is active (See EVENT:CPUIRQSEL27.EV for details)." id="ACTIVE27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 26 is not active. Reading 1 from this bit implies that the interrupt line 26 is active (See EVENT:CPUIRQSEL26.EV for details)." id="ACTIVE26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 25 is not active. Reading 1 from this bit implies that the interrupt line 25 is active (See EVENT:CPUIRQSEL25.EV for details)." id="ACTIVE25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 24 is not active. Reading 1 from this bit implies that the interrupt line 24 is active (See EVENT:CPUIRQSEL24.EV for details)." id="ACTIVE24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 23 is not active. Reading 1 from this bit implies that the interrupt line 23 is active (See EVENT:CPUIRQSEL23.EV for details)." id="ACTIVE23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 22 is not active. Reading 1 from this bit implies that the interrupt line 22 is active (See EVENT:CPUIRQSEL22.EV for details)." id="ACTIVE22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 21 is not active. Reading 1 from this bit implies that the interrupt line 21 is active (See EVENT:CPUIRQSEL21.EV for details)." id="ACTIVE21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 20 is not active. Reading 1 from this bit implies that the interrupt line 20 is active (See EVENT:CPUIRQSEL20.EV for details)." id="ACTIVE20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 19 is not active. Reading 1 from this bit implies that the interrupt line 19 is active (See EVENT:CPUIRQSEL19.EV for details)." id="ACTIVE19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 18 is not active. Reading 1 from this bit implies that the interrupt line 18 is active (See EVENT:CPUIRQSEL18.EV for details)." id="ACTIVE18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 17 is not active. Reading 1 from this bit implies that the interrupt line 17 is active (See EVENT:CPUIRQSEL17.EV for details)." id="ACTIVE17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 16 is not active. Reading 1 from this bit implies that the interrupt line 16 is active (See EVENT:CPUIRQSEL16.EV for details)." id="ACTIVE16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 15 is not active. Reading 1 from this bit implies that the interrupt line 15 is active (See EVENT:CPUIRQSEL15.EV for details)." id="ACTIVE15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 14 is not active. Reading 1 from this bit implies that the interrupt line 14 is active (See EVENT:CPUIRQSEL14.EV for details)." id="ACTIVE14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 13 is not active. Reading 1 from this bit implies that the interrupt line 13 is active (See EVENT:CPUIRQSEL13.EV for details)." id="ACTIVE13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 12 is not active. Reading 1 from this bit implies that the interrupt line 12 is active (See EVENT:CPUIRQSEL12.EV for details)." id="ACTIVE12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 11 is not active. Reading 1 from this bit implies that the interrupt line 11 is active (See EVENT:CPUIRQSEL11.EV for details)." id="ACTIVE11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 10 is not active. Reading 1 from this bit implies that the interrupt line 10 is active (See EVENT:CPUIRQSEL10.EV for details)." id="ACTIVE10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 9 is not active. Reading 1 from this bit implies that the interrupt line 9 is active (See EVENT:CPUIRQSEL9.EV for details)." id="ACTIVE9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 8 is not active. Reading 1 from this bit implies that the interrupt line 8 is active (See EVENT:CPUIRQSEL8.EV for details)." id="ACTIVE8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 7 is not active. Reading 1 from this bit implies that the interrupt line 7 is active (See EVENT:CPUIRQSEL7.EV for details)." id="ACTIVE7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 6 is not active. Reading 1 from this bit implies that the interrupt line 6 is active (See EVENT:CPUIRQSEL6.EV for details)." id="ACTIVE6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 5 is not active. Reading 1 from this bit implies that the interrupt line 5 is active (See EVENT:CPUIRQSEL5.EV for details)." id="ACTIVE5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 4 is not active. Reading 1 from this bit implies that the interrupt line 4 is active (See EVENT:CPUIRQSEL4.EV for details)." id="ACTIVE4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 3 is not active. Reading 1 from this bit implies that the interrupt line 3 is active (See EVENT:CPUIRQSEL3.EV for details)." id="ACTIVE3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 2 is not active. Reading 1 from this bit implies that the interrupt line 2 is active (See EVENT:CPUIRQSEL2.EV for details)." id="ACTIVE2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 1 is not active. Reading 1 from this bit implies that the interrupt line 1 is active (See EVENT:CPUIRQSEL1.EV for details)." id="ACTIVE1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 0 is not active. Reading 1 from this bit implies that the interrupt line 0 is active (See EVENT:CPUIRQSEL0.EV for details)." id="ACTIVE0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IABR1" width="32" description="Irq 32 to 63 Active Bit
+This register is used to determine which interrupts are active. Each flag in the register corresponds to one interrupt." id="NVIC_IABR1" offset="0x304">
+      <bitfield range="" begin="31" width="26" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 37 is not active. Reading 1 from this bit implies that the interrupt line 37 is active (See EVENT:CPUIRQSEL37.EV for details)." id="ACTIVE37" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 36 is not active. Reading 1 from this bit implies that the interrupt line 36 is active (See EVENT:CPUIRQSEL36.EV for details)." id="ACTIVE36" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 35 is not active. Reading 1 from this bit implies that the interrupt line 35 is active (See EVENT:CPUIRQSEL35.EV for details)." id="ACTIVE35" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 34 is not active. Reading 1 from this bit implies that the interrupt line 34 is active (See EVENT:CPUIRQSEL34.EV for details)." id="ACTIVE34" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 33 is not active. Reading 1 from this bit implies that the interrupt line 33 is active (See EVENT:CPUIRQSEL33.EV for details)." id="ACTIVE33" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Reading 0 from this bit implies that interrupt line 32 is not active. Reading 1 from this bit implies that the interrupt line 32 is active (See EVENT:CPUIRQSEL32.EV for details)." id="ACTIVE32" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR0" width="32" description="Irq 0 to 3 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR0" offset="0x400">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 3 (See EVENT:CPUIRQSEL3.EV for details)." id="PRI_3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 2 (See EVENT:CPUIRQSEL2.EV for details)." id="PRI_2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 1 (See EVENT:CPUIRQSEL1.EV for details)." id="PRI_1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 0 (See EVENT:CPUIRQSEL0.EV for details)." id="PRI_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR1" width="32" description="Irq 4 to 7 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR1" offset="0x404">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 7 (See EVENT:CPUIRQSEL7.EV for details)." id="PRI_7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 6 (See EVENT:CPUIRQSEL6.EV for details)." id="PRI_6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 5 (See EVENT:CPUIRQSEL5.EV for details)." id="PRI_5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 4 (See EVENT:CPUIRQSEL4.EV for details)." id="PRI_4" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR2" width="32" description="Irq 8 to 11 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR2" offset="0x408">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 11 (See EVENT:CPUIRQSEL11.EV for details)." id="PRI_11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 10 (See EVENT:CPUIRQSEL10.EV for details)." id="PRI_10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 9 (See EVENT:CPUIRQSEL9.EV for details)." id="PRI_9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 8 (See EVENT:CPUIRQSEL8.EV for details)." id="PRI_8" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR3" width="32" description="Irq 12 to 15 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR3" offset="0x40c">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 15 (See EVENT:CPUIRQSEL15.EV for details)." id="PRI_15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 14 (See EVENT:CPUIRQSEL14.EV for details)." id="PRI_14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 13 (See EVENT:CPUIRQSEL13.EV for details)." id="PRI_13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 12 (See EVENT:CPUIRQSEL12.EV for details)." id="PRI_12" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR4" width="32" description="Irq 16 to 19 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR4" offset="0x410">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 19 (See EVENT:CPUIRQSEL19.EV for details)." id="PRI_19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 18 (See EVENT:CPUIRQSEL18.EV for details)." id="PRI_18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 17 (See EVENT:CPUIRQSEL17.EV for details)." id="PRI_17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 16 (See EVENT:CPUIRQSEL16.EV for details)." id="PRI_16" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR5" width="32" description="Irq 20 to 23 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR5" offset="0x414">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 23 (See EVENT:CPUIRQSEL23.EV for details)." id="PRI_23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 22 (See EVENT:CPUIRQSEL22.EV for details)." id="PRI_22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 21 (See EVENT:CPUIRQSEL21.EV for details)." id="PRI_21" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 20 (See EVENT:CPUIRQSEL20.EV for details)." id="PRI_20" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR6" width="32" description="Irq 24 to 27 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR6" offset="0x418">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 27 (See EVENT:CPUIRQSEL27.EV for details)." id="PRI_27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 26 (See EVENT:CPUIRQSEL26.EV for details)." id="PRI_26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 25 (See EVENT:CPUIRQSEL25.EV for details)." id="PRI_25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 24 (See EVENT:CPUIRQSEL24.EV for details)." id="PRI_24" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR7" width="32" description="Irq 28 to 31 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR7" offset="0x41c">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 31 (See EVENT:CPUIRQSEL31.EV for details)." id="PRI_31" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 30 (See EVENT:CPUIRQSEL30.EV for details)." id="PRI_30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 29 (See EVENT:CPUIRQSEL29.EV for details)." id="PRI_29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 28 (See EVENT:CPUIRQSEL28.EV for details)." id="PRI_28" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR8" width="32" description="Irq 32 to 35 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR8" offset="0x420">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of interrupt 35 (See EVENT:CPUIRQSEL35.EV for details)." id="PRI_35" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of interrupt 34 (See EVENT:CPUIRQSEL34.EV for details)." id="PRI_34" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 33 (See EVENT:CPUIRQSEL33.EV for details)." id="PRI_33" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 32 (See EVENT:CPUIRQSEL32.EV for details)." id="PRI_32" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="NVIC_IPR9" width="32" description="Irq 32 to 35 Priority
+This register is used to assign a priority from 0 to 255 to each of the available interrupts. 0 is the highest priority, and 255 is the lowest. The interpretation of the Interrupt Priority Registers changes based on the setting in AIRCR.PRIGROUP." id="NVIC_IPR9" offset="0x424">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of interrupt 37 (See EVENT:CPUIRQSEL37.EV for details)." id="PRI_37" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of interrupt 36 (See EVENT:CPUIRQSEL36.EV for details)." id="PRI_36" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CPUID" width="32" description="CPUID Base
+This register determines the ID number of the processor core, the version number of the processor core and the implementation details of the processor core." id="CPUID" offset="0xd00">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Implementor code." id="IMPLEMENTER" resetval="0x41">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="Implementation defined variant number." id="VARIANT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="Reads as 0xF" id="CONSTANT" resetval="0xf">
+      </bitfield>
+      <bitfield range="" begin="15" width="12" end="4" rwaccess="RO" description="Number of processor within family." id="PARTNO" resetval="0xc24">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RO" description="Implementation defined revision number." id="REVISION" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="ICSR" width="32" description="Interrupt Control State
+This register is used to set a pending Non-Maskable Interrupt (NMI), set or clear a pending SVC, set or clear a pending SysTick, check for pending exceptions, check the vector number of the highest priority pended exception, and check the vector number of the active exception." id="ICSR" offset="0xd04">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Set pending NMI bit. Setting this bit pends and activates an NMI. Because NMI is the highest-priority interrupt, it takes effect as soon as it registers.
+
+0: No action
+1: Set pending NMI" id="NMIPENDSET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="2" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Set pending pendSV bit.
+
+0: No action
+1: Set pending PendSV" id="PENDSVSET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="WO" description="Clear pending pendSV bit
+
+0: No action
+1: Clear pending pendSV" id="PENDSVCLR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Set a pending SysTick bit.
+
+0: No action
+1: Set pending SysTick" id="PENDSTSET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="WO" description="Clear pending SysTick bit
+
+0: No action
+1: Clear pending SysTick" id="PENDSTCLR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RO" description="This field can only be used at debug time. It indicates that a pending interrupt is to be taken in the next running cycle. If DHCSR.C_MASKINTS= 0, the interrupt is serviced.
+
+0: A pending exception is not serviced.
+1: A pending exception is serviced on exit from the debug halt state" id="ISRPREEMPT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RO" description="Interrupt pending flag. Excludes NMI and faults.
+
+0x0: Interrupt not pending
+0x1: Interrupt pending" id="ISRPENDING" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="4" end="18" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED18" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="6" end="12" rwaccess="RO" description="Pending ISR number field. This field contains the interrupt number of the highest priority pending ISR." id="VECTPENDING" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="Indicates whether there are preempted active exceptions:
+
+0: There are preempted active exceptions to execute
+1: There are no active exceptions, or the currently-executing exception is the only active exception." id="RETTOBASE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="2" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="9" end="0" rwaccess="RO" description="Active ISR number field. Reset clears this field." id="VECTACTIVE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="VTOR" width="32" description="Vector Table Offset
+This register is used to relocated the vector table base address. The vector table base offset determines the offset from the bottom of the memory map. The two most significant bits and the seven least significant bits of the vector table base offset must be 0. The portion of vector table base offset that is allowed to change is TBLOFF." id="VTOR" offset="0xd08">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED30" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="23" end="7" rwaccess="RW" description="Bits 29 down to 7 of the vector table base offset." id="TBLOFF" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="7" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AIRCR" width="32" description="Application Interrupt/Reset Control
+This register is used to determine data endianness, clear all active state information for debug or to recover from a hard failure, execute a system reset, alter the priority grouping position (binary point)." id="AIRCR" offset="0xd0c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RW" description="Register key. Writing to this register (AIRCR) requires 0x05FA in VECTKEY. Otherwise the write value is ignored. Read always returns 0xFA05." id="VECTKEY" resetval="0xfa05">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="Data endianness bit" id="ENDIANESS" resetval="0x0">
+         <bitenum id="BIG" value="1" token="Big endian" description="Big endian"/>
+         <bitenum id="LITTLE" value="0" token="Little endian" description="Little endian"/>
+      </bitfield>
+      <bitfield range="" begin="14" width="4" end="11" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="3" end="8" rwaccess="RW" description="Interrupt priority grouping field. This field is a binary point position indicator for creating subpriorities for exceptions that share the same pre-emption level. It divides the PRI_n field in the Interrupt Priority Registers (NVIC_IPR0, NVIC_IPR1,..., and  NVIC_IPR8) into a pre-emption level and a subpriority level. The binary point is a left-of value. This means that the PRIGROUP value represents a point starting at the left of the Least Significant Bit (LSB). The lowest value might not be 0 depending on the number of bits allocated for priorities, and implementation choices." id="PRIGROUP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="5" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Requests a warm reset. Setting this bit does not prevent Halting Debug from running.
+" id="SYSRESETREQ" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Clears all active state information for active NMI, fault, and interrupts.  It is the responsibility of the application to reinitialize the stack. This bit is for returning to a known state during debug. The bit self-clears. IPSR is not cleared by this operation. So, if used by an application, it must only be used at the base level of activation, or within a system handler whose active bit can be set." id="VECTCLRACTIVE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="System Reset bit. Resets the system, with the exception of debug components. This bit is reserved for debug use and can be written to 1 only when the core is halted. The bit self-clears. Writing this bit to 1 while core is not halted may result in unpredictable behavior." id="VECTRESET" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SCR" width="32" description="System Control
+This register is used for power-management functions, i.e., signaling to the system when the processor can enter a low power state, controlling how the processor enters and exits low power states." id="SCR" offset="0xd10">
+      <bitfield range="" begin="31" width="27" end="5" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Send Event on Pending bit:
+
+0: Only enabled interrupts or events can wakeup the processor, disabled interrupts are excluded
+1: Enabled events and all interrupts, including disabled interrupts, can wakeup the processor.
+
+When an event or interrupt enters pending state, the event signal wakes up the processor from WFE. If
+the processor is not waiting for an event, the event is registered and affects the next WFE.
+The processor also wakes up on execution of an SEV instruction." id="SEVONPEND" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Controls whether the processor uses sleep or deep sleep as its low power mode" id="SLEEPDEEP" resetval="0x0">
+         <bitenum id="DEEPSLEEP" value="1" token="Deep sleep" description="Deep sleep"/>
+         <bitenum id="SLEEP" value="0" token="Sleep" description="Sleep"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Sleep on exit when returning from Handler mode to Thread mode. Enables interrupt driven applications to avoid returning to empty main application.
+
+0: Do not sleep when returning to thread mode
+1: Sleep on ISR exit" id="SLEEPONEXIT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CCR" width="32" description="Configuration Control
+This register is used to enable NMI, HardFault and FAULTMASK to ignore bus fault, trap divide by zero and unaligned accesses, enable user access to the Software Trigger Interrupt Register (STIR), control entry to Thread Mode." id="CCR" offset="0xd14">
+      <bitfield range="" begin="31" width="22" end="10" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED10" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Stack alignment bit.
+
+0: Only 4-byte alignment is guaranteed for the SP used prior to the exception on exception entry.
+1: On exception entry, the SP used prior to the exception is adjusted to be 8-byte aligned and the context to restore it is saved. The SP is restored on the associated exception return." id="STKALIGN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Enables handlers with priority -1 or -2 to ignore data BusFaults caused by load and store instructions. This applies to the HardFault, NMI, and FAULTMASK escalated handlers:
+
+0: Data BusFaults caused by load and store instructions cause a lock-up
+1: Data BusFaults caused by load and store instructions are ignored.
+
+Set this bit to 1 only when the handler and its data are in absolutely safe memory. The normal use
+of this bit is to probe system devices and bridges to detect problems." id="BFHFNMIGN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="3" end="5" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Enables faulting or halting when the processor executes an SDIV or UDIV instruction with a divisor of 0:
+
+0: Do not trap divide by 0. In this mode, a divide by zero returns a quotient of 0.
+1: Trap divide by 0. The relevant Usage Fault Status Register bit is CFSR.DIVBYZERO." id="DIV_0_TRP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Enables unaligned access traps:
+
+0: Do not trap unaligned halfword and word accesses
+1: Trap unaligned halfword and word accesses. The relevant Usage Fault Status Register bit is CFSR.UNALIGNED.
+
+If this bit is set to 1, an unaligned access generates a UsageFault.
+Unaligned LDM, STM, LDRD, and STRD instructions always fault regardless of the value in UNALIGN_TRP." id="UNALIGN_TRP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Enables unprivileged software access to STIR:
+
+0: User code is not allowed to write to the Software Trigger Interrupt register (STIR).
+1: User code can write the Software Trigger Interrupt register (STIR) to trigger (pend) a Main exception, which is associated with the Main stack pointer." id="USERSETMPEND" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Indicates how the processor enters Thread mode:
+
+0: Processor can enter Thread mode only when no exception is active.
+1: Processor can enter Thread mode from any level using the appropriate return value (EXC_RETURN).
+
+Exception returns occur when one of the following instructions loads a value of 0xFXXXXXXX into the PC while in Handler mode: 
+- POP/LDM which includes loading the PC. 
+- LDR with PC as a destination. 
+- BX with any register. 
+The value written to the PC is intercepted and is referred to as the EXC_RETURN value." id="NONBASETHREDENA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SHPR1" width="32" description="System Handlers 4-7 Priority
+This register is used to prioritize the following system handlers: Memory manage, Bus fault, and Usage fault. System Handlers are a special class of exception handler that can have their priority set to any of the priority levels. Most can be masked on (enabled) or off (disabled). When disabled, the fault is always treated as a Hard Fault." id="SHPR1" offset="0xd18">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of system handler 6. UsageFault" id="PRI_6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Priority of system handler 5: BusFault" id="PRI_5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of system handler 4: MemManage" id="PRI_4" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SHPR2" width="32" description="System Handlers 8-11 Priority
+This register is used to prioritize the SVC handler. System Handlers are a special class of exception handler that can have their priority set to any of the priority levels. Most can be masked on (enabled) or off (disabled). When disabled, the fault is always treated as a Hard Fault." id="SHPR2" offset="0xd1c">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of system handler 11. SVCall" id="PRI_11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SHPR3" width="32" description="System Handlers 12-15 Priority
+This register is used to prioritize the following system handlers: SysTick, PendSV and Debug Monitor. System Handlers are a special class of exception handler that can have their priority set to any of the priority levels. Most can be masked on (enabled) or off (disabled). When disabled, the fault is always treated as a Hard Fault." id="SHPR3" offset="0xd20">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RW" description="Priority of system handler 15. SysTick exception" id="PRI_15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RW" description="Priority of system handler 14. Pend SV" id="PRI_14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Priority of system handler 12. Debug Monitor" id="PRI_12" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SHCSR" width="32" description="System Handler Control and State
+This register is used to enable or disable the system handlers, determine the pending status of bus fault, mem manage fault, and SVC, determine the active status of the system handlers. If a fault condition occurs while its fault handler is disabled, the fault escalates to a Hard Fault." id="SHCSR" offset="0xd24">
+      <bitfield range="" begin="31" width="13" end="19" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED19" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Usage fault system handler enable" id="USGFAULTENA" resetval="0x0">
+         <bitenum id="EN" value="1" token="Exception enabled" description="Exception enabled"/>
+         <bitenum id="DIS" value="0" token="Exception disabled" description="Exception disabled"/>
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Bus fault system handler enable" id="BUSFAULTENA" resetval="0x0">
+         <bitenum id="EN" value="1" token="Exception enabled" description="Exception enabled"/>
+         <bitenum id="DIS" value="0" token="Exception disabled" description="Exception disabled"/>
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="MemManage fault system handler enable" id="MEMFAULTENA" resetval="0x0">
+         <bitenum id="EN" value="1" token="Exception enabled" description="Exception enabled"/>
+         <bitenum id="DIS" value="0" token="Exception disabled" description="Exception disabled"/>
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="SVCall pending" id="SVCALLPENDED" resetval="0x0">
+         <bitenum id="PENDING" value="1" token="Exception is pending." description="Exception is pending."/>
+         <bitenum id="NOTPENDING" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="BusFault pending" id="BUSFAULTPENDED" resetval="0x0">
+         <bitenum id="PENDING" value="1" token="Exception is pending." description="Exception is pending."/>
+         <bitenum id="NOTPENDING" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="MemManage exception pending" id="MEMFAULTPENDED" resetval="0x0">
+         <bitenum id="PENDING" value="1" token="Exception is pending." description="Exception is pending."/>
+         <bitenum id="NOTPENDING" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="Usage fault pending" id="USGFAULTPENDED" resetval="0x0">
+         <bitenum id="PENDING" value="1" token="Exception is pending." description="Exception is pending."/>
+         <bitenum id="NOTPENDING" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="SysTick active flag.
+
+0x0: Not active
+0x1: Active" id="SYSTICKACT" resetval="0x0">
+         <bitenum id="ACTIVE" value="1" token="Exception is active" description="Exception is active"/>
+         <bitenum id="NOTACTIVE" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="PendSV active
+
+0x0: Not active
+0x1: Active" id="PENDSVACT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="Debug monitor active" id="MONITORACT" resetval="0x0">
+         <bitenum id="ACTIVE" value="1" token="Exception is active" description="Exception is active"/>
+         <bitenum id="NOTACTIVE" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="SVCall active" id="SVCALLACT" resetval="0x0">
+         <bitenum id="ACTIVE" value="1" token="Exception is active" description="Exception is active"/>
+         <bitenum id="NOTACTIVE" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="6" width="3" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="UsageFault exception active" id="USGFAULTACT" resetval="0x0">
+         <bitenum id="ACTIVE" value="1" token="Exception is active" description="Exception is active"/>
+         <bitenum id="NOTACTIVE" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="BusFault exception active" id="BUSFAULTACT" resetval="0x0">
+         <bitenum id="ACTIVE" value="1" token="Exception is active" description="Exception is active"/>
+         <bitenum id="NOTACTIVE" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="MemManage exception active" id="MEMFAULTACT" resetval="0x0">
+         <bitenum id="ACTIVE" value="1" token="Exception is active" description="Exception is active"/>
+         <bitenum id="NOTACTIVE" value="0" token="Exception is not active" description="Exception is not active"/>
+      </bitfield>
+   </register>
+   <register acronym="CFSR" width="32" description="Configurable Fault Status
+This register is used to obtain information about local faults. These registers include three subsections: The first byte is Memory Manage Fault Status Register (MMFSR). The second byte is Bus Fault Status Register (BFSR). The higher half-word is Usage Fault Status Register (UFSR). The flags in these registers indicate the causes of local faults. Multiple flags can be set if more than one fault occurs. These register are read/write-clear. This means that they can be read normally, but writing a 1 to any bit clears that bit.
+The CFSR is byte accessible. CFSR or its subregisters can be accessed as follows:
+The following accesses are possible to the CFSR register:
+- access the complete register with a word access to 0xE000ED28. 
+- access the MMFSR with a byte access to 0xE000ED28
+- access the MMFSR and BFSR with a halfword access to 0xE000ED28
+- access the BFSR with a byte access to 0xE000ED29
+- access the UFSR with a halfword access to 0xE000ED2A." id="CFSR" offset="0xd28">
+      <bitfield range="" begin="31" width="6" end="26" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="When CCR.DIV_0_TRP (see Configuration Control Register on page 8-26) is enabled and an SDIV or UDIV instruction is used with a divisor of 0, this fault occurs The instruction is executed and the return PC points to it. If CCR.DIV_0_TRP is not set, then the divide returns a quotient of 0." id="DIVBYZERO" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="When CCR.UNALIGN_TRP is enabled, and there is an attempt to make an unaligned memory access, then this fault occurs. Unaligned LDM/STM/LDRD/STRD instructions always fault irrespective of the setting of CCR.UNALIGN_TRP." id="UNALIGNED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Attempt to use a coprocessor instruction. The processor does not support coprocessor instructions." id="NOCP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Attempt to load EXC_RETURN into PC illegally. Invalid instruction, invalid context, invalid value. The return PC points to the instruction that tried to set the PC.
+" id="INVPC" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Indicates an attempt to execute in an invalid EPSR state (e.g. after a BX type instruction has changed state). This includes state change after entry to or return from exception, as well as from inter-working instructions. Return PC points to faulting instruction, with the invalid state." id="INVSTATE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="This bit is set when the processor attempts to execute an undefined instruction. This is an instruction that the processor cannot decode. The return PC points to the undefined instruction." id="UNDEFINSTR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="This bit is set if the Bus Fault Address Register (BFAR) contains a valid address. This is true after a bus fault where the address is known. Other faults can clear this bit, such as a Mem Manage fault occurring later. If a Bus fault occurs that is escalated to a Hard Fault because of priority, the Hard Fault handler must clear this bit. This prevents problems if returning to a stacked active Bus fault handler whose BFAR value has been overwritten." id="BFARVALID" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="2" end="13" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Stacking from exception has caused one or more bus faults. The SP is still adjusted and the values in the context area on the stack might be incorrect. BFAR is not written." id="STKERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Unstack from exception return has caused one or more bus faults. This is chained to the handler, so that the original return stack is still present. SP is not adjusted from failing return and new save is not performed. BFAR is not written." id="UNSTKERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Imprecise data bus error. It is a BusFault, but the Return PC is not related to the causing instruction. This is not a synchronous fault. So, if detected when the priority of the current activation is higher than the Bus Fault, it only pends. Bus fault activates when returning to a lower priority activation. If a precise fault occurs before returning to a lower priority exception, the handler detects both IMPRECISERR set and one of the precise fault status bits set at the same time. BFAR is not written." id="IMPRECISERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Precise data bus error return." id="PRECISERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Instruction bus error flag. This flag is set by a prefetch error. The fault stops on the instruction, so if the error occurs under a branch shadow, no fault occurs. BFAR is not written." id="IBUSERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Memory Manage Address Register (MMFAR) address valid flag. A later-arriving fault, such as a bus fault, can clear a memory manage fault.. If a MemManage fault occurs that is escalated to a Hard Fault because of priority, the Hard Fault handler must clear this bit. This prevents problems on return to a stacked active MemManage handler whose MMFAR value has been overwritten." id="MMARVALID" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="2" end="5" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Stacking from exception has caused one or more access violations. The SP is still adjusted and the values in the context area on the stack might be incorrect. MMFAR is not written." id="MSTKERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Unstack from exception return has caused one or more access violations. This is chained to the handler, so that the original return stack is still present. SP is not adjusted from failing return and new save is not performed. MMFAR is not written." id="MUNSTKERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Data access violation flag. Attempting to load or store at a location that does not permit the operation sets this flag. The return PC points to the faulting instruction. This error loads MMFAR with the address of the attempted access." id="DACCVIOL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Instruction access violation flag. Attempting to fetch an instruction from a location that does not permit execution sets this flag. This occurs on any access to an XN region, even when the MPU is disabled or not present. The return PC points to the faulting instruction. MMFAR is not written." id="IACCVIOL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="HFSR" width="32" description="Hard Fault Status
+This register is used to obtain information about events that activate the Hard Fault handler. This register is a write-clear register. This means that writing a 1 to a bit clears that bit." id="HFSR" offset="0xd2c">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="This bit is set if there is a fault related to debug. This is only possible when halting debug is not enabled. For monitor enabled debug, it only happens for BKPT when the current priority is higher than the monitor. When both halting and monitor debug are disabled, it only happens for debug events that are not ignored (minimally, BKPT). The Debug Fault Status Register is updated." id="DEBUGEVT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Hard Fault activated because a Configurable Fault was received and cannot activate because of priority or because the Configurable Fault is disabled. The Hard Fault handler then has to read the other fault status registers to determine cause." id="FORCED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="28" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="This bit is set if there is a fault because of vector table read on exception processing (Bus Fault). This case is always a Hard Fault. The return PC points to the pre-empted instruction." id="VECTTBL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DFSR" width="32" description="Debug Fault Status
+This register is used to monitor external debug requests, vector catches, data watchpoint match, BKPT instruction execution, halt requests. Multiple flags in the Debug Fault Status Register can be set when multiple fault conditions occur. The register is read/write clear. This means that it can be read normally. Writing a 1 to a bit clears that bit. Note that these bits are not set unless the event is caught. This means that it causes a stop of some sort. If halting debug is enabled, these events stop the processor into debug. If debug is disabled and the debug monitor is enabled, then this becomes a debug monitor handler call, if priority permits. If debug and the monitor are both disabled, some of these events are Hard Faults, and some are ignored." id="DFSR" offset="0xd30">
+      <bitfield range="" begin="31" width="27" end="5" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="External debug request flag. The processor stops on next instruction boundary.
+
+0x0: External debug request signal not asserted
+0x1: External debug request signal asserted" id="EXTERNAL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Vector catch flag. When this flag is set, a flag in one of the local fault status registers is also set to indicate the type of fault.
+
+0x0: No vector catch occurred
+0x1: Vector catch occurred" id="VCATCH" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Data Watchpoint and Trace (DWT) flag. The processor stops at the current instruction or at the next instruction.
+
+0x0: No DWT match
+0x1: DWT match" id="DWTTRAP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="BKPT flag. The BKPT flag is set by a BKPT instruction in flash patch code, and also by normal code. Return PC points to breakpoint containing instruction.
+
+0x0: No BKPT instruction execution
+0x1: BKPT instruction execution" id="BKPT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Halt request flag. The processor is halted on the next instruction.
+
+0x0: No halt request
+0x1: Halt requested by NVIC, including step" id="HALTED" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MMFAR" width="32" description="Mem Manage Fault Address
+This register is used to read the address of the location that caused a Memory Manage Fault." id="MMFAR" offset="0xd34">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Mem Manage fault address field.
+This field is the data address of a faulted load or store attempt. When an unaligned access faults, the address is the actual address that faulted. Because an access can be split into multiple parts, each aligned, this address can be any offset in the range of the requested size. Flags CFSR.IACCVIOL, CFSR.DACCVIOL ,CFSR.MUNSTKERR and CFSR.MSTKERR in combination with CFSR.MMARVALIDindicate the cause of the fault." id="ADDRESS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BFAR" width="32" description="Bus Fault Address
+This register is used to read the address of the location that generated a Bus Fault." id="BFAR" offset="0xd38">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Bus fault address field. This field is the data address of a faulted load or store attempt. When an unaligned access faults, the address is the address requested by the instruction, even if that is not the address that faulted. 
+Flags CFSR.IBUSERR, CFSR.PRECISERR, CFSR.IMPRECISERR, CFSR.UNSTKERR and CFSR.STKERR in combination with CFSR.BFARVALID indicate the cause of the fault." id="ADDRESS" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="AFSR" width="32" description="Auxiliary Fault Status
+This register is used to determine additional system fault information to software. Single-cycle high level on an auxiliary faults is latched as one. The bit can only be cleared by writing a one to the corresponding bit. Auxiliary fault inputs to the CPU are tied to 0." id="AFSR" offset="0xd3c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Implementation defined. The bits map directly onto the signal assignment to the auxiliary fault inputs. Tied to 0" id="IMPDEF" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ID_PFR0" width="32" description="Processor Feature 0" id="ID_PFR0" offset="0xd40">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RO" description="State1 (T-bit == 1)
+
+0x0: N/A
+0x1: N/A
+0x2: Thumb-2 encoding with the 16-bit basic instructions plus 32-bit Buncond/BL but no other 32-bit basic instructions (Note non-basic 32-bit instructions can be added using the appropriate instruction attribute, but other 32-bit basic instructions cannot.)
+0x3: Thumb-2 encoding with all Thumb-2 basic instructions" id="STATE1" resetval="0x3">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RO" description="State0 (T-bit == 0)
+
+0x0: No ARM encoding
+0x1: N/A" id="STATE0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ID_PFR1" width="32" description="Processor Feature 1" id="ID_PFR1" offset="0xd44">
+      <bitfield range="" begin="31" width="20" end="12" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED12" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="4" end="8" rwaccess="RO" description="Microcontroller programmer&#39;s model
+
+0x0: Not supported
+0x2: Two-stack support" id="MICROCONTROLLER_PROGRAMMERS_MODEL" resetval="0x2">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ID_DFR0" width="32" description="Debug Feature 0
+This register provides a high level view of the debug system. Further details are provided in the debug infrastructure itself." id="ID_DFR0" offset="0xd48">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="Microcontroller Debug Model - memory mapped
+
+0x0: Not supported
+0x1: Microcontroller debug v1 (ITMv1 and DWTv1)" id="MICROCONTROLLER_DEBUG_MODEL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="19" width="20" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ID_AFR0" width="32" description="Auxiliary Feature 0
+This register provides some freedom for implementation defined features to be registered. Not used in Cortex-M." id="ID_AFR0" offset="0xd4c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ID_MMFR0" width="32" description="Memory Model Feature 0
+General information on the memory model and memory management support." id="ID_MMFR0" offset="0xd50">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x100030">
+      </bitfield>
+   </register>
+   <register acronym="ID_MMFR1" width="32" description="Memory Model Feature 1
+General information on the memory model and memory management support." id="ID_MMFR1" offset="0xd54">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ID_MMFR2" width="32" description="Memory Model Feature 2
+General information on the memory model and memory management support." id="ID_MMFR2" offset="0xd58">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED28" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="wait for interrupt stalling
+
+0x0: Not supported
+0x1: Wait for interrupt supported" id="WAIT_FOR_INTERRUPT_STALLING" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ID_MMFR3" width="32" description="Memory Model Feature 3
+General information on the memory model and memory management support." id="ID_MMFR3" offset="0xd5c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="ID_ISAR0" width="32" description="ISA Feature 0
+Information on the instruction set attributes register" id="ID_ISAR0" offset="0xd60">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x1141110">
+      </bitfield>
+   </register>
+   <register acronym="ID_ISAR1" width="32" description="ISA Feature 1
+Information on the instruction set attributes register" id="ID_ISAR1" offset="0xd64">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x2112000">
+      </bitfield>
+   </register>
+   <register acronym="ID_ISAR2" width="32" description="ISA Feature 2
+Information on the instruction set attributes register" id="ID_ISAR2" offset="0xd68">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x21232231">
+      </bitfield>
+   </register>
+   <register acronym="ID_ISAR3" width="32" description="ISA Feature 3
+Information on the instruction set attributes register" id="ID_ISAR3" offset="0xd6c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x1111131">
+      </bitfield>
+   </register>
+   <register acronym="ID_ISAR4" width="32" description="ISA Feature 4
+Information on the instruction set attributes register" id="ID_ISAR4" offset="0xd70">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x1310102">
+      </bitfield>
+   </register>
+   <register acronym="CPACR" width="32" description="Coprocessor Access Control
+This register specifies the access privileges for coprocessors." id="CPACR" offset="0xd88">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_TYPE" width="32" description="MPU Type
+This register indicates many regions the MPU supports." id="MPU_TYPE" offset="0xd90">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Reads 0." id="RESERVED24" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RO" description="The processor core uses only a unified MPU, this field always reads 0x0." id="IREGION" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Number of supported MPU regions field. This field reads 0x08 indicating eight MPU regions." id="DREGION" resetval="0x8">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Reads 0." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="The processor core uses only a unified MPU, thus this field is always 0." id="SEPARATE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_CTRL" width="32" description="MPU Control
+This register is used to enable the MPU, enable the default memory map (background region), and enable the MPU when in Hard Fault, Non-maskable Interrupt (NMI), and FAULTMASK escalated handlers. When the MPU is enabled, at least one region of the memory map must be enabled for the MPU to function unless the PRIVDEFENA bit is set. If the PRIVDEFENA bit is set and no regions are enabled, then only privileged code can operate. When the MPU is disabled, the default address map is used, as if no MPU is present. When the MPU is enabled, only the system partition and vector table loads are always accessible. Other areas are accessible based on regions and whether PRIVDEFENA is enabled. Unless HFNMIENA is set, the MPU is not enabled when the exception priority is -1 or -2. These priorities are only possible when in Hard fault, NMI, or when FAULTMASK is enabled. The HFNMIENA bit enables the MPU when operating with these two priorities." id="MPU_CTRL" offset="0xd94">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="This bit enables the default memory map for privileged access, as a background region, when the MPU is enabled. The background region acts as if it was region number 1 before any settable regions. Any region that is set up overlays this default map, and overrides it. If this bit is not set, the default memory map is disabled, and memory not covered by a region faults. This applies to memory type, Execute Never (XN), cache and shareable rules. However, this only applies to privileged mode (fetch and data access). User mode code faults unless a region has been set up for its code and data. When the MPU is disabled, the default map acts on both privileged and user mode code. XN and SO rules always apply to the system partition whether this enable is set or not. If the MPU is disabled, this bit is ignored." id="PRIVDEFENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="This bit enables the MPU when in Hard Fault, NMI, and FAULTMASK escalated handlers. If this bit and ENABLE are set, the MPU is enabled when in these handlers. If this bit is not set, the MPU is disabled when in these handlers, regardless of the value of ENABLE bit. If this bit is set and ENABLE is not set, behavior is unpredictable. " id="HFNMIENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Enable MPU
+
+0: MPU disabled
+1: MPU enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RNR" width="32" description="MPU Region Number
+This register is used to select which protection region is accessed. The following write to  MPU_RASR or MPU_RBAR configures the characteristics of the protection region that is selected by this register." id="MPU_RNR" offset="0xd98">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Region select field. 
+This field selects the region to operate on when using the MPU_RASR and MPU_RBAR. It must be written first except when the address MPU_RBAR.VALID and MPU_RBAR.REGION fields are written, which overwrites this." id="REGION" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RBAR" width="32" description="MPU Region Base Address
+This register writes the base address of a region. It also contains a REGION field that can be used to override MPU_RNR.REGION, if the VALID bit is set. This register sets the base for the region. It is aligned by the size. So, a 64-KB sized region must be aligned on a multiple of 64KB, for example, 0x00010000 or 0x00020000. The region always reads back as the current MPU region number. VALID always reads back as 0. Writing VALID = 1 and REGION = n changes the region number to n. This is a short-hand way to write the MPU_RNR. This register is unpredictable if accessed other than as a word." id="MPU_RBAR" offset="0xd9c">
+      <bitfield range="" begin="31" width="27" end="5" rwaccess="RW" description="Region base address field. 
+The position of the LSB depends on the region size, so that the base address is aligned according to an even multiple of size. The power of 2 size specified by the SZENABLE field of the MPU Region Attribute and Size Register defines how many bits of base address are used." id="ADDR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="MPU region number valid:
+0: MPU_RNR remains unchanged and is interpreted.
+1: MPU_RNR is overwritten by REGION." id="VALID" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="MPU region override field" id="REGION" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RASR" width="32" description="MPU Region Attribute and Size
+This register controls the MPU access permissions. The register is made up of two part registers, each of halfword size. These can be accessed using the halfword size, or they can both be simultaneously accessed using a word operation. The sub-region disable bits are not supported for region sizes of 32 bytes, 64 bytes, and 128 bytes. When these region sizes are used, the subregion disable bits must be programmed as 0." id="MPU_RASR" offset="0xda0">
+      <bitfield range="" begin="31" width="3" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Instruction access disable:
+0: Enable instruction fetches
+1: Disable instruction fetches" id="XN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="3" end="24" rwaccess="RW" description="Data access permission:
+0x0: Priviliged permissions: No access. User permissions: No access.
+0x1: Priviliged permissions: Read-write. User permissions: No access.
+0x2: Priviliged permissions: Read-write. User permissions: Read-only.
+0x3: Priviliged permissions: Read-write. User permissions: Read-write.
+0x4: Reserved
+0x5: Priviliged permissions: Read-only. User permissions: No access.
+0x6: Priviliged permissions: Read-only. User permissions: Read-only.
+0x7: Priviliged permissions: Read-only. User permissions: Read-only.
+" id="AP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="2" end="22" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED22" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="3" end="19" rwaccess="RW" description="Type extension" id="TEX" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Shareable bit:
+0: Not shareable
+1: Shareable" id="S" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Cacheable bit:
+0: Not cacheable
+1: Cacheable" id="C" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Bufferable bit:
+0: Not bufferable
+1: Bufferable" id="B" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RW" description="Sub-Region Disable field:
+Setting a bit in this field disables the corresponding sub-region. Regions are split into eight equal-sized sub-regions. Sub-regions are not supported for region sizes of 128 bytes and less." id="SRD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="5" end="1" rwaccess="RW" description="MPU Protection Region Size Field:
+0x04: 32B
+0x05: 64B
+0x06: 128B
+0x07: 256B
+0x08: 512B
+0x09: 1KB
+0x0A: 2KB
+0x0B: 4KB
+0x0C: 8KB
+0x0D: 16KB
+0x0E: 32KB
+0x0F: 64KB
+0x10: 128KB
+0x11: 256KB
+0x12: 512KB
+0x13: 1MB
+0x14: 2MB
+0x15: 4MB
+0x16: 8MB
+0x17: 16MB
+0x18: 32MB
+0x19: 64MB
+0x1A: 128MB
+0x1B: 256MB
+0x1C: 512MB
+0x1D: 1GB
+0x1E: 2GB
+0x1F: 4GB" id="SIZE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Region enable bit:
+0: Disable region 
+1: Enable region" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RBAR_A1" width="32" description="MPU Alias 1 Region Base Address
+Alias for MPU_RBAR" id="MPU_RBAR_A1" offset="0xda4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Alias for MPU_RBAR" id="MPU_RBAR_A1" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RASR_A1" width="32" description="MPU Alias 1 Region Attribute and Size
+Alias for MPU_RASR" id="MPU_RASR_A1" offset="0xda8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Alias for MPU_RASR" id="MPU_RASR_A1" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RBAR_A2" width="32" description="MPU Alias 2 Region Base Address
+Alias for MPU_RBAR" id="MPU_RBAR_A2" offset="0xdac">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Alias for MPU_RBAR" id="MPU_RBAR_A2" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RASR_A2" width="32" description="MPU Alias 2 Region Attribute and Size
+Alias for MPU_RASR" id="MPU_RASR_A2" offset="0xdb0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Alias for MPU_RASR" id="MPU_RASR_A2" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RBAR_A3" width="32" description="MPU Alias 3 Region Base Address
+Alias for MPU_RBAR" id="MPU_RBAR_A3" offset="0xdb4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Alias for MPU_RBAR" id="MPU_RBAR_A3" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MPU_RASR_A3" width="32" description="MPU Alias 3 Region Attribute and Size
+Alias for MPU_RASR" id="MPU_RASR_A3" offset="0xdb8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Alias for MPU_RASR" id="MPU_RASR_A3" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DHCSR" width="32" description="Debug Halting Control and Status
+The purpose of this register is to provide status information about the state of the processor, enable core debug, halt and step the processor. For writes, 0xA05F must be written to higher half-word of this register, otherwise the write operation is ignored and no bits are written into the register. If not enabled for Halting mode, C_DEBUGEN = 1, all other fields are disabled. This register is not reset on a core reset. It is reset by a power-on reset. However, C_HALT always clears on a core reset. To halt on a reset, the following bits must be enabled: DEMCR.VC_CORERESET and C_DEBUGEN. Note that writes to this register in any size other than word are unpredictable. It is acceptable to read in any size, and it can be used to avoid or intentionally change a sticky bit.
+
+Behavior of the system when writing to this register while CPU is halted (i.e. C_DEBUGEN = 1 and S_HALT= 1):
+C_HALT=0, C_STEP=0, C_MASKINTS=0               Exit Debug state and start instruction execution. Exceptions activate according to the exception configuration rules.
+C_HALT=0, C_STEP=0, C_MASKINTS=1               Exit Debug state and start instruction execution. PendSV, SysTick and external configurable interrupts are disabled, otherwise exceptions activate according to standard configuration rules.
+C_HALT=0, C_STEP=1, C_MASKINTS=0               Exit Debug state, step an instruction and halt. Exceptions activate according to the exception configuration rules.
+C_HALT=0, C_STEP=1, C_MASKINTS=1               Exit Debug state, step an instruction and halt. PendSV, SysTick and external configurable interrupts are disabled, otherwise exceptions activate according to standard configuration rules.
+C_HALT=1, C_STEP=x, C_MASKINTS=x               Remain in Debug state" id="DHCSR" offset="0xdf0">
+      <bitfield range="" begin="31" width="6" end="26" rwaccess="RW" description="Software should not rely on the value of a reserved. 
+When writing to this register, 0x28 must be written this bit-field, otherwise the write operation is ignored and no bits are written into the register. " id="RESERVED26" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Indicates that the core has been reset, or is now being reset, since the last time this bit was read. This a sticky bit that clears on read. So, reading twice and getting 1 then 0 means it was reset in the past. Reading twice and getting 1 both times means that it is being reset now (held in reset still).
+When writing to this register, 0 must be written this bit-field, otherwise the write operation is ignored and no bits are written into the register. " id="S_RESET_ST" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Indicates that an instruction has completed since last read. This is a sticky bit that clears on read. This determines if the core is stalled on a load/store or fetch.
+When writing to this register, 0 must be written this bit-field, otherwise the write operation is ignored and no bits are written into the register. " id="S_RETIRE_ST" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RW" description="Software should not rely on the value of a reserved. 
+When writing to this register, 0x5 must be written this bit-field, otherwise the write operation is ignored and no bits are written into the register. " id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Reads as one if the core is running (not halted) and a lockup condition is present.
+When writing to this register, 1 must be written this bit-field, otherwise the write operation is ignored and no bits are written into the register. " id="S_LOCKUP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Indicates that the core is sleeping (WFI, WFE, or **SLEEP-ON-EXIT**). Must use C_HALT to gain control or wait for interrupt to wake-up.
+When writing to this register, 1 must be written this bit-field, otherwise the write operation is ignored and no bits are written into the register. " id="S_SLEEP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="The core is in debug state when this bit is set.
+When writing to this register, 1 must be written this bit-field, otherwise the write operation is ignored and no bits are written into the register. " id="S_HALT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Register Read/Write on the Debug Core Register Selector register is available. Last transfer is complete.
+When writing to this register, 1 must be written this bit-field, otherwise the write operation is ignored and no bits are written into the register. " id="S_REGRDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="10" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="If the core is stalled on a load/store operation the stall ceases and the instruction is forced to complete. This enables Halting debug to gain control of the core. It can only be set if: C_DEBUGEN = 1 and C_HALT = 1. The core reads S_RETIRE_ST as 0. This indicates that no instruction has advanced. This prevents misuse. The bus state is Unpredictable when this is used. S_RETIRE_ST can detect core stalls on load/store operations." id="C_SNAPSTALL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Mask interrupts when stepping or running in halted debug. This masking does not affect NMI, fault exceptions and SVC caused by execution of the instructions. This bit must only be modified when the processor is halted (S_HALT == 1).  C_MASKINTS must be set or cleared before halt is released (i.e., the writes to set or clear C_MASKINTS and to set or clear C_HALT must be separate). Modifying C_MASKINTS while the system is running with halting debug support enabled (C_DEBUGEN = 1, S_HALT = 0) may cause unpredictable behavior." id="C_MASKINTS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Steps the core in halted debug. When C_DEBUGEN = 0, this bit has no effect. Must only be modified when the processor is halted (S_HALT == 1).
+Modifying C_STEP while the system is running with halting debug support enabled (C_DEBUGEN = 1, S_HALT = 0) may cause unpredictable behavior." id="C_STEP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Halts the core. This bit is set automatically when the core Halts. For example Breakpoint. This bit clears on core reset." id="C_HALT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Enables debug. This can only be written by AHB-AP and not by the core. It is ignored when written by the core, which cannot set or clear it. The core must write a 1 to it when writing C_HALT to halt itself.
+The values of C_HALT, C_STEP and C_MASKINTS are ignored by hardware when C_DEBUGEN = 0. The read values for C_HALT, C_STEP and C_MASKINTS fields will be unknown to software when C_DEBUGEN = 0." id="C_DEBUGEN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DCRSR" width="32" description="Deubg Core Register Selector
+The purpose of this register is to select the processor register to transfer data to or from. This write-only register generates a handshake to the core to transfer data to or from Debug Core Register Data Register and the selected register. Until this core transaction is complete, DHCSR.S_REGRDY is 0. Note that writes to this register in any size but word are Unpredictable. 
+Note that PSR registers are fully accessible this way, whereas some read as 0 when using MRS instructions. Note that all bits can be written, but some combinations cause a fault when execution is resumed." id="DCRSR" offset="0xdf4">
+      <bitfield range="" begin="31" width="15" end="17" rwaccess="WO" description="Software should not rely on the value of a reserved. Write 0." id="RESERVED17" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="WO" description="1: Write
+0: Read" id="REGWNR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="11" end="5" rwaccess="WO" description="Software should not rely on the value of a reserved. Write 0." id="RESERVED5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="5" end="0" rwaccess="WO" description="Register select
+
+0x00: R0
+0x01: R1
+0x02: R2
+0x03: R3
+0x04: R4
+0x05: R5
+0x06: R6
+0x07: R7
+0x08: R8
+0x09: R9
+0x0A: R10
+0x0B: R11
+0x0C: R12
+0x0D: Current SP
+0x0E: LR
+0x0F: DebugReturnAddress
+0x10: XPSR/flags, execution state information, and exception number
+0x11: MSP (Main SP)
+0x12: PSP (Process SP)
+0x14: CONTROL&#60;&#60;24 | FAULTMASK&#60;&#60;16 | BASEPRI&#60;&#60;8 | PRIMASK" id="REGSEL" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DCRDR" width="32" description="Debug Core Register Data" id="DCRDR" offset="0xdf8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="This register holds data for reading and writing registers to and from the processor. This is the data value written to the register selected by DCRSR. When the processor receives a request from DCRSR, this register is read or written by the processor using a normal load-store unit operation. If core register transfers are not being performed, software-based debug monitors can use this register for communication in non-halting debug. This enables flags and bits to acknowledge state and indicate if commands have been accepted to, replied to, or accepted and replied to." id="DCRDR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DEMCR" width="32" description="Debug Exception and Monitor Control
+The purpose of this register is vector catching and debug monitor control.  This register manages exception behavior under debug. Vector catching is only available to halting debug. The upper halfword is for monitor controls and the lower halfword is for halting exception support. This register is not reset on a system reset. This register is reset by a power-on reset. The fields MON_EN, MON_PEND, MON_STEP and MON_REQ are always cleared on a core reset. The debug monitor is enabled by software in the reset handler or later, or by the **AHB-AP** port. Vector catching is semi-synchronous. When a matching event is seen, a Halt is requested. Because the processor can only halt on an instruction boundary, it must wait until the next instruction boundary. As a result, it stops on the first instruction of the exception handler. However, two special cases exist when a vector catch has triggered: 1. If a fault is taken during a vector read or stack push error the halt occurs on the corresponding fault handler for the vector error or stack push. 2. If a late arriving interrupt detected during a vector read or stack push error it is not taken. That is, an implementation that supports the late arrival optimization must suppress it in this case." id="DEMCR" offset="0xdfc">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="This bit must be set to 1 to enable use of the trace and debug blocks: DWT, ITM, ETM and TPIU. This enables control of power usage unless tracing is required. The application can enable this, for ITM use, or use by a debugger." id="TRCENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="This enables the monitor to identify how it wakes up. This bit clears on a Core Reset.
+
+0x0: Woken up by debug exception.
+0x1: Woken up by MON_PEND" id="MON_REQ" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="When MON_EN = 1, this steps the core. When MON_EN = 0, this bit is ignored. 
+This is the equivalent to DHCSR.C_STEP. Interrupts are only stepped according to the priority of the monitor and settings of PRIMASK, FAULTMASK, or BASEPRI." id="MON_STEP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Pend the monitor to activate when priority permits. This can wake up the monitor through the AHB-AP port. It is the equivalent to DHCSR.C_HALT for Monitor debug. This register does not reset on a system reset. It is only reset by a power-on reset. Software in the reset handler or later, or by the DAP must enable the debug monitor." id="MON_PEND" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Enable the debug monitor. 
+When enabled, the System handler priority register controls its priority level. If disabled, then all debug events go to Hard fault. DHCSR.C_DEBUGEN overrides this bit. Vector catching is semi-synchronous. When a matching event is seen, a Halt is requested. Because the processor can only halt on an instruction boundary, it must wait until the next instruction boundary. As a result, it stops on the first instruction of the exception handler. However, two special cases exist when a vector catch has triggered: 1. If a fault is taken during vectoring, vector read or stack push error, the halt occurs on the corresponding fault handler, for the vector error or stack push. 2. If a late arriving interrupt comes in during vectoring, it is not taken. That is, an implementation that supports the late arrival optimization must suppress it in this case." id="MON_EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="5" end="11" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Debug trap on Hard Fault. Ignored when DHCSR.C_DEBUGEN is cleared." id="VC_HARDERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Debug trap on a fault occurring during an exception entry or return sequence. Ignored when DHCSR.C_DEBUGEN is cleared." id="VC_INTERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Debug Trap on normal Bus error. Ignored when DHCSR.C_DEBUGEN is cleared." id="VC_BUSERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Debug trap on Usage Fault state errors. Ignored when DHCSR.C_DEBUGEN is cleared." id="VC_STATERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Debug trap on Usage Fault enabled checking errors. Ignored when DHCSR.C_DEBUGEN is cleared." id="VC_CHKERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Debug trap on a UsageFault access to a Coprocessor. Ignored when DHCSR.C_DEBUGEN is cleared." id="VC_NOCPERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Debug trap on Memory Management faults. Ignored when DHCSR.C_DEBUGEN is cleared." id="VC_MMERR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="3" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Reset Vector Catch. Halt running system if Core reset occurs. Ignored when DHCSR.C_DEBUGEN is cleared." id="VC_CORERESET" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="STIR" width="32" description="Software Trigger Interrupt" id="STIR" offset="0xf00">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="WO" description="Software should not rely on the value of a reserved. Write 0." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="9" end="0" rwaccess="WO" description="Interrupt ID field. Writing a value to this bit-field is the same as manually pending an interrupt by setting the corresponding interrupt bit in an Interrupt Set Pending Register in NVIC_ISPR0 or NVIC_ISPR1." id="INTID" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FPCCR" width="32" description="Floating Point Context Control
+This register holds control data for the floating-point unit. Accessible only by privileged software." id="FPCCR" offset="0xf34">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Automatic State Preservation enable. 
+When this bit is set is will cause bit [2] of the Special CONTROL register to be set (FPCA) on execution of a floating point instruction which results in the floating point state automatically being preserved on exception entry." id="ASPEN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Lazy State Preservation enable. 
+Lazy state preservation is when the processor performs a context save, space on the stack is reserved for the floating point state but it is not stacked until the new context performs a floating point operation.
+0: Disable automatic lazy state preservation for floating-point context.
+1: Enable automatic lazy state preservation for floating-point context." id="LSPEN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="29" width="21" end="9" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Indicates whether the the software executing when the processor allocated the FP stack frame was able to set the DebugMonitor exception to pending.
+0: DebugMonitor is disabled or priority did not permit setting DEMCR.MON_PEND when the floating-point stack frame was allocated.
+1: DebugMonitor is enabled and priority permits setting DEMCR.MON_PEND when the floating-point stack frame was allocated." id="MONRDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Indicates whether the software executing when the processor allocated the FP stack frame was able to set the BusFault exception to pending.
+0: BusFault is disabled or priority did not permit setting the BusFault handler to the pending state when the floating-point stack frame was allocated. 
+1: BusFault is enabled and priority permitted setting the BusFault handler to the pending state when the floating-point stack frame was allocated." id="BFRDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Indicates whether the software executing when the processor allocated the FP stack frame was able to set the MemManage exception to pending.
+0: MemManage is disabled or priority did not permit setting the MemManage handler to the pending state when the floating-point stack frame was allocated.
+1: MemManage is enabled and priority permitted setting the MemManage handler to the pending state when the floating-point stack frame was allocated." id="MMRDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Indicates whether the software executing when the processor allocated the FP stack frame was able to set the HardFault exception to pending.
+0: Priority did not permit setting the HardFault handler to the pending state when the floating-point stack frame was allocated.
+1: Priority permitted setting the HardFault handler to the pending state when the floating-point stack frame was allocated." id="HFRDY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Indicates the processor mode was Thread when it allocated the FP stack frame.
+0: Mode was not Thread Mode when the floating-point stack frame was allocated.
+1: Mode was Thread Mode when the floating-point stack frame was allocated." id="THREAD" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Indicates the privilege level of the software executing was User (Unpriviledged) when the processor allocated the FP stack frame:
+0: Privilege level was not user when the floating-point stack frame was allocated.
+1: Privilege level was user when the floating-point stack frame was allocated." id="USER" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Indicates whether Lazy preservation of the FP state is active:
+0: Lazy state preservation is not active.
+1: Lazy state preservation is active. floating-point stack frame has been allocated but saving state to it has been deferred." id="LSPACT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FPCAR" width="32" description="Floating-Point Context Address 
+This register holds the location of the unpopulated floating-point register space allocated on an exception stack frame." id="FPCAR" offset="0xf38">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RW" description="Holds the (double-word-aligned) location of the unpopulated floating-point register space allocated on an exception stack frame." id="ADDRESS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FPDSCR" width="32" description="Floating Point Default Status Control
+This register holds the default values for the floating-point status control data that the processor assigns to the FPSCR when it creates a new floating-point context. Accessible only by privileged software." id="FPDSCR" offset="0xf3c">
+      <bitfield range="" begin="31" width="5" end="27" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Default value for Alternative Half Precision bit. (If this bit is set to 1 then Alternative half-precision format is selected)." id="AHP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Default value for Default NaN mode bit. (If this bit is set to 1 then any operation involving one or more NaNs returns the Default NaN)." id="DN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Default value for Flush-to-Zero mode bit. (If this bit is set to 1 then Flush-to-zero mode is enabled)." id="FZ" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="2" end="22" rwaccess="RW" description="Default value for Rounding Mode control field. (The encoding for this field is:
+0b00 Round to Nearest (RN) mode
+0b01 Round towards Plus Infinity (RP) mode
+0b10 Round towards Minus Infinity (RM) mode
+0b11 Round towards Zero (RZ) mode.
+The specified rounding mode is used by almost all floating-point instructions)." id="RMODE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="22" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MVFR0" width="32" description="Media and FP Feature 0
+Describes the features provided by the Floating-point extension." id="MVFR0" offset="0xf40">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="Indicates the rounding modes supported by the FP floating-point hardware. The value of this field is: 0b0001 - all rounding modes supported." id="FP_ROUNDING_MODES" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="27" width="4" end="24" rwaccess="RO" description="Indicates the hardware support for FP short vectors. The value of this field is: 0b0000 - not supported." id="SHORT_VECTORS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="Indicates the hardware support for FP square root operations. The value of this field is: 0b0001 - supported." id="SQUARE_ROOT" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RO" description="Indicates the hardware support for FP divide operations. The value of this field is: 0b0001 - supported." id="DIVIDE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="4" end="12" rwaccess="RO" description="Indicates whether the FP hardware implementation supports exception trapping. The value of this field is: 0b0000 - not supported." id="FP_EXCEPTION_TRAPPING" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="4" end="8" rwaccess="RO" description="Indicates the hardware support for FP double-precision operations. The value of this field is: 0b0000 - not supported." id="DOUBLE_PRECISION" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RO" description="Indicates the hardware support for FP single-precision operations. The value of this field is: 0b0010 - supported." id="SINGLE_PRECISION" resetval="0x2">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RO" description="Indicates the size of the FP register bank. The value of this field is: 0b0001 - supported, 16 x 64-bit registers." id="A_SIMD" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="MVFR1" width="32" description="Media and FP Feature 1
+Describes the features provided by the Floating-point extension." id="MVFR1" offset="0xf44">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="Indicates whether the FP supports fused multiply accumulate operations. The value of this field is: 0b0001 - supported." id="FP_FUSED_MAC" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="27" width="4" end="24" rwaccess="RO" description="Indicates whether the FP supports half-precision floating-point conversion operations. The value of this field is: 0b0001 - supported." id="FP_HPFP" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="16" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RO" description="Indicates whether the FP hardware implementation supports only the Default NaN mode. The value of this field is: 0b0001 - hardware supports propagation of NaN values." id="D_NAN_MODE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RO" description="Indicates whether the FP hardware implementation supports only the Flush-to-Zero mode of operation. The value of this field is: 0b0001 - hardware supports full denormalized number arithmetic." id="FTZ_MODE" resetval="0x1">
+      </bitfield>
+   </register>
+</module>
