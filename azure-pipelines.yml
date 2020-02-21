@@ -19,7 +19,7 @@ jobs:
 ##############################
 - job: Check_Build_Options
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
 
   steps:
   
@@ -120,7 +120,7 @@ jobs:
   - Check_Build_Options
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
 
   variables:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -144,7 +144,7 @@ jobs:
       versionSpec: '4.9.3'
     displayName: 'Install specifc version of NuGet'
 
-  - task: DotNetCoreInstaller@0
+  - task: UseDotNet@2
     inputs:
       packageType: sdk
       version: 3.1.101
@@ -327,7 +327,7 @@ jobs:
   condition: or( failed('Check_Build_Options'), failed('Build_tool') )
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
 
   steps:
 
