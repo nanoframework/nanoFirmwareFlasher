@@ -154,15 +154,18 @@ jobs:
     inputs:
       command: restore
       verbosityRestore: minimal # detailed, normal, minimal
-      projects: nanoFirmwareFlasher.sln
+      projects: source\nanoFirmwareFlasher.sln
       feedsToUse: config
-      nugetConfigPath: NuGet.Config
+      nugetConfigPath: source/NuGet.Config
+      workingDirectory: source
     displayName: Restore NuGet packages
 
   - script: dotnet build -r win-x64 -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
+    workingDirectory: source
     displayName: Build NuGet package
 
   - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
+    workingDirectory: source
     displayName: Build .NET Core Tool NuGet package
 
   - task: PowerShell@2

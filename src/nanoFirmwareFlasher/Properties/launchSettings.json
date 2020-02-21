@@ -1,7 +1,0 @@
-{
-  "profiles": {
-    "nanoFirmwareFlasher": {
-      "commandName": "Project"
-    }
-  }
-}
