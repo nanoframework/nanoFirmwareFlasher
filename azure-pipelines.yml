@@ -57,12 +57,12 @@ jobs:
 
       git init "$env:Agent_TempDirectory\repo"
       cd repo > $null
-      git remote add origin "$env:Build_Repository_Uri"
+      git remote add origin $env:Build_Repository_Uri
       git config --global gc.auto 0
       git config --global user.name nfbot
       git config --global user.email nanoframework@outlook.com
       git config --global core.autocrlf true
-      git fetch origin
+      git -c http.extraheader="AUTHORIZATION: $auth" fetch origin
       
       git checkout develop
       
