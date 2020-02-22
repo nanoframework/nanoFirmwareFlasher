@@ -62,7 +62,7 @@ jobs:
       git config --global user.name nfbot
       git config --global user.email nanoframework@outlook.com
       git config --global core.autocrlf true
-      git -c http.extraheader="AUTHORIZATION: $auth" fetch origin
+      git fetch origin
       
       git checkout develop
       
