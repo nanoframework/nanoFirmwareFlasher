@@ -47,7 +47,39 @@ jobs:
     condition: or( eq( variables['StartReleaseCandidate'], true ), ne(variables['system.pullrequest.isfork'], true) )
     displayName: Install NBGV tool
 
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+
+          Write-Host "Downloading git for windows v2.19.1"
+
+          # take care of error about SSL/TLS 
+          [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11"
+
+          $url = "https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/PortableGit-2.19.1-64-bit.7z.exe"
+          $output = [System.IO.Path]::Combine("$(Agent.TempDirectory)", "PortableGit.7z")
+
+          (new-object System.Net.WebClient).DownloadFile($url, $output)
+
+      errorActionPreference: 'stop'
+      failOnStderr: 'true'
+    condition: eq( variables['StartReleaseCandidate'], true )
+    displayName: Downloading git for windows
+
+  - task: ExtractFiles@1
+    inputs:
+      archiveFilePatterns: '$(Agent.TempDirectory)/PortableGit.7z'
+      destinationFolder: '$(Agent.TempDirectory)/my_git'
+      cleanDestinationFolder: false
+    condition: eq( variables['StartReleaseCandidate'], true )
+    displayName: Extracting git for windows
+
   - powershell: |
+
+      # check git versions
+      git --version
+      $(Agent.TempDirectory)\my_git\bin\git.exe --version
 
       # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
       # 'encoded token' is the Base64 of the string "nfbot:personal-token"
@@ -55,16 +87,16 @@ jobs:
 
       cd "$env:Agent_TempDirectory" > $null
 
-      git init "$env:Agent_TempDirectory\repo"
+      $(Agent.TempDirectory)\my_git\bin\git.exe init "$env:Agent_TempDirectory\repo"
       cd repo > $null
-      git remote add origin "$env:Build_Repository_Uri"
-      git config --global gc.auto 0
-      git config --global user.name nfbot
-      git config --global user.email nanoframework@outlook.com
-      git config --global core.autocrlf true
-      git -c http.extraheader="AUTHORIZATION: $auth" fetch --progress origin
+      $(Agent.TempDirectory)\my_git\bin\git.exe remote add origin "$env:Build_Repository_Uri"
+      $(Agent.TempDirectory)\my_git\bin\git.exe config --global gc.auto 0
+      $(Agent.TempDirectory)\my_git\bin\git.exe config --global user.name nfbot
+      $(Agent.TempDirectory)\my_git\bin\git.exe config --global user.email nanoframework@outlook.com
+      $(Agent.TempDirectory)\my_git\bin\git.exe config --global core.autocrlf true
+      $(Agent.TempDirectory)\my_git\bin\git.exe -c http.extraheader="AUTHORIZATION: $auth" fetch --progress origin
       
-      git checkout develop
+      $(Agent.TempDirectory)\my_git\bin\git.exe checkout develop
       
       cd src
 
@@ -72,13 +104,13 @@ jobs:
       $release = nbgv prepare-release
   
       # get commit message for the merge
-      $commitMessage = git log -1 --pretty=%B
+      $commitMessage = $(Agent.TempDirectory)\my_git\bin\git.exe log -1 --pretty=%B
 
       # amend commit message to skip build
-      git commit --amend -m "$commitMessage" -m "***NO_CI***" > $null
+      $(Agent.TempDirectory)\my_git\bin\git.exe commit --amend -m "$commitMessage" -m "***NO_CI***" > $null
 
       # push all changes to github
-      git -c http.extraheader="AUTHORIZATION: $auth" push --all origin
+      $(Agent.TempDirectory)\my_git\bin\git.exe -c http.extraheader="AUTHORIZATION: $auth" push --all origin
 
       # get release branch name
       $branch = $release.Split(' ')[0]
