@@ -49,6 +49,10 @@ jobs:
 
   - powershell: |
 
+      # check git versions
+      git --version
+      $(Agent.TempDirectory)\my_git\bin\git.exe --version
+
       # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
       # 'encoded token' is the Base64 of the string "nfbot:personal-token"
       $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$(GitHubToken)"))))"
@@ -57,12 +61,14 @@ jobs:
 
       git init "$env:Agent_TempDirectory\repo"
       cd repo > $null
-      git remote add origin $env:Build_Repository_Uri
+      git remote add origin "$env:Build_Repository_Uri"
       git config --global gc.auto 0
       git config --global user.name nfbot
       git config --global user.email nanoframework@outlook.com
       git config --global core.autocrlf true
-      git -c http.extraheader="AUTHORIZATION: $auth" fetch origin
+      git -c http.extraheader="AUTHORIZATION: $auth" fetch --progress origin > $cmdResult
+
+      Write-Host $cmdResult
       
       git checkout develop
       
