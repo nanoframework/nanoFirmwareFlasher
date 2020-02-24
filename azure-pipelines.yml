@@ -57,39 +57,44 @@ jobs:
 
         cd "$env:Agent_TempDirectory" > $null
 
-        Write-Host "Init clone from: $env:Build_Repository_Uri"
+        Write-Host "Init clone from: $env:BUILD_REPOSITORY_URI"
 
         git init "$env:Agent_TempDirectory\repo"
         cd repo > $null
-        git remote add origin "$env:Build_Repository_Uri"
+        git remote add origin "$env:BUILD_REPOSITORY_URI"
         git config --global gc.auto 0
         git config --global user.name nfbot
         git config --global user.email nanoframework@outlook.com
         git config --global core.autocrlf true
-        git -c http.extraheader="AUTHORIZATION: $auth" fetch --progress origin
+        git -c http.extraheader="AUTHORIZATION: $auth" fetch origin
 
+        Write-Host "Checkout develop branch..."
         git checkout develop
         
         cd source
 
         # prepare release and capture output
+        Write-Host "Prepare release with NBGV..."
         $release = nbgv prepare-release
     
+        Write-Host "Prepare commit..."
         # get commit message for the merge
         $commitMessage = git log -1 --pretty=%B
 
         # amend commit message to skip build
         git commit --amend -m "$commitMessage" -m "***NO_CI***" > $null
 
+        Write-Host "Pushing changes to GitHub..."
         # push all changes to github
         git -c http.extraheader="AUTHORIZATION: $auth" push --all origin
 
         # get release branch name
         $branch = $release.Split(' ')[0]
 
+        Write-Host "Prepare PR..."
         # start PR for release
         $prRequestBody = @{title="Release $branch";body="";head="$branch";base="master"} | ConvertTo-Json
-        $githubApiEndpoint = "https://api.github.com/repos/$env:Build_Repository_Name/pulls"
+        $githubApiEndpoint = "https://api.github.com/repos/$env:BUILD_REPOSITORY_NAME/pulls"
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
         $headers = @{}
