@@ -71,11 +71,9 @@ jobs:
         Write-Host "Checkout develop branch..."
         git checkout develop  > $null
         
-        cd source  > $null
-
         # prepare release and capture output
         Write-Host "Prepare release with NBGV..."
-        $release = nbgv prepare-release
+        $release = nbgv prepare-release -p source
     
         Write-Host "Prepare commit..."
         # get commit message for the merge
