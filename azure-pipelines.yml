@@ -53,7 +53,12 @@ jobs:
       # 'encoded token' is the Base64 of the string "nfbot:personal-token"
       $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$(GitHubToken)"))))"
 
+      # debug output
+      Write-Host $auth
+
       cd "$env:Agent_TempDirectory" > $null
+
+      Write-Host "Init clone from: $env:Build_Repository_Uri"
 
       git init "$env:Agent_TempDirectory\repo"
       cd repo > $null
