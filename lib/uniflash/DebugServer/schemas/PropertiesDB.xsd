@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="PropertyList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="node" type="node_type" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="group" type="group_type" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="categories" type="categories_type" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="property" type="property_type" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="node_type">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="children" type="children_type" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="disableIf" type="disableCondition_Type" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="enableIf" type="disableCondition_Type" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="hidden" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="group_type">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="children" type="children_type" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="disableIf" type="disableCondition_Type" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="enableIf" type="disableCondition_Type" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="hidden" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="children_type">
+    <xs:sequence>
+      <xs:element name="child" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="property_type">
+    <xs:sequence>
+      <xs:element name="target" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="valueType" type="valueType_type" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="values" type="values_type" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="defaultValue" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="noDefault" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="uniqueDefault" type="uniqueDefault_type" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="disableIf" type="disableCondition_Type" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="enableIf" type="disableCondition_Type" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="lower" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="upper" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="action" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="readOnly" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="valueOnDisabled" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="hidden" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="description" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="categories" type="categories_type" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:simpleType name="valueType_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="String"/>
+      <xs:enumeration value="Numeric"/>
+      <xs:enumeration value="StringList"/>
+      <xs:enumeration value="ChoiceList"/>
+      <xs:enumeration value="Boolean"/>
+      <xs:enumeration value="Text"/>
+      <xs:enumeration value="Button"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="values_type">
+    <xs:sequence>
+      <xs:element name="value" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="uniqueDefault_type">
+    <xs:sequence>
+      <xs:any namespace="##any" processContents="skip" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="value" type="xs:string" use="required"/>
+  </xs:complexType>
+  
+  <xs:complexType name="disableCondition_Type">
+    <xs:sequence>
+      <xs:any namespace="##any" processContents="skip" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="categories_type">
+    <xs:sequence>
+      <xs:any namespace="##any" processContents="skip" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

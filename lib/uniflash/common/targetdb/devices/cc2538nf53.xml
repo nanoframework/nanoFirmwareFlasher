@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<device id="CC2538NF53" partnum="CC2538NF53" HW_revision="1" XML_version="2" desc="CC2538NF53" description="System-on-Chip Solution for 2.4-GHz IEEE 802.15.4 and ZigBee®/ZigBee IP® Applications">
+  <property Type="stringfield" Value="SimpleLink Wireless MCU" id="FilterString" />
+  <property Type="stringfield" Value="TIXDS100v3_Dot7_Connection.xml" id="DefaultConnection" />
+  <jtag>
+    <!-- XDS100 Settings -->
+    <property Type="choicelist" Value="2" id="The Converter Usage">
+        <choice Name="Generate 1149.7 2-pin advanced modes">
+            <property Type="choicelist" Value="1" id="The Converter 1149.7 Frequency">
+                <choice Name="Overclock with user specified value">
+                    <property Type="choicelist" Value="5" id="-- Choose a value from 1.0MHz to 50.0MHz"/>
+                </choice>
+            </property>
+            <property Type="choicelist" Value="5" id="The Target Scan Format"/>
+        </choice>
+    </property>
+    <!-- XDS110 Settings -->
+    <property Type="choicelist" Value="4" id="SWD Mode Settings">
+        <choice Name="cJTAG (1149.7) 2-pin advanced modes">
+            <property Type="choicelist" Value="1" id="XDS110 Aux Port" />
+        </choice>
+    </property>
+    <!-- XDS200 Settings -->
+    <property Type="choicelist" Value="2" id="The cJTAG / SWD Features">
+        <choice Name="cJTAG (1149.7) 2-pin advanced modes">
+            <property Type="choicelist" Value="5" id="The Target Scan Format"/>
+        </choice>
+    </property>
+  </jtag>
+  <instance XML_version="1.2" desc="IcePick_C" href="routers/icepick_c.xml" id="IcePick_C_0" xml="icepick_c.xml" xmlpath="routers" />
+  <router HW_revision="1.0" XML_version="1.2" description="ICEPick_C Router" id="IcePick_C_0" isa="ICEPICK_C">
+    <property Type="filepathfield" Value="../../emulation/gel/cc2538_icepick.gel" id="GEL File"/>
+    <subpath desc="subpath_0" id="subpath_0">
+      <property Type="numericfield" Value="0x10" id="Port Number" />
+      <instance XML_version="1.2" desc="CS_DAP_0" href="routers/cs_dap.xml" id="CS_DAP_0" xml="cs_dap.xml" xmlpath="routers" />
+      <router HW_revision="1.0" XML_version="1.2" description="CS_DAP Router" id="CS_DAP_0" isa="CS_DAP">
+        <property Type="filepathfield" Value="../../emulation/gel/cc2538_connect_util.gel" id="GEL File"/>
+        <property Type="numericfield" Value="0x4ba00477" id="DAP TAP ID" />
+        <subpath desc="subpath_1" id="subpath_1">
+          <property Type="numericfield" Value="0x0" id="Port Number" />
+          <property Type="choicelist" Value="0" id="Type" />
+          <property Type="choicelist" Value="1" id="Pseudo" />
+          <instance XML_version="1.2" desc="Cortex_M3_0" href="cpus/cortex_m3.xml" id="Cortex_M3_0" xml="cortex_m3.xml" xmlpath="cpus" />
+          <cpu HW_revision="1.0" XML_version="1.2" desc="Cortex_M3_0" description="Cortex_M3 CPU" deviceSim="false" id="Cortex_M3_0" isa="Cortex_M3">
+            <instance href="../Modules/CC2538/cc2538/SSI.xml" xml="SSI.xml" id="SSI0" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40008000" endaddr="0x40008FFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/SSI.xml" xml="SSI.xml" id="SSI1" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40009000" endaddr="0x40009FFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/UART.xml" xml="UART.xml" id="UART0" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x4000C000" endaddr="0x4000CFFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/UART.xml" xml="UART.xml" id="UART1" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x4000D000" endaddr="0x4000DFFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/I2CM.xml" xml="I2CM.xml" id="I2CM" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40020000" endaddr="0x400200FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/I2CS.xml" xml="I2CS.xml" id="I2CS" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40020800" endaddr="0x400208FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/GPTIMER.xml" xml="GPTIMER.xml" id="GPTIMER0" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40030000" endaddr="0x40030FFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/GPTIMER.xml" xml="GPTIMER.xml" id="GPTIMER1" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40031000" endaddr="0x40031FFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/GPTIMER.xml" xml="GPTIMER.xml" id="GPTIMER2" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40032000" endaddr="0x40032FFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/GPTIMER.xml" xml="GPTIMER.xml" id="GPTIMER3" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40033000" endaddr="0x40033FFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/RFCORE_FFSM.xml" xml="RFCORE_FFSM.xml" id="RFCORE_FFSM" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40088500" endaddr="0x400885FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/RFCORE_XREG.xml" xml="RFCORE_XREG.xml" id="RFCORE_XREG" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40088600" endaddr="0x400887FF" size="0x00000200" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/RFCORE_SFR.xml" xml="RFCORE_SFR.xml" id="RFCORE_SFR" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40088800" endaddr="0x400888FF" size="0x00000100" accessnumbytes="4" permissions="p" />     
+            <instance href="../Modules/CC2538/cc2538/USB.xml" xml="USB.xml" id="USB" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40089000" endaddr="0x400890FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/AES.xml" xml="AES.xml" id="AES" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x4008B000" endaddr="0x4008BFFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/SYS_CTRL.xml" xml="SYS_CTRL.xml" id="SYS_CTRL" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400D2000" endaddr="0x400D20FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/FLASH_CTRL.xml" xml="FLASH_CTRL.xml" id="FLASH_CTRL" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400D3000" endaddr="0x400D30FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/IOC.xml" xml="IOC.xml" id="IOC" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400D4000" endaddr="0x400D4153" size="0x00000154" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/SMWDTHROSC.xml" xml="SMWDTHROSC.xml" id="SMWDTHROSC" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400D5000" endaddr="0x400D50FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/ANA_REGS.xml" xml="ANA_REGS.xml" id="ANA_REGS" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400D6000" endaddr="0x400D60FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/SOC_ADC.xml" xml="SOC_ADC.xml" id="SOC_ADC" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400D7000" endaddr="0x400D70FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/GPIO.xml" xml="GPIO.xml" id="GPIO_A" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400D9000" endaddr="0x400D9FFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/GPIO.xml" xml="GPIO.xml" id="GPIO_B" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400DA000" endaddr="0x400DAFFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/GPIO.xml" xml="GPIO.xml" id="GPIO_C" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400DB000" endaddr="0x400DBFFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/GPIO.xml" xml="GPIO.xml" id="GPIO_D" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400DC000" endaddr="0x400DCFFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/UDMA.xml" xml="UDMA.xml" id="UDMA" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x400FF000" endaddr="0x400FFFFF" size="0x00001000" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/STTEST.xml" xml="STTEST.xml" id="STTEST" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x40110000" endaddr="0x401100FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <instance href="../Modules/CC2538/cc2538/CCTEST.xml" xml="CCTEST.xml" id="CCTEST" xmlpath="../Modules/CC2538/cc2538" baseaddr="0x44010000" endaddr="0x440100FF" size="0x00000100" accessnumbytes="4" permissions="p" />
+            <!-- Project Wizard Settings -->
+            <property Type="filepathfield" Value="../../../emulation/gel/cc2538.gel" id="GEL File"/>
+            <property Type="numericfield" Value="0x02000000" id="Access Port Designator" />
+            <property Type="stringfield" Value="cx2538xf53_ccs.cmd" id="LinkerCmd"/>
+            <property Type="stringfield" Value=" --silicon_version=7M3 --code_state=16 --abi=eabi -DDEBUG -DCC2538_USE_ALTERNATE_INTERRUPT_MAP" id="CompilerBuildOptions"/>
+            <property Type="stringfield" Value=" -stack=256 -heap=0" id="LinkerBuildOptions"/>
+            <property Type="stringfield" Value="--romwidth=8 --memwidth=8 --intel" id="HexBuildOptions" />
+            <property Type="stringfield" Value="libc.a" id="RTSlib"/>
+            <property Type="stringfield" Value="true" id="IsElfDefault"/>
+            <property Type="stringfield" Value="little" id="Endianness"/>
+            <property Type="stringfield" Value="4.9.0" id="MinCodegenVersion"/>
+            <property Type="hiddenfield" Value="1" id="Use Board Reset Free Run" />
+            <property Type="stringfield" Value="cx2538_startup_ccs.c,cx2538_setup.c" id="FilesToCopy" />
+            <!-- END Project Wizard Settings -->
+          </cpu>
+        </subpath>
+      </router>
+    </subpath>
+  </router>
+</device>

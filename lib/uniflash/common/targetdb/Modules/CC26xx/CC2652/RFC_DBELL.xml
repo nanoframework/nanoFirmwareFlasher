@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="RFC_DBELL" HW_revision="" XML_version="1.0" description="RF core doorbell
+
+The doorbell module is the main user interface to the radio sub-system. It contains the registers used for both submitting commands to the radio, and for configuring radio interrupts from the RF core." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="CMDR" width="32" description="Doorbell Command Register" id="CMDR" offset="0x0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Command register. Raises an interrupt to the Command and packet engine (CPE) upon write." id="CMD" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CMDSTA" width="32" description="Doorbell Command Status Register" id="CMDSTA" offset="0x4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Status of the last command used" id="STAT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RFHWIFG" width="32" description="Interrupt Flags From RF Hardware Modules" id="RFHWIFG" offset="0x8">
+      <bitfield range="" begin="31" width="12" end="20" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Radio timer channel 7 interrupt flag. Write zero to clear flag. Write to one has no effect." id="RATCH7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Radio timer channel 6 interrupt flag. Write zero to clear flag. Write to one has no effect." id="RATCH6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Radio timer channel 5 interrupt flag. Write zero to clear flag. Write to one has no effect." id="RATCH5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Radio timer channel 4 interrupt flag. Write zero to clear flag. Write to one has no effect." id="RATCH4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Radio timer channel 3 interrupt flag. Write zero to clear flag. Write to one has no effect." id="RATCH3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Radio timer channel 2 interrupt flag. Write zero to clear flag. Write to one has no effect." id="RATCH2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Radio timer channel 1 interrupt flag. Write zero to clear flag. Write to one has no effect." id="RATCH1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Radio timer channel 0 interrupt flag. Write zero to clear flag. Write to one has no effect." id="RATCH0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="RF engine software defined interrupt 2 flag. Write zero to clear flag. Write to one has no effect." id="RFESOFT2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="RF engine software defined interrupt 1 flag. Write zero to clear flag. Write to one has no effect." id="RFESOFT1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="RF engine software defined interrupt 0 flag. Write zero to clear flag. Write to one has no effect." id="RFESOFT0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="RF engine command done interrupt flag. Write zero to clear flag. Write to one has no effect." id="RFEDONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Debug tracer system tick interrupt flag. Write zero to clear flag. Write to one has no effect." id="TRCTK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Modem software defined interrupt flag. Write zero to clear flag. Write to one has no effect." id="MDMSOFT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Modem FIFO output interrupt flag. Write zero to clear flag. Write to one has no effect." id="MDMOUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Modem FIFO input interrupt flag. Write zero to clear flag. Write to one has no effect." id="MDMIN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Modem command done interrupt flag. Write zero to clear flag. Write to one has no effect." id="MDMDONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Frequency synthesizer calibration accelerator interrupt flag. Write zero to clear flag. Write to one has no effect." id="FSCA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RFHWIEN" width="32" description="Interrupt Enable For RF Hardware Modules" id="RFHWIEN" offset="0xc">
+      <bitfield range="" begin="31" width="12" end="20" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Interrupt enable for RFHWIFG.RATCH7." id="RATCH7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Interrupt enable for RFHWIFG.RATCH6." id="RATCH6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Interrupt enable for RFHWIFG.RATCH5." id="RATCH5" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Interrupt enable for RFHWIFG.RATCH4." id="RATCH4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Interrupt enable for RFHWIFG.RATCH3." id="RATCH3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Interrupt enable for RFHWIFG.RATCH2." id="RATCH2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Interrupt enable for RFHWIFG.RATCH1." id="RATCH1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Interrupt enable for RFHWIFG.RATCH0." id="RATCH0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Interrupt enable for RFHWIFG.RFESOFT2." id="RFESOFT2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Interrupt enable for RFHWIFG.RFESOFT1." id="RFESOFT1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Interrupt enable for RFHWIFG.RFESOFT0." id="RFESOFT0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Interrupt enable for RFHWIFG.RFEDONE." id="RFEDONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED7" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Interrupt enable for RFHWIFG.TRCTK." id="TRCTK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Interrupt enable for RFHWIFG.MDMSOFT." id="MDMSOFT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Interrupt enable for RFHWIFG.MDMOUT." id="MDMOUT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Interrupt enable for RFHWIFG.MDMIN." id="MDMIN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Interrupt enable for RFHWIFG.MDMDONE." id="MDMDONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Interrupt enable for RFHWIFG.FSCA." id="FSCA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RFCPEIFG" width="32" description="Interrupt Flags For Command and Packet Engine Generated Interrupts" id="RFCPEIFG" offset="0x10">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Interrupt flag 31. The command and packet engine (CPE) has observed an unexpected error. A reset of the CPE is needed. This can be done by switching the RF Core power domain off and on in PRCM:PDCTL1RFC. Write zero to clear flag. Write to one has no effect." id="INTERNAL_ERROR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Interrupt flag 30. The command and packet engine (CPE) boot is finished. Write zero to clear flag. Write to one has no effect." id="BOOT_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Interrupt flag 29. As part of command and packet engine (CPE) boot process, it has opened access to RF Core modules and memories. Write zero to clear flag. Write to one has no effect." id="MODULES_UNLOCKED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Interrupt flag 28. The phase-locked loop in frequency synthesizer has reported loss of lock. Write zero to clear flag. Write to one has no effect." id="SYNTH_NO_LOCK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Interrupt flag 27. Write zero to clear flag. Write to one has no effect." id="IRQ27" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Interrupt flag 26. Packet reception stopped before packet was done. Write zero to clear flag. Write to one has no effect." id="RX_ABORTED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Interrupt flag 25. Specified number of bytes written to partial read Rx buffer. Write zero to clear flag. Write to one has no effect." id="RX_N_DATA_WRITTEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Interrupt flag 24. Data written to partial read Rx buffer. Write zero to clear flag. Write to one has no effect." id="RX_DATA_WRITTEN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Interrupt flag 23. Rx queue data entry changing state to finished.  Write zero to clear flag. Write to one has no effect." id="RX_ENTRY_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Interrupt flag 22. Packet received that did not fit in Rx queue. BLE mode: Packet received that did not fit in the Rx queue. IEEE 802.15.4 mode: Frame received that did not fit in the Rx queue. Write zero to clear flag. Write to one has no effect." id="RX_BUF_FULL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Interrupt flag 21. BLE mode only: LL control packet received with CRC OK, not to be ignored, then acknowledgement sent. Write zero to clear flag. Write to one has no effect." id="RX_CTRL_ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Interrupt flag 20. BLE mode only: LL control packet received with CRC OK, not to be ignored. Write zero to clear flag. Write to one has no effect." id="RX_CTRL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Interrupt flag 19. BLE mode only: Packet received with CRC OK, not to be ignored, no payload. Write zero to clear flag. Write to one has no effect." id="RX_EMPTY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Interrupt flag 18. Packet received, but can be ignored. BLE mode: Packet received with CRC OK, but to be ignored. IEEE 802.15.4 mode: Frame received with ignore flag set. Write zero to clear flag. Write to one has no effect." id="RX_IGNORED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Interrupt flag 17. Packet received with CRC error. BLE mode: Packet received with CRC error. IEEE 802.15.4 mode: Frame received with CRC error. Write zero to clear flag. Write to one has no effect." id="RX_NOK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Interrupt flag 16. Packet received correctly. BLE mode: Packet received with CRC OK, payload, and not to be ignored. IEEE 802.15.4 mode: Frame received with CRC OK. Write zero to clear flag. Write to one has no effect." id="RX_OK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Interrupt flag 15. Write zero to clear flag. Write to one has no effect." id="IRQ15" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Interrupt flag 14. Write zero to clear flag. Write to one has no effect." id="IRQ14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Interrupt flag 13. IEEE 802.15.4 mode only: A foreground radio operation command has gone into active state." id="FG_COMMAND_STARTED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Interrupt flag 12. A radio operation command has gone into active state." id="COMMAND_STARTED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Interrupt flag 11. BLE mode only: A buffer change is complete after CMD_BLE_ADV_PAYLOAD. Write zero to clear flag. Write to one has no effect." id="TX_BUFFER_CHANGED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Interrupt flag 10. Tx queue data entry state changed to finished. Write zero to clear flag. Write to one has no effect." id="TX_ENTRY_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Interrupt flag 9. BLE mode only: Packet retransmitted. Write zero to clear flag. Write to one has no effect." id="TX_RETRANS" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Interrupt flag 8. BLE mode only: Acknowledgement received on a transmitted LL control packet, and acknowledgement transmitted for that packet. Write zero to clear flag. Write to one has no effect." id="TX_CTRL_ACK_ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Interrupt flag 7. BLE mode: Acknowledgement received on a transmitted LL control packet. Write zero to clear flag. Write to one has no effect." id="TX_CTRL_ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Interrupt flag 6. BLE mode: Transmitted LL control packet. Write zero to clear flag. Write to one has no effect." id="TX_CTRL" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Interrupt flag 5. BLE mode: Acknowledgement received on a transmitted packet. IEEE 802.15.4 mode: Transmitted automatic ACK frame. Write zero to clear flag. Write to one has no effect." id="TX_ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Interrupt flag 4. Packet transmitted. (BLE mode: A packet has been transmitted.) (IEEE 802.15.4 mode: A frame has been transmitted). Write zero to clear flag. Write to one has no effect." id="TX_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Interrupt flag 3. IEEE 802.15.4 mode only: The last foreground radio operation command in a chain of commands has finished. Write zero to clear flag. Write to one has no effect." id="LAST_FG_COMMAND_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Interrupt flag 2. IEEE 802.15.4 mode only: A foreground radio operation command has finished. Write zero to clear flag. Write to one has no effect." id="FG_COMMAND_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Interrupt flag 1. The last radio operation command in a chain of commands has finished. (IEEE 802.15.4 mode: The last background level radio operation command in a chain of commands has finished.) Write zero to clear flag. Write to one has no effect." id="LAST_COMMAND_DONE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Interrupt flag 0. A radio operation has finished. (IEEE 802.15.4 mode: A background level radio operation command has finished.) Write zero to clear flag. Write to one has no effect." id="COMMAND_DONE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RFCPEIEN" width="32" description="Interrupt Enable For Command and Packet Engine Generated Interrupts" id="RFCPEIEN" offset="0x14">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Interrupt enable for RFCPEIFG.INTERNAL_ERROR." id="INTERNAL_ERROR" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Interrupt enable for RFCPEIFG.BOOT_DONE." id="BOOT_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Interrupt enable for RFCPEIFG.MODULES_UNLOCKED." id="MODULES_UNLOCKED" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Interrupt enable for RFCPEIFG.SYNTH_NO_LOCK." id="SYNTH_NO_LOCK" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Interrupt enable for RFCPEIFG.IRQ27." id="IRQ27" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_ABORTED." id="RX_ABORTED" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_N_DATA_WRITTEN." id="RX_N_DATA_WRITTEN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_DATA_WRITTEN." id="RX_DATA_WRITTEN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_ENTRY_DONE." id="RX_ENTRY_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_BUF_FULL." id="RX_BUF_FULL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_CTRL_ACK." id="RX_CTRL_ACK" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_CTRL." id="RX_CTRL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_EMPTY." id="RX_EMPTY" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_IGNORED." id="RX_IGNORED" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_NOK." id="RX_NOK" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Interrupt enable for RFCPEIFG.RX_OK." id="RX_OK" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Interrupt enable for RFCPEIFG.IRQ15." id="IRQ15" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Interrupt enable for RFCPEIFG.IRQ14." id="IRQ14" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Interrupt enable for RFCPEIFG.FG_COMMAND_STARTED." id="FG_COMMAND_STARTED" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Interrupt enable for RFCPEIFG.COMMAND_STARTED." id="COMMAND_STARTED" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Interrupt enable for RFCPEIFG.TX_BUFFER_CHANGED." id="TX_BUFFER_CHANGED" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Interrupt enable for RFCPEIFG.TX_ENTRY_DONE." id="TX_ENTRY_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Interrupt enable for RFCPEIFG.TX_RETRANS." id="TX_RETRANS" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Interrupt enable for RFCPEIFG.TX_CTRL_ACK_ACK." id="TX_CTRL_ACK_ACK" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Interrupt enable for RFCPEIFG.TX_CTRL_ACK." id="TX_CTRL_ACK" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Interrupt enable for RFCPEIFG.TX_CTRL." id="TX_CTRL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Interrupt enable for RFCPEIFG.TX_ACK." id="TX_ACK" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Interrupt enable for RFCPEIFG.TX_DONE." id="TX_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Interrupt enable for RFCPEIFG.LAST_FG_COMMAND_DONE." id="LAST_FG_COMMAND_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Interrupt enable for RFCPEIFG.FG_COMMAND_DONE." id="FG_COMMAND_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Interrupt enable for RFCPEIFG.LAST_COMMAND_DONE." id="LAST_COMMAND_DONE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Interrupt enable for RFCPEIFG.COMMAND_DONE." id="COMMAND_DONE" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="RFCPEISL" width="32" description="Interrupt Vector Selection For Command and Packet Engine Generated Interrupts" id="RFCPEISL" offset="0x18">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.INTERNAL_ERROR interrupt should use." id="INTERNAL_ERROR" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.BOOT_DONE interrupt should use." id="BOOT_DONE" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.MODULES_UNLOCKED interrupt should use." id="MODULES_UNLOCKED" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.SYNTH_NO_LOCK interrupt should use." id="SYNTH_NO_LOCK" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.IRQ27 interrupt should use." id="IRQ27" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_ABORTED interrupt should use." id="RX_ABORTED" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_N_DATA_WRITTEN interrupt should use." id="RX_N_DATA_WRITTEN" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_DATA_WRITTEN interrupt should use." id="RX_DATA_WRITTEN" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_ENTRY_DONE interrupt should use." id="RX_ENTRY_DONE" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_BUF_FULL interrupt should use." id="RX_BUF_FULL" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_CTRL_ACK interrupt should use." id="RX_CTRL_ACK" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_CTRL interrupt should use." id="RX_CTRL" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_EMPTY interrupt should use." id="RX_EMPTY" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_IGNORED interrupt should use." id="RX_IGNORED" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_NOK interrupt should use." id="RX_NOK" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.RX_OK interrupt should use." id="RX_OK" resetval="0x1">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.IRQ15 interrupt should use." id="IRQ15" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.IRQ14 interrupt should use." id="IRQ14" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.FG_COMMAND_STARTED interrupt should use." id="FG_COMMAND_STARTED" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.COMMAND_STARTED interrupt should use." id="COMMAND_STARTED" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.TX_BUFFER_CHANGED interrupt should use." id="TX_BUFFER_CHANGED" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.TX_ENTRY_DONE interrupt should use." id="TX_ENTRY_DONE" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.TX_RETRANS interrupt should use." id="TX_RETRANS" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.TX_CTRL_ACK_ACK interrupt should use." id="TX_CTRL_ACK_ACK" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.TX_CTRL_ACK interrupt should use." id="TX_CTRL_ACK" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.TX_CTRL interrupt should use." id="TX_CTRL" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.TX_ACK interrupt should use." id="TX_ACK" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.TX_DONE interrupt should use." id="TX_DONE" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.LAST_FG_COMMAND_DONE interrupt should use." id="LAST_FG_COMMAND_DONE" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.FG_COMMAND_DONE interrupt should use." id="FG_COMMAND_DONE" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.LAST_COMMAND_DONE interrupt should use." id="LAST_COMMAND_DONE" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Select which CPU interrupt vector the RFCPEIFG.COMMAND_DONE interrupt should use." id="COMMAND_DONE" resetval="0x0">
+         <bitenum id="CPE1" value="1" token="Associate this interrupt line with INT_RF_CPE1 interrupt vector" description="Associate this interrupt line with INT_RF_CPE1 interrupt vector"/>
+         <bitenum id="CPE0" value="0" token="Associate this interrupt line with INT_RF_CPE0 interrupt vector" description="Associate this interrupt line with INT_RF_CPE0 interrupt vector"/>
+      </bitfield>
+   </register>
+   <register acronym="RFACKIFG" width="32" description="Doorbell Command Acknowledgement Interrupt Flag" id="RFACKIFG" offset="0x1c">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Interrupt flag for Command ACK" id="ACKFLAG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SYSGPOCTL" width="32" description="RF Core General Purpose Output Control" id="SYSGPOCTL" offset="0x20">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="4" end="12" rwaccess="RW" description="RF Core GPO control bit 3. Selects which signal to output on the RF Core GPO line 3." id="GPOCTL3" resetval="0x0">
+         <bitenum id="RATGPO3" value="15" token="RAT GPO line 3" description="RAT GPO line 3"/>
+         <bitenum id="RATGPO2" value="14" token="RAT GPO line 2" description="RAT GPO line 2"/>
+         <bitenum id="RATGPO1" value="13" token="RAT GPO line 1" description="RAT GPO line 1"/>
+         <bitenum id="RATGPO0" value="12" token="RAT GPO line 0" description="RAT GPO line 0"/>
+         <bitenum id="RFEGPO3" value="11" token="RFE GPO line 3" description="RFE GPO line 3"/>
+         <bitenum id="RFEGPO2" value="10" token="RFE GPO line 2" description="RFE GPO line 2"/>
+         <bitenum id="RFEGPO1" value="9" token="RFE GPO line 1" description="RFE GPO line 1"/>
+         <bitenum id="RFEGPO0" value="8" token="RFE GPO line 0" description="RFE GPO line 0"/>
+         <bitenum id="MCEGPO3" value="7" token="MCE GPO line 3" description="MCE GPO line 3"/>
+         <bitenum id="MCEGPO2" value="6" token="MCE GPO line 2" description="MCE GPO line 2"/>
+         <bitenum id="MCEGPO1" value="5" token="MCE GPO line 1" description="MCE GPO line 1"/>
+         <bitenum id="MCEGPO0" value="4" token="MCE GPO line 0" description="MCE GPO line 0"/>
+         <bitenum id="CPEGPO3" value="3" token="CPE GPO line 3" description="CPE GPO line 3"/>
+         <bitenum id="CPEGPO2" value="2" token="CPE GPO line 2" description="CPE GPO line 2"/>
+         <bitenum id="CPEGPO1" value="1" token="CPE GPO line 1" description="CPE GPO line 1"/>
+         <bitenum id="CPEGPO0" value="0" token="CPE GPO line 0" description="CPE GPO line 0"/>
+      </bitfield>
+      <bitfield range="" begin="11" width="4" end="8" rwaccess="RW" description="RF Core GPO control bit 2. Selects which signal to output on the RF Core GPO line 2." id="GPOCTL2" resetval="0x0">
+         <bitenum id="RATGPO3" value="15" token="RAT GPO line 3" description="RAT GPO line 3"/>
+         <bitenum id="RATGPO2" value="14" token="RAT GPO line 2" description="RAT GPO line 2"/>
+         <bitenum id="RATGPO1" value="13" token="RAT GPO line 1" description="RAT GPO line 1"/>
+         <bitenum id="RATGPO0" value="12" token="RAT GPO line 0" description="RAT GPO line 0"/>
+         <bitenum id="RFEGPO3" value="11" token="RFE GPO line 3" description="RFE GPO line 3"/>
+         <bitenum id="RFEGPO2" value="10" token="RFE GPO line 2" description="RFE GPO line 2"/>
+         <bitenum id="RFEGPO1" value="9" token="RFE GPO line 1" description="RFE GPO line 1"/>
+         <bitenum id="RFEGPO0" value="8" token="RFE GPO line 0" description="RFE GPO line 0"/>
+         <bitenum id="MCEGPO3" value="7" token="MCE GPO line 3" description="MCE GPO line 3"/>
+         <bitenum id="MCEGPO2" value="6" token="MCE GPO line 2" description="MCE GPO line 2"/>
+         <bitenum id="MCEGPO1" value="5" token="MCE GPO line 1" description="MCE GPO line 1"/>
+         <bitenum id="MCEGPO0" value="4" token="MCE GPO line 0" description="MCE GPO line 0"/>
+         <bitenum id="CPEGPO3" value="3" token="CPE GPO line 3" description="CPE GPO line 3"/>
+         <bitenum id="CPEGPO2" value="2" token="CPE GPO line 2" description="CPE GPO line 2"/>
+         <bitenum id="CPEGPO1" value="1" token="CPE GPO line 1" description="CPE GPO line 1"/>
+         <bitenum id="CPEGPO0" value="0" token="CPE GPO line 0" description="CPE GPO line 0"/>
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RW" description="RF Core GPO control bit 1. Selects which signal to output on the RF Core GPO line 1." id="GPOCTL1" resetval="0x0">
+         <bitenum id="RATGPO3" value="15" token="RAT GPO line 3" description="RAT GPO line 3"/>
+         <bitenum id="RATGPO2" value="14" token="RAT GPO line 2" description="RAT GPO line 2"/>
+         <bitenum id="RATGPO1" value="13" token="RAT GPO line 1" description="RAT GPO line 1"/>
+         <bitenum id="RATGPO0" value="12" token="RAT GPO line 0" description="RAT GPO line 0"/>
+         <bitenum id="RFEGPO3" value="11" token="RFE GPO line 3" description="RFE GPO line 3"/>
+         <bitenum id="RFEGPO2" value="10" token="RFE GPO line 2" description="RFE GPO line 2"/>
+         <bitenum id="RFEGPO1" value="9" token="RFE GPO line 1" description="RFE GPO line 1"/>
+         <bitenum id="RFEGPO0" value="8" token="RFE GPO line 0" description="RFE GPO line 0"/>
+         <bitenum id="MCEGPO3" value="7" token="MCE GPO line 3" description="MCE GPO line 3"/>
+         <bitenum id="MCEGPO2" value="6" token="MCE GPO line 2" description="MCE GPO line 2"/>
+         <bitenum id="MCEGPO1" value="5" token="MCE GPO line 1" description="MCE GPO line 1"/>
+         <bitenum id="MCEGPO0" value="4" token="MCE GPO line 0" description="MCE GPO line 0"/>
+         <bitenum id="CPEGPO3" value="3" token="CPE GPO line 3" description="CPE GPO line 3"/>
+         <bitenum id="CPEGPO2" value="2" token="CPE GPO line 2" description="CPE GPO line 2"/>
+         <bitenum id="CPEGPO1" value="1" token="CPE GPO line 1" description="CPE GPO line 1"/>
+         <bitenum id="CPEGPO0" value="0" token="CPE GPO line 0" description="CPE GPO line 0"/>
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="RF Core GPO control bit 0. Selects which signal to output on the RF Core GPO line 0." id="GPOCTL0" resetval="0x0">
+         <bitenum id="RATGPO3" value="15" token="RAT GPO line 3" description="RAT GPO line 3"/>
+         <bitenum id="RATGPO2" value="14" token="RAT GPO line 2" description="RAT GPO line 2"/>
+         <bitenum id="RATGPO1" value="13" token="RAT GPO line 1" description="RAT GPO line 1"/>
+         <bitenum id="RATGPO0" value="12" token="RAT GPO line 0" description="RAT GPO line 0"/>
+         <bitenum id="RFEGPO3" value="11" token="RFE GPO line 3" description="RFE GPO line 3"/>
+         <bitenum id="RFEGPO2" value="10" token="RFE GPO line 2" description="RFE GPO line 2"/>
+         <bitenum id="RFEGPO1" value="9" token="RFE GPO line 1" description="RFE GPO line 1"/>
+         <bitenum id="RFEGPO0" value="8" token="RFE GPO line 0" description="RFE GPO line 0"/>
+         <bitenum id="MCEGPO3" value="7" token="MCE GPO line 3" description="MCE GPO line 3"/>
+         <bitenum id="MCEGPO2" value="6" token="MCE GPO line 2" description="MCE GPO line 2"/>
+         <bitenum id="MCEGPO1" value="5" token="MCE GPO line 1" description="MCE GPO line 1"/>
+         <bitenum id="MCEGPO0" value="4" token="MCE GPO line 0" description="MCE GPO line 0"/>
+         <bitenum id="CPEGPO3" value="3" token="CPE GPO line 3" description="CPE GPO line 3"/>
+         <bitenum id="CPEGPO2" value="2" token="CPE GPO line 2" description="CPE GPO line 2"/>
+         <bitenum id="CPEGPO1" value="1" token="CPE GPO line 1" description="CPE GPO line 1"/>
+         <bitenum id="CPEGPO0" value="0" token="CPE GPO line 0" description="CPE GPO line 0"/>
+      </bitfield>
+   </register>
+</module>

@@ -466,10 +466,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (!string.IsNullOrEmpty(o.DfuFile))
                 {
                     // there is a DFU file argument, so follow DFU path
-#if NETCOREAPP2_1
-                    throw new Exception("DFU flashing is not currently possible with dotnet core 2.1, please consider installing the 3.1 runtime");
-#else
-
                     var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
 
                     if (!dfuDevice.DevicePresent)
@@ -513,7 +509,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E1001;
                         _extraMessage = ex.Message;
                     }
-#endif
                 }
                 else if (
                     o.BinFile.Any() &&

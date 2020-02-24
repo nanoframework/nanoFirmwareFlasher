@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="CPU_FPB" HW_revision="" XML_version="1.0" description="Cortex-M&#39;s Flash Patch and Breakpoint (FPB)
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="CTRL" width="32" description="Control
+This register is used to enable the flash patch block." id="CTRL" offset="0x0">
+      <bitfield range="" begin="31" width="18" end="14" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED14" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="13" width="2" end="12" rwaccess="RO" description="Number of full banks of code comparators, sixteen comparators per bank. Where less than sixteen code comparators are provided, the bank count is zero, and the number present indicated by NUM_CODE1. This read only field contains 3&#39;b000 to indicate 0 banks for Cortex-M processor." id="NUM_CODE2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="4" end="8" rwaccess="RO" description="Number of literal slots field.
+
+0x0: No literal slots
+0x2: Two literal slots" id="NUM_LIT" resetval="0x2">
+      </bitfield>
+      <bitfield range="" begin="7" width="4" end="4" rwaccess="RO" description="Number of code slots field.
+
+0x0: No code slots
+0x2: Two code slots
+0x6: Six code slots" id="NUM_CODE1" resetval="0x6">
+      </bitfield>
+      <bitfield range="" begin="3" width="2" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Key field. In order to write to this register, this bit-field must be written to &#39;1&#39;. This bit always reads 0." id="KEY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Flash patch unit enable bit
+
+0x0: Flash patch unit disabled
+0x1: Flash patch unit enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="REMAP" width="32" description="Remap
+This register provides the remap base address location where a matched addresses are remapped. The three most significant bits and the five least significant bits of the remap base address are hard-coded to 3&#39;b001 and 5&#39;b00000 respectively. The remap base address must be in system space and is it required to be 8-word aligned, with one word allocated to each of the eight FPB comparators." id="REMAP" offset="0x4">
+      <bitfield range="" begin="31" width="3" end="29" rwaccess="RO" description="This field always reads 3&#39;b001. Writing to this field is ignored. " id="RESERVED29" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="28" width="24" end="5" rwaccess="RW" description="Remap base address field." id="REMAP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="5" end="0" rwaccess="RO" description="This field always reads 0. Writing to this field is ignored. " id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP0" width="32" description="Comparator 0" id="COMP0" offset="0x8">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="This selects what happens when the COMP address is matched. Address remapping only takes place for the 0x0 setting.
+
+0x0: Remap to remap address. See REMAP.REMAP
+0x1: Set BKPT on lower halfword, upper is unaffected
+0x2: Set BKPT on upper halfword, lower is unaffected
+0x3: Set BKPT on both lower and upper halfwords." id="REPLACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RW" description="Comparison address." id="COMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Compare and remap enable comparator 0. CTRL.ENABLE must also be set to enable comparisons.
+
+0x0: Compare and remap for comparator 0 disabled
+0x1: Compare and remap for comparator 0 enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP1" width="32" description="Comparator 1" id="COMP1" offset="0xc">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="This selects what happens when the COMP address is matched. Address remapping only takes place for the 0x0 setting.
+
+0x0: Remap to remap address. See REMAP.REMAP
+0x1: Set BKPT on lower halfword, upper is unaffected
+0x2: Set BKPT on upper halfword, lower is unaffected
+0x3: Set BKPT on both lower and upper halfwords." id="REPLACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RW" description="Comparison address." id="COMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Compare and remap enable comparator 1. CTRL.ENABLE must also be set to enable comparisons.
+
+0x0: Compare and remap for comparator 1 disabled
+0x1: Compare and remap for comparator 1 enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP2" width="32" description="Comparator 2" id="COMP2" offset="0x10">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="This selects what happens when the COMP address is matched. Address remapping only takes place for the 0x0 setting.
+
+0x0: Remap to remap address. See REMAP.REMAP
+0x1: Set BKPT on lower halfword, upper is unaffected
+0x2: Set BKPT on upper halfword, lower is unaffected
+0x3: Set BKPT on both lower and upper halfwords." id="REPLACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RW" description="Comparison address." id="COMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Compare and remap enable comparator 2. CTRL.ENABLE must also be set to enable comparisons.
+
+0x0: Compare and remap for comparator 2 disabled
+0x1: Compare and remap for comparator 2 enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP3" width="32" description="Comparator 3" id="COMP3" offset="0x14">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="This selects what happens when the COMP address is matched. Address remapping only takes place for the 0x0 setting.
+
+0x0: Remap to remap address. See REMAP.REMAP
+0x1: Set BKPT on lower halfword, upper is unaffected
+0x2: Set BKPT on upper halfword, lower is unaffected
+0x3: Set BKPT on both lower and upper halfwords." id="REPLACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RW" description="Comparison address." id="COMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Compare and remap enable comparator 3. CTRL.ENABLE must also be set to enable comparisons.
+
+0x0: Compare and remap for comparator 3 disabled
+0x1: Compare and remap for comparator 3 enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP4" width="32" description="Comparator 4" id="COMP4" offset="0x18">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="This selects what happens when the COMP address is matched. Address remapping only takes place for the 0x0 setting.
+
+0x0: Remap to remap address. See REMAP.REMAP
+0x1: Set BKPT on lower halfword, upper is unaffected
+0x2: Set BKPT on upper halfword, lower is unaffected
+0x3: Set BKPT on both lower and upper halfwords." id="REPLACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RW" description="Comparison address." id="COMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Compare and remap enable comparator 4. CTRL.ENABLE must also be set to enable comparisons.
+
+0x0: Compare and remap for comparator 4 disabled
+0x1: Compare and remap for comparator 4 enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP5" width="32" description="Comparator 5" id="COMP5" offset="0x1c">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="This selects what happens when the COMP address is matched. Address remapping only takes place for the 0x0 setting.
+
+0x0: Remap to remap address. See REMAP.REMAP
+0x1: Set BKPT on lower halfword, upper is unaffected
+0x2: Set BKPT on upper halfword, lower is unaffected
+0x3: Set BKPT on both lower and upper halfwords." id="REPLACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RW" description="Comparison address." id="COMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Compare and remap enable comparator 5. CTRL.ENABLE must also be set to enable comparisons.
+
+0x0: Compare and remap for comparator 5 disabled
+0x1: Compare and remap for comparator 5 enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP6" width="32" description="Comparator 6" id="COMP6" offset="0x20">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="This selects what happens when the COMP address is matched. Comparator 6 is a literal comparator and the only supported setting is 0x0. Other settings will be ignored.
+
+0x0: Remap to remap address. See REMAP.REMAP
+0x1: Set BKPT on lower halfword, upper is unaffected
+0x2: Set BKPT on upper halfword, lower is unaffected
+0x3: Set BKPT on both lower and upper halfwords." id="REPLACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RW" description="Comparison address." id="COMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Compare and remap enable comparator 6. CTRL.ENABLE must also be set to enable comparisons.
+
+0x0: Compare and remap for comparator 6 disabled
+0x1: Compare and remap for comparator 6 enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP7" width="32" description="Comparator 7" id="COMP7" offset="0x24">
+      <bitfield range="" begin="31" width="2" end="30" rwaccess="RW" description="This selects what happens when the COMP address is matched. Comparator 7 is a literal comparator and the only supported setting is 0x0. Other settings will be ignored.
+
+0x0: Remap to remap address. See REMAP.REMAP
+0x1: Set BKPT on lower halfword, upper is unaffected
+0x2: Set BKPT on upper halfword, lower is unaffected
+0x3: Set BKPT on both lower and upper halfwords." id="REPLACE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED29" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="28" width="27" end="2" rwaccess="RW" description="Comparison address." id="COMP" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Compare and remap enable comparator 7. CTRL.ENABLE must also be set to enable comparisons.
+
+0x0: Compare and remap for comparator 7 disabled
+0x1: Compare and remap for comparator 7 enabled" id="ENABLE" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

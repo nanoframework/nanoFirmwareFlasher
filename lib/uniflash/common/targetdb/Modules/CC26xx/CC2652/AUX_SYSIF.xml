@@ -1,0 +1,1108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="AUX_SYSIF" HW_revision="" XML_version="1.0" description="AUX System Interface (AUX_SYSIF) is responsible for:
+- system resource requests, such as power supply, clock and, wakeup requests.
+- configuration of AUX peripheral operational rates for AUX_SPIM, AUX_MAC, AUX_ANAIF DAC state machine and AUX_TIMER01. 
+- configuration of event synchronization rate for AUX_EVCTL:EVSTAT2 and AUX_EVCTL:EVSTAT3.
+- configuration of AUX_SCE wakeup vectors that trigger AUX_SCE execution from sleep.
+
+Peripheral operational rate for AUX modules mentioned above can either be:
+- SCE rate, which is configured in AON_PMCTL:AUXSCECLK.
+- AUX bus rate, which equals SCE rate or SCLK_HF divided by two when MCU domain is active or AUX operational mode is active.
+
+AUX_SYSIF also interfaces AON_RTC and AON_BATMON to enable read access to data and sub-second increment control of AON_RTC." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="OPMODEREQ" width="32" description="Operational Mode Request
+
+AUX can operate in three operational modes. Each mode is associated with:
+- a SCE clock source or rate, given by AON_PMCTL:AUXSCECLK. This rate is termed SCE_RATE. 
+- a system power supply state request. AUX can request powerdown (uLDO) or active (GLDO or DCDC) system power supply state.
+- a specific system response to an active AUX wakeup flag. The response is dependent on what operational mode is requested. 
+
+uLDO power supply state offers limited current supply. AUX_SCE cannot use certain peripherals and functions such as AUX_DDI0_OSC, AUX_TDC and AUX_ANAIF ADC interface in this power supply state. 
+
+Follow these rules:
+- It is not allowed to change a request until it has been acknowledged through OPMODEACK.
+- A change in mode request must happen stepwise along this sequence, the direction is irrelevant:
+   PDA - A - LP - PDLP.
+
+Failure to follow these rules might result in unexpected behavior and must be avoided." id="OPMODEREQ" offset="0x0">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="AUX operational mode request." id="REQ" resetval="0x0">
+         <bitenum id="PDLP" value="3" token="Powerdown operational mode with wakeup to lowpower mode, characterized by:
+- Powerdown system power supply state (uLDO) request.
+- AON_PMCTL:AUXSCECLK.PD_SRC sets the SCE clock frequency (SCE_RATE).
+- An active wakeup flag overrides the operational mode externally to lowpower (LP) as long as the flag is set." description="Powerdown operational mode with wakeup to lowpower mode, characterized by:
+- Powerdown system power supply state (uLDO) request.
+- AON_PMCTL:AUXSCECLK.PD_SRC sets the SCE clock frequency (SCE_RATE).
+- An active wakeup flag overrides the operational mode externally to lowpower (LP) as long as the flag is set."/>
+         <bitenum id="PDA" value="2" token="Powerdown operational mode with wakeup to active mode, characterized by:
+- Powerdown system power supply state (uLDO) request.
+- AON_PMCTL:AUXSCECLK.PD_SRC sets the SCE clock frequency (SCE_RATE).
+- An active wakeup flag overrides the operational mode externally to active (A) as long as the flag is set." description="Powerdown operational mode with wakeup to active mode, characterized by:
+- Powerdown system power supply state (uLDO) request.
+- AON_PMCTL:AUXSCECLK.PD_SRC sets the SCE clock frequency (SCE_RATE).
+- An active wakeup flag overrides the operational mode externally to active (A) as long as the flag is set."/>
+         <bitenum id="LP" value="1" token="Lowpower operational mode, characterized by:
+- Powerdown system power supply state (uLDO) request.
+- SCE clock frequency (SCE_RATE) equals SCLK_MF.
+- An active wakeup flag does not change operational mode." description="Lowpower operational mode, characterized by:
+- Powerdown system power supply state (uLDO) request.
+- SCE clock frequency (SCE_RATE) equals SCLK_MF.
+- An active wakeup flag does not change operational mode."/>
+         <bitenum id="A" value="0" token="Active operational mode, characterized by:
+- Active system power supply state (GLDO or DCDC) request. 
+- AON_PMCTL:AUXSCECLK.SRC sets the SCE clock frequency (SCE_RATE).
+- An active wakeup flag does not change operational mode." description="Active operational mode, characterized by:
+- Active system power supply state (GLDO or DCDC) request. 
+- AON_PMCTL:AUXSCECLK.SRC sets the SCE clock frequency (SCE_RATE).
+- An active wakeup flag does not change operational mode."/>
+      </bitfield>
+   </register>
+   <register acronym="OPMODEACK" width="32" description="Operational Mode Acknowledgement
+
+AUX_SCE program must assume that the current operational mode is the one acknowledged." id="OPMODEACK" offset="0x4">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RO" description="AUX operational mode acknowledgement." id="ACK" resetval="0x0">
+         <bitenum id="PDLP" value="3" token="Powerdown operational mode with wakeup to lowpower mode is acknowledged." description="Powerdown operational mode with wakeup to lowpower mode is acknowledged."/>
+         <bitenum id="PDA" value="2" token="Powerdown operational mode with wakeup to active mode is acknowledged." description="Powerdown operational mode with wakeup to active mode is acknowledged."/>
+         <bitenum id="LP" value="1" token="Lowpower operational mode is acknowledged." description="Lowpower operational mode is acknowledged."/>
+         <bitenum id="A" value="0" token="Active operational mode is acknowledged." description="Active operational mode is acknowledged."/>
+      </bitfield>
+   </register>
+   <register acronym="PROGWU0CFG" width="32" description="Programmable Wakeup 0 Configuration
+
+Configure this register to enable a customized AUX wakeup flag. The wakeup flag will be captured by AON_PMCTL which responds according to the current operational mode. You can select WUFLAGS.PROG_WU0 to trigger execution of a programmable AUX_SCE vector by configuration of VECCFGn. You need to follow  the procedure described in WUFLAGSCLR to clear this flag. You need to follow the procedure described in WUGATE to configure it." id="PROGWU0CFG" offset="0x8">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Polarity of WU_SRC. 
+
+The procedure used to clear the wakeup flag decides level or edge sensitivity, see WUFLAGSCLR.PROG_WU0." id="POL" resetval="0x0">
+         <bitenum id="LOW" value="1" token="The wakeup flag is set when WU_SRC is low or goes low." description="The wakeup flag is set when WU_SRC is low or goes low."/>
+         <bitenum id="HIGH" value="0" token="The wakeup flag is set when WU_SRC is high or goes high." description="The wakeup flag is set when WU_SRC is high or goes high."/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Programmable wakeup flag enable.
+
+0: Disable wakeup flag.
+1: Enable wakeup flag." id="EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Wakeup source from the asynchronous AUX event bus.
+
+Only change WU_SRC when EN is 0 or WUFLAGSCLR.PROG_WU0 is 1.
+
+If you write a non-enumerated value the behavior is identical to NO_EVENT. The written value is returned when read." id="WU_SRC" resetval="0x0">
+         <bitenum id="NO_EVENT" value="63" token="No event." description="No event."/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              "/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              "/>
+         <bitenum id="AUX_TIMER2_PULSE" value="52" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE           " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE           "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                  "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                  "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                     " description="AUX_EVCTL:EVSTAT2.MCU_EV                     "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                   " description="AUX_EVCTL:EVSTAT2.ACLK_REF                   "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                    " description="AUX_EVCTL:EVSTAT2.PWR_DWN                    "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                    " description="AUX_EVCTL:EVSTAT2.SCLK_LF                    "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                    " description="AUX_EVCTL:EVSTAT1.AUXIO31                    "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                    " description="AUX_EVCTL:EVSTAT1.AUXIO30                    "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                    " description="AUX_EVCTL:EVSTAT1.AUXIO29                    "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                    " description="AUX_EVCTL:EVSTAT1.AUXIO28                    "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                    " description="AUX_EVCTL:EVSTAT1.AUXIO27                    "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                    " description="AUX_EVCTL:EVSTAT1.AUXIO26                    "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                    " description="AUX_EVCTL:EVSTAT1.AUXIO25                    "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                    " description="AUX_EVCTL:EVSTAT1.AUXIO24                    "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                    " description="AUX_EVCTL:EVSTAT1.AUXIO23                    "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                    " description="AUX_EVCTL:EVSTAT1.AUXIO22                    "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                    " description="AUX_EVCTL:EVSTAT1.AUXIO21                    "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                    " description="AUX_EVCTL:EVSTAT1.AUXIO20                    "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                    " description="AUX_EVCTL:EVSTAT1.AUXIO19                    "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                    " description="AUX_EVCTL:EVSTAT1.AUXIO18                    "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                    " description="AUX_EVCTL:EVSTAT1.AUXIO17                    "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                    " description="AUX_EVCTL:EVSTAT1.AUXIO16                    "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                    " description="AUX_EVCTL:EVSTAT0.AUXIO15                    "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                    " description="AUX_EVCTL:EVSTAT0.AUXIO14                    "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                    " description="AUX_EVCTL:EVSTAT0.AUXIO13                    "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                    " description="AUX_EVCTL:EVSTAT0.AUXIO12                    "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                    " description="AUX_EVCTL:EVSTAT0.AUXIO11                    "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                    " description="AUX_EVCTL:EVSTAT0.AUXIO10                    "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                     " description="AUX_EVCTL:EVSTAT0.AUXIO9                     "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                     " description="AUX_EVCTL:EVSTAT0.AUXIO8                     "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                     " description="AUX_EVCTL:EVSTAT0.AUXIO7                     "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                     " description="AUX_EVCTL:EVSTAT0.AUXIO6                     "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                     " description="AUX_EVCTL:EVSTAT0.AUXIO5                     "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                     " description="AUX_EVCTL:EVSTAT0.AUXIO4                     "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                     " description="AUX_EVCTL:EVSTAT0.AUXIO3                     "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                     " description="AUX_EVCTL:EVSTAT0.AUXIO2                     "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                     " description="AUX_EVCTL:EVSTAT0.AUXIO1                     "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                     " description="AUX_EVCTL:EVSTAT0.AUXIO0                     "/>
+      </bitfield>
+   </register>
+   <register acronym="PROGWU1CFG" width="32" description="Programmable Wakeup 1 Configuration
+
+Configure this register to enable a customized AUX wakeup flag. The wakeup flag will be captured by AON_PMCTL which responds according to the current operational mode. You can select WUFLAGS.PROG_WU1 to trigger execution of a programmable AUX_SCE vector by configuration of VECCFGn. You need to follow  the procedure described in WUFLAGSCLR to clear this flag. You need to follow the procedure described in WUGATE to configure it." id="PROGWU1CFG" offset="0xc">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Polarity of WU_SRC. 
+
+The procedure used to clear the wakeup flag decides level or edge sensitivity, see WUFLAGSCLR.PROG_WU1." id="POL" resetval="0x0">
+         <bitenum id="LOW" value="1" token="The wakeup flag is set when WU_SRC is low or goes low." description="The wakeup flag is set when WU_SRC is low or goes low."/>
+         <bitenum id="HIGH" value="0" token="The wakeup flag is set when WU_SRC is high or goes high." description="The wakeup flag is set when WU_SRC is high or goes high."/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Programmable wakeup flag enable.
+
+0: Disable wakeup flag.
+1: Enable wakeup flag." id="EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Wakeup source from the asynchronous AUX event bus.
+
+Only change WU_SRC when EN is 0 or WUFLAGSCLR.PROG_WU1 is 1.
+
+If you write a non-enumerated value the behavior is identical to NO_EVENT. The written value is returned when read." id="WU_SRC" resetval="0x0">
+         <bitenum id="NO_EVENT" value="63" token="No event." description="No event."/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              "/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              "/>
+         <bitenum id="AUX_TIMER2_PULSE" value="52" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE           " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE           "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                  "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                  "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                     " description="AUX_EVCTL:EVSTAT2.MCU_EV                     "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                   " description="AUX_EVCTL:EVSTAT2.ACLK_REF                   "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                    " description="AUX_EVCTL:EVSTAT2.PWR_DWN                    "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                    " description="AUX_EVCTL:EVSTAT2.SCLK_LF                    "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                    " description="AUX_EVCTL:EVSTAT1.AUXIO31                    "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                    " description="AUX_EVCTL:EVSTAT1.AUXIO30                    "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                    " description="AUX_EVCTL:EVSTAT1.AUXIO29                    "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                    " description="AUX_EVCTL:EVSTAT1.AUXIO28                    "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                    " description="AUX_EVCTL:EVSTAT1.AUXIO27                    "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                    " description="AUX_EVCTL:EVSTAT1.AUXIO26                    "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                    " description="AUX_EVCTL:EVSTAT1.AUXIO25                    "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                    " description="AUX_EVCTL:EVSTAT1.AUXIO24                    "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                    " description="AUX_EVCTL:EVSTAT1.AUXIO23                    "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                    " description="AUX_EVCTL:EVSTAT1.AUXIO22                    "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                    " description="AUX_EVCTL:EVSTAT1.AUXIO21                    "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                    " description="AUX_EVCTL:EVSTAT1.AUXIO20                    "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                    " description="AUX_EVCTL:EVSTAT1.AUXIO19                    "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                    " description="AUX_EVCTL:EVSTAT1.AUXIO18                    "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                    " description="AUX_EVCTL:EVSTAT1.AUXIO17                    "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                    " description="AUX_EVCTL:EVSTAT1.AUXIO16                    "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                    " description="AUX_EVCTL:EVSTAT0.AUXIO15                    "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                    " description="AUX_EVCTL:EVSTAT0.AUXIO14                    "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                    " description="AUX_EVCTL:EVSTAT0.AUXIO13                    "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                    " description="AUX_EVCTL:EVSTAT0.AUXIO12                    "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                    " description="AUX_EVCTL:EVSTAT0.AUXIO11                    "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                    " description="AUX_EVCTL:EVSTAT0.AUXIO10                    "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                     " description="AUX_EVCTL:EVSTAT0.AUXIO9                     "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                     " description="AUX_EVCTL:EVSTAT0.AUXIO8                     "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                     " description="AUX_EVCTL:EVSTAT0.AUXIO7                     "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                     " description="AUX_EVCTL:EVSTAT0.AUXIO6                     "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                     " description="AUX_EVCTL:EVSTAT0.AUXIO5                     "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                     " description="AUX_EVCTL:EVSTAT0.AUXIO4                     "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                     " description="AUX_EVCTL:EVSTAT0.AUXIO3                     "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                     " description="AUX_EVCTL:EVSTAT0.AUXIO2                     "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                     " description="AUX_EVCTL:EVSTAT0.AUXIO1                     "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                     " description="AUX_EVCTL:EVSTAT0.AUXIO0                     "/>
+      </bitfield>
+   </register>
+   <register acronym="PROGWU2CFG" width="32" description="Programmable Wakeup 2 Configuration
+
+Configure this register to enable a customized AUX wakeup flag. The wakeup flag will be captured by AON_PMCTL which responds according to the current operational mode. You can select WUFLAGS.PROG_WU2 to trigger execution of a programmable AUX_SCE vector by configuration of VECCFGn. You need to follow  the procedure described in WUFLAGSCLR to clear this flag. You need to follow the procedure described in WUGATE to configure it." id="PROGWU2CFG" offset="0x10">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Polarity of WU_SRC. 
+
+The procedure used to clear the wakeup flag decides level or edge sensitivity, see WUFLAGSCLR.PROG_WU2." id="POL" resetval="0x0">
+         <bitenum id="LOW" value="1" token="The wakeup flag is set when WU_SRC is low or goes low." description="The wakeup flag is set when WU_SRC is low or goes low."/>
+         <bitenum id="HIGH" value="0" token="The wakeup flag is set when WU_SRC is high or goes high." description="The wakeup flag is set when WU_SRC is high or goes high."/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Programmable wakeup flag enable.
+
+0: Disable wakeup flag.
+1: Enable wakeup flag." id="EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Wakeup source from the asynchronous AUX event bus.
+
+Only change WU_SRC when EN is 0 or WUFLAGSCLR.PROG_WU2 is 1.
+
+If you write a non-enumerated value the behavior is identical to NO_EVENT. The written value is returned when read." id="WU_SRC" resetval="0x0">
+         <bitenum id="NO_EVENT" value="63" token="No event." description="No event."/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              "/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              "/>
+         <bitenum id="AUX_TIMER2_PULSE" value="52" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE           " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE           "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                  "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                  "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                     " description="AUX_EVCTL:EVSTAT2.MCU_EV                     "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                   " description="AUX_EVCTL:EVSTAT2.ACLK_REF                   "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                    " description="AUX_EVCTL:EVSTAT2.PWR_DWN                    "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                    " description="AUX_EVCTL:EVSTAT2.SCLK_LF                    "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                    " description="AUX_EVCTL:EVSTAT1.AUXIO31                    "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                    " description="AUX_EVCTL:EVSTAT1.AUXIO30                    "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                    " description="AUX_EVCTL:EVSTAT1.AUXIO29                    "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                    " description="AUX_EVCTL:EVSTAT1.AUXIO28                    "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                    " description="AUX_EVCTL:EVSTAT1.AUXIO27                    "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                    " description="AUX_EVCTL:EVSTAT1.AUXIO26                    "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                    " description="AUX_EVCTL:EVSTAT1.AUXIO25                    "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                    " description="AUX_EVCTL:EVSTAT1.AUXIO24                    "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                    " description="AUX_EVCTL:EVSTAT1.AUXIO23                    "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                    " description="AUX_EVCTL:EVSTAT1.AUXIO22                    "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                    " description="AUX_EVCTL:EVSTAT1.AUXIO21                    "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                    " description="AUX_EVCTL:EVSTAT1.AUXIO20                    "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                    " description="AUX_EVCTL:EVSTAT1.AUXIO19                    "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                    " description="AUX_EVCTL:EVSTAT1.AUXIO18                    "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                    " description="AUX_EVCTL:EVSTAT1.AUXIO17                    "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                    " description="AUX_EVCTL:EVSTAT1.AUXIO16                    "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                    " description="AUX_EVCTL:EVSTAT0.AUXIO15                    "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                    " description="AUX_EVCTL:EVSTAT0.AUXIO14                    "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                    " description="AUX_EVCTL:EVSTAT0.AUXIO13                    "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                    " description="AUX_EVCTL:EVSTAT0.AUXIO12                    "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                    " description="AUX_EVCTL:EVSTAT0.AUXIO11                    "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                    " description="AUX_EVCTL:EVSTAT0.AUXIO10                    "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                     " description="AUX_EVCTL:EVSTAT0.AUXIO9                     "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                     " description="AUX_EVCTL:EVSTAT0.AUXIO8                     "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                     " description="AUX_EVCTL:EVSTAT0.AUXIO7                     "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                     " description="AUX_EVCTL:EVSTAT0.AUXIO6                     "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                     " description="AUX_EVCTL:EVSTAT0.AUXIO5                     "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                     " description="AUX_EVCTL:EVSTAT0.AUXIO4                     "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                     " description="AUX_EVCTL:EVSTAT0.AUXIO3                     "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                     " description="AUX_EVCTL:EVSTAT0.AUXIO2                     "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                     " description="AUX_EVCTL:EVSTAT0.AUXIO1                     "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                     " description="AUX_EVCTL:EVSTAT0.AUXIO0                     "/>
+      </bitfield>
+   </register>
+   <register acronym="PROGWU3CFG" width="32" description="Programmable Wakeup 3 Configuration
+
+Configure this register to enable a customized AUX wakeup flag. The wakeup flag will be captured by AON_PMCTL which responds according to the current operational mode. You can select WUFLAGS.PROG_WU3 to trigger execution of a programmable AUX_SCE vector by configuration of VECCFGn. You need to follow  the procedure described in WUFLAGSCLR to clear this flag. You need to follow the procedure described in WUGATE to configure it." id="PROGWU3CFG" offset="0x14">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Polarity of WU_SRC. 
+
+The procedure used to clear the wakeup flag decides level or edge sensitivity, see WUFLAGSCLR.PROG_WU3." id="POL" resetval="0x0">
+         <bitenum id="LOW" value="1" token="The wakeup flag is set when WU_SRC is low or goes low." description="The wakeup flag is set when WU_SRC is low or goes low."/>
+         <bitenum id="HIGH" value="0" token="The wakeup flag is set when WU_SRC is high or goes high." description="The wakeup flag is set when WU_SRC is high or goes high."/>
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Programmable wakeup flag enable.
+
+0: Disable wakeup flag.
+1: Enable wakeup flag." id="EN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="6" end="0" rwaccess="RW" description="Wakeup source from the asynchronous AUX event bus.
+
+Only change WU_SRC when EN is 0 or WUFLAGSCLR.PROG_WU3 is 1.
+
+If you write a non-enumerated value the behavior is identical to NO_EVENT. The written value is returned when read." id="WU_SRC" resetval="0x0">
+         <bitenum id="NO_EVENT" value="63" token="No event." description="No event."/>
+         <bitenum id="AUX_SMPH_AUTOTAKE_DONE" value="61" token="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   " description="AUX_EVCTL:EVSTAT3.AUX_SMPH_AUTOTAKE_DONE   "/>
+         <bitenum id="AUX_ADC_FIFO_NOT_EMPTY" value="60" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_NOT_EMPTY               "/>
+         <bitenum id="AUX_ADC_FIFO_ALMOST_FULL" value="59" token="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             " description="AUX_EVCTL:EVSTAT3.AUX_ADC_FIFO_ALMOST_FULL             "/>
+         <bitenum id="AUX_ADC_IRQ" value="58" token="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          " description="AUX_EVCTL:EVSTAT3.AUX_ADC_IRQ                          "/>
+         <bitenum id="AUX_ADC_DONE" value="57" token="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         " description="AUX_EVCTL:EVSTAT3.AUX_ADC_DONE                         "/>
+         <bitenum id="AUX_ISRC_RESET_N" value="56" token="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             " description="AUX_EVCTL:EVSTAT3.AUX_ISRC_RESET_N             "/>
+         <bitenum id="AUX_TDC_DONE" value="55" token="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               " description="AUX_EVCTL:EVSTAT3.AUX_TDC_DONE               "/>
+         <bitenum id="AUX_TIMER0_EV" value="54" token="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER0_EV              "/>
+         <bitenum id="AUX_TIMER1_EV" value="53" token="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              " description="AUX_EVCTL:EVSTAT3.AUX_TIMER1_EV              "/>
+         <bitenum id="AUX_TIMER2_PULSE" value="52" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE           " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE           "/>
+         <bitenum id="AUX_TIMER2_EV3" value="51" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3             "/>
+         <bitenum id="AUX_TIMER2_EV2" value="50" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2             "/>
+         <bitenum id="AUX_TIMER2_EV1" value="49" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1             "/>
+         <bitenum id="AUX_TIMER2_EV0" value="48" token="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             " description="AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0             "/>
+         <bitenum id="AUX_COMPB" value="47" token="AUX_EVCTL:EVSTAT2.AUX_COMPB                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPB                  "/>
+         <bitenum id="AUX_COMPA" value="46" token="AUX_EVCTL:EVSTAT2.AUX_COMPA                  " description="AUX_EVCTL:EVSTAT2.AUX_COMPA                  "/>
+         <bitenum id="MCU_OBSMUX1" value="45" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX1                "/>
+         <bitenum id="MCU_OBSMUX0" value="44" token="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                " description="AUX_EVCTL:EVSTAT2.MCU_OBSMUX0                "/>
+         <bitenum id="MCU_EV" value="43" token="AUX_EVCTL:EVSTAT2.MCU_EV                     " description="AUX_EVCTL:EVSTAT2.MCU_EV                     "/>
+         <bitenum id="ACLK_REF" value="42" token="AUX_EVCTL:EVSTAT2.ACLK_REF                   " description="AUX_EVCTL:EVSTAT2.ACLK_REF                   "/>
+         <bitenum id="VDDR_RECHARGE" value="41" token="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              " description="AUX_EVCTL:EVSTAT2.VDDR_RECHARGE              "/>
+         <bitenum id="MCU_ACTIVE" value="40" token="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 " description="AUX_EVCTL:EVSTAT2.MCU_ACTIVE                 "/>
+         <bitenum id="PWR_DWN" value="39" token="AUX_EVCTL:EVSTAT2.PWR_DWN                    " description="AUX_EVCTL:EVSTAT2.PWR_DWN                    "/>
+         <bitenum id="SCLK_LF" value="38" token="AUX_EVCTL:EVSTAT2.SCLK_LF                    " description="AUX_EVCTL:EVSTAT2.SCLK_LF                    "/>
+         <bitenum id="AON_BATMON_TEMP_UPD" value="37" token="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             " description="AUX_EVCTL:EVSTAT2.AON_BATMON_TEMP_UPD             "/>
+         <bitenum id="AON_BATMON_BAT_UPD" value="36" token="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              " description="AUX_EVCTL:EVSTAT2.AON_BATMON_BAT_UPD              "/>
+         <bitenum id="AON_RTC_4KHZ" value="35" token="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    " description="AUX_EVCTL:EVSTAT2.AON_RTC_4KHZ                    "/>
+         <bitenum id="AON_RTC_CH2_DLY" value="34" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY                 "/>
+         <bitenum id="AON_RTC_CH2" value="33" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     " description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2                     "/>
+         <bitenum id="MANUAL_EV" value="32" token="AUX_EVCTL:EVSTAT2.MANUAL_EV" description="AUX_EVCTL:EVSTAT2.MANUAL_EV"/>
+         <bitenum id="AUXIO31" value="31" token="AUX_EVCTL:EVSTAT1.AUXIO31                    " description="AUX_EVCTL:EVSTAT1.AUXIO31                    "/>
+         <bitenum id="AUXIO30" value="30" token="AUX_EVCTL:EVSTAT1.AUXIO30                    " description="AUX_EVCTL:EVSTAT1.AUXIO30                    "/>
+         <bitenum id="AUXIO29" value="29" token="AUX_EVCTL:EVSTAT1.AUXIO29                    " description="AUX_EVCTL:EVSTAT1.AUXIO29                    "/>
+         <bitenum id="AUXIO28" value="28" token="AUX_EVCTL:EVSTAT1.AUXIO28                    " description="AUX_EVCTL:EVSTAT1.AUXIO28                    "/>
+         <bitenum id="AUXIO27" value="27" token="AUX_EVCTL:EVSTAT1.AUXIO27                    " description="AUX_EVCTL:EVSTAT1.AUXIO27                    "/>
+         <bitenum id="AUXIO26" value="26" token="AUX_EVCTL:EVSTAT1.AUXIO26                    " description="AUX_EVCTL:EVSTAT1.AUXIO26                    "/>
+         <bitenum id="AUXIO25" value="25" token="AUX_EVCTL:EVSTAT1.AUXIO25                    " description="AUX_EVCTL:EVSTAT1.AUXIO25                    "/>
+         <bitenum id="AUXIO24" value="24" token="AUX_EVCTL:EVSTAT1.AUXIO24                    " description="AUX_EVCTL:EVSTAT1.AUXIO24                    "/>
+         <bitenum id="AUXIO23" value="23" token="AUX_EVCTL:EVSTAT1.AUXIO23                    " description="AUX_EVCTL:EVSTAT1.AUXIO23                    "/>
+         <bitenum id="AUXIO22" value="22" token="AUX_EVCTL:EVSTAT1.AUXIO22                    " description="AUX_EVCTL:EVSTAT1.AUXIO22                    "/>
+         <bitenum id="AUXIO21" value="21" token="AUX_EVCTL:EVSTAT1.AUXIO21                    " description="AUX_EVCTL:EVSTAT1.AUXIO21                    "/>
+         <bitenum id="AUXIO20" value="20" token="AUX_EVCTL:EVSTAT1.AUXIO20                    " description="AUX_EVCTL:EVSTAT1.AUXIO20                    "/>
+         <bitenum id="AUXIO19" value="19" token="AUX_EVCTL:EVSTAT1.AUXIO19                    " description="AUX_EVCTL:EVSTAT1.AUXIO19                    "/>
+         <bitenum id="AUXIO18" value="18" token="AUX_EVCTL:EVSTAT1.AUXIO18                    " description="AUX_EVCTL:EVSTAT1.AUXIO18                    "/>
+         <bitenum id="AUXIO17" value="17" token="AUX_EVCTL:EVSTAT1.AUXIO17                    " description="AUX_EVCTL:EVSTAT1.AUXIO17                    "/>
+         <bitenum id="AUXIO16" value="16" token="AUX_EVCTL:EVSTAT1.AUXIO16                    " description="AUX_EVCTL:EVSTAT1.AUXIO16                    "/>
+         <bitenum id="AUXIO15" value="15" token="AUX_EVCTL:EVSTAT0.AUXIO15                    " description="AUX_EVCTL:EVSTAT0.AUXIO15                    "/>
+         <bitenum id="AUXIO14" value="14" token="AUX_EVCTL:EVSTAT0.AUXIO14                    " description="AUX_EVCTL:EVSTAT0.AUXIO14                    "/>
+         <bitenum id="AUXIO13" value="13" token="AUX_EVCTL:EVSTAT0.AUXIO13                    " description="AUX_EVCTL:EVSTAT0.AUXIO13                    "/>
+         <bitenum id="AUXIO12" value="12" token="AUX_EVCTL:EVSTAT0.AUXIO12                    " description="AUX_EVCTL:EVSTAT0.AUXIO12                    "/>
+         <bitenum id="AUXIO11" value="11" token="AUX_EVCTL:EVSTAT0.AUXIO11                    " description="AUX_EVCTL:EVSTAT0.AUXIO11                    "/>
+         <bitenum id="AUXIO10" value="10" token="AUX_EVCTL:EVSTAT0.AUXIO10                    " description="AUX_EVCTL:EVSTAT0.AUXIO10                    "/>
+         <bitenum id="AUXIO9" value="9" token="AUX_EVCTL:EVSTAT0.AUXIO9                     " description="AUX_EVCTL:EVSTAT0.AUXIO9                     "/>
+         <bitenum id="AUXIO8" value="8" token="AUX_EVCTL:EVSTAT0.AUXIO8                     " description="AUX_EVCTL:EVSTAT0.AUXIO8                     "/>
+         <bitenum id="AUXIO7" value="7" token="AUX_EVCTL:EVSTAT0.AUXIO7                     " description="AUX_EVCTL:EVSTAT0.AUXIO7                     "/>
+         <bitenum id="AUXIO6" value="6" token="AUX_EVCTL:EVSTAT0.AUXIO6                     " description="AUX_EVCTL:EVSTAT0.AUXIO6                     "/>
+         <bitenum id="AUXIO5" value="5" token="AUX_EVCTL:EVSTAT0.AUXIO5                     " description="AUX_EVCTL:EVSTAT0.AUXIO5                     "/>
+         <bitenum id="AUXIO4" value="4" token="AUX_EVCTL:EVSTAT0.AUXIO4                     " description="AUX_EVCTL:EVSTAT0.AUXIO4                     "/>
+         <bitenum id="AUXIO3" value="3" token="AUX_EVCTL:EVSTAT0.AUXIO3                     " description="AUX_EVCTL:EVSTAT0.AUXIO3                     "/>
+         <bitenum id="AUXIO2" value="2" token="AUX_EVCTL:EVSTAT0.AUXIO2                     " description="AUX_EVCTL:EVSTAT0.AUXIO2                     "/>
+         <bitenum id="AUXIO1" value="1" token="AUX_EVCTL:EVSTAT0.AUXIO1                     " description="AUX_EVCTL:EVSTAT0.AUXIO1                     "/>
+         <bitenum id="AUXIO0" value="0" token="AUX_EVCTL:EVSTAT0.AUXIO0                     " description="AUX_EVCTL:EVSTAT0.AUXIO0                     "/>
+      </bitfield>
+   </register>
+   <register acronym="SWWUTRIG" width="32" description="Software Wakeup Triggers 
+
+System CPU uses these wakeup flags to perform handshaking with AUX_SCE. The wakeup flags can change the operational mode of AUX and guarantees a non-zero SCE clock rate. AUX_SCE wakeup vectors are configured in VECCFGn. " id="SWWUTRIG" offset="0x18">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="WO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="WO" description="Software wakeup 3 trigger.
+
+0: No effect.
+1: Set WUFLAGS.SW_WU3 and trigger AUX wakeup." id="SW_WU3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="WO" description="Software wakeup 2 trigger.
+
+0: No effect.
+1: Set WUFLAGS.SW_WU2 and trigger AUX wakeup." id="SW_WU2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="WO" description="Software wakeup 1 trigger.
+
+0: No effect.
+1: Set WUFLAGS.SW_WU1 and trigger AUX wakeup." id="SW_WU1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="WO" description="Software wakeup 0 trigger.
+
+0: No effect.
+1: Set WUFLAGS.SW_WU0 and trigger AUX wakeup." id="SW_WU0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="WUFLAGS" width="32" description="Wakeup Flags
+
+This register holds the eight AUX wakeup flags. Each flag can cause AUX operational mode to change as given in OPMODEREQ. To clear flag n you must set bit n in WUFLAGSCLR until flag n is read as 0. You must clear bit n in WUFLAGSCLR before flag n can be set again." id="WUFLAGS" offset="0x1c">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="Software wakeup 3 flag.
+
+0: Software wakeup 3 not triggered.
+1: Software wakeup 3 triggered." id="SW_WU3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="Software wakeup 2 flag.
+
+0: Software wakeup 2 not triggered.
+1: Software wakeup 2 triggered." id="SW_WU2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="Software wakeup 1 flag.
+
+0: Software wakeup 1 not triggered.
+1: Software wakeup 1 triggered." id="SW_WU1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Software wakeup 0 flag.
+
+0: Software wakeup 0 not triggered.
+1: Software wakeup 0 triggered." id="SW_WU0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Programmable wakeup 3.
+
+0: Programmable wakeup 3 not triggered.
+1: Programmable wakeup 3 triggered." id="PROG_WU3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Programmable wakeup 2.
+
+0: Programmable wakeup 2 not triggered.
+1: Programmable wakeup 2 triggered." id="PROG_WU2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Programmable wakeup 1.
+
+0: Programmable wakeup 1 not triggered.
+1: Programmable wakeup 1 triggered." id="PROG_WU1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Programmable wakeup 0.
+
+0: Programmable wakeup 0 not triggered.
+1: Programmable wakeup 0 triggered." id="PROG_WU0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="WUFLAGSCLR" width="32" description="Wakeup Flags Clear
+
+This register clears AUX wakeup flags WUFLAGS. 
+
+To clear programmable wakeup flags you must disable the AUX wakeup output first. After the programmable wakeup flags are cleared you must re-enable the AUX wakeup output. Write WUGATE to disable or enable the AUX wakeup output. This procedure is not required when you want to clear a software-triggered wakeup.
+
+" id="WUFLAGSCLR" offset="0x20">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="Clear software wakeup flag 3.
+
+0: No effect.
+1: Clear WUFLAGS.SW_WU3. Keep high until WUFLAGS.SW_WU3 is 0." id="SW_WU3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RW" description="Clear software wakeup flag 2.
+
+0: No effect.
+1: Clear WUFLAGS.SW_WU2. Keep high until WUFLAGS.SW_WU2 is 0." id="SW_WU2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Clear software wakeup flag 1.
+
+0: No effect.
+1: Clear WUFLAGS.SW_WU1. Keep high until WUFLAGS.SW_WU1 is 0." id="SW_WU1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Clear software wakeup flag 0.
+
+0: No effect.
+1: Clear WUFLAGS.SW_WU0. Keep high until WUFLAGS.SW_WU0 is 0." id="SW_WU0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Programmable wakeup flag 3.
+
+0: No effect.
+1: Clear WUFLAGS.PROG_WU3. Keep high until WUFLAGS.PROG_WU3 is 0.
+
+The wakeup flag becomes edge sensitive if you write PROG_WU3 to 0 when PROGWU3CFG.EN is 1.
+The wakeup flag becomes level sensitive if you write PROG_WU3 to 0 when PROGWU3CFG.EN is 0, then set PROGWU3CFG.EN." id="PROG_WU3" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Programmable wakeup flag 2.
+
+0: No effect.
+1: Clear WUFLAGS.PROG_WU2. Keep high until WUFLAGS.PROG_WU2 is 0.
+
+The wakeup flag becomes edge sensitive if you write PROG_WU2 to 0 when PROGWU2CFG.EN is 1.
+The wakeup flag becomes level sensitive if you write PROG_WU2 to 0 when PROGWU2CFG.EN is 0, then set PROGWU2CFG.EN." id="PROG_WU2" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Programmable wakeup flag 1.
+
+0: No effect.
+1: Clear WUFLAGS.PROG_WU1. Keep high until WUFLAGS.PROG_WU1 is 0.
+
+The wakeup flag becomes edge sensitive if you write PROG_WU1 to 0 when PROGWU1CFG.EN is 1.
+The wakeup flag becomes level sensitive if you write PROG_WU1 to 0 when PROGWU1CFG.EN is 0, then set PROGWU1CFG.EN." id="PROG_WU1" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Programmable wakeup flag 0.
+
+0: No effect.
+1: Clear WUFLAGS.PROG_WU0. Keep high until WUFLAGS.PROG_WU0 is 0.
+
+The wakeup flag becomes edge sensitive if you write PROG_WU0 to 0 when PROGWU0CFG.EN is 1.
+The wakeup flag becomes level sensitive if you write PROG_WU0 to 0 when PROGWU0CFG.EN is 0, then set PROGWU0CFG.EN." id="PROG_WU0" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="WUGATE" width="32" description="Wakeup Gate
+
+You must disable the AUX wakeup output:
+- Before you clear a programmable wakeup flag.
+- Before you change the value of [PROGWUnCFG.EN] or [PROGWUnCFG.WU_SRC].
+
+The AUX wakeup output must be re-enabled after clear operation or programmable wakeup configuration.
+
+" id="WUGATE" offset="0x24">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Wakeup output enable.
+
+0: Disable AUX wakeup output.
+1: Enable AUX wakeup output." id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="VECCFG0" width="32" description="Vector Configuration 0
+
+AUX_SCE wakeup vector 0 configuration" id="VECCFG0" offset="0x28">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Select trigger event for vector 0.
+
+Non-enumerated values are treated as NONE." id="VEC_EV" resetval="0x0">
+         <bitenum id="AON_RTC_CH2_DLY" value="9" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY" description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY"/>
+         <bitenum id="SW_WU3" value="8" token="WUFLAGS.SW_WU3  " description="WUFLAGS.SW_WU3  "/>
+         <bitenum id="SW_WU2" value="7" token="WUFLAGS.SW_WU2  " description="WUFLAGS.SW_WU2  "/>
+         <bitenum id="SW_WU1" value="6" token="WUFLAGS.SW_WU1  " description="WUFLAGS.SW_WU1  "/>
+         <bitenum id="SW_WU0" value="5" token="WUFLAGS.SW_WU0  " description="WUFLAGS.SW_WU0  "/>
+         <bitenum id="PROG_WU3" value="4" token="WUFLAGS.PROG_WU3" description="WUFLAGS.PROG_WU3"/>
+         <bitenum id="PROG_WU2" value="3" token="WUFLAGS.PROG_WU2" description="WUFLAGS.PROG_WU2"/>
+         <bitenum id="PROG_WU1" value="2" token="WUFLAGS.PROG_WU1" description="WUFLAGS.PROG_WU1"/>
+         <bitenum id="PROG_WU0" value="1" token="WUFLAGS.PROG_WU0" description="WUFLAGS.PROG_WU0"/>
+         <bitenum id="NONE" value="0" token="Vector is disabled." description="Vector is disabled."/>
+      </bitfield>
+   </register>
+   <register acronym="VECCFG1" width="32" description="Vector Configuration 1
+
+AUX_SCE wakeup vector 1 configuration" id="VECCFG1" offset="0x2c">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Select trigger event for vector 1.
+
+Non-enumerated values are treated as NONE." id="VEC_EV" resetval="0x0">
+         <bitenum id="AON_RTC_CH2_DLY" value="9" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY" description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY"/>
+         <bitenum id="SW_WU3" value="8" token="WUFLAGS.SW_WU3  " description="WUFLAGS.SW_WU3  "/>
+         <bitenum id="SW_WU2" value="7" token="WUFLAGS.SW_WU2  " description="WUFLAGS.SW_WU2  "/>
+         <bitenum id="SW_WU1" value="6" token="WUFLAGS.SW_WU1  " description="WUFLAGS.SW_WU1  "/>
+         <bitenum id="SW_WU0" value="5" token="WUFLAGS.SW_WU0  " description="WUFLAGS.SW_WU0  "/>
+         <bitenum id="PROG_WU3" value="4" token="WUFLAGS.PROG_WU3" description="WUFLAGS.PROG_WU3"/>
+         <bitenum id="PROG_WU2" value="3" token="WUFLAGS.PROG_WU2" description="WUFLAGS.PROG_WU2"/>
+         <bitenum id="PROG_WU1" value="2" token="WUFLAGS.PROG_WU1" description="WUFLAGS.PROG_WU1"/>
+         <bitenum id="PROG_WU0" value="1" token="WUFLAGS.PROG_WU0" description="WUFLAGS.PROG_WU0"/>
+         <bitenum id="NONE" value="0" token="Vector is disabled." description="Vector is disabled."/>
+      </bitfield>
+   </register>
+   <register acronym="VECCFG2" width="32" description="Vector Configuration 2
+
+AUX_SCE wakeup vector 2 configuration" id="VECCFG2" offset="0x30">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Select trigger event for vector 2.
+
+Non-enumerated values are treated as NONE." id="VEC_EV" resetval="0x0">
+         <bitenum id="AON_RTC_CH2_DLY" value="9" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY" description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY"/>
+         <bitenum id="SW_WU3" value="8" token="WUFLAGS.SW_WU3  " description="WUFLAGS.SW_WU3  "/>
+         <bitenum id="SW_WU2" value="7" token="WUFLAGS.SW_WU2  " description="WUFLAGS.SW_WU2  "/>
+         <bitenum id="SW_WU1" value="6" token="WUFLAGS.SW_WU1  " description="WUFLAGS.SW_WU1  "/>
+         <bitenum id="SW_WU0" value="5" token="WUFLAGS.SW_WU0  " description="WUFLAGS.SW_WU0  "/>
+         <bitenum id="PROG_WU3" value="4" token="WUFLAGS.PROG_WU3" description="WUFLAGS.PROG_WU3"/>
+         <bitenum id="PROG_WU2" value="3" token="WUFLAGS.PROG_WU2" description="WUFLAGS.PROG_WU2"/>
+         <bitenum id="PROG_WU1" value="2" token="WUFLAGS.PROG_WU1" description="WUFLAGS.PROG_WU1"/>
+         <bitenum id="PROG_WU0" value="1" token="WUFLAGS.PROG_WU0" description="WUFLAGS.PROG_WU0"/>
+         <bitenum id="NONE" value="0" token="Vector is disabled." description="Vector is disabled."/>
+      </bitfield>
+   </register>
+   <register acronym="VECCFG3" width="32" description="Vector Configuration 3
+
+AUX_SCE wakeup vector 3 configuration" id="VECCFG3" offset="0x34">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Select trigger event for vector 3.
+
+Non-enumerated values are treated as NONE." id="VEC_EV" resetval="0x0">
+         <bitenum id="AON_RTC_CH2_DLY" value="9" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY" description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY"/>
+         <bitenum id="SW_WU3" value="8" token="WUFLAGS.SW_WU3  " description="WUFLAGS.SW_WU3  "/>
+         <bitenum id="SW_WU2" value="7" token="WUFLAGS.SW_WU2  " description="WUFLAGS.SW_WU2  "/>
+         <bitenum id="SW_WU1" value="6" token="WUFLAGS.SW_WU1  " description="WUFLAGS.SW_WU1  "/>
+         <bitenum id="SW_WU0" value="5" token="WUFLAGS.SW_WU0  " description="WUFLAGS.SW_WU0  "/>
+         <bitenum id="PROG_WU3" value="4" token="WUFLAGS.PROG_WU3" description="WUFLAGS.PROG_WU3"/>
+         <bitenum id="PROG_WU2" value="3" token="WUFLAGS.PROG_WU2" description="WUFLAGS.PROG_WU2"/>
+         <bitenum id="PROG_WU1" value="2" token="WUFLAGS.PROG_WU1" description="WUFLAGS.PROG_WU1"/>
+         <bitenum id="PROG_WU0" value="1" token="WUFLAGS.PROG_WU0" description="WUFLAGS.PROG_WU0"/>
+         <bitenum id="NONE" value="0" token="Vector is disabled." description="Vector is disabled."/>
+      </bitfield>
+   </register>
+   <register acronym="VECCFG4" width="32" description="Vector Configuration 4
+
+AUX_SCE wakeup vector 4 configuration" id="VECCFG4" offset="0x38">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Select trigger event for vector 4.
+
+Non-enumerated values are treated as NONE." id="VEC_EV" resetval="0x0">
+         <bitenum id="AON_RTC_CH2_DLY" value="9" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY" description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY"/>
+         <bitenum id="SW_WU3" value="8" token="WUFLAGS.SW_WU3  " description="WUFLAGS.SW_WU3  "/>
+         <bitenum id="SW_WU2" value="7" token="WUFLAGS.SW_WU2  " description="WUFLAGS.SW_WU2  "/>
+         <bitenum id="SW_WU1" value="6" token="WUFLAGS.SW_WU1  " description="WUFLAGS.SW_WU1  "/>
+         <bitenum id="SW_WU0" value="5" token="WUFLAGS.SW_WU0  " description="WUFLAGS.SW_WU0  "/>
+         <bitenum id="PROG_WU3" value="4" token="WUFLAGS.PROG_WU3" description="WUFLAGS.PROG_WU3"/>
+         <bitenum id="PROG_WU2" value="3" token="WUFLAGS.PROG_WU2" description="WUFLAGS.PROG_WU2"/>
+         <bitenum id="PROG_WU1" value="2" token="WUFLAGS.PROG_WU1" description="WUFLAGS.PROG_WU1"/>
+         <bitenum id="PROG_WU0" value="1" token="WUFLAGS.PROG_WU0" description="WUFLAGS.PROG_WU0"/>
+         <bitenum id="NONE" value="0" token="Vector is disabled." description="Vector is disabled."/>
+      </bitfield>
+   </register>
+   <register acronym="VECCFG5" width="32" description="Vector Configuration 5
+
+AUX_SCE wakeup vector 5 configuration" id="VECCFG5" offset="0x3c">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Select trigger event for vector 5.
+
+Non-enumerated values are treated as NONE." id="VEC_EV" resetval="0x0">
+         <bitenum id="AON_RTC_CH2_DLY" value="9" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY" description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY"/>
+         <bitenum id="SW_WU3" value="8" token="WUFLAGS.SW_WU3  " description="WUFLAGS.SW_WU3  "/>
+         <bitenum id="SW_WU2" value="7" token="WUFLAGS.SW_WU2  " description="WUFLAGS.SW_WU2  "/>
+         <bitenum id="SW_WU1" value="6" token="WUFLAGS.SW_WU1  " description="WUFLAGS.SW_WU1  "/>
+         <bitenum id="SW_WU0" value="5" token="WUFLAGS.SW_WU0  " description="WUFLAGS.SW_WU0  "/>
+         <bitenum id="PROG_WU3" value="4" token="WUFLAGS.PROG_WU3" description="WUFLAGS.PROG_WU3"/>
+         <bitenum id="PROG_WU2" value="3" token="WUFLAGS.PROG_WU2" description="WUFLAGS.PROG_WU2"/>
+         <bitenum id="PROG_WU1" value="2" token="WUFLAGS.PROG_WU1" description="WUFLAGS.PROG_WU1"/>
+         <bitenum id="PROG_WU0" value="1" token="WUFLAGS.PROG_WU0" description="WUFLAGS.PROG_WU0"/>
+         <bitenum id="NONE" value="0" token="Vector is disabled." description="Vector is disabled."/>
+      </bitfield>
+   </register>
+   <register acronym="VECCFG6" width="32" description="Vector Configuration 6
+
+AUX_SCE wakeup vector 6 configuration" id="VECCFG6" offset="0x40">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Select trigger event for vector 6.
+
+Non-enumerated values are treated as NONE." id="VEC_EV" resetval="0x0">
+         <bitenum id="AON_RTC_CH2_DLY" value="9" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY" description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY"/>
+         <bitenum id="SW_WU3" value="8" token="WUFLAGS.SW_WU3  " description="WUFLAGS.SW_WU3  "/>
+         <bitenum id="SW_WU2" value="7" token="WUFLAGS.SW_WU2  " description="WUFLAGS.SW_WU2  "/>
+         <bitenum id="SW_WU1" value="6" token="WUFLAGS.SW_WU1  " description="WUFLAGS.SW_WU1  "/>
+         <bitenum id="SW_WU0" value="5" token="WUFLAGS.SW_WU0  " description="WUFLAGS.SW_WU0  "/>
+         <bitenum id="PROG_WU3" value="4" token="WUFLAGS.PROG_WU3" description="WUFLAGS.PROG_WU3"/>
+         <bitenum id="PROG_WU2" value="3" token="WUFLAGS.PROG_WU2" description="WUFLAGS.PROG_WU2"/>
+         <bitenum id="PROG_WU1" value="2" token="WUFLAGS.PROG_WU1" description="WUFLAGS.PROG_WU1"/>
+         <bitenum id="PROG_WU0" value="1" token="WUFLAGS.PROG_WU0" description="WUFLAGS.PROG_WU0"/>
+         <bitenum id="NONE" value="0" token="Vector is disabled." description="Vector is disabled."/>
+      </bitfield>
+   </register>
+   <register acronym="VECCFG7" width="32" description="Vector Configuration 7
+
+AUX_SCE wakeup vector 7 configuration" id="VECCFG7" offset="0x44">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Select trigger event for vector 7.
+
+Non-enumerated values are treated as NONE." id="VEC_EV" resetval="0x0">
+         <bitenum id="AON_RTC_CH2_DLY" value="9" token="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY" description="AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY"/>
+         <bitenum id="SW_WU3" value="8" token="WUFLAGS.SW_WU3  " description="WUFLAGS.SW_WU3  "/>
+         <bitenum id="SW_WU2" value="7" token="WUFLAGS.SW_WU2  " description="WUFLAGS.SW_WU2  "/>
+         <bitenum id="SW_WU1" value="6" token="WUFLAGS.SW_WU1  " description="WUFLAGS.SW_WU1  "/>
+         <bitenum id="SW_WU0" value="5" token="WUFLAGS.SW_WU0  " description="WUFLAGS.SW_WU0  "/>
+         <bitenum id="PROG_WU3" value="4" token="WUFLAGS.PROG_WU3" description="WUFLAGS.PROG_WU3"/>
+         <bitenum id="PROG_WU2" value="3" token="WUFLAGS.PROG_WU2" description="WUFLAGS.PROG_WU2"/>
+         <bitenum id="PROG_WU1" value="2" token="WUFLAGS.PROG_WU1" description="WUFLAGS.PROG_WU1"/>
+         <bitenum id="PROG_WU0" value="1" token="WUFLAGS.PROG_WU0" description="WUFLAGS.PROG_WU0"/>
+         <bitenum id="NONE" value="0" token="Vector is disabled." description="Vector is disabled."/>
+      </bitfield>
+   </register>
+   <register acronym="EVSYNCRATE" width="32" description="Event Synchronization Rate 
+
+Configure synchronization rate for certain events to the synchronous AUX event bus.
+
+You must select SCE rate when AUX_SCE uses the event. You must select AUX bus rate when system CPU uses the event.
+
+SCE rate equals rate configured in AON_PMCTL:AUXSCECLK. AUX bus rate equals SCE rate, or SCLK_HF divided by two when MCU domain is active." id="EVSYNCRATE" offset="0x48">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Select synchronization rate for AUX_EVCTL:EVSTAT2.AUX_COMPA event. " id="AUX_COMPA_SYNC_RATE" resetval="0x0">
+         <bitenum id="BUS_RATE" value="1" token="AUX bus rate" description="AUX bus rate"/>
+         <bitenum id="SCE_RATE" value="0" token="SCE rate" description="SCE rate"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Select synchronization rate for AUX_EVCTL:EVSTAT2.AUX_COMPB event." id="AUX_COMPB_SYNC_RATE" resetval="0x0">
+         <bitenum id="BUS_RATE" value="1" token="AUX bus rate" description="AUX bus rate"/>
+         <bitenum id="SCE_RATE" value="0" token="SCE rate" description="SCE rate"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Select synchronization rate for:
+- AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV0
+- AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV1
+- AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV2
+- AUX_EVCTL:EVSTAT3.AUX_TIMER2_EV3
+- AUX_EVCTL:EVSTAT3.AUX_TIMER2_PULSE                " id="AUX_TIMER2_SYNC_RATE" resetval="0x0">
+         <bitenum id="BUS_RATE" value="1" token="AUX bus rate" description="AUX bus rate"/>
+         <bitenum id="SCE_RATE" value="0" token="SCE rate" description="SCE rate"/>
+      </bitfield>
+   </register>
+   <register acronym="PEROPRATE" width="32" description="Peripheral Operational Rate 
+
+Some AUX peripherals are operated at either SCE or at AUX bus rate. 
+
+You must select SCE rate when AUX_SCE uses such peripheral or an event produced by it. You must select AUX bus rate when system CPU uses such peripheral.
+
+SCE rate equals rate configured in AON_PMCTL:AUXSCECLK. AUX bus rate equals SCE rate, or SCLK_HF divided by 2 when MCU domain is active." id="PEROPRATE" offset="0x4c">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Select operational rate for AUX_ANAIF DAC sample clock state machine." id="ANAIF_DAC_OP_RATE" resetval="0x0">
+         <bitenum id="BUS_RATE" value="1" token="AUX bus rate" description="AUX bus rate"/>
+         <bitenum id="SCE_RATE" value="0" token="SCE rate" description="SCE rate"/>
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Select operational rate for AUX_TIMER01." id="TIMER01_OP_RATE" resetval="0x0">
+         <bitenum id="BUS_RATE" value="1" token="AUX bus rate" description="AUX bus rate"/>
+         <bitenum id="SCE_RATE" value="0" token="SCE rate" description="SCE rate"/>
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Select operational rate for AUX_SPIM." id="SPIM_OP_RATE" resetval="0x0">
+         <bitenum id="BUS_RATE" value="1" token="AUX bus rate" description="AUX bus rate"/>
+         <bitenum id="SCE_RATE" value="0" token="SCE rate" description="SCE rate"/>
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Select operational rate for AUX_MAC." id="MAC_OP_RATE" resetval="0x0">
+         <bitenum id="BUS_RATE" value="1" token="AUX bus rate" description="AUX bus rate"/>
+         <bitenum id="SCE_RATE" value="0" token="SCE rate" description="SCE rate"/>
+      </bitfield>
+   </register>
+   <register acronym="ADCCLKCTL" width="32" description="ADC Clock Control" id="ADCCLKCTL" offset="0x50">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Clock acknowledgement.
+
+0: ADC clock is disabled.
+1: ADC clock is enabled." id="ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="ADC clock request.
+
+0: Disable ADC clock.
+1: Enable ADC clock.
+
+Only modify REQ when equal to ACK.
+" id="REQ" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TDCCLKCTL" width="32" description="TDC Counter Clock Control
+
+Controls if the AUX_TDC counter clock source is enabled. TDC counter clock source is configured in DDI_0_OSC:CTL0.ACLK_TDC_SRC_SEL.
+" id="TDCCLKCTL" offset="0x54">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="TDC counter clock acknowledgement.
+
+0: TDC counter clock is disabled.
+1: TDC counter clock is enabled." id="ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="TDC counter clock request.
+
+0: Disable TDC counter clock.
+1: Enable TDC counter clock.
+
+Only modify REQ when equal to ACK.
+" id="REQ" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TDCREFCLKCTL" width="32" description="TDC Reference Clock Control
+
+Controls if the AUX_TDC reference clock source is enabled. This clock is compared against the AUX_TDC counter clock. TDC reference clock source is configured in DDI_0_OSC:CTL0.ACLK_REF_SRC_SEL." id="TDCREFCLKCTL" offset="0x58">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="TDC reference clock acknowledgement.
+
+0: TDC reference clock is disabled.
+1: TDC reference clock is enabled." id="ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="TDC reference clock request.
+
+0: Disable TDC reference clock.
+1: Enable TDC reference clock.
+
+Only modify REQ when equal to ACK.
+" id="REQ" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TIMER2CLKCTL" width="32" description="AUX_TIMER2 Clock Control
+
+Access to AUX_TIMER2 is only possible when TIMER2CLKSTAT.STAT is different from NONE." id="TIMER2CLKCTL" offset="0x5c">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Select clock source for AUX_TIMER2.
+
+Update is only accepted if SRC equals TIMER2CLKSTAT.STAT or TIMER2CLKSWITCH.RDY is 1.
+
+It is recommended to select NONE only when TIMER2BRIDGE.BUSY is 0. 
+
+A non-enumerated value is ignored." id="SRC" resetval="0x0">
+         <bitenum id="SCLK_HFDIV2" value="4" token="SCLK_HF / 2" description="SCLK_HF / 2"/>
+         <bitenum id="SCLK_MF" value="2" token="SCLK_MF" description="SCLK_MF"/>
+         <bitenum id="SCLK_LF" value="1" token="SCLK_LF" description="SCLK_LF"/>
+         <bitenum id="NONE" value="0" token="no clock" description="no clock"/>
+      </bitfield>
+   </register>
+   <register acronym="TIMER2CLKSTAT" width="32" description="AUX_TIMER2 Clock Status" id="TIMER2CLKSTAT" offset="0x60">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RO" description="AUX_TIMER2 clock source status." id="STAT" resetval="0x0">
+         <bitenum id="SCLK_HFDIV2" value="4" token="SCLK_HF / 2" description="SCLK_HF / 2"/>
+         <bitenum id="SCLK_MF" value="2" token="SCLK_MF" description="SCLK_MF"/>
+         <bitenum id="SCLK_LF" value="1" token="SCLK_LF" description="SCLK_LF"/>
+         <bitenum id="NONE" value="0" token="No clock " description="No clock "/>
+      </bitfield>
+   </register>
+   <register acronym="TIMER2CLKSWITCH" width="32" description="AUX_TIMER2 Clock Switch" id="TIMER2CLKSWITCH" offset="0x64">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status of clock switcher.
+
+0: TIMER2CLKCTL.SRC is different from TIMER2CLKSTAT.STAT.
+1: TIMER2CLKCTL.SRC equals TIMER2CLKSTAT.STAT.
+
+RDY connects to AUX_EVCTL:EVSTAT3.AUX_TIMER2_CLKSWITCH_RDY." id="RDY" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="TIMER2DBGCTL" width="32" description="AUX_TIMER2 Debug Control" id="TIMER2DBGCTL" offset="0x68">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Debug freeze enable.
+
+0: AUX_TIMER2 does not halt when the system CPU halts in debug mode.
+1: Halt AUX_TIMER2 when the system CPU halts in debug mode." id="DBG_FREEZE_EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLKSHIFTDET" width="32" description="Clock Shift Detection
+
+A transition in the MCU domain state causes a non-accumulative change to the SCE clock period when the AUX clock rate is derived from SCLK_MF or SCLK_LF:
+- A single SCE clock cycle is 6 thru 8 SCLK_HF cycles longer when MCU domain enters active state.
+- A single SCE clock cycle is 6 thru 8 SCLK_HF cycles shorter when MCU domain exits active state.
+ 
+AUX_SCE detects if such events occurred to the SCE clock during the time period between a clear of STAT and a read of STAT." id="CLKSHIFTDET" offset="0x70">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Clock shift detection.
+
+Write:
+
+0: Restart clock shift detection.
+1: Do not use.
+
+Read:
+
+0: MCU domain did not enter or exit active state since you wrote 0 to STAT. 
+1: MCU domain entered or exited active state since you wrote 0 to STAT." id="STAT" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="RECHARGETRIG" width="32" description="VDDR Recharge Trigger" id="RECHARGETRIG" offset="0x74">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Recharge trigger.
+
+0: No effect.
+1: Request VDDR recharge. 
+
+Request VDDR recharge only when AUX_EVCTL:EVSTAT2.PWR_DWN is 1. 
+
+Follow this sequence when OPMODEREQ.REQ is LP:
+- Set TRIG.
+- Wait until AUX_EVCTL:EVSTAT2.VDDR_RECHARGE is 1.
+- Clear TRIG.
+- Wait until AUX_EVCTL:EVSTAT2.VDDR_RECHARGE is 0.
+
+Follow this sequence when OPMODEREQ.REQ is PDA or PDLP:
+- Set TRIG.
+- Clear TRIG." id="TRIG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RECHARGEDET" width="32" description="VDDR Recharge Detection
+
+Some applications can be sensitive to power noise caused by recharge of VDDR. You can detect if VDDR recharge occurs." id="RECHARGEDET" offset="0x78">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="VDDR recharge detector status.
+
+0: No recharge of VDDR has occurred since EN was set.
+1: Recharge of VDDR has occurred since EN was set." id="STAT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="VDDR recharge detector enable.
+
+0: Disable recharge detection. STAT becomes zero.
+1: Enable recharge detection." id="EN" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RTCSUBSECINC0" width="32" description="Real Time Counter Sub Second Increment 0
+
+INC15_0 will replace bits 15:0 in AON_RTC:SUBSECINC when RTCSUBSECINCCTL.UPD_REQ is set." id="RTCSUBSECINC0" offset="0x7c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RW" description="New value for bits 15:0 in AON_RTC:SUBSECINC." id="INC15_0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RTCSUBSECINC1" width="32" description="Real Time Counter Sub Second Increment 1
+
+INC23_16 will replace bits 23:16 in AON_RTC:SUBSECINC when RTCSUBSECINCCTL.UPD_REQ is set." id="RTCSUBSECINC1" offset="0x80">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="New value for bits 23:16 in AON_RTC:SUBSECINC." id="INC23_16" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RTCSUBSECINCCTL" width="32" description="Real Time Counter Sub Second Increment Control" id="RTCSUBSECINCCTL" offset="0x84">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Update acknowledgement.
+
+0: AON_RTC has not acknowledged UPD_REQ. 
+1: AON_RTC has acknowledged UPD_REQ. " id="UPD_ACK" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Request AON_RTC to update AON_RTC:SUBSECINC.
+
+0: Clear request to update.
+1: Set request to update.
+
+Only change UPD_REQ when it equals UPD_ACK. Clear UPD_REQ after UPD_ACK is 1." id="UPD_REQ" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RTCSEC" width="32" description="Real Time Counter Second 
+
+System CPU must not access this register. Instead, system CPU must access AON_RTC:SEC.VALUE directly.
+
+" id="RTCSEC" offset="0x88">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Bits 15:0 in AON_RTC:SEC.VALUE. 
+
+Follow this procedure to get the correct value:
+- Do two dummy reads of SEC.
+- Then read SEC until two consecutive reads are equal." id="SEC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RTCSUBSEC" width="32" description="Real Time Counter Sub-Second 
+
+System CPU must not access this register. Instead, system CPU must access AON_RTC:SUBSEC.VALUE directly.
+
+" id="RTCSUBSEC" offset="0x8c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="16" end="0" rwaccess="RO" description="Bits 31:16 in AON_RTC:SUBSEC.VALUE. 
+
+Follow this procedure to get the correct value:
+- Do two dummy reads SUBSEC.
+- Then read SUBSEC until two consecutive reads are equal." id="SUBSEC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="RTCEVCLR" width="32" description="AON_RTC Event Clear
+
+Request to clear events:
+- AON_RTC:EVFLAGS.CH2.
+- AON_RTC:EVFLAGS.CH2 delayed version.
+- AUX_EVCTL:EVSTAT2.AON_RTC_CH2.
+- AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY." id="RTCEVCLR" offset="0x90">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Clear events from AON_RTC channel 2.
+
+0: No effect. 
+1: Clear events from AON_RTC channel 2.
+
+Keep RTC_CH2_EV_CLR high until AUX_EVCTL:EVSTAT2.AON_RTC_CH2 and AUX_EVCTL:EVSTAT2.AON_RTC_CH2_DLY are 0." id="RTC_CH2_EV_CLR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BATMONBAT" width="32" description="AON_BATMON Battery Voltage Value
+
+Read access to AON_BATMON:BAT. System CPU must not access this register. Instead, system CPU must access AON_BATMON:BAT directly. AON_BATMON:BAT updates during VDDR recharge or active operational mode.
+
+" id="BATMONBAT" offset="0x94">
+      <bitfield range="" begin="31" width="21" end="11" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED11" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="3" end="8" rwaccess="RO" description="See AON_BATMON:BAT.INT. 
+
+Follow this procedure to get the correct value:
+- Do two dummy reads of INT.
+- Then read INT until two consecutive reads are equal." id="INT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="See AON_BATMON:BAT.FRAC. 
+
+Follow this procedure to get the correct value:
+- Do two dummy reads of FRAC.
+- Then read FRAC until two consecutive reads are equal." id="FRAC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="BATMONTEMP" width="32" description="AON_BATMON Temperature Value
+
+Read access to AON_BATMON:TEMP. System CPU must not access this register. Instead, system CPU must access AON_BATMON:TEMP directly. AON_BATMON:TEMP updates during VDDR recharge or active operational mode.
+
+" id="BATMONTEMP" offset="0x9c">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED16" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="5" end="11" rwaccess="RO" description="Sign extension of INT.
+
+Follow this procedure to get the correct value:
+- Do two dummy reads of SIGN.
+- Then read SIGN until two consecutive reads are equal." id="SIGN" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="10" width="9" end="2" rwaccess="RO" description="See AON_BATMON:TEMP.INT. 
+
+Follow this procedure to get the correct value:
+- Do two dummy reads of INT.
+- Then read INT until two consecutive reads are equal." id="INT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RO" description="See AON_BATMON:TEMP.FRAC. 
+
+Follow this procedure to get the correct value:
+- Do two dummy reads of FRAC.
+- Then read FRAC until two consecutive reads are equal." id="FRAC" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TIMERHALT" width="32" description="Timer Halt
+
+Debug register" id="TIMERHALT" offset="0xa0">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="Halt programmable delay.
+
+0: AUX_EVCTL:PROGDLY.VALUE decrements as normal.
+1: Halt AUX_EVCTL:PROGDLY.VALUE decrementation." id="PROGDLY" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="Halt AUX_TIMER2.
+
+0: AUX_TIMER2 operates as normal.
+1: Halt AUX_TIMER2 operation." id="AUX_TIMER2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Halt AUX_TIMER01 Timer 1.
+
+0: AUX_TIMER01 Timer 1 operates as normal.
+1: Halt AUX_TIMER01 Timer 1 operation." id="AUX_TIMER1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Halt AUX_TIMER01 Timer 0.
+
+0: AUX_TIMER01 Timer 0 operates as normal.
+1: Halt AUX_TIMER01 Timer 0 operation." id="AUX_TIMER0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="TIMER2BRIDGE" width="32" description="AUX_TIMER2 Bridge " id="TIMER2BRIDGE" offset="0xb0">
+      <bitfield range="" begin="31" width="31" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Status of bus transactions to AUX_TIMER2.
+
+0: No unfinished bus transactions.
+1: A bus transaction is ongoing." id="BUSY" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SWPWRPROF" width="32" description="Software Power Profiler" id="SWPWRPROF" offset="0xb4">
+      <bitfield range="" begin="31" width="29" end="3" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED3" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RW" description="Software status bits that can be read by the power profiler." id="STAT" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

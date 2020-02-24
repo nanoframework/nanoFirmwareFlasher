@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="CCFG" HW_revision="" XML_version="1.0" description="Customer configuration area (CCFG)" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="RESERVED_0" width="32" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED_0" offset="0x0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="EXT_LF_CLK" width="32" description="Extern LF clock configuration" id="EXT_LF_CLK" offset="0x1fa8">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Unsigned integer, selecting the DIO to supply external 32kHz clock as SCLK_LF when MODE_CONF.SCLK_LF_OPTION is set to EXTERNAL. The selected DIO will be marked as reserved by the pin driver (TI-RTOS environment) and hence not selectable for other usage." id="DIO" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="23" width="24" end="0" rwaccess="RO" description="Unsigned integer, defining the input frequency of the external clock and is written to AON_RTC:SUBSECINC.VALUEINC. Defined as follows: EXT_LF_CLK.RTC_INCREMENT = 2^38/InputClockFrequency in Hertz (e.g.: RTC_INCREMENT=0x800000 for InputClockFrequency=32768 Hz)" id="RTC_INCREMENT" resetval="0xffffff">
+      </bitfield>
+   </register>
+   <register acronym="MODE_CONF_1" width="32" description="Mode Configuration 1" id="MODE_CONF_1" offset="0x1fac">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="Minimum voltage for when DC/DC should be used if alternate DC/DC setting is enabled (SIZE_AND_DIS_FLAGS.DIS_ALT_DCDC_SETTING=0).
+Voltage = (28 + ALT_DCDC_VMIN) / 16.
+0: 1.75V
+1: 1.8125V
+...
+14: 2.625V
+15: 2.6875V
+
+NOTE! The DriverLib function SysCtrl_DCDC_VoltageConditionalControl() must be called regularly to apply this field (handled automatically if using TI RTOS!)." id="ALT_DCDC_VMIN" resetval="0xf">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RO" description="Enable DC/DC dithering if alternate DC/DC setting is enabled (SIZE_AND_DIS_FLAGS.DIS_ALT_DCDC_SETTING=0).
+0: Dither disable
+1: Dither enable" id="ALT_DCDC_DITHER_EN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="18" width="3" end="16" rwaccess="RO" description="Inductor peak current if alternate DC/DC setting is enabled (SIZE_AND_DIS_FLAGS.DIS_ALT_DCDC_SETTING=0). Assuming 10uH external inductor!
+Peak current = 31 + ( 4 * ALT_DCDC_IPEAK ) :
+0: 31mA (min)
+...
+4: 47mA
+...
+7: 59mA (max)" id="ALT_DCDC_IPEAK" resetval="0x7">
+      </bitfield>
+      <bitfield range="" begin="15" width="4" end="12" rwaccess="RO" description="Signed delta value for IBIAS_INIT. Delta value only applies if SIZE_AND_DIS_FLAGS.DIS_XOSC_OVR=0.
+See FCFG1:AMPCOMP_CTRL1.IBIAS_INIT" id="DELTA_IBIAS_INIT" resetval="0xf">
+      </bitfield>
+      <bitfield range="" begin="11" width="4" end="8" rwaccess="RO" description="Signed delta value for IBIAS_OFFSET. Delta value only applies if SIZE_AND_DIS_FLAGS.DIS_XOSC_OVR=0.
+See FCFG1:AMPCOMP_CTRL1.IBIAS_OFFSET" id="DELTA_IBIAS_OFFSET" resetval="0xf">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Unsigned value of maximum XOSC startup time (worst case) in units of 100us. Value only applies if SIZE_AND_DIS_FLAGS.DIS_XOSC_OVR=0." id="XOSC_MAX_START" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="SIZE_AND_DIS_FLAGS" width="32" description="CCFG Size and Disable Flags" id="SIZE_AND_DIS_FLAGS" offset="0x1fb0">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Total size of CCFG in bytes." id="SIZE_OF_CCFG" resetval="0xffff">
+      </bitfield>
+      <bitfield range="" begin="15" width="12" end="4" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="DISABLE_FLAGS" resetval="0xfff">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="Disable TCXO.
+0: TCXO functionality enabled.
+1: TCXO functionality disabled.
+Note:
+An external TCXO is required if DIS_TCXO = 0." id="DIS_TCXO" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="Disable GPRAM (or use the 8K VIMS RAM as CACHE RAM).
+0: GPRAM is enabled and hence CACHE disabled.
+1: GPRAM is disabled and instead CACHE is enabled (default).
+Notes:
+- Disabling CACHE will reduce CPU execution speed (up to 60%).
+- GPRAM is 8 K-bytes in size and located at 0x11000000-0x11001FFF if enabled.
+See:
+VIMS:CTL.MODE" id="DIS_GPRAM" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="Disable alternate DC/DC settings. 
+0: Enable alternate DC/DC settings.
+1: Disable alternate DC/DC settings.
+See:
+MODE_CONF_1.ALT_DCDC_VMIN
+MODE_CONF_1.ALT_DCDC_DITHER_EN
+MODE_CONF_1.ALT_DCDC_IPEAK
+
+NOTE! The DriverLib function SysCtrl_DCDC_VoltageConditionalControl() must be called regularly to apply this field (handled automatically if using TI RTOS!)." id="DIS_ALT_DCDC_SETTING" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Disable XOSC override functionality.
+0: Enable XOSC override functionality.
+1: Disable XOSC override functionality.
+See:
+MODE_CONF_1.DELTA_IBIAS_INIT
+MODE_CONF_1.DELTA_IBIAS_OFFSET
+MODE_CONF_1.XOSC_MAX_START" id="DIS_XOSC_OVR" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="MODE_CONF" width="32" description="Mode Configuration 0" id="MODE_CONF" offset="0x1fb4">
+      <bitfield range="" begin="31" width="4" end="28" rwaccess="RO" description="Signed delta value to apply to the
+VDDR_TRIM_SLEEP target, minus one. See FCFG1:VOLT_TRIM.VDDR_TRIM_SLEEP_H.
+0x8 (-8) : Delta = -7
+...
+0xF (-1) : Delta = 0
+0x0 (0) : Delta = +1
+...
+0x7 (7) : Delta = +8" id="VDDR_TRIM_SLEEP_DELTA" resetval="0xf">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RO" description="DC/DC during recharge in powerdown.
+0: Use the DC/DC during recharge in powerdown.
+1: Do not use the DC/DC during recharge in powerdown (default).
+
+NOTE! The DriverLib function SysCtrl_DCDC_VoltageConditionalControl() must be called regularly to apply this field (handled automatically if using TI RTOS!)." id="DCDC_RECHARGE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RO" description="DC/DC in active mode.
+0: Use the DC/DC during active mode.
+1: Do not use the DC/DC during active mode (default).
+
+NOTE! The DriverLib function SysCtrl_DCDC_VoltageConditionalControl() must be called regularly to apply this field (handled automatically if using TI RTOS!)." id="DCDC_ACTIVE" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_LOAD" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="VDDS BOD level.
+0: VDDS BOD level is 2.0V (necessary for external load mode, or for maximum PA output power on CC13xx).
+1: VDDS BOD level is 1.8V (or 1.65V for external regulator mode) (default).
+" id="VDDS_BOD_LEVEL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="2" end="22" rwaccess="RO" description="Select source for SCLK_LF." id="SCLK_LF_OPTION" resetval="0x3">
+         <bitenum id="RCOSC_LF" value="3" token="Low frequency RCOSC (default)" description="Low frequency RCOSC (default)"/>
+         <bitenum id="XOSC_LF" value="2" token="32.768kHz low frequency XOSC" description="32.768kHz low frequency XOSC"/>
+         <bitenum id="EXTERNAL_LF" value="1" token="External low frequency clock on DIO defined by EXT_LF_CLK.DIO. The RTC tick speed AON_RTC:SUBSECINC is updated to EXT_LF_CLK.RTC_INCREMENT (done in the trimDevice() xxWare boot function). External clock must always be running when the chip is in standby for VDDR recharge timing." description="External low frequency clock on DIO defined by EXT_LF_CLK.DIO. The RTC tick speed AON_RTC:SUBSECINC is updated to EXT_LF_CLK.RTC_INCREMENT (done in the trimDevice() xxWare boot function). External clock must always be running when the chip is in standby for VDDR recharge timing."/>
+         <bitenum id="XOSC_HF_DLF" value="0" token="31.25kHz clock derived from 24MHz XOSC (dividing by 768 in HW). The RTC tick speed [AON_RTC.SUBSECINC.*] is updated to 0x8637BD, corresponding to a 31.25kHz clock (done in the trimDevice() xxWare boot function). Standby power mode is not supported when using this clock source." description="31.25kHz clock derived from 24MHz XOSC (dividing by 768 in HW). The RTC tick speed [AON_RTC.SUBSECINC.*] is updated to 0x8637BD, corresponding to a 31.25kHz clock (done in the trimDevice() xxWare boot function). Standby power mode is not supported when using this clock source."/>
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RO" description="0x1: VDDR_TRIM_SLEEP_DELTA is not temperature compensated
+0x0: RTOS/driver temperature compensates VDDR_TRIM_SLEEP_DELTA every time standby mode is entered. This improves low-temperature RCOSC_LF frequency stability in standby mode.
+
+When temperature compensation is performed, the delta is calculates this way:
+Delta = max (delta, min(8, floor(62-temp)/8))
+Here, delta is given by VDDR_TRIM_SLEEP_DELTA, and temp is the current temperature in degrees C." id="VDDR_TRIM_SLEEP_TC" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="RTC_COMP" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="19" width="2" end="18" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="XOSC_FREQ" resetval="0x3">
+         <bitenum id="24M" value="3" token="24 MHz XOSC_HF" description="24 MHz XOSC_HF"/>
+         <bitenum id="48M" value="2" token="48 MHz XOSC_HF" description="48 MHz XOSC_HF"/>
+         <bitenum id="HPOSC" value="1" token="HPOSC" description="HPOSC"/>
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="Enable modification (delta) to XOSC cap-array. Value specified in XOSC_CAPARRAY_DELTA.
+0: Apply cap-array delta
+1: Do not apply cap-array delta (default)" id="XOSC_CAP_MOD" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="HF_COMP" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Signed 8-bit value, directly modifying trimmed XOSC cap-array step value. Enabled by XOSC_CAP_MOD." id="XOSC_CAPARRAY_DELTA" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Unsigned 8-bit integer, representing the minimum decoupling capacitance (worst case) on VDDR, in units of 100nF. This should take into account capacitor tolerance and voltage dependent capacitance variation. This bit affects the recharge period calculation when going into powerdown or standby.
+ 
+NOTE! If using the following functions this field must be configured (used by TI RTOS):
+SysCtrlSetRechargeBeforePowerDown() SysCtrlAdjustRechargeAfterPowerDown()" id="VDDR_CAP" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="VOLT_LOAD_0" width="32" description="Voltage Load 0
+Enabled by MODE_CONF.VDDR_EXT_LOAD." id="VOLT_LOAD_0" offset="0x1fb8">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_TP45" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_TP25" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_TP5" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_TM15" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="VOLT_LOAD_1" width="32" description="Voltage Load 1
+Enabled by MODE_CONF.VDDR_EXT_LOAD." id="VOLT_LOAD_1" offset="0x1fbc">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_TP125" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_TP105" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_TP85" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="VDDR_EXT_TP65" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="RTC_OFFSET" width="32" description="Real Time Clock Offset
+Enabled by MODE_CONF.RTC_COMP." id="RTC_OFFSET" offset="0x1fc0">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="RTC_COMP_P0" resetval="0xffff">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="RTC_COMP_P1" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="RTC_COMP_P2" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="FREQ_OFFSET" width="32" description="Frequency Offset" id="FREQ_OFFSET" offset="0x1fc4">
+      <bitfield range="" begin="31" width="16" end="16" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="HF_COMP_P0" resetval="0xffff">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="HF_COMP_P1" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Reserved for future use. Software should not rely on the value of a reserved. Writing any other value than the reset/default value may result in undefined behavior.
+" id="HF_COMP_P2" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="IEEE_MAC_0" width="32" description="IEEE MAC Address 0" id="IEEE_MAC_0" offset="0x1fc8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Bits[31:0] of the 64-bits custom IEEE MAC address.
+If different from 0xFFFFFFFF then the value of this field is applied; otherwise use value from FCFG." id="ADDR" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="IEEE_MAC_1" width="32" description="IEEE MAC Address 1" id="IEEE_MAC_1" offset="0x1fcc">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Bits[63:32] of the 64-bits custom IEEE MAC address.
+If different from 0xFFFFFFFF then the value of this field is applied; otherwise use value from FCFG." id="ADDR" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="IEEE_BLE_0" width="32" description="IEEE BLE Address 0" id="IEEE_BLE_0" offset="0x1fd0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Bits[31:0] of the 64-bits custom IEEE BLE address.
+If different from 0xFFFFFFFF then the value of this field is applied; otherwise use value from FCFG." id="ADDR" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="IEEE_BLE_1" width="32" description="IEEE BLE Address 1" id="IEEE_BLE_1" offset="0x1fd4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Bits[63:32] of the 64-bits custom IEEE BLE address.
+If different from 0xFFFFFFFF then the value of this field is applied; otherwise use value from FCFG." id="ADDR" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="BL_CONFIG" width="32" description="Bootloader Configuration
+Configures the functionality of the ROM boot loader.
+If both the boot loader is enabled by the BOOTLOADER_ENABLE field and the boot loader backdoor is enabled by the BL_ENABLE field it is possible to force entry of the ROM boot loader even if a valid image is present in flash." id="BL_CONFIG" offset="0x1fd8">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Bootloader enable. Boot loader can be accessed if IMAGE_VALID_CONF.IMAGE_VALID is non-zero or BL_ENABLE is enabled (and conditions for boot loader backdoor are met).
+0xC5: Boot loader is enabled.
+Any other value: Boot loader is disabled.
+
+" id="BOOTLOADER_ENABLE" resetval="0xc5">
+      </bitfield>
+      <bitfield range="" begin="23" width="7" end="17" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0x7f">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="Sets the active level of the selected DIO number BL_PIN_NUMBER if boot loader backdoor is enabled by the BL_ENABLE field.
+0: Active low.
+1: Active high." id="BL_LEVEL" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="DIO number that is level checked if the boot loader backdoor is enabled by the BL_ENABLE field." id="BL_PIN_NUMBER" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Enables the boot loader backdoor.
+0xC5: Boot loader backdoor is enabled.
+Any other value: Boot loader backdoor is disabled.
+
+NOTE! Boot loader must be enabled (see BOOTLOADER_ENABLE) if boot loader backdoor is enabled." id="BL_ENABLE" resetval="0xff">
+      </bitfield>
+   </register>
+   <register acronym="ERASE_CONF" width="32" description="Erase Configuration" id="ERASE_CONF" offset="0x1fdc">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x7fffff">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="Chip erase.
+This bit controls if a chip erase requested through the JTAG WUC TAP will be ignored in a following boot caused by a reset of the MCU VD.
+A successful chip erase operation will force the content of the flash main bank back to the state as it was when delivered by TI. 
+0: Disable. Any chip erase request detected during boot will be ignored.
+1: Enable. Any chip erase request detected during boot will be performed by the boot FW." id="CHIP_ERASE_DIS_N" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="7" end="1" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED1" resetval="0x7f">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="Bank erase.
+This bit controls if the ROM serial boot loader will accept a received Bank Erase command (COMMAND_BANK_ERASE).
+A successful Bank Erase operation will erase all main bank sectors not protected by write protect configuration bits in CCFG.
+0: Disable the boot loader bank erase function.
+1: Enable the boot loader bank erase function." id="BANK_ERASE_DIS_N" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="CCFG_TI_OPTIONS" width="32" description="TI Options" id="CCFG_TI_OPTIONS" offset="0x1fe0">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0xffffff">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="TI Failure Analysis.
+0xC5: Enable the functionality of unlocking the TI FA (TI Failure Analysis) option with the unlock code.
+All other values: Disable the functionality of unlocking the TI FA option with the unlock code.
+
+" id="TI_FA_ENABLE" resetval="0xc5">
+      </bitfield>
+   </register>
+   <register acronym="CCFG_TAP_DAP_0" width="32" description="Test Access Points Enable 0" id="CCFG_TAP_DAP_0" offset="0x1fe4">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RO" description="Enable CPU DAP.
+0xC5: Main CPU DAP access is enabled during power-up/system-reset by ROM boot FW.
+Any other value: Main CPU DAP access will remain disabled out of power-up/system-reset.
+
+" id="CPU_DAP_ENABLE" resetval="0xc5">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Enable PWRPROF TAP.
+0xC5: PWRPROF TAP access is enabled during power-up/system-reset by ROM boot FW if enabled by corresponding configuration value in FCFG1 defined by TI.
+Any other value: PWRPROF TAP access will remain disabled out of power-up/system-reset.
+
+" id="PWRPROF_TAP_ENABLE" resetval="0xc5">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Enable Test TAP.
+0xC5: TEST TAP access is enabled during power-up/system-reset by ROM boot FW if enabled by corresponding configuration value in FCFG1 defined by TI.
+Any other value: TEST TAP access will remain disabled out of power-up/system-reset.
+
+" id="TEST_TAP_ENABLE" resetval="0xc5">
+      </bitfield>
+   </register>
+   <register acronym="CCFG_TAP_DAP_1" width="32" description="Test Access Points Enable 1" id="CCFG_TAP_DAP_1" offset="0x1fe8">
+      <bitfield range="" begin="31" width="8" end="24" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED" resetval="0xff">
+      </bitfield>
+      <bitfield range="" begin="23" width="8" end="16" rwaccess="RO" description="Enable PBIST2 TAP.
+0xC5: PBIST2 TAP access is enabled during power-up/system-reset by ROM boot FW if enabled by corresponding configuration value in FCFG1 defined by TI.
+Any other value: PBIST2 TAP access will remain disabled out of power-up/system-reset.
+
+" id="PBIST2_TAP_ENABLE" resetval="0xc5">
+      </bitfield>
+      <bitfield range="" begin="15" width="8" end="8" rwaccess="RO" description="Enable PBIST1 TAP.
+0xC5: PBIST1 TAP access is enabled during power-up/system-reset by ROM boot FW if enabled by corresponding configuration value in FCFG1 defined by TI.
+Any other value: PBIST1 TAP access will remain disabled out of power-up/system-reset.
+
+" id="PBIST1_TAP_ENABLE" resetval="0xc5">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RO" description="Enable AON TAP
+0xC5: AON TAP access is enabled during power-up/system-reset by ROM boot FW if enabled by corresponding configuration value in FCFG1 defined by TI.
+Any other value: AON TAP access will remain disabled out of power-up/system-reset.
+
+" id="AON_TAP_ENABLE" resetval="0xc5">
+      </bitfield>
+   </register>
+   <register acronym="IMAGE_VALID_CONF" width="32" description="Image Valid " id="IMAGE_VALID_CONF" offset="0x1fec">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="This field must have the address value of the start of the flash vector table in order to enable the boot FW in ROM to transfer control to a flash image.
+Any illegal vector table start address value will force the boot FW in ROM to transfer control to the serial boot loader in ROM." id="IMAGE_VALID" resetval="0xffffffff">
+      </bitfield>
+   </register>
+   <register acronym="CCFG_PROT_31_0" width="32" description="Protect Sectors 0-31
+Each bit write protects one 8KB flash sector from being both programmed and erased. Bit must be set to 0 in order to enable sector write protect." id="CCFG_PROT_31_0" offset="0x1ff0">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_31" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_30" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_29" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_28" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_27" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_26" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_25" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_24" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_23" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_22" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_21" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_20" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_19" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_18" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_17" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_16" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_15" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_14" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_13" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_12" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_11" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_10" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_9" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_8" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_7" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_6" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_5" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_4" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_3" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_2" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_1" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_0" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="CCFG_PROT_63_32" width="32" description="Protect Sectors 32-63
+Each bit write protects one 8KB flash sector from being both programmed and erased. Bit must be set to 0 in order to enable sector write protect. " id="CCFG_PROT_63_32" offset="0x1ff4">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_63" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_62" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_61" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_60" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_59" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_58" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_57" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_56" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_55" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_54" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_53" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_52" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_51" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_50" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_49" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_48" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_47" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_46" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_45" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_44" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_43" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_42" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_41" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_40" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_39" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_38" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_37" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_36" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_35" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_34" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_33" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_32" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="CCFG_PROT_95_64" width="32" description="Protect Sectors 64-95
+Each bit write protects one flash sector from being both programmed and erased. Bit must be set to 0 in order to enable sector write protect. Not in use." id="CCFG_PROT_95_64" offset="0x1ff8">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_95" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_94" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_93" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_92" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_91" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_90" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_89" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_88" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_87" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_86" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_85" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_84" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_83" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_82" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_81" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_80" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_79" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_78" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_77" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_76" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_75" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_74" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_73" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_72" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_71" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_70" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_69" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_68" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_67" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_66" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_65" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_64" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="CCFG_PROT_127_96" width="32" description="Protect Sectors 96-127
+Each bit write protects one flash sector from being both programmed and erased. Bit must be set to 0 in order to enable sector write protect. Not in use." id="CCFG_PROT_127_96" offset="0x1ffc">
+      <bitfield range="" begin="31" width="1" end="31" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_127" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="30" width="1" end="30" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_126" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="29" width="1" end="29" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_125" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="28" width="1" end="28" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_124" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="27" width="1" end="27" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_123" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="26" width="1" end="26" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_122" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_121" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_120" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_119" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_118" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_117" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_116" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_115" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_114" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_113" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_112" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="15" width="1" end="15" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_111" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="14" width="1" end="14" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_110" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="13" width="1" end="13" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_109" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_108" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="11" width="1" end="11" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_107" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="10" width="1" end="10" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_106" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_105" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_104" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_103" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_102" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_101" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_100" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_99" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_98" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_97" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="0: Sector protected" id="WRT_PROT_SEC_96" resetval="0x1">
+      </bitfield>
+   </register>
+</module>

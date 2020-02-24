@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="CPU_DWT" HW_revision="" XML_version="1.0" description="Cortex-M&#39;s Data watchpoint and Trace (DWT)
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="CTRL" width="32" description="Control
+Use the DWT Control Register to enable the DWT unit." id="CTRL" offset="0x0">
+      <bitfield range="" begin="31" width="6" end="26" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED26" resetval="0x10">
+      </bitfield>
+      <bitfield range="" begin="25" width="1" end="25" rwaccess="RW" description="When set, CYCCNT is not supported." id="NOCYCCNT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="When set, FOLDCNT, LSUCNT, SLEEPCNT, EXCCNT, and CPICNT are not supported." id="NOPRFCNT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="1" end="23" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED23" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="22" width="1" end="22" rwaccess="RW" description="Enables Cycle count event. Emits an event when the POSTCNT counter triggers it. See CYCTAP and POSTPRESET for details. This event is only emitted if PCSAMPLEENA is disabled. PCSAMPLEENA overrides the setting of this bit. 
+
+0: Cycle count events disabled
+1: Cycle count events enabled" id="CYCEVTENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="21" width="1" end="21" rwaccess="RW" description="Enables Folded instruction count event. Emits an event when FOLDCNT overflows (every 256 cycles of folded instructions). A folded instruction is one that does not incur even one cycle to execute. For example, an IT instruction is folded away and so does not use up one cycle.
+
+0: Folded instruction count events disabled.
+1: Folded instruction count events enabled." id="FOLDEVTENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="20" width="1" end="20" rwaccess="RW" description="Enables LSU count event. Emits an event when LSUCNT overflows (every 256 cycles of LSU operation). LSU counts include all LSU costs after the initial cycle for the instruction.
+
+0: LSU count events disabled.
+1: LSU count events enabled." id="LSUEVTENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="1" end="19" rwaccess="RW" description="Enables Sleep count event. Emits an event when SLEEPCNT overflows (every 256 cycles that the processor is sleeping).
+
+0: Sleep count events disabled.
+1: Sleep count events enabled." id="SLEEPEVTENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="18" width="1" end="18" rwaccess="RW" description="Enables Interrupt overhead event. Emits an event when EXCCNT overflows (every 256 cycles of interrupt overhead).
+
+0x0: Interrupt overhead event disabled.
+0x1: Interrupt overhead event enabled." id="EXCEVTENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="17" width="1" end="17" rwaccess="RW" description="Enables CPI count event. Emits an event when CPICNT overflows (every 256 cycles of multi-cycle instructions).
+
+0: CPI counter events disabled.
+1: CPI counter events enabled." id="CPIEVTENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="16" width="1" end="16" rwaccess="RW" description="Enables Interrupt event tracing.
+
+0: Interrupt event trace disabled.
+1: Interrupt event trace enabled." id="EXCTRCENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="3" end="13" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="1" end="12" rwaccess="RW" description="Enables PC Sampling event. A PC sample event is emitted when the POSTCNT counter triggers it. See CYCTAP and POSTPRESET for details. Enabling this bit overrides CYCEVTENA.
+
+0: PC Sampling event disabled.
+1: Sampling event enabled." id="PCSAMPLEENA" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="2" end="10" rwaccess="RW" description="Selects a synchronization packet rate. CYCCNTENA and CPU_ITM:TCR.SYNCENA must also be enabled for this feature.
+Synchronization packets (if enabled) are generated on tap transitions (0 to1 or 1 to 0)." id="SYNCTAP" resetval="0x0">
+         <bitenum id="BIT28" value="3" token="Tap at bit 28 of CYCCNT " description="Tap at bit 28 of CYCCNT "/>
+         <bitenum id="BIT26" value="2" token="Tap at bit 26 of CYCCNT " description="Tap at bit 26 of CYCCNT "/>
+         <bitenum id="BIT24" value="1" token="Tap at bit 24 of CYCCNT " description="Tap at bit 24 of CYCCNT "/>
+         <bitenum id="DIS" value="0" token="Disabled. No synchronization packets" description="Disabled. No synchronization packets"/>
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RW" description="Selects a tap on CYCCNT. These are spaced at bits [6] and [10]. When the selected bit in CYCCNT changes from 0 to 1 or 1 to 0, it emits into the POSTCNT, post-scalar counter. That counter then counts down. On a bit change when post-scalar is 0, it triggers an event for PC sampling or cycle count event (see details in CYCEVTENA)." id="CYCTAP" resetval="0x0">
+         <bitenum id="BIT10" value="1" token="Selects bit [10] to tap" description="Selects bit [10] to tap"/>
+         <bitenum id="BIT6" value="0" token="Selects bit [6] to tap" description="Selects bit [6] to tap"/>
+      </bitfield>
+      <bitfield range="" begin="8" width="4" end="5" rwaccess="RW" description="Post-scalar counter for CYCTAP. When the selected tapped bit changes from 0 to 1 or 1 to 0, the post scalar counter is down-counted when not 0. If 0, it triggers an event for PCSAMPLEENA or CYCEVTENA use. It also reloads with the value from POSTPRESET." id="POSTCNT" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="4" end="1" rwaccess="RW" description="Reload value for post-scalar counter POSTCNT. When 0, events are triggered on each tap change (a power of 2). If this field has a non-0 value, it forms a count-down value, to be reloaded into POSTCNT each time it reaches 0. For example, a value 1 in this register means an event is formed every other tap change." id="POSTPRESET" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Enable CYCCNT, allowing it to increment and generate synchronization and count events. If NOCYCCNT = 1, this bit reads zero and ignore writes." id="CYCCNTENA" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CYCCNT" width="32" description="Current PC Sampler Cycle Count
+This register is used to count the number of core cycles. This counter can measure elapsed execution time. This is a free-running counter (this counter will not advance in power modes where free-running clock to CPU stops). The counter has three functions: 
+
+1: When CTRL.PCSAMPLEENA = 1, the PC is sampled and emitted when the selected tapped bit changes value (0 to 1 or 1 to 0) and any post-scalar value counts to 0. 
+2: When CTRL.CYCEVTENA = 1 , (and CTRL.PCSAMPLEENA = 0), an event is emitted when the selected tapped bit changes value (0 to 1 or 1 to 0) and any post-scalar value counts to 0. 
+3: Applications and debuggers can use the counter to measure elapsed execution time. By subtracting a start and an end time, an application can measure time between in-core clocks (other than when Halted in debug). This is valid to 2^32 core clock cycles (for example, almost 89.5 seconds at 48MHz)." id="CYCCNT" offset="0x4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Current PC Sampler Cycle Counter count value. When enabled, this counter counts the number of core cycles, except when the core is halted. The cycle counter is a free running counter, counting upwards (this counter will not advance in power modes where free-running clock to CPU stops). It wraps around to 0 on overflow. The debugger must initialize this to 0 when first enabling." id="CYCCNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CPICNT" width="32" description="CPI Count
+This register is used to count the total number of instruction cycles beyond the first cycle." id="CPICNT" offset="0x8">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Current CPI counter value. Increments on the additional cycles (the first cycle is not counted) required to execute all instructions except those recorded by LSUCNT. This counter also increments on all instruction fetch stalls. If CTRL.CPIEVTENA is set, an event is emitted when the counter overflows. This counter initializes to 0 when it is enabled using CTRL.CPIEVTENA." id="CPICNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="EXCCNT" width="32" description="Exception Overhead Count
+This register is used to count the total cycles spent in interrupt processing." id="EXCCNT" offset="0xc">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Current interrupt overhead counter value. Counts the total cycles spent in interrupt processing (for example entry stacking, return unstacking, pre-emption). An event is emitted on counter overflow (every 256 cycles). This counter initializes to 0 when it is enabled using CTRL.EXCEVTENA." id="EXCCNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SLEEPCNT" width="32" description="Sleep Count
+This register is used to count the total number of cycles during which the processor is sleeping." id="SLEEPCNT" offset="0x10">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="Sleep counter. Counts the number of cycles during which the processor is sleeping. An event is emitted on counter overflow (every 256 cycles). This counter initializes to 0 when it is enabled using CTRL.SLEEPEVTENA. Note that the sleep counter is clocked using CPU&#39;s free-running clock. In some power modes the free-running clock to CPU is gated to minimize power consumption. This means that the sleep counter will be invalid in these power modes. " id="SLEEPCNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="LSUCNT" width="32" description="LSU Count
+This register is used to count the total number of cycles during which the processor is processing an LSU operation beyond the first cycle." id="LSUCNT" offset="0x14">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="LSU counter. This counts the total number of cycles that the processor is processing an LSU operation. The initial execution cost of the instruction is not counted. For example, an LDR that takes two cycles to complete increments this counter one cycle. Equivalently, an LDR that stalls for two cycles (i.e. takes four cycles to execute), increments this counter three times. An event is emitted on counter overflow (every 256 cycles). This counter initializes to 0 when it is enabled using CTRL.LSUEVTENA." id="LSUCNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FOLDCNT" width="32" description="Fold Count
+This register is used to count the total number of folded instructions. The counter increments on each instruction which takes 0 cycles." id="FOLDCNT" offset="0x18">
+      <bitfield range="" begin="31" width="24" end="8" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="8" end="0" rwaccess="RW" description="This counts the total number folded instructions. This counter initializes to 0 when it is enabled using CTRL.FOLDEVTENA." id="FOLDCNT" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="PCSR" width="32" description="Program Counter Sample
+This register is used to enable coarse-grained software profiling using a debug agent, without changing the currently executing code. If the core is not in debug state, the value returned is the instruction address of a recently executed instruction. If the core is in debug state, the value returned is 0xFFFFFFFF." id="PCSR" offset="0x1c">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="Execution instruction address sample, or 0xFFFFFFFF if the core is halted." id="EIASAMPLE" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP0" width="32" description="Comparator 0
+This register is used to write the reference value for comparator 0." id="COMP0" offset="0x20">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Reference value to compare against PC or the data address as given by FUNCTION0. Comparator 0 can also compare against the value of the PC Sampler Counter (CYCCNT)." id="COMP" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MASK0" width="32" description="Mask 0
+Use the DWT Mask Registers 0 to apply a mask to data addresses when matching against COMP0." id="MASK0" offset="0x24">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Mask on data address when matching against COMP0. This is the size of the ignore mask. That is, DWT matching is performed as:(ADDR ANDed with (0xFFFF left bit-shifted by MASK)) == COMP0. However, the actual comparison is slightly more complex to enable matching an address wherever it appears on a bus. So, if COMP0 is 3, this matches a word access of 0, because 3 would be within the word." id="MASK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FUNCTION0" width="32" description="Function 0
+Use the DWT Function Registers 0 to control the operation of the comparator 0. This comparator can:
+1. Match against either the PC or the data address. This is controlled by CYCMATCH. This function is only available for comparator 0 (COMP0). 
+2. Emit data or PC couples, trigger the ETM, or generate a watchpoint depending on the operation defined by FUNCTION." id="FUNCTION0" offset="0x28">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="This bit is set when the comparator matches, and indicates that the operation defined by FUNCTION has occurred since this bit was last read. This bit is cleared on read." id="MATCHED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="16" end="8" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED8" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="1" end="7" rwaccess="RW" description="This bit is only available in comparator 0. When set, COMP0 will compare against the cycle counter (CYCCNT)." id="CYCMATCH" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="6" width="1" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Emit range field. This bit permits emitting offset when range match occurs. PC sampling is not supported when emit range is enabled. 
+This field only applies for: FUNCTION = 1, 2, 3, 12, 13, 14, and 15." id="EMITRANGE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Function settings. 
+
+0x0: Disabled
+0x1: EMITRANGE = 0, sample and emit PC through ITM. EMITRANGE = 1, emit address offset through ITM
+0x2: EMITRANGE = 0, emit data through ITM on read and write. EMITRANGE = 1, emit data and address offset through ITM on read or write.
+0x3: EMITRANGE = 0, sample PC and data value through ITM on read or write. EMITRANGE = 1, emit address offset and data value through ITM on read or write.
+0x4: Watchpoint on PC match.
+0x5: Watchpoint on read.
+0x6: Watchpoint on write.
+0x7: Watchpoint on read or write.
+0x8: ETM trigger on PC match
+0x9: ETM trigger on read
+0xA: ETM trigger on write
+0xB: ETM trigger on read or write
+0xC: EMITRANGE = 0, sample data for read transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) for read transfers
+0xD: EMITRANGE = 0, sample data for write transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) for write transfers
+0xE: EMITRANGE = 0, sample PC + data for read transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) + data for read transfers
+0xF: EMITRANGE = 0, sample PC + data for write transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) + data for write transfers
+
+Note 1: If the ETM is not fitted, then ETM trigger is not possible. 
+Note 2: Data value is only sampled for accesses that do not fault (MPU or bus fault). The PC is sampled irrespective of any faults. The PC is only sampled for the first address of a burst. 
+Note 3: PC match is not recommended for watchpoints because it stops after the instruction. It mainly guards and triggers the ETM." id="FUNCTION" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP1" width="32" description="Comparator 1
+This register is used to write the reference value for comparator 1." id="COMP1" offset="0x30">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Reference value to compare against PC or the data address as given by  FUNCTION1. 
+Comparator 1 can also compare data values. So this register can contain reference values for data matching." id="COMP" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MASK1" width="32" description="Mask 1
+Use the DWT Mask Registers 1 to apply a mask to data addresses when matching against COMP1." id="MASK1" offset="0x34">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Mask on data address when matching against COMP1. This is the size of the ignore mask. That is, DWT matching is performed as:(ADDR ANDed with (0xFFFF left bit-shifted by MASK)) == COMP1. However, the actual comparison is slightly more complex to enable matching an address wherever it appears on a bus. So, if COMP1 is 3, this matches a word access of 0, because 3 would be within the word." id="MASK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FUNCTION1" width="32" description="Function 1
+Use the DWT Function Registers 1 to control the operation of the comparator 1. This comparator can:
+1. Perform data value comparisons if associated address comparators have performed an address match. This function is only available for comparator 1 (COMP1). 
+2. Emit data or PC couples, trigger the ETM, or generate a watchpoint depending on the operation defined by FUNCTION." id="FUNCTION1" offset="0x38">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="This bit is set when the comparator matches, and indicates that the operation defined by FUNCTION has occurred since this bit was last read. This bit is cleared on read." id="MATCHED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="4" end="20" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED20" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="19" width="4" end="16" rwaccess="RW" description="Identity of a second linked address comparator for data value matching when DATAVMATCH == 1 and LNK1ENA == 1." id="DATAVADDR1" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="15" width="4" end="12" rwaccess="RW" description="Identity of a linked address comparator for data value matching when DATAVMATCH == 1." id="DATAVADDR0" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="11" width="2" end="10" rwaccess="RW" description="Defines the size of the data in the COMP1 register that is to be matched:
+
+0x0: Byte
+0x1: Halfword
+0x2: Word
+0x3: Unpredictable." id="DATAVSIZE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="9" width="1" end="9" rwaccess="RO" description="Read only bit-field only supported in comparator 1.
+
+0: DATAVADDR1 not supported
+1: DATAVADDR1 supported (enabled)" id="LNK1ENA" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Data match feature:
+
+0: Perform address comparison
+1: Perform data value compare. The comparators given by DATAVADDR0 and DATAVADDR1 provide the address for the data comparison. The FUNCTION setting for the comparators given by DATAVADDR0 and DATAVADDR1 are overridden and those comparators only provide the address match for the data comparison.
+
+This bit is only available in comparator 1. " id="DATAVMATCH" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="7" width="2" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Emit range field. This bit permits emitting offset when range match occurs. PC sampling is not supported when emit range is enabled. 
+This field only applies for: FUNCTION = 1, 2, 3, 12, 13, 14, and 15." id="EMITRANGE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Function settings:
+
+0x0: Disabled
+0x1: EMITRANGE = 0, sample and emit PC through ITM. EMITRANGE = 1, emit address offset through ITM
+0x2: EMITRANGE = 0, emit data through ITM on read and write. EMITRANGE = 1, emit data and address offset through ITM on read or write.
+0x3: EMITRANGE = 0, sample PC and data value through ITM on read or write. EMITRANGE = 1, emit address offset and data value through ITM on read or write.
+0x4: Watchpoint on PC match.
+0x5: Watchpoint on read.
+0x6: Watchpoint on write.
+0x7: Watchpoint on read or write.
+0x8: ETM trigger on PC match
+0x9: ETM trigger on read
+0xA: ETM trigger on write
+0xB: ETM trigger on read or write
+0xC: EMITRANGE = 0, sample data for read transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) for read transfers
+0xD: EMITRANGE = 0, sample data for write transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) for write transfers
+0xE: EMITRANGE = 0, sample PC + data for read transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) + data for read transfers
+0xF: EMITRANGE = 0, sample PC + data for write transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) + data for write transfers
+
+Note 1: If the ETM is not fitted, then ETM trigger is not possible. 
+Note 2: Data value is only sampled for accesses that do not fault (MPU or bus fault). The PC is sampled irrespective of any faults. The PC is only sampled for the first address of a burst. 
+Note 3: FUNCTION is overridden for comparators given by DATAVADDR0 and DATAVADDR1 if DATAVMATCH is also set. The comparators given by DATAVADDR0 and DATAVADDR1 can then only perform address comparator matches for comparator 1 data matches. 
+Note 4: If the data matching functionality is not included during implementation it is not possible to set DATAVADDR0, DATAVADDR1, or DATAVMATCH. This means that the data matching functionality is not available in the implementation. Test the availability of data matching by writing and reading DATAVMATCH. If it is not settable then data matching is unavailable. 
+Note 5: PC match is not recommended for watchpoints because it stops after the instruction. It mainly guards and triggers the ETM.
+" id="FUNCTION" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP2" width="32" description="Comparator 2
+This register is used to write the reference value for comparator 2." id="COMP2" offset="0x40">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Reference value to compare against PC or the data address as given by FUNCTION2." id="COMP" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MASK2" width="32" description="Mask 2
+Use the DWT Mask Registers 2 to apply a mask to data addresses when matching against COMP2." id="MASK2" offset="0x44">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Mask on data address when matching against COMP2. This is the size of the ignore mask. That is, DWT matching is performed as:(ADDR ANDed with (0xFFFF left bit-shifted by MASK)) == COMP2. However, the actual comparison is slightly more complex to enable matching an address wherever it appears on a bus. So, if COMP2 is 3, this matches a word access of 0, because 3 would be within the word." id="MASK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FUNCTION2" width="32" description="Function 2
+Use the DWT Function Registers 2 to control the operation of the comparator 2. This comparator can emit data or PC couples, trigger the ETM, or generate a watchpoint depending on the operation defined by FUNCTION." id="FUNCTION2" offset="0x48">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="This bit is set when the comparator matches, and indicates that the operation defined by FUNCTION has occurred since this bit was last read. This bit is cleared on read." id="MATCHED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="18" end="6" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Emit range field. This bit permits emitting offset when range match occurs. PC sampling is not supported when emit range is enabled. 
+This field only applies for: FUNCTION = 1, 2, 3, 12, 13, 14, and 15." id="EMITRANGE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Function settings. 
+
+0x0: Disabled
+0x1: EMITRANGE = 0, sample and emit PC through ITM. EMITRANGE = 1, emit address offset through ITM
+0x2: EMITRANGE = 0, emit data through ITM on read and write. EMITRANGE = 1, emit data and address offset through ITM on read or write.
+0x3: EMITRANGE = 0, sample PC and data value through ITM on read or write. EMITRANGE = 1, emit address offset and data value through ITM on read or write.
+0x4: Watchpoint on PC match.
+0x5: Watchpoint on read.
+0x6: Watchpoint on write.
+0x7: Watchpoint on read or write.
+0x8: ETM trigger on PC match
+0x9: ETM trigger on read
+0xA: ETM trigger on write
+0xB: ETM trigger on read or write
+0xC: EMITRANGE = 0, sample data for read transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) for read transfers
+0xD: EMITRANGE = 0, sample data for write transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) for write transfers
+0xE: EMITRANGE = 0, sample PC + data for read transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) + data for read transfers
+0xF: EMITRANGE = 0, sample PC + data for write transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) + data for write transfers
+
+Note 1: If the ETM is not fitted, then ETM trigger is not possible. 
+Note 2: Data value is only sampled for accesses that do not fault (MPU or bus fault). The PC is sampled irrespective of any faults. The PC is only sampled for the first address of a burst. 
+Note 3: PC match is not recommended for watchpoints because it stops after the instruction. It mainly guards and triggers the ETM." id="FUNCTION" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="COMP3" width="32" description="Comparator 3
+This register is used to write the reference value for comparator 3." id="COMP3" offset="0x50">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RW" description="Reference value to compare against PC or the data address as given by FUNCTION3." id="COMP" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="MASK3" width="32" description="Mask 3
+Use the DWT Mask Registers 3 to apply a mask to data addresses when matching against COMP3." id="MASK3" offset="0x54">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Mask on data address when matching against COMP3. This is the size of the ignore mask. That is, DWT matching is performed as:(ADDR ANDed with (0xFFFF left bit-shifted by MASK)) == COMP3. However, the actual comparison is slightly more complex to enable matching an address wherever it appears on a bus. So, if COMP3 is 3, this matches a word access of 0, because 3 would be within the word." id="MASK" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FUNCTION3" width="32" description="Function 3
+Use the DWT Function Registers 3 to control the operation of the comparator 3. This comparator can emit data or PC couples, trigger the ETM, or generate a watchpoint depending on the operation defined by FUNCTION." id="FUNCTION3" offset="0x58">
+      <bitfield range="" begin="31" width="7" end="25" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED25" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="24" width="1" end="24" rwaccess="RW" description="This bit is set when the comparator matches, and indicates that the operation defined by FUNCTION has occurred since this bit was last read. This bit is cleared on read." id="MATCHED" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="23" width="18" end="6" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED6" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="5" width="1" end="5" rwaccess="RW" description="Emit range field. This bit permits emitting offset when range match occurs. PC sampling is not supported when emit range is enabled. 
+This field only applies for: FUNCTION = 1, 2, 3, 12, 13, 14, and 15." id="EMITRANGE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="4" width="1" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="4" end="0" rwaccess="RW" description="Function settings. 
+
+0x0: Disabled
+0x1: EMITRANGE = 0, sample and emit PC through ITM. EMITRANGE = 1, emit address offset through ITM
+0x2: EMITRANGE = 0, emit data through ITM on read and write. EMITRANGE = 1, emit data and address offset through ITM on read or write.
+0x3: EMITRANGE = 0, sample PC and data value through ITM on read or write. EMITRANGE = 1, emit address offset and data value through ITM on read or write.
+0x4: Watchpoint on PC match.
+0x5: Watchpoint on read.
+0x6: Watchpoint on write.
+0x7: Watchpoint on read or write.
+0x8: ETM trigger on PC match
+0x9: ETM trigger on read
+0xA: ETM trigger on write
+0xB: ETM trigger on read or write
+0xC: EMITRANGE = 0, sample data for read transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) for read transfers
+0xD: EMITRANGE = 0, sample data for write transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) for write transfers
+0xE: EMITRANGE = 0, sample PC + data for read transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) + data for read transfers
+0xF: EMITRANGE = 0, sample PC + data for write transfers. EMITRANGE = 1, sample Daddr (lower 16 bits) + data for write transfers
+
+Note 1: If the ETM is not fitted, then ETM trigger is not possible. 
+Note 2: Data value is only sampled for accesses that do not fault (MPU or bus fault). The PC is sampled irrespective of any faults. The PC is only sampled for the first address of a burst. 
+Note 3: PC match is not recommended for watchpoints because it stops after the instruction. It mainly guards and triggers the ETM." id="FUNCTION" resetval="0x0">
+      </bitfield>
+   </register>
+</module>

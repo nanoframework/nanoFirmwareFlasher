@@ -1,0 +1,117 @@
+<FlashDLLDB>
+	<FlashDLL name="FlashMSPSLBootloader" needFlashProperties="true" needFlashUtility="true" backupType="100">
+		<interface>Flash Only</interface>
+		<partnum contains="Bootloader" />
+	</FlashDLL>
+	<FlashDLL name="FlashPython" needFlashProperties="true" needFlashUtility="true" backupType="100">
+		<interface>Flash Only</interface>
+		<partnum beginsWith="AWR" />
+		<partnum beginsWith="IWR" />
+		<partnum beginsWith="AR" />
+		<partnum beginsWith="IR" />
+	</FlashDLL>
+	<FlashDLL name="FlashSerial" needFlashProperties="true" needFlashUtility="true" backupType="100">
+		<interface>SERIAL</interface>
+		<targetType>TMS470REX</targetType>
+		<targetType>TMS320C28XX</targetType>
+		<partnum beginsWith="F28M3" />
+	</FlashDLL>
+	<FlashDLL name="FlashSerialStellaris" needFlashProperties="true" needFlashUtility="true" backupType="100">
+		<interface>Flash DLL Delegate</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="SERIALTIVALM" />
+	</FlashDLL>
+	<FlashDLL name="FlashEthernetStellaris" needFlashProperties="true" needFlashUtility="true" backupType="100">
+		<interface>Flash DLL Delegate</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="ETHERNETTIVALM" />
+	</FlashDLL>
+	<FlashDLL name="FlashDFUStellaris" needFlashProperties="true" needFlashUtility="true" backupType="1">
+		<interface>DFU</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="DFUTIVALM" />
+	</FlashDLL>
+	<FlashDLL name="FlashHercules" needFlashProperties="true" needFlashUtility="true" backupType="1">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<targetType>TMS470RDX</targetType>
+		<partnum beginsWith="TMS570" />
+		<partnum beginsWith="TMS470M" />
+		<partnum beginsWith="RM" />
+	</FlashDLL>
+	<FlashDLL name="FlashC2000F021" needFlashProperties="true" needFlashUtility="true" backupType="1">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<targetType>TMS320C28XX</targetType>
+		<partnum beginsWith="F28M3" />
+		<partnum contains="F2837" />
+		<partnum contains="F2847" />
+		<partnum contains="F2807" />
+		<partnum contains="F28004" />
+	</FlashDLL>
+	<FlashDLL name="Flash28xx" needFlashProperties="true" needFlashUtility="true" backupType="0">
+		<interface>JTAG</interface>
+		<targetType>TMS320C28XX</targetType>
+	</FlashDLL>
+	<FlashDLL name="FlashStellaris" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="LM" />
+		<partnum beginsWith="TM4C" />
+		<partnum beginsWith="TM4E" />
+		<partnum beginsWith="SC0" />
+		<partnum beginsWith="SC4" />
+	</FlashDLL>
+	<FlashDLL name="FlashMSP432" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="MSP432" />
+	</FlashDLL>
+	<FlashDLL name="FlashCC2538" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="CC25" />
+		<partnum beginsWith="CM25" />
+	</FlashDLL>
+	<!-- CC13x2/4 and CC26x2/4 parts uses the FlashCC26x2 -->
+	<FlashDLL name="FlashCC26x2" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="CC26*2*" />
+		<partnum beginsWith="CC26*4*" />
+		<partnum beginsWith="CC13*2*" />
+		<partnum beginsWith="CC13*4*" />
+	</FlashDLL>
+	<!-- rest of the CC26 and CC13 devices will use FlashCC26xx -->
+	<FlashDLL name="FlashCC26xx" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="CC26" />
+		<partnum beginsWith="CC13" />
+	</FlashDLL>
+	<FlashDLL name="FlashMSP430" needFlashProperties="false" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>MSP430</targetType>
+	</FlashDLL>
+	<FlashDLL name="FlashUCD3138" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470R1X</targetType>
+		<partnum beginsWith="UCD3138" />
+	</FlashDLL>
+
+	<FlashDLL name="FlashCC3220SF" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="CC3220SF" />
+	</FlashDLL>
+	<FlashDLL name="FlashCC3230SF" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="CC3230SF" />
+	</FlashDLL>
+	<FlashDLL name="FlashCC3235SF" needFlashProperties="true" needFlashUtility="true">
+		<interface>JTAG</interface>
+		<targetType>TMS470REX</targetType>
+		<partnum beginsWith="CC3235SF" />
+	</FlashDLL>
+</FlashDLLDB>

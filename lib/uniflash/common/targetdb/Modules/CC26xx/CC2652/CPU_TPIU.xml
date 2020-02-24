@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module id="CPU_TPIU" HW_revision="" XML_version="1.0" description="Cortex-M&#39;s Trace Port Interface Unit (TPIU)
+
+" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="setup_parser.xsd">
+   <register acronym="SSPSR" width="32" description="Supported Sync Port Sizes
+This register represents a single port size that is supported on the device, that is, 4, 2 or 1. This is to ensure that tools do not attempt to select a port width that an attached TPA cannot capture." id="SSPSR" offset="0x0">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="4-bit port size support
+
+0x0: Not supported
+0x1: Supported" id="FOUR" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RO" description="3-bit port size support
+
+0x0: Not supported
+0x1: Supported" id="THREE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RO" description="2-bit port size support
+
+0x0: Not supported
+0x1: Supported" id="TWO" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RO" description="1-bit port size support
+
+0x0: Not supported
+0x1: Supported" id="ONE" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="CSPSR" width="32" description="Current Sync Port Size
+This register has the same format as SSPSR but only one bit can be set, and all others must be zero. Writing values with more than one bit set, or setting a bit that is not indicated as supported can cause Unpredictable behavior. On reset this defaults to the smallest possible port size, 1 bit." id="CSPSR" offset="0x4">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RW" description="4-bit port enable
+Writing values with more than one bit set in CSPSR, or setting a bit that is not indicated as supported in SSPSR can cause Unpredictable behavior. " id="FOUR" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="2" width="1" end="2" rwaccess="RW" description="3-bit port enable
+Writing values with more than one bit set in CSPSR, or setting a bit that is not indicated as supported in SSPSR can cause Unpredictable behavior. " id="THREE" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="2-bit port enable
+Writing values with more than one bit set in CSPSR, or setting a bit that is not indicated as supported in SSPSR can cause Unpredictable behavior. " id="TWO" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="1-bit port enable
+Writing values with more than one bit set in CSPSR, or setting a bit that is not indicated as supported in SSPSR can cause Unpredictable behavior. " id="ONE" resetval="0x1">
+      </bitfield>
+   </register>
+   <register acronym="ACPR" width="32" description="Async Clock Prescaler
+This register scales the baud rate of the asynchronous output." id="ACPR" offset="0x10">
+      <bitfield range="" begin="31" width="19" end="13" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED13" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="12" width="13" end="0" rwaccess="RW" description="Divisor for input trace clock is (PRESCALER + 1)." id="PRESCALER" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="SPPR" width="32" description="Selected Pin Protocol
+This register selects the protocol to be used for trace output. 
+Note: If this register is changed while trace data is being output, data corruption occurs." id="SPPR" offset="0xf0">
+      <bitfield range="" begin="31" width="30" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="2" end="0" rwaccess="RW" description="Trace output protocol" id="PROTOCOL" resetval="0x1">
+         <bitenum id="SWO_NRZ" value="2" token="SerialWire Output (NRZ)" description="SerialWire Output (NRZ)"/>
+         <bitenum id="SWO_MANCHESTER" value="1" token="SerialWire Output (Manchester). This is the reset value." description="SerialWire Output (Manchester). This is the reset value."/>
+         <bitenum id="TRACEPORT" value="0" token="TracePort mode" description="TracePort mode"/>
+      </bitfield>
+   </register>
+   <register acronym="FFSR" width="32" description="Formatter and Flush Status" id="FFSR" offset="0x300">
+      <bitfield range="" begin="31" width="28" end="4" rwaccess="RO" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED4" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="3" width="1" end="3" rwaccess="RO" description="0: Formatter can be stopped
+1: Formatter cannot be stopped" id="FTNONSTOP" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="2" width="3" end="0" rwaccess="RO" description="This field always reads as zero" id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FFCR" width="32" description="Formatter and Flush Control
+When one of the two single wire output (SWO) modes is selected, ENFCONT enables the formatter to be bypassed. If the formatter is bypassed, only the ITM/DWT trace source (ATDATA2) passes through. The TPIU accepts and discards data that is presented on the ETM port (ATDATA1). This function is intended to be used when it is necessary to connect a device containing an ETM to a trace capture device that is only able to capture Serial Wire Output (SWO) data. Enabling or disabling the formatter causes momentary data corruption. 
+Note: If the selected pin protocol register (SPPR.PROTOCOL) is set to 0x00 (TracePort mode), this register always reads 0x102, because the formatter is automatically enabled. If one of the serial wire modes is then selected, the register reverts to its previously programmed value." id="FFCR" offset="0x304">
+      <bitfield range="" begin="31" width="23" end="9" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED9" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="8" width="1" end="8" rwaccess="RW" description="Indicates that triggers are inserted when a trigger pin is asserted." id="TRIGIN" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="7" width="6" end="2" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED2" resetval="0x0">
+      </bitfield>
+      <bitfield range="" begin="1" width="1" end="1" rwaccess="RW" description="Enable continuous formatting:
+
+0: Continuous formatting disabled
+1: Continuous formatting enabled" id="ENFCONT" resetval="0x1">
+      </bitfield>
+      <bitfield range="" begin="0" width="1" end="0" rwaccess="RW" description="Software should not rely on the value of a reserved. Writing any other value than the reset value may result in undefined behavior." id="RESERVED0" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="FSCR" width="32" description="Formatter Synchronization Counter
+" id="FSCR" offset="0x308">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="The global synchronization trigger is generated by the Program Counter (PC) Sampler block. This means that there is no synchronization counter in the TPIU." id="FSCR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLAIMMASK" width="32" description="Claim Tag Mask" id="CLAIMMASK" offset="0xfa0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="This register forms one half of the Claim Tag value. When reading this register returns the number of bits that can be set (each bit is considered separately):
+
+0: This claim tag bit is not implemented
+1: This claim tag bit is not implemented
+
+The behavior when writing to this register is described in CLAIMSET." id="CLAIMMASK" resetval="0xf">
+      </bitfield>
+   </register>
+   <register acronym="CLAIMSET" width="32" description="Claim Tag Set" id="CLAIMSET" offset="0xfa0">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="This register forms one half of the Claim Tag value. Writing to this location allows individual bits to be set (each bit is considered separately):
+
+0: No effect
+1: Set this bit in the claim tag
+
+The behavior when reading from this location is described in CLAIMMASK." id="CLAIMSET" resetval="0xf">
+      </bitfield>
+   </register>
+   <register acronym="CLAIMTAG" width="32" description="Current Claim Tag" id="CLAIMTAG" offset="0xfa4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="This register forms one half of the Claim Tag value. Reading this register returns the current Claim Tag value. 
+Reading CLAIMMASK determines how many bits from this register must be used.
+
+The behavior when writing to this register is described in CLAIMCLR." id="CLAIMTAG" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="CLAIMCLR" width="32" description="Claim Tag Clear" id="CLAIMCLR" offset="0xfa4">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="WO" description="This register forms one half of the Claim Tag value. Writing to this location enables individual bits to be cleared (each bit is considered separately):
+
+0: No effect
+1: Clear this bit in the claim tag.
+
+The behavior when reading from this location is described in CLAIMTAG." id="CLAIMCLR" resetval="0x0">
+      </bitfield>
+   </register>
+   <register acronym="DEVID" width="32" description="Device ID" id="DEVID" offset="0xfc8">
+      <bitfield range="" begin="31" width="32" end="0" rwaccess="RO" description="This field returns: 0xCA1 if there is an ETM present. 0xCA0 if there is no ETM present." id="DEVID" resetval="0xca0">
+      </bitfield>
+   </register>
+</module>
