@@ -61,11 +61,12 @@ jobs:
 
         git init "$env:Agent_TempDirectory\repo"
         cd repo > $null
+        git remote add origin "$env:BUILD_REPOSITORY_URI"
         git config --global gc.auto 0
         git config --global user.name nfbot
         git config --global user.email nanoframework@outlook.com
         git config --global core.autocrlf true
-        git -c "http.extraheader=AUTHORIZATION: $auth" fetch --all --progress $env:BUILD_REPOSITORY_URI
+        git -c "http.extraheader=AUTHORIZATION: $auth" fetch --all --progress
 
         dir
 
@@ -85,7 +86,7 @@ jobs:
 
         Write-Host "Pushing changes to GitHub..."
         # push all changes to github
-        git -c http.extraheader="AUTHORIZATION: $auth" push --all $env:BUILD_REPOSITORY_URI
+        git -c http.extraheader="AUTHORIZATION: $auth" push --all origin
 
         # get release branch name
         $branch = $release.Split(' ')[0]
