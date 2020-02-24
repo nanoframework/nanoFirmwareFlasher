@@ -57,19 +57,15 @@ jobs:
 
         cd "$env:Agent_TempDirectory" > $null
 
-        Write-Host "Init clone from: $env:BUILD_REPOSITORY_URI"
+        Write-Host "Cloning from: $env:BUILD_REPOSITORY_URI"
 
-        git init "$env:Agent_TempDirectory\repo"
+        git clone $env:BUILD_REPOSITORY_URI repo
         cd repo > $null
-        git remote add origin "$env:BUILD_REPOSITORY_URI"
         git config --global gc.auto 0
         git config --global user.name nfbot
         git config --global user.email nanoframework@outlook.com
         git config --global core.autocrlf true
-        git -c http.extraheader="AUTHORIZATION: $auth" fetch  --prune --all --progress --verbose
-
-        Write-Host dir
-
+git
         Write-Host "Checkout develop branch..."
         git checkout develop  > $null
         
