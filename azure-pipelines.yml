@@ -70,6 +70,8 @@ jobs:
 
         Write-Host "Checkout develop branch..."
         git checkout develop  > $null
+
+        dir
         
         # prepare release and capture output
         Write-Host "Prepare release with NBGV..."
