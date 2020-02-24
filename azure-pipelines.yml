@@ -66,6 +66,9 @@ jobs:
         git config --global user.email nanoframework@outlook.com
         git config --global core.autocrlf true
         
+        Write-Host "Checkout develop branch..."
+        git checkout --quiet develop  > $null
+
         # prepare release and capture output
         Write-Host "Prepare release with NBGV..."
         $release = nbgv prepare-release -p source
@@ -79,7 +82,7 @@ jobs:
 
         Write-Host "Pushing changes to GitHub..."
         # push all changes to github
-        git -c http.extraheader="AUTHORIZATION: $auth" push --all origin
+        git -c http.extraheader="AUTHORIZATION: $auth" push --quiet --all origin
 
         # get release branch name
         $branch = $release.Split(' ')[0]
@@ -111,6 +114,7 @@ jobs:
             "Error starting PR: $responseBody" | Write-Host -ForegroundColor Red
         }
       workingDirectory: $(Agent.TempDirectory)
+      ignoreLASTEXITCODE: true
     condition: eq( variables['StartReleaseCandidate'], true )
     displayName: NBGV prepare release
 
