@@ -65,7 +65,7 @@ jobs:
         git config --global user.name nfbot
         git config --global user.email nanoframework@outlook.com
         git config --global core.autocrlf true
-git
+
         Write-Host "Checkout develop branch..."
         git checkout develop  > $null
         
