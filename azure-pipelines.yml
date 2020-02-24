@@ -47,7 +47,7 @@ jobs:
     condition: or( eq( variables['StartReleaseCandidate'], true ), ne(variables['system.pullrequest.isfork'], true) )
     displayName: Install NBGV tool
 
-  - task: PowerShell@4
+  - task: PowerShell@2
     inputs:
       targetType: 'inline'
       script: |
@@ -66,9 +66,9 @@ jobs:
         git config --global user.name nfbot
         git config --global user.email nanoframework@outlook.com
         git config --global core.autocrlf true
-        git -c http.extraheader="AUTHORIZATION: $auth" fetch --all --progress
+        git -c http.extraheader="AUTHORIZATION: $auth" fetch --all --progress --verbose
 
-        dir
+        Write-Host dir
 
         Write-Host "Checkout develop branch..."
         git checkout develop  > $null
@@ -117,7 +117,6 @@ jobs:
 
             "Error starting PR: $responseBody" | Write-Host -ForegroundColor Red
         }
-      pwsh: true
       workingDirectory: $(Agent.TempDirectory)
     condition: eq( variables['StartReleaseCandidate'], true )
     displayName: NBGV prepare release
