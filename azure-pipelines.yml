@@ -66,11 +66,11 @@ jobs:
         git config --global user.name nfbot
         git config --global user.email nanoframework@outlook.com
         git config --global core.autocrlf true
-        git -c http.extraheader="AUTHORIZATION: $auth" fetch --progress $env:BUILD_REPOSITORY_URI
+        git -c http.extraheader="AUTHORIZATION: $auth" fetch --progress origin
 
         git checkout develop
         
-        cd src
+        cd source
 
         # prepare release and capture output
         $release = nbgv prepare-release
