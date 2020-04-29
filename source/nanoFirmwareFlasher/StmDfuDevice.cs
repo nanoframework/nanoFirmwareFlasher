@@ -247,18 +247,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // grab data for write and store it into a 2048 byte buffer
                     byte[] buffer = dfuElement.Data.Skip((int)(_maxWriteBlockSize * blockNumber)).Take(_maxWriteBlockSize).ToArray();
 
-                    if (buffer.Length < _maxWriteBlockSize)
-                    {
-                        var i = buffer.Length;
-                        Array.Resize(ref buffer, _maxWriteBlockSize);
-
-                        // Pad with 0xFF so our CRC matches the ST Bootloader and STLink's CRC
-                        for (; i < _maxWriteBlockSize; i++)
-                        {
-                            buffer[i] = 0xFF;
-                        }
-                    }
-
                     StDfu.WriteBlock(_hDevice, dfuElement.Address, buffer, blockNumber);
                 }
             }

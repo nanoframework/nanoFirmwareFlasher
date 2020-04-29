@@ -855,7 +855,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         returnValue = STDFU_GetStatus(ref hDevice, ref dfuStatus);
                     }
 
-                    if (dfuStatus.bState != STDFU_NOERROR)
+                    if (returnValue != STDFU_NOERROR)
                     {
                         throw new DownloadException("STDFU_Dnload returned " + returnValue.ToString("X8"));
                     }
@@ -934,10 +934,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             returnValue = STDFU_Dnload(ref hDevice, data, (uint)data.Length, (ushort)(blockNumber + 2));
 
-            if (STDFU_GetStatus(ref hDevice, ref dfuStatus) != STATE_DFU_DOWNLOAD_BUSY)
+            STDFU_GetStatus(ref hDevice, ref dfuStatus);
+            if (dfuStatus.bState != STATE_DFU_DOWNLOAD_BUSY)
             {
                 throw new DownloadException("STDFU_Dnload returned " + returnValue.ToString("X8"));
-
             }
 
             while (dfuStatus.bState != STATE_DFU_IDLE)
