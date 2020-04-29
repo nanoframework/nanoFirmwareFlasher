@@ -220,12 +220,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _exitCode = ExitCodes.E6001;
                     return;
                 }
+                
+                EspTool espTool;
 
-                var espTool = new EspTool(
-                    o.SerialPort,
-                    o.BaudRate,
-                    o.Esp32FlashMode,
-                    o.Esp32FlashFrequency);
+                try
+                {
+                    espTool = new EspTool(
+                        o.SerialPort,
+                        o.BaudRate,
+                        o.Esp32FlashMode,
+                        o.Esp32FlashFrequency);
+                }
+                catch(Exception)
+                {
+                    _exitCode = ExitCodes.E4005;
+                    return;
+                }
 
                 EspTool.DeviceInfo esp32Device;
 
