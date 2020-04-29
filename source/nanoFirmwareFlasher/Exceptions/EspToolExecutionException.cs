@@ -19,6 +19,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public string ExecutionError;
 
+        public EspToolExecutionException() : base()
+        {
+
+        }
+
         public EspToolExecutionException(string message) : base(message)
         {
             ExecutionError = message;

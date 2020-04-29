@@ -77,6 +77,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Failed to read from ESP32 flash.")]
         E4004 = 4004,
 
+        /// <summary>
+        /// Can't open COM port.
+        /// </summary>
+        [Display(Name = "Failed to open specified COM port.")]
+        E4005 = 4005,
 
         ////////////////////
         // ST Link Errors //
