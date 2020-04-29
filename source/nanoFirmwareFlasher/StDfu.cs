@@ -852,7 +852,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     while (dfuStatus.bState != STATE_DFU_IDLE)
                     {
                         STDFU_ClrStatus(ref hDevice);
-                        STDFU_GetStatus(ref hDevice, ref dfuStatus);
+                        returnValue = STDFU_GetStatus(ref hDevice, ref dfuStatus);
+                    }
+
+                    if (returnValue != STDFU_NOERROR)
+                    {
+                        throw new DownloadException("STDFU_Dnload returned " + returnValue.ToString("X8"));
                     }
                 }
                 else
@@ -912,6 +917,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             byte[] data,
             uint blockNumber)
         {
+            uint returnValue;
             DfuStatus dfuStatus = new DfuStatus();
 
             if (0 == blockNumber)
@@ -919,16 +925,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 SetAddressPointer(hDevice, address);
             }
 
-            STDFU_GetStatus(ref hDevice, ref dfuStatus);
+            returnValue = STDFU_GetStatus(ref hDevice, ref dfuStatus);
             while (dfuStatus.bState != STATE_DFU_IDLE)
             {
                 STDFU_ClrStatus(ref hDevice);
                 STDFU_GetStatus(ref hDevice, ref dfuStatus);
             }
 
-            STDFU_Dnload(ref hDevice, data, (uint)data.Length, (ushort)(blockNumber + 2));
+            returnValue = STDFU_Dnload(ref hDevice, data, (uint)data.Length, (ushort)(blockNumber + 2));
 
             STDFU_GetStatus(ref hDevice, ref dfuStatus);
+            if (dfuStatus.bState != STATE_DFU_DOWNLOAD_BUSY)
+            {
+                throw new DownloadException("STDFU_Dnload returned " + returnValue.ToString("X8"));
+            }
+
             while (dfuStatus.bState != STATE_DFU_IDLE)
             {
                 STDFU_ClrStatus(ref hDevice);

@@ -163,10 +163,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     test.Open();
                     test.Close();
                 }
-                catch(IOException)
+                catch
                 {
-                    // presume any IOException here is caused by the serial not existing or not possible to open
-                    return;
+                    // presume any exception here is caused by the serial not existing or not possible to open
+                    throw new EspToolExecutionException();
                 }
             }
 
