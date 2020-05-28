@@ -237,6 +237,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.Write("Flashing device...");
             }
 
+            // write flash
             for (int elementIndex = 0; elementIndex < dfuTarget.DfuElements.Length; ++elementIndex)
             {
                 StDfu.DfuElement dfuElement = dfuTarget.DfuElements[elementIndex];
@@ -248,6 +249,44 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     byte[] buffer = dfuElement.Data.Skip((int)(_maxWriteBlockSize * blockNumber)).Take(_maxWriteBlockSize).ToArray();
 
                     StDfu.WriteBlock(_hDevice, dfuElement.Address, buffer, blockNumber);
+                }
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.WriteLine(" OK");
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.Write("Verifying flash...");
+            }
+
+            // read back for confirmation
+            for (int elementIndex = 0; elementIndex < dfuTarget.DfuElements.Length; ++elementIndex)
+            {
+                StDfu.DfuElement dfuElement = dfuTarget.DfuElements[elementIndex];
+
+                // read the data in MaxWriteBlockSize blocks
+                for (uint blockNumber = 0; blockNumber <= (uint)dfuElement.Data.Length / _maxWriteBlockSize; blockNumber++)
+                {
+                    byte[] readBuffer = new byte[_maxWriteBlockSize];
+                    StDfu.ReadBlock(_hDevice, dfuElement.Address, readBuffer, blockNumber);
+
+                    // get data for the current block
+                    byte[] buffer = dfuElement.Data.Skip((int)(_maxWriteBlockSize * blockNumber)).Take(_maxWriteBlockSize).ToArray();
+
+                    // exit condition has to be tied with the buffer length because the data for the last block 
+                    // can be shorter than the block max size
+                    for(int index = 0; index < buffer.Length; index++)
+                    {
+                        if(readBuffer[index] != buffer[index])
+                        {
+                            Console.WriteLine("");
+                            Console.WriteLine($"Error verifying flash write. Check failed for block address 0x{dfuElement.Address + blockNumber * _maxWriteBlockSize:X8}.");
+                            throw new DfuVerificationFailedException();
+                        }
+                    }
                 }
             }
 

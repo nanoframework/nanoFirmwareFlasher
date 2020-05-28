@@ -345,6 +345,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             [MarshalAs(UnmanagedType.LPStr)]string szDevicePath,
             out IntPtr hDevice);
 
+        [DllImport(@"stdfu\STDFU.dll", EntryPoint = "STDFU_Upload", CharSet = CharSet.Ansi)]
+        internal static extern uint STDFU_Upload(
+            ref IntPtr hDevice,
+            [MarshalAs(UnmanagedType.LPArray)]byte[] pBuffer,
+            uint nBytes,
+            ushort nBlocks);
+
+
 
         #endregion
 
@@ -941,6 +949,36 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             while (dfuStatus.bState != STATE_DFU_IDLE)
+            {
+                STDFU_ClrStatus(ref hDevice);
+                STDFU_GetStatus(ref hDevice, ref dfuStatus);
+            }
+        }
+
+        internal static void ReadBlock(
+            IntPtr hDevice,
+            uint address,
+            byte[] data,
+            uint blockNumber)
+        {
+            DfuStatus dfuStatus = new DfuStatus();
+
+            if (0 == blockNumber)
+            {
+                SetAddressPointer(hDevice, address);
+            }
+
+            STDFU_GetStatus(ref hDevice, ref dfuStatus);
+            while (dfuStatus.bState != STATE_DFU_IDLE)
+            {
+                STDFU_ClrStatus(ref hDevice);
+                STDFU_GetStatus(ref hDevice, ref dfuStatus);
+            }
+
+            STDFU_Upload(ref hDevice, data, (uint)data.Length, (ushort)(blockNumber + 2));
+
+            STDFU_GetStatus(ref hDevice, ref dfuStatus);
+            while (dfuStatus.bState != STATE_DFU_UPLOAD_IDLE)
             {
                 STDFU_ClrStatus(ref hDevice);
                 STDFU_GetStatus(ref hDevice, ref dfuStatus);

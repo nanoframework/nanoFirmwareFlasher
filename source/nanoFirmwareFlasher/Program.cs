@@ -77,7 +77,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosityLevel > VerbosityLevel.Quiet)
             {
-                OutputError(_exitCode, verbosityLevel >= VerbosityLevel.Normal, _extraMessage);
+                OutputError(_exitCode, verbosityLevel > VerbosityLevel.Normal, _extraMessage);
             }
 
             return (int)_exitCode;
@@ -771,14 +771,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (errorCode != ExitCodes.OK)
             {
-                Console.Write($"error {errorCode.ToString()}");
+                Console.Write($"Error {errorCode}");
             }
 
             if (outputMessage)
             {
                 var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
 
-                Console.Write($": { exitCodeDisplayName.Name }");
+                if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
+                {
+                    Console.Write($": { exitCodeDisplayName.Name }");
+                }
 
                 if (string.IsNullOrEmpty(extraMessage))
                 {
