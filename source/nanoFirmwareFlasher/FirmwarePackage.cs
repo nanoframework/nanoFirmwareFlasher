@@ -191,11 +191,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Path.Combine(LocationPath, fwFileName),
                 LocationPath);
 
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.WriteLine($"OK");
-            }
-            else
+            if (Verbosity >= VerbosityLevel.Detailed)
             {
                 Console.WriteLine("");
             }
