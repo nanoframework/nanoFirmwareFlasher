@@ -771,30 +771,37 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (errorCode != ExitCodes.OK)
             {
-                Console.Write($"Error {errorCode}");
-            }
-
-            if (outputMessage)
-            {
-                var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
-
-                if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
+                if (outputMessage)
                 {
-                    Console.Write($": { exitCodeDisplayName.Name }");
-                }
-
-                if (string.IsNullOrEmpty(extraMessage))
-                {
-                    Console.WriteLine();
+                    Console.Write($"Error {errorCode}");
                 }
                 else
                 {
-                    Console.WriteLine($" ({ extraMessage })");
+                    Console.Write($"{errorCode}");
                 }
-            }
-            else
-            {
-                Console.WriteLine("");
+
+                if (outputMessage)
+                {
+                    var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
+
+                    if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
+                    {
+                        Console.Write($": { exitCodeDisplayName.Name }");
+                    }
+
+                    if (string.IsNullOrEmpty(extraMessage))
+                    {
+                        Console.WriteLine();
+                    }
+                    else
+                    {
+                        Console.WriteLine($" ({ extraMessage })");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("");
+                }
             }
         }
     }

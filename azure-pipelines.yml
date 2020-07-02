@@ -247,7 +247,7 @@ jobs:
       command: push
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'AzureArtifacts-nano-firmware-flasher'
+      publishFeedCredentials: 'AzureArtifacts-nanoFirmwareFlasher'
     condition: succeeded()
     continueOnError: true
     displayName: Push NuGet packages to AzureArtifacts
@@ -259,30 +259,10 @@ jobs:
       nuGetFeedType: external
       allowPackageConflicts: true
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'NuGet-nano-firmware-flasher'
-    condition: and( succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v') )
+      publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
+    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
     continueOnError: true
     displayName: Push NuGet packages to NuGet
-
-  # create or update GitHub release
-  - task: GitHubReleasePublish@1
-    inputs:
-      githubEndpoint: 'nanoFramework'
-      githubOwner: 'nanoframework'
-      githubRepositoryName: 'nanoFirmwareFlasher '
-      githubTag: v$(MY_NUGET_VERSION)
-      githubReleaseTitle: 'nano firmware flasher v$(MY_NUGET_VERSION)'
-      githubReleaseNotes: 'add description here'
-      githubTargetCommitsh: $(Build.SourceVersion)
-      githubReleaseDraft: $(RELEASE_DRAFT)
-      githubReleasePrerelease: true
-      githubReuseDraftOnly: true
-      githubReuseRelease: true
-      githubEditRelease: true
-      githubDeleteEmptyTag: true
-      githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    condition: and( succeeded(), not( startsWith(variables['Build.SourceBranch'], 'refs/pull') ), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
-    displayName: Create/Update GitHub release
 
   # create or update GitHub release ON tags from release or master branches
   - task: GitHubReleasePublish@1
@@ -294,14 +274,14 @@ jobs:
       githubReleaseTitle: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       githubReleaseNotes: 'add description here'
       githubTargetCommitsh: $(Build.SourceVersion)
-      githubReleaseDraft: $(RELEASE_DRAFT)
+      githubReleaseDraft: false
       githubReleasePrerelease: true
       githubReuseDraftOnly: false
       githubReuseRelease: true
       githubEditRelease: true
       githubDeleteEmptyTag: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    condition: and( succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), contains(variables['Build.SourceBranch'], 'preview') )
+    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Create/Update GitHub PREVIEW release 
 
   # create or update GitHub release ON tags from release or master branches

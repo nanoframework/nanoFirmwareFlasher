@@ -91,6 +91,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.WriteLine("");
+                    }
+
                     // can't find this target
                     return ExitCodes.E9005;
                 }
