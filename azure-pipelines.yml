@@ -247,7 +247,7 @@ jobs:
       command: push
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'AzureArtifacts-nano-firmware-flasher'
+      publishFeedCredentials: 'AzureArtifacts-nanoFirmwareFlasher'
     condition: succeeded()
     continueOnError: true
     displayName: Push NuGet packages to AzureArtifacts
@@ -259,7 +259,7 @@ jobs:
       nuGetFeedType: external
       allowPackageConflicts: true
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'NuGet-nano-firmware-flasher'
+      publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
     condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
     continueOnError: true
     displayName: Push NuGet packages to NuGet
