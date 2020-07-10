@@ -139,6 +139,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// diag[nostic]
         /// </summary>
         [Option(
+            'v',
             "verbosity",
             Required = false,
             Default = "n",
