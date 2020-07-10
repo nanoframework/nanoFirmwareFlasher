@@ -53,7 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\lib\stdfu\$(PlatformTarget)\**" Link="stdfu\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+    <None Include="..\lib\stdfu\**" Link="stdfu\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>
         <PackagePath>content\stdfu;contentFiles\stdfu</PackagePath>
 	</None>

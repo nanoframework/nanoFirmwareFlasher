@@ -5,13 +5,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Text;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
-
     // STSW-ST7009
     // DFU Development Kit package (Device Firmware Upgrade).
 
@@ -24,20 +25,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private static Guid s_dfuGuid = new Guid("3FE809AB-FB91-4CB5-A643-69670D52366E");
 
         private readonly string _deviceId;
-        private readonly IntPtr _hDevice = IntPtr.Zero;
-        private readonly StDfu.DfuFunctionalDescriptor _dfuDescriptor;
-
-        private readonly uint _numberOfBlocks;
-        //private readonly uint _startAddress;
-
-        private readonly List<StDfu.MappingSector> _sectorMap;
-
-        private int targetIndex = 0;
-
-        /// <summary>
-        /// Maximum size of a block of data for writing, this is set depending on the bootloader version
-        /// </summary>
-        private UInt16 _maxWriteBlockSize = 1024;
 
         /// <summary>
         /// Property with option for performing mass erase on the connected device.
@@ -57,8 +44,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         // that follows the pattern: USB\\VID_0483&PID_DF11\\3380386D3134
         public string DeviceId => _deviceId?.Split('\\', ' ')[2];
 
-        public StDfu.UsbDeviceDescriptor _usbDescriptor { get; }
-
         /// <summary>
         /// Option to output progress messages.
         /// Default is <see langword="true"/>.
@@ -71,8 +56,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="deviceId">ID of the device to connect to.</param>
         public StmDfuDevice(string deviceId = null)
         {
-            uint returnValue;
-
             ManagementObjectCollection usbDevicesCollection;
 
             // build a managed object searcher to find USB devices with the ST DFU VID & PID along with the device description
@@ -98,81 +81,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return;
             }
 
-            // store USB device ID
-            _deviceId = deviceId;
-
-            // ST DFU is expecting a device path in the WQL pattern:
+            // ST DFU is expecting a device path with the WQL pattern:
             // "\\?\USB#VID_0483&PID_DF11#3380386D3134#{3FE809AB-FB91-4CB5-A643-69670D52366E}"
             // The GUID there is for the USB interface declared by DFU devices
 
-            string devicePath = @"\\?\" + deviceId.Replace(@"\", "#") + @"#{" + s_dfuGuid.ToString() + "}";
-
-            // open device
-            returnValue = StDfu.STDFU_Open(devicePath, out _hDevice); //this causes an error using x64 on .netCore 2.1 due to trying to access the Registry
-            if (returnValue != StDfu.STDFU_NOERROR)
-            {
-                throw new CantOpenDfuDeviceException(returnValue);
-            }
-
-            // read USB descriptor
-            StDfu.UsbDeviceDescriptor usbDescriptor = new StDfu.UsbDeviceDescriptor();
-            returnValue = StDfu.STDFU_GetDeviceDescriptor(ref _hDevice, ref usbDescriptor);
-
-            if (returnValue == StDfu.STDFU_NOERROR)
-            {
-                _usbDescriptor = usbDescriptor;
-
-                // check protocol version
-                // update max write block size
-                switch (_usbDescriptor.bcdDevice)
-                {
-                    case 0x011A:
-                    case 0x0200:
-                        _maxWriteBlockSize = 1024;
-                        break;
-
-                    case 0x02100:
-                    case 0x2200:
-                        _maxWriteBlockSize = 2048;
-                        break;
-
-                    default:
-                        throw new BadDfuProtocolVersionException(usbDescriptor.bcdDevice.ToString("X4"));
-                }
-            }
-            else
-            {
-                throw new CantReadUsbDescriptorException(returnValue);
-            }
-
-            // read DFU descriptor
-            var dfuDescriptor = new StDfu.DfuFunctionalDescriptor();
-            uint interfaceIndex = 0, alternates = 0;
-            returnValue = StDfu.STDFU_GetDFUDescriptor(ref _hDevice, ref interfaceIndex, ref alternates, ref dfuDescriptor);
-
-            if (returnValue == StDfu.STDFU_NOERROR)
-            {
-                _dfuDescriptor = dfuDescriptor;
-
-                // Enable and disable programming choice, bitManifestationTolerant	
-                if (_dfuDescriptor.wTransfertSize == 8)
-                {
-                    // Low Speed Devices
-                    _numberOfBlocks = 8;
-                }
-                if (_dfuDescriptor.wTransfertSize == 128)
-                {
-                    // Full Speed Devices
-                    _numberOfBlocks = 128;
-                }
-            }
-            else
-            {
-                throw new CantReadDfuDescriptorException(returnValue);
-            }
-
-            // create sector mapping for device
-            _sectorMap = StDfu.CreateMappingFromDevice(_hDevice, alternates, dfuDescriptor);
+            // store USB device ID
+            _deviceId = @"\\?\" + deviceId.Replace(@"\", "#") + @"#{" + s_dfuGuid.ToString() + "}";
         }
 
         /// <summary>
@@ -187,20 +101,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new DfuFileDoesNotExistException();
             }
 
-            // load DFU file
-
-            StDfu.DfuFile dfuFile = StDfu.LoadDfuFile(filePath, Verbosity);
-
             // erase flash
             if (DoMassErase)
             {
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.Write("Mass erase device...");
-                }
+                Console.WriteLine("WARNING: mass erase is not currently supported for DFU devices.");
+            }
 
-                StDfu.MassErase(_hDevice, Verbosity >= VerbosityLevel.Normal);
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.Write("Flashing device...");
+            }
 
+            // write flash, verify, reboot
+            // DFU is picky about the device path: requires it to be lower caps
+            if (!RunDfuCommandTool($" -d \"{filePath}\" -D {_deviceId.ToLowerInvariant()} -v -r ", out string messages))
+            {
+                // something went wrong
+                throw new DfuOperationFailedException();
+            }
+
+            // check for successfull message
+            if (messages.Contains("Successfully left DFU mode !"))
+            {
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
                     Console.WriteLine(" OK");
@@ -208,104 +130,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else
             {
-                //erase only the sections we will program
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.Write("Erasing sectors to program...");
-                }
-
-                StDfu.DfuTarget dfuTarErase = dfuFile.DfuTargets[0];
-
-                for (int nIdxElem = 0; nIdxElem < dfuTarErase.DfuElements.Length; ++nIdxElem)
-                {
-                    StDfu.DfuElement dfuElem = dfuTarErase.DfuElements[nIdxElem];
-
-                    StDfu.PartialErase(_hDevice, dfuElem.Address, (uint)dfuElem.Data.Length, _sectorMap, Verbosity >= VerbosityLevel.Detailed);
-                }
-
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.WriteLine(" OK");
-                }
-            }
-
-            // flash the device
-            StDfu.DfuTarget dfuTarget = dfuFile.DfuTargets[targetIndex];
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.Write("Flashing device...");
-            }
-
-            // write flash
-            for (int elementIndex = 0; elementIndex < dfuTarget.DfuElements.Length; ++elementIndex)
-            {
-                StDfu.DfuElement dfuElement = dfuTarget.DfuElements[elementIndex];
-
-                // Write the data in MaxWriteBlockSize blocks
-                for (uint blockNumber = 0; blockNumber <= (uint)dfuElement.Data.Length / _maxWriteBlockSize; blockNumber++)
-                {
-                    // grab data for write and store it into a 2048 byte buffer
-                    byte[] buffer = dfuElement.Data.Skip((int)(_maxWriteBlockSize * blockNumber)).Take(_maxWriteBlockSize).ToArray();
-
-                    StDfu.WriteBlock(_hDevice, dfuElement.Address, buffer, blockNumber);
-                }
-            }
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.WriteLine(" OK");
-            }
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.Write("Verifying flash...");
-            }
-
-            // read back for confirmation
-            for (int elementIndex = 0; elementIndex < dfuTarget.DfuElements.Length; ++elementIndex)
-            {
-                StDfu.DfuElement dfuElement = dfuTarget.DfuElements[elementIndex];
-
-                // read the data in MaxWriteBlockSize blocks
-                for (uint blockNumber = 0; blockNumber <= (uint)dfuElement.Data.Length / _maxWriteBlockSize; blockNumber++)
-                {
-                    byte[] readBuffer = new byte[_maxWriteBlockSize];
-                    StDfu.ReadBlock(_hDevice, dfuElement.Address, readBuffer, blockNumber);
-
-                    // get data for the current block
-                    byte[] buffer = dfuElement.Data.Skip((int)(_maxWriteBlockSize * blockNumber)).Take(_maxWriteBlockSize).ToArray();
-
-                    // exit condition has to be tied with the buffer length because the data for the last block 
-                    // can be shorter than the block max size
-                    for(int index = 0; index < buffer.Length; index++)
-                    {
-                        if(readBuffer[index] != buffer[index])
-                        {
-                            Console.WriteLine("");
-                            Console.WriteLine($"Error verifying flash write. Check failed for block address 0x{dfuElement.Address + blockNumber * _maxWriteBlockSize:X8}.");
-                            throw new DfuVerificationFailedException();
-                        }
-                    }
-                }
-            }
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.WriteLine(" OK");
-            }
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.Write("Launching nanoBooter...");
-            }
-
-            // always reboot with nanoBooter
-            StDfu.Detach(_hDevice, 0x08000000);
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.WriteLine(" OK");
+                // something went wrong
+                throw new DfuOperationFailedException();
             }
         }
 
@@ -324,6 +150,86 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // the split bellow is to get only the ID part of the USB ID
             // that follows the pattern: USB\\VID_0483&PID_DF11\\3380386D3134
             return usbDevicesCollection.OfType<ManagementObject>().Select(mo => (mo.Properties["DeviceID"].Value as string).Split('\\', ' ')[2]).ToList();
+        }
+
+        /// <summary>
+        /// Run the esptool one time
+        /// </summary>
+        /// <param name="commandWithArguments">the esptool command (e.g. write_flash) incl. all arguments (if needed)</param>
+        /// <param name="messages">StandardOutput and StandardError messages that the esptool prints out</param>
+        /// <returns>true if the esptool exit code was 0; false otherwise</returns>
+        private bool RunDfuCommandTool(
+            string commandWithArguments,
+            out string messages)
+        {
+            // create the process start info
+
+            // prepare the process start of the esptool
+            Process dfuCommandTool = new Process();
+            dfuCommandTool.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stdfu", "qmk-dfuse.exe"), commandWithArguments)
+            {
+                WorkingDirectory = Path.Combine(Program.ExecutingPath, "stdfu"),
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
+            };
+
+            // start esptool and wait for exit
+            if (dfuCommandTool.Start())
+            {
+                // if no progress output needed wait unlimited time until comment exits
+                if (Verbosity < VerbosityLevel.Detailed)
+                {
+                    dfuCommandTool.WaitForExit();
+                }
+            }
+            else
+            {
+                throw new EspToolExecutionException("Error starting DfuSeCommand!");
+            }
+
+            StringBuilder messageBuilder = new StringBuilder();
+
+            // showing progress is a little bit tricky
+            if (Verbosity >= VerbosityLevel.Detailed)
+            {
+                // loop until esptool exit
+                while (!dfuCommandTool.HasExited)
+                {
+                    // loop until there is no next char to read from standard output
+                    while (true)
+                    {
+                        int next = dfuCommandTool.StandardOutput.Read();
+                        if (next != -1)
+                        {
+                            // append the char to the message buffer
+                            char nextChar = (char)next;
+                            messageBuilder.Append((char)next);
+                            // print progress and set the cursor to the beginning of the line (\r)
+                            Console.Write(nextChar);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                // collect any last messages
+                messageBuilder.AppendLine(dfuCommandTool.StandardOutput.ReadToEnd());
+                messageBuilder.Append(dfuCommandTool.StandardError.ReadToEnd());
+            }
+            else
+            {
+                // collect all messages
+                messageBuilder.AppendLine(dfuCommandTool.StandardOutput.ReadToEnd());
+                messageBuilder.Append(dfuCommandTool.StandardError.ReadToEnd());
+            }
+
+            messages = messageBuilder.ToString();
+
+            // true if exit code was 0 (success)
+            return dfuCommandTool.ExitCode == 0;
         }
     }
 }

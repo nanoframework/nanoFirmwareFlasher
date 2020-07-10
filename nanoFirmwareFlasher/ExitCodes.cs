@@ -26,12 +26,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         E1000 = 1000,
 
         /// <summary>
-        /// Error with DFU file
-        /// </summary>
-        [Display(Name = "Error with DFU file")]
-        E1001 = 1001,
-
-        /// <summary>
         /// DFU file doesn't exist
         /// </summary>
         [Display(Name = "Couldn't find DFU file. Check the path.")]
