@@ -515,8 +515,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     catch (Exception ex)
                     {
-                        // exception with DFU file
-                        _exitCode = ExitCodes.E1001;
+                        // exception with DFU operation
+                        _exitCode = ExitCodes.E1003;
                         _extraMessage = ex.Message;
                     }
                 }
