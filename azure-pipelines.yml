@@ -71,7 +71,7 @@ jobs:
 
         # prepare release and capture output
         Write-Host "Prepare release with NBGV..."
-        $release = nbgv prepare-release -p source
+        $release = nbgv prepare-release
     
         Write-Host "Prepare commit..."
         # get commit message for the merge
@@ -121,7 +121,7 @@ jobs:
 ###########################################################
 # build tool
 - job: Build_tool
-  condition: not( eq( dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true ) )
+  condition: ne( dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true )
   dependsOn:
   - Check_Build_Options
 
@@ -146,35 +146,34 @@ jobs:
     displayName: Setup git identity
 
   - task: NuGetToolInstaller@0
-    inputs:
-      versionSpec: '4.9.3'
     displayName: 'Install specifc version of NuGet'
+    inputs:
+      versionSpec: '5.4.0'
 
   - task: UseDotNet@2
+    displayName: Install .NET Core SDK
     inputs:
       packageType: sdk
       version: 3.1.101
-    displayName: Install .NET Core SDK
 
   - task: DotNetCoreCLI@2
+    displayName: Restore NuGet packages
     inputs:
       command: restore
-      verbosityRestore: minimal # detailed, normal, minimal
-      projects: source\nanoFirmwareFlasher.sln
+      verbosityRestore: minimal
+      projects: nanoFirmwareFlasher.sln
       feedsToUse: config
-      nugetConfigPath: source/NuGet.Config
-      workingDirectory: source
-    displayName: Restore NuGet packages
+      nugetConfigPath: NuGet.Config
 
   - script: dotnet build -r win-x64 -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
-    workingDirectory: source
     displayName: Build NuGet package
 
   - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
-    workingDirectory: source
     displayName: Build .NET Core Tool NuGet package
 
   - task: PowerShell@2
+    condition: succeeded()
+    displayName: Get NuGet build number
     inputs:
         targetType: 'inline'
         script: |
@@ -189,16 +188,14 @@ jobs:
             Write-Host "NuGet build number is $MyNuGetVersion"
 
             Write-Host "$("##vso[task.setvariable variable=MY_NUGET_VERSION]")$MyNuGetVersion"
-    condition: succeeded()
-    displayName: Get NuGet build number
 
   # update could build number (only possible if this is not a PR from a fork)
   - task: PowerShell@2
+    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
+    displayName: Update cloud build number
     inputs:
         targetType: 'inline'
         script: Write-Host "$("##vso[build.updatebuildnumber]")$env:NBGV_NuGetPackageVersion"
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Update cloud build number
 
   - powershell: |
       # get subject and commit message for commit
@@ -223,49 +220,51 @@ jobs:
     displayName: set release draft var
 
   - task: CopyFiles@1
+    condition: succeeded()
+    displayName: Collecting deployable artifacts
     inputs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
         **\*.nupkg
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
-    condition: succeeded()
-    displayName: Collecting deployable artifacts
 
   # publish artifacts (only possible if this is not a PR originated on a fork)
   - task: PublishBuildArtifacts@1
+    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
+    displayName: Publish deployables artifacts
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName: deployables
       ArtifactType: Container
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Publish deployables artifacts
 
   # push NuGet packages to AzureArtifacts feed (always happens except on PR builds)
   - task: NuGetCommand@2
+    condition: succeeded()
+    displayName: Push NuGet packages to AzureArtifacts
+    continueOnError: true
     inputs:
       command: push
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts-nanoFirmwareFlasher'
-    condition: succeeded()
-    continueOnError: true
-    displayName: Push NuGet packages to AzureArtifacts
 
   # push NuGet class lib package to NuGet (happens on tag builds for any branch)
   - task: NuGetCommand@2
+    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
+    displayName: Push NuGet packages to NuGet
+    continueOnError: true
     inputs:
       command: push
       nuGetFeedType: external
       allowPackageConflicts: true
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
-    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
-    continueOnError: true
-    displayName: Push NuGet packages to NuGet
 
   # create or update GitHub release ON tags from release or master branches
   - task: GitHubReleasePublish@1
+    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
+    displayName: Create/Update GitHub PREVIEW release 
     inputs:
       githubEndpoint: 'nanoFramework'
       githubOwner: 'nanoframework'
@@ -281,11 +280,11 @@ jobs:
       githubEditRelease: true
       githubDeleteEmptyTag: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
-    displayName: Create/Update GitHub PREVIEW release 
 
   # create or update GitHub release ON tags from release or master branches
   - task: GitHubReleasePublish@1
+    condition: and( succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), not(contains(variables['Build.SourceBranch'], 'preview') ) )
+    displayName: Create/Update GitHub stable release
     inputs:
       githubEndpoint: 'nanoFramework'
       githubOwner: 'nanoframework'
@@ -301,8 +300,6 @@ jobs:
       githubEditRelease: false
       githubDeleteEmptyTag: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/$(nugetPackageName).$(MY_NUGET_VERSION).nupkg'
-    condition: and( succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), not(contains(variables['Build.SourceBranch'], 'preview') ) )
-    displayName: Create/Update GitHub stable release
 
 ##################################
 # report build failure to Discord

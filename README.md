@@ -12,11 +12,11 @@ Is part of **nanoFramework** toolbox, along with other various tools that are re
 
 It makes use of several 3rd party tools:
 
-- Espressif esptool.
+- Espressif esptool
    You can find the esptool and licensing information on the repository [here](http://github.com/espressif/esptool).
-- ST DfuSe USB.
-   You can find the source, licensing information and documentation [here](https://www.st.com/en/development-tools/stsw-stm32080.html).
-- ST-LINK Utility.
+- QMKDfuSe
+   Tool based on STM DfusSe tool. You can find the source, licensing information and documentation [here](https://github.com/qmk/qmk_dfuse).
+- ST-LINK Utility
    You can find the source, licensing information and documentation [here](https://www.st.com/content/st_com/en/products/development-tools/software-development-tools/stm32-software-development-tools/stm32-programmers/stsw-link004.html).
 - Texas Instruments Uniflash
    You can find the Uniflash tool and licensing information [here](http://www.ti.com/tool/download/UNIFLASH).
