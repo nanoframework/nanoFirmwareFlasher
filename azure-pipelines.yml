@@ -223,7 +223,7 @@ jobs:
     condition: succeeded()
     displayName: Collecting deployable artifacts
     inputs:
-      sourceFolder: $(Build.SourcesDirectory)
+      sourceFolder: $(Agent.BuildDirectory)
       Contents: |
         **\*.nupkg
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
