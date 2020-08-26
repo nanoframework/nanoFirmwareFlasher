@@ -180,7 +180,7 @@ jobs:
             $MyNuGetVersion = $env:NBGV_NuGetPackageVersion -replace "\-g$env:NBGV_GitCommitIdShort", ""
 
             # replace preview with alpha if this is a PR build
-            if($env:Build_Reason -eq 'PullRequest')
+            if($env:System_PullRequest_PullRequestId -ne '')
             {
               $MyNuGetVersion = $MyNuGetVersion -replace "preview", "alpha"
             }
@@ -251,7 +251,7 @@ jobs:
 
   # push NuGet class lib package to NuGet (happens on tag builds for any branch)
   - task: NuGetCommand@2
-    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
     displayName: Push NuGet packages to NuGet
     continueOnError: true
     inputs:
@@ -263,7 +263,7 @@ jobs:
 
   # create or update GitHub release ON tags from release or master branches
   - task: GitHubReleasePublish@1
-    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Create/Update GitHub PREVIEW release 
     inputs:
       githubEndpoint: 'nanoFramework'
