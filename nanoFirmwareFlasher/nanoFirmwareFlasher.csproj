@@ -10,7 +10,7 @@
     <PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
     <Authors>nanoFramework project contributors</Authors>
     <Product>nanoFramework Firmware Flasher</Product>
-    <Copyright>Copyright (c) 2019 nanoFramework project contributors</Copyright>
+    <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <Company>nanoFramework</Company>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
