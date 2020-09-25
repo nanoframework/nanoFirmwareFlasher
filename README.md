@@ -186,5 +186,9 @@ The **nanoFramework** firmware flasher tool is licensed under the [MIT license](
 
 ## Code of Conduct
 
-This project has adopted the code of conduct defined by the [Contributor Covenant](https://github.com/nanoframework/.github/blob/master/CODE_OF_CONDUCT.md)
-to clarify expected behavior in our community.
+This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behavior in our community.
+For more information see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct).
+
+### .NET Foundation
+
+This project is supported by the [.NET Foundation](https://dotnetfoundation.org).
