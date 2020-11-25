@@ -168,7 +168,7 @@ nanoff -v q
 
 ## Exit codes
 
-The exit codes can be checked in [this source file](https://github.com/nanoframework/nanoFirmwareFlasher/blob/develop/source/nanoFirmwareFlasher/ExitCodes.cs).
+The exit codes can be checked in [this source file](https://github.com/nanoframework/nanoFirmwareFlasher/blob/develop/nanoFirmwareFlasher/ExitCodes.cs).
 
 ## Feedback and documentation
 
@@ -182,7 +182,7 @@ The list of contributors to this project can be found at [CONTRIBUTORS](https://
 
 ## License
 
-The **nanoFramework** firmware flasher tool is licensed under the [MIT license](LICENSE.md).
+The **nanoFramework** firmware flasher tool is licensed under the [MIT license](LICENSE).
 
 ## Code of Conduct
 
