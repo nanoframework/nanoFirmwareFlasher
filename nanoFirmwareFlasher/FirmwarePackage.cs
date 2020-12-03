@@ -7,8 +7,10 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -64,87 +66,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>a dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</returns>
         protected async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync()
         {
+            string fwFileName = null;
+
             // reference targets
             var repoName = _stable ? _refTargetsStableRepo : _refTargetsDevRepo;
             string requestUri = $"{_bintrayApiPackages}/{repoName}/{_targetName}";
 
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.Write($"Trying to find {_targetName} in {(_stable ? "stable" : "developement")} repository...");
-            }
+            // flag to signal if the work-flow step was successful
+            bool stepSuccesful = false;
 
-            HttpResponseMessage response = await _bintrayClient.GetAsync(requestUri);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.WriteLine("");
-                    Console.Write($"Trying to find {_targetName} in community targets repository...");
-                }
-
-                // try with community targets
-                requestUri = $"{_bintrayApiPackages}/{_communityTargetsepo}/{_targetName}";
-                repoName = _communityTargetsepo;
-
-                response = await _bintrayClient.GetAsync(requestUri);
-
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    if (Verbosity >= VerbosityLevel.Normal)
-                    {
-                        Console.WriteLine("");
-                    }
-
-                    // can't find this target
-                    return ExitCodes.E9005;
-                }
-            }
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.WriteLine($"OK");
-
-                Console.Write($"Downloading firmware package...");
-            }
-
-            // read and parse response
-            string responseBody = await response.Content.ReadAsStringAsync();
-            BintrayPackageInfo packageInfo = JsonConvert.DeserializeObject<BintrayPackageInfo>(responseBody);
-
-            // if no specific version was requested, use latest available
-            if (string.IsNullOrEmpty(_fwVersion))
-            {
-                _fwVersion = packageInfo.LatestVersion;
-            }
-
-            // set exposed property
-            Version = _fwVersion;
+            // flag to skip download if the fw package exists and it's recent
+            bool skipDownload = false;
 
             // setup download folder
+            // set download path
+            LocationPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".nanoFramework");
+
             try
             {
-                // set download path
-                LocationPath = Path.Combine(
-                    Path.GetTempPath(),
-                    Guid.NewGuid().ToString());
-
-                // create directory
+                // create home directory
                 Directory.CreateDirectory(LocationPath);
-
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.WriteLine("OK");
-                }
-                else
-                {
-                    Console.WriteLine("");
-                }
-
-                if (Verbosity >= VerbosityLevel.Detailed)
-                {
-                    Console.WriteLine($"Download location is {LocationPath}");
-                }
 
                 // add readme file
                 File.WriteAllText(
@@ -152,6 +95,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         LocationPath,
                         "README.txt"),
                     _readmeContent);
+
+                // set location path to target folder
+                LocationPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    ".nanoFramework",
+                    _targetName);
             }
             catch
             {
@@ -160,36 +109,200 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E9006;
             }
 
-            // setup and perform download request
-            string fwFileName = $"{_targetName}-{_fwVersion}.zip";
-            requestUri = $"https://dl.bintray.com/nfbot/{repoName}/{fwFileName}";
+            var fwFiles = Directory.EnumerateFiles(LocationPath, $"{_targetName}-*.zip").OrderByDescending(f => f).ToList();
 
-            using (var fwFileResponse = await _bintrayClient.GetAsync(requestUri))
+            if (fwFiles.Any())
             {
-                if (fwFileResponse.IsSuccessStatusCode)
+                // get file creation date (from the 1st one)
+                if ((DateTime.UtcNow - File.GetLastWriteTimeUtc(fwFiles.First())).TotalHours < 4)
                 {
-                    using (var readStream = await fwFileResponse.Content.ReadAsStreamAsync())
+                    // fw package has less than 4 hours
+                    // skip download
+                    skipDownload = true;
+                }
+            }
+
+            if (!skipDownload)
+            {
+                // try to perform request
+                try
+                {
+                    if (Verbosity >= VerbosityLevel.Normal)
                     {
-                        using (var fileStream = new FileStream(
-                            Path.Combine(LocationPath, fwFileName),
-                            FileMode.Create, FileAccess.Write))
+                        Console.Write($"Trying to find {_targetName} in {(_stable ? "stable" : "developement")} repository...");
+                    }
+
+                    HttpResponseMessage response = await _bintrayClient.GetAsync(requestUri);
+
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        if (Verbosity >= VerbosityLevel.Normal)
                         {
-                            await readStream.CopyToAsync(fileStream);
+                            Console.WriteLine("");
+                            Console.Write($"Trying to find {_targetName} in community targets repository...");
                         }
+
+                        // try with community targets
+                        requestUri = $"{_bintrayApiPackages}/{_communityTargetsepo}/{_targetName}";
+                        repoName = _communityTargetsepo;
+
+                        response = await _bintrayClient.GetAsync(requestUri);
+
+                        if (response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            if (Verbosity >= VerbosityLevel.Normal)
+                            {
+                                Console.WriteLine("");
+                            }
+
+                            // can't find this target
+                            return ExitCodes.E9005;
+                        }
+                    }
+
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.WriteLine($"OK");
+                    }
+
+                    // read and parse response
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    BintrayPackageInfo packageInfo = JsonConvert.DeserializeObject<BintrayPackageInfo>(responseBody);
+
+                    // if no specific version was requested, use latest available
+                    if (string.IsNullOrEmpty(_fwVersion))
+                    {
+                        _fwVersion = packageInfo.LatestVersion;
+                    }
+
+                    // set exposed property
+                    Version = _fwVersion;
+
+                    stepSuccesful = true;
+                }
+                catch
+                {
+                    // exception with download, assuming it's something with network connection or Bintray API
+                }
+            }
+
+            // cleanup any fw file in the folder
+            var filesToDelete = Directory.EnumerateFiles(LocationPath, "*.bin").ToList();
+            filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.hex").ToList());
+            filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.s19").ToList());
+            filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.dfu").ToList());
+
+            foreach (var file in filesToDelete)
+            {
+                File.Delete(file);
+            }
+
+            // check for file existence or download one
+            if (stepSuccesful &&
+                !skipDownload)
+            {
+                // reset flag
+                stepSuccesful = false;
+
+                fwFileName = $"{_targetName}-{_fwVersion}.zip";
+
+                // check if we already have the file
+                if (!File.Exists(
+                    Path.Combine(
+                        LocationPath,
+                        fwFileName)))
+                {
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.Write($"Downloading firmware package...");
+                    }
+
+                    try
+                    {
+                        // setup and perform download request
+                        requestUri = $"https://dl.bintray.com/nfbot/{repoName}/{fwFileName}";
+
+                        using (var fwFileResponse = await _bintrayClient.GetAsync(requestUri))
+                        {
+                            if (fwFileResponse.IsSuccessStatusCode)
+                            {
+                                using (var readStream = await fwFileResponse.Content.ReadAsStreamAsync())
+                                {
+                                    using (var fileStream = new FileStream(
+                                        Path.Combine(LocationPath, fwFileName),
+                                        FileMode.Create, FileAccess.Write))
+                                    {
+                                        await readStream.CopyToAsync(fileStream);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                return ExitCodes.E9007;
+                            }
+                        }
+
+                        if (Verbosity >= VerbosityLevel.Normal)
+                        {
+                            Console.WriteLine("OK");
+                        }
+
+                        stepSuccesful = true;
+                    }
+                    catch
+                    {
+                        // exception with download, assuming it's something with network connection or Bintray API
                     }
                 }
                 else
                 {
+                    // file already exists
+                    stepSuccesful = true;
+                }
+            }
+
+            if (!stepSuccesful)
+            {
+                // couldn't download the fw file
+                // check if there is one available
+                fwFiles = Directory.EnumerateFiles(LocationPath, $"{_targetName}-*.zip").OrderByDescending(f => f).ToList();
+
+                if (fwFiles.Any())
+                {
+                    // take the 1st one
+                    fwFileName = fwFiles.First();
+
+                    // get the version form the file name
+                    var pattern = @"(\d+\.\d+\.\d+)(\.\d+|-.+)(?=\.zip)";
+                    var match = Regex.Matches(fwFileName, pattern, RegexOptions.IgnoreCase);
+
+                    // set property
+                    Version = match[0].Value;
+
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.WriteLine("Using cached firmware package");
+                    }
+                }
+                else
+                {
+                    // no fw file available
+
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.WriteLine("Failure to download package and couldn't find one in the cache.");
+                    }
+
                     return ExitCodes.E9007;
                 }
             }
 
-            Console.WriteLine($"Updating to {_fwVersion}");
+            // got here, must have a file!
 
             // unzip the firmware
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.Write($"Extracting {fwFileName}...");
+                Console.Write($"Extracting {Path.GetFileName(fwFileName)}...");
             }
 
             ZipFile.ExtractToDirectory(
@@ -198,8 +311,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine("");
+                Console.WriteLine("OK");
             }
+
+            // be nice to the user and delete any fw packages other than the last one
+            var allFwFiles = Directory.EnumerateFiles(LocationPath, "*.zip").OrderByDescending(f => f).ToList();
+            if (allFwFiles.Count > 1)
+            {
+                foreach (var file in allFwFiles.Skip(1))
+                {
+                    File.Delete(file);
+                }
+            }
+
+            Console.WriteLine($"Updating to {Version}");
 
             return ExitCodes.OK;
         }
