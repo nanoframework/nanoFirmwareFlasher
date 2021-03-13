@@ -473,7 +473,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(o.DfuFile))
+                var connectedStDfuDevices = StmDfuDevice.ListDfuDevices();
+                
+                if (!string.IsNullOrEmpty(o.DfuFile) && connectedStDfuDevices.Count != 0)
                 {
                     // there is a DFU file argument, so follow DFU path
                     var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
