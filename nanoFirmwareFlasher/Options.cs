@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2019 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
 
@@ -142,7 +142,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             'v',
             "verbosity",
             Required = false,
-            Default = "n",
+            Default = "d",
             HelpText = "Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]. Not supported in every command; see specific command page to determine if this option is available.")]
         public string Verbosity { get; set; }
 

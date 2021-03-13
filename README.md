@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/master/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoframework.nanoFirmwareFlasher?branchName=develop)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&branchName=develop) [![NuGet](https://img.shields.io/nuget/v/nanoFirmwareFlasher.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoFirmwareFlasher/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/master/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoframework.nanoFirmwareFlasher?branchName=develop)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&branchName=develop) [![NuGet](https://img.shields.io/nuget/v/nanoFirmwareFlasher.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoFirmwareFlasher/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
 
 ![nanoFramework logo](https://github.com/nanoframework/Home/blob/master/resources/logo/nanoFramework-repo-logo.png)
 
@@ -168,7 +168,7 @@ nanoff -v q
 
 ## Exit codes
 
-The exit codes can be checked in [this source file](https://github.com/nanoframework/nanoFirmwareFlasher/blob/develop/source/nanoFirmwareFlasher/ExitCodes.cs).
+The exit codes can be checked in [this source file](https://github.com/nanoframework/nanoFirmwareFlasher/blob/develop/nanoFirmwareFlasher/ExitCodes.cs).
 
 ## Feedback and documentation
 
@@ -182,9 +182,13 @@ The list of contributors to this project can be found at [CONTRIBUTORS](https://
 
 ## License
 
-The **nanoFramework** firmware flasher tool is licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The **nanoFramework** firmware flasher tool is licensed under the [MIT license](LICENSE).
 
 ## Code of Conduct
 
-This project has adopted the code of conduct defined by the [Contributor Covenant](https://github.com/nanoframework/.github/blob/master/CODE_OF_CONDUCT.md)
-to clarify expected behavior in our community.
+This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behavior in our community.
+For more information see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct).
+
+### .NET Foundation
+
+This project is supported by the [.NET Foundation](https://dotnetfoundation.org).

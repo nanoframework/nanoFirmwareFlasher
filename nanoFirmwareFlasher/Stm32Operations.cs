@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2019 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
 
@@ -85,8 +85,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
+            var connectedStDfuDevices = StmDfuDevice.ListDfuDevices();
+            var connectedStJtagDevices = StmJtagDevice.ListDevices();
+
             // need DFU or JTAG device
-            if (firmware.HasDfuPackage)
+            if (firmware.HasDfuPackage && connectedStDfuDevices.Count !=0)
             {
                 // DFU package
                 dfuDevice = new StmDfuDevice(dfuDeviceId);
@@ -120,7 +123,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return ExitCodes.E1003;
                 }
             }
-            else
+            else if (connectedStJtagDevices.Count != 0)
             {
                 // JATG device
                 jtagDevice = new StmJtagDevice(jtagId);
@@ -161,6 +164,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 return programResult;
+            }
+            else
+            {
+                // no device was found to update.
+                return ExitCodes.E7000;
             }
         }
 
