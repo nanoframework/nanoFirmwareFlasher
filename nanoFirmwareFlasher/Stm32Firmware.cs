@@ -40,11 +40,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     DfuPackage = dfuFile.FirstOrDefault();
                 }
-                else
-                {
-                    nanoBooterFile = Directory.EnumerateFiles(LocationPath, "nanoBooter.hex").FirstOrDefault();
-                    nanoCLRFile = Directory.EnumerateFiles(LocationPath, "nanoCLR.hex").FirstOrDefault();
-                }
+                nanoBooterFile = Directory.EnumerateFiles(LocationPath, "nanoBooter.hex").FirstOrDefault();
+                nanoCLRFile = Directory.EnumerateFiles(LocationPath, "nanoCLR.hex").FirstOrDefault();
             }
 
             return executionResult;

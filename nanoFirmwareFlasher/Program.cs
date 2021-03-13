@@ -473,7 +473,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(o.DfuFile))
+                var connectedStDfuDevices = StmDfuDevice.ListDfuDevices();
+                var connectedStJtagDevices = StmJtagDevice.ListDevices();
+
+                if (!string.IsNullOrEmpty(o.DfuFile) && connectedStDfuDevices.Count != 0)
                 {
                     // there is a DFU file argument, so follow DFU path
                     var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
@@ -522,7 +525,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else if (
                     o.BinFile.Any() &&
-                    o.HexFile.Any())
+                    o.HexFile.Any() &&
+                    connectedStJtagDevices.Count != 0
+                     )
                 {
                     // this has to be a JTAG connected device
 
