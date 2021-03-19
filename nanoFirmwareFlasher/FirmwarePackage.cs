@@ -101,6 +101,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                     ".nanoFramework",
                     _targetName);
+
+                Directory.CreateDirectory(LocationPath);
             }
             catch
             {
