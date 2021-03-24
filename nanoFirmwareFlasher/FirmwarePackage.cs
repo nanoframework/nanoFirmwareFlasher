@@ -5,27 +5,28 @@
 
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// Abstract base class that handles the download and extraction of firmware file from Bintray.
+    /// Abstract base class that handles the download and extraction of firmware file from Cloudsmith.
     /// </summary>
     internal abstract class FirmwarePackage : IDisposable
     {
         // HttpClient is intended to be instantiated once per application, rather than per-use.
-        static HttpClient _bintrayClient = new HttpClient();
+        static HttpClient _cloudsmithClient = new HttpClient();
 
         /// <summary>
-        /// Uri of Bintray API
+        /// Uri of Cloudsmith API
         /// </summary>
-        internal const string _bintrayApiPackages = "https://api.bintray.com/packages/nfbot";
+        internal const string _cloudsmithPackages = "https://api.cloudsmith.io/v1/packages/net-nanoframework";
 
         internal const string _refTargetsDevRepo = "nanoframework-images-dev";
         internal const string _refTargetsStableRepo = "nanoframework-images";
@@ -68,9 +69,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             string fwFileName = null;
 
+            // query URL
+            // https://api.cloudsmith.io/v1/packages/net-nanoframework/REPO-NAME-HERE/?page=1&query=/PACKAGE-NAME-HERE latest
+
+            // download URL
+            // https://dl.cloudsmith.io/public/net-nanoframework/REPO-NAME-HERE/raw/names/PACKAGE-NAME-HERE/versions/VERSION-HERE/ST_STM32F429I_DISCOVERY-1.6.2-preview.9.zip
+
             // reference targets
             var repoName = _stable ? _refTargetsStableRepo : _refTargetsDevRepo;
-            string requestUri = $"{_bintrayApiPackages}/{repoName}/{_targetName}";
+            string requestUri = $"{_cloudsmithPackages}/{repoName}/?page=1&query={_targetName} latest";
+
+            string downloadUrl = string.Empty;
 
             // flag to signal if the work-flow step was successful
             bool stepSuccesful = false;
@@ -134,9 +143,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.Write($"Trying to find {_targetName} in {(_stable ? "stable" : "developement")} repository...");
                     }
 
-                    HttpResponseMessage response = await _bintrayClient.GetAsync(requestUri);
+                    HttpResponseMessage response = await _cloudsmithClient.GetAsync(requestUri);
 
-                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    var responseBody = await response.Content.ReadAsStringAsync();
+
+                    // check for empty array 
+                    if (responseBody == "[]")
                     {
                         if (Verbosity >= VerbosityLevel.Normal)
                         {
@@ -145,12 +157,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         // try with community targets
-                        requestUri = $"{_bintrayApiPackages}/{_communityTargetsepo}/{_targetName}";
+                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsepo}/?page=1&query={_targetName} latest";
                         repoName = _communityTargetsepo;
 
-                        response = await _bintrayClient.GetAsync(requestUri);
+                        response = await _cloudsmithClient.GetAsync(requestUri);
 
-                        if (response.StatusCode == HttpStatusCode.NotFound)
+                        if (responseBody == "[]")
                         {
                             if (Verbosity >= VerbosityLevel.Normal)
                             {
@@ -167,15 +179,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.WriteLine($"OK");
                     }
 
-                    // read and parse response
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    BintrayPackageInfo packageInfo = JsonConvert.DeserializeObject<BintrayPackageInfo>(responseBody);
+                    // parse response
+                    List<CloudsmithPackageInfo> packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
 
                     // if no specific version was requested, use latest available
                     if (string.IsNullOrEmpty(_fwVersion))
                     {
-                        _fwVersion = packageInfo.LatestVersion;
+                        _fwVersion = packageInfo.ElementAt(0).Version;
                     }
+
+                    // grab download URL
+                    downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
 
                     // set exposed property
                     Version = _fwVersion;
@@ -184,7 +198,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 catch
                 {
-                    // exception with download, assuming it's something with network connection or Bintray API
+                    // exception with download, assuming it's something with network connection or Cloudsmith API
                 }
             }
 
@@ -222,9 +236,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     try
                     {
                         // setup and perform download request
-                        requestUri = $"https://dl.bintray.com/nfbot/{repoName}/{fwFileName}";
-
-                        using (var fwFileResponse = await _bintrayClient.GetAsync(requestUri))
+                        using (var fwFileResponse = await _cloudsmithClient.GetAsync(downloadUrl))
                         {
                             if (fwFileResponse.IsSuccessStatusCode)
                             {
@@ -253,7 +265,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     catch
                     {
-                        // exception with download, assuming it's something with network connection or Bintray API
+                        // exception with download, assuming it's something with network connection or Cloudsmith API
                     }
                 }
                 else

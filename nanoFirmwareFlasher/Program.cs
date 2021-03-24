@@ -168,7 +168,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 else
                 {
                     // other supported platforms will go here
-                    // in case a wacky target is entered by the user, the package name will be checked against Bintray repo
+                    // in case a wacky target is entered by the user, the package name will be checked against Cloudsmith repo
                 }
             }
 
@@ -587,7 +587,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // update operation requested?
                     if (o.Update)
                     {
-                        // this to update the device with fw from Bintray
+                        // this to update the device with fw from Cloudsmith
 
                         // need to take care of flash address
                         string appFlashAddress = null;
@@ -681,7 +681,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // update operation requested?
                     if (o.Update)
                     {
-                        // this to update the device with fw from Bintray
+                        // this to update the device with fw from Cloudsmith
 
                         // need to take care of flash address
                         string appFlashAddress = null;

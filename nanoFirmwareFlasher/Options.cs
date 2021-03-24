@@ -120,7 +120,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "target",
             Required = false,
             Default = null,
-           HelpText = "Target name. This is the target name used in the GitHub and Bintray repositories.")]
+           HelpText = "Target name. This is the target name used in the GitHub and Cloudsmith repositories.")]
         public string TargetName { get; set; }
 
         [Option(

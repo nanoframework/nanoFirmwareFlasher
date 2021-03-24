@@ -9,9 +9,12 @@ using System;
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     [Serializable]
-    internal class BintrayPackageInfo
+    internal class CloudsmithPackageInfo
     {
-        [JsonProperty("latest_version")]
-        public string LatestVersion { get; set; }
+        [JsonProperty("version")]
+        public string Version { get; set; }
+        
+        [JsonProperty("cdn_url")]
+        public string DownloadUrl { get; set; }
     }
 }

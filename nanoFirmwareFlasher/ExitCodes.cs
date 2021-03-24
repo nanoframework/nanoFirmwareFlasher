@@ -202,9 +202,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         E9004 = 9004,
 
         /// <summary>
-        /// Can't find the target in the Bintray repository.
+        /// Can't find the target in Cloudsmith repository.
         /// </summary>
-        [Display(Name = "Can't find the target in the Bintray repository.")]
+        [Display(Name = "Can't find the target in Cloudsmith repository.")]
         E9005 = 9005,
 
         /// <summary>

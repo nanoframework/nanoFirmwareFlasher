@@ -11,7 +11,7 @@ using System.Linq;
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// Class that handles the download of STM32 firmware files from Bintray.
+    /// Class that handles the download of STM32 firmware files from Cloudsmith.
     /// </summary>
     internal class Stm32Firmware : FirmwarePackage
     {
