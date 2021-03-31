@@ -1,14 +1,14 @@
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/master/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoframework.nanoFirmwareFlasher?branchName=develop)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&branchName=develop) [![NuGet](https://img.shields.io/nuget/v/nanoFirmwareFlasher.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoFirmwareFlasher/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoframework.nanoFirmwareFlasher?branchName=develop)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&branchName=develop) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
 
-![nanoFramework logo](https://github.com/nanoframework/Home/blob/master/resources/logo/nanoFramework-repo-logo.png)
+![nanoFramework logo](https://github.com/nanoframework/Home/blob/main/resources/logo/nanoFramework-repo-logo.png)
 
 -----
 
-### Welcome to the **nanoFramework** nano firmware flasher tool repository!
+### Welcome to the .NET **nanoFramework** firmware flasher tool repository!
 
 This repo contains the nano firmware flasher tool.
-It's a [.NET Core CLI Global Tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools) that allows flashing a **nanoFramework** target with nanoBooter, nanoCLR, managed application or backup files.
-Is part of **nanoFramework** toolbox, along with other various tools that are required in **nanoFramework** development, usage or repository management.
+It's a [.NET Core CLI Global Tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools) that allows flashing a .NET **nanoFramework** target with nanoBooter, nanoCLR, managed application or backup files.
+Is part of .NET **nanoFramework** toolbox, along with other various tools that are required in .NET **nanoFramework** development, usage or repository management.
 
 It makes use of several 3rd party tools:
 
@@ -21,18 +21,18 @@ It makes use of several 3rd party tools:
 - Texas Instruments Uniflash
    You can find the Uniflash tool and licensing information [here](http://www.ti.com/tool/download/UNIFLASH).
 
-## Install **nanoFramework** Firmware Flasher
+## Install .NET **nanoFramework** Firmware Flasher
 
-Perform a one-time install of the **nanoFramework** Firmware Flasher tool using the following .NET Core CLI command:
+Perform a one-time install of the .NET **nanoFramework** Firmware Flasher tool using the following .NET Core CLI command:
 
 ```console
 dotnet tool install -g nanoff
 ```
 
-In case you're installing a pre-release version of the tool you have to specify the version number and the **nanoFramework** Azure DevOps NuGet feed as the source. Like this:
+In case you're installing a pre-release version of the tool you have to specify the version number and the .NET **nanoFramework** Azure DevOps NuGet feed as the source. Like this:
 
 ```console
-dotnet tool install -g nanoff --version 9.9.9-preview.100 --add-source https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
+dotnet tool install -g nanoff --version 9.9.9-preview.100
 ```
 
 After a successful installation a message is displayed showing the command that's to be used to call the tool along with the version installed. Similar to the following example:
@@ -42,9 +42,9 @@ You can invoke the tool using the following command: nanoff
 Tool 'nanoff' (version '9.9.9-preview.100') was successfully installed.
 ```
 
-## Update **nanoFramework** Firmware Flasher
+## Update .NET **nanoFramework** Firmware Flasher
 
-To update **nanoFramework** Firmware Flasher tool use the following .NET Core CLI command:
+To update .NET **nanoFramework** Firmware Flasher tool use the following .NET Core CLI command:
 
 ```console
 dotnet tool update -g nanoff
@@ -180,7 +180,7 @@ Join our Discord community [here](https://discord.gg/gCyBu8T).
 
 ## Credits
 
-The list of contributors to this project can be found at [CONTRIBUTORS](https://github.com/nanoframework/Home/blob/master/CONTRIBUTORS.md).
+The list of contributors to this project can be found at [CONTRIBUTORS](https://github.com/nanoframework/Home/blob/main/CONTRIBUTORS.md).
 
 ## License
 
