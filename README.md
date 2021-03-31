@@ -42,6 +42,8 @@ You can invoke the tool using the following command: nanoff
 Tool 'nanoff' (version '9.9.9-preview.100') was successfully installed.
 ```
 
+## Update **nanoFramework** Firmware Flasher
+
 To update **nanoFramework** Firmware Flasher tool use the following .NET Core CLI command:
 
 ```console

@@ -8,15 +8,15 @@
     <RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
     <AssemblyName>nanoff</AssemblyName>
     <PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
-    <Authors>nanoFramework project contributors</Authors>
-    <Product>nanoFramework Firmware Flasher</Product>
+    <Authors>.NET nanoFramework project contributors</Authors>
+    <Product>.NET nanoFramework Firmware Flasher</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
-    <Company>nanoFramework</Company>
+    <Company>.NET nanoFramework</Company>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
     <PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
-    <PackageIconUrl>https://secure.gravatar.com/avatar/97d0e092247f0716db6d4b47b7d1d1ad</PackageIconUrl>
-    <Description>nanoFirmwareFlasher</Description>
+    <PackageIconUrl></PackageIconUrl>
+    <Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
     <!-- need this to allow async Main() -->
     <LangVersion>latest</LangVersion>
     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
@@ -39,6 +39,9 @@
   <PropertyGroup>
     <!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
     <NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageIcon>images\nf-logo.png</PackageIcon>
+    <PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
   </PropertyGroup>
   
   <ItemGroup>
@@ -53,10 +56,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\assets\nf-logo.png">
+      <Pack>True</Pack>
+      <PackagePath>images</PackagePath>
+    </None>
     <None Include="..\lib\stdfu\**" Link="stdfu\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>
         <PackagePath>content\stdfu;contentFiles\stdfu</PackagePath>
 	</None>
+    <None Include="..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

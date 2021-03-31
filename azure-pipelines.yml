@@ -180,7 +180,7 @@ jobs:
             $MyNuGetVersion = $env:NBGV_NuGetPackageVersion -replace "\-g$env:NBGV_GitCommitIdShort", ""
 
             # replace preview with alpha if this is a PR build
-            if($env:System_PullRequest_PullRequestId -ne '')
+            if($env:System_PullRequest_PullRequestId -ne $null)
             {
               $MyNuGetVersion = $MyNuGetVersion -replace "preview", "alpha"
             }
