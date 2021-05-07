@@ -224,10 +224,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             get
             {
                 return new List<Example>() {
-                    new Example("Update ESP32 device with latest fw (stable version)", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true }),
-                    new Example("Update ESP32 device with latest fw (stable version), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true, SerialPort = "COM31" }),
-                    new Example("Update STM32 device with latest fw (development repository)", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true}),
-                    new Example("Update STM32 device with latest fw (development repository), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, DfuDeviceId = "3380386D3134" }),
+                    new Example("Update ESP32 device with latest available firmware (nF org preview repository)", new Options { TargetName = "ESP32_WROOM_32" , Update = true}),
+                    new Example("Update ESP32 device with latest available firmware (nF org stable repository)", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true }),
+                    new Example("Update ESP32 device with latest available firmware (nF org stable repository), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true, SerialPort = "COM31" }),
+                    new Example("Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP32_WROOM_32" , DeploymentImage = "<location of file>.bin"}),
+                    new Example("Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (nF org preview repository)", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true}),
+                    new Example("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (nf org preview repository), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, DfuDeviceId = "3380386D3134" }),
                     new Example("List all STM32 devices connected through JTAG", new Options { Platform = "stm32", ListJtagDevices = true}),
                 };
             }
