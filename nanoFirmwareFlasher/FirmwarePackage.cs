@@ -196,10 +196,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         //get the download Url from the Cloudsmith Package info
                         // addition check if the cloudsmith json return empty json
-                        if(packageInfo is null || packageInfo.Count ==0)
-                            return ExitCodes.E9005;
+                        if(packageInfo is null || packageInfo.Count == 0)
+                        {    
+                           return ExitCodes.E9005;
+                        }
                         else
+                        {
                             downloadUrl = packageInfo.Where(w => w.Version == _fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
+                        }
                     }
 
                    
