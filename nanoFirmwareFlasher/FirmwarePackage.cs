@@ -77,7 +77,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // reference targets
             var repoName = _stable ? _refTargetsStableRepo : _refTargetsDevRepo;
-            string requestUri = $"{_cloudsmithPackages}/{repoName}/?page=1&query={_targetName} latest";
+            // get the firmware version if it is defined
+            var fwVersion = string.IsNullOrEmpty(_fwVersion) ? "latest" : _fwVersion;
+            string requestUri = $"{_cloudsmithPackages}/{repoName}/?page=1&query={_targetName} {fwVersion}";
 
             string downloadUrl = string.Empty;
 
@@ -157,7 +159,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         // try with community targets
-                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsepo}/?page=1&query={_targetName} latest";
+
+                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsepo}/?page=1&query={_targetName} {fwVersion}";
                         repoName = _communityTargetsepo;
 
                         response = await _cloudsmithClient.GetAsync(requestUri);
@@ -186,10 +189,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (string.IsNullOrEmpty(_fwVersion))
                     {
                         _fwVersion = packageInfo.ElementAt(0).Version;
+                        // grab download URL
+                        downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
+                    }
+                    else
+                    {
+                        //get the download Url from the Cloudsmith Package info
+                        // addition check if the cloudsmith json return empty json
+                        if(packageInfo is null || packageInfo.Count == 0)
+                        {    
+                           return ExitCodes.E9005;
+                        }
+                        else
+                        {
+                            downloadUrl = packageInfo.Where(w => w.Version == _fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
+                        }
                     }
 
-                    // grab download URL
-                    downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
+                   
 
                     // set exposed property
                     Version = _fwVersion;
