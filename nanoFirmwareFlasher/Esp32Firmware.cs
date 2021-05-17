@@ -21,6 +21,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         internal List<int> SupportedFlashSizes => new List<int> { 0x200000, 0x400000, 0x800000, 0x1000000 };
 
+        internal string BootloaderPath;
+
         internal Dictionary<int, string> FlashPartitions;
 
 
@@ -53,11 +55,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (executionResult == ExitCodes.OK)
             {
+                BootloaderPath = "bootloader.bin";
+                
                 // get ESP32 partitions
                 FlashPartitions = new Dictionary<int, string>()
                 {
 				    // bootloader goes to 0x1000
-				    { 0x1000, Path.Combine(LocationPath, "bootloader.bin") },
+				    { 0x1000, Path.Combine(LocationPath, BootloaderPath) },
 
 				    // nanoCLR goes to 0x10000
 				    { 0x10000, Path.Combine(LocationPath, "nanoCLR.bin") },
