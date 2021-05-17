@@ -48,6 +48,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly int _flashFrequency = 0;
 
         /// <summary>
+        /// Partition table size, when specified in the options.
+        /// </summary>
+        private readonly PartitionTableSize? _partitionTableSize = null;
+
+        /// <summary>
         /// The size of the flash in bytes; 4 MB = 0x40000 bytes
         /// </summary>
         private int _flashSize = -1;
@@ -149,11 +154,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="baudRate">The baud rate for the serial port.</param>
         /// <param name="flashMode">The flash mode for the esptool</param>
         /// <param name="flashFrequency">The flash frequency for the esptool</param>
+        /// <param name="partitionTableSize">Partition table size to use</param>
         internal EspTool(
             string serialPort, 
             int baudRate,
             string flashMode, 
-            int flashFrequency)
+            int flashFrequency,
+            PartitionTableSize? partitionTableSize)
         {
             // open/close the port to see if it is available
             using (SerialPort test = new SerialPort(serialPort, baudRate))
@@ -180,6 +187,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _baudRate = baudRate;
             _flashMode = flashMode;
             _flashFrequency = flashFrequency;
+            _partitionTableSize = partitionTableSize;
         }
 
         /// <summary>

@@ -89,6 +89,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool stable, 
             string applicationPath,
             string deploymentAddress,
+            PartitionTableSize? partitionTableSize,
             VerbosityLevel verbosity)
         {
             ExitCodes operationResult = ExitCodes.OK;
@@ -103,7 +104,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Esp32Firmware firmware = new Esp32Firmware(
                 targetName, 
                 fwVersion, 
-                stable)
+                stable,
+                partitionTableSize)
             {
                 Verbosity = verbosity
             };

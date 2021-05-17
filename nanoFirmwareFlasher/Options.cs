@@ -98,6 +98,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Flash frequency to use [MHz].")]
         public int Esp32FlashFrequency { get; set; }
 
+        /// <summary>
+        /// Allowed values:
+        /// 2
+        /// 4
+        /// 8
+        /// 16
+        /// </summary>
+        [Option(
+            "partitiontablesize",
+            Required = false,
+            Default = null,
+            HelpText = "Partition table size to use. Valid sizes are: 2, 4, 8 and 16.")]
+        public PartitionTableSize? Esp32PartitionTableSize { get; set; }
         #endregion
 
 
@@ -245,4 +258,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         Diagnostic = 4
     }
 
+    public enum PartitionTableSize
+    {
+        _2 = 2,
+        _4 = 4,
+        _8 = 8,
+        _16 = 16,
+    }
 }

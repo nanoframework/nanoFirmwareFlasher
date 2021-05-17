@@ -229,7 +229,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         o.SerialPort,
                         o.BaudRate,
                         o.Esp32FlashMode,
-                        o.Esp32FlashFrequency);
+                        o.Esp32FlashFrequency,
+                        o.Esp32PartitionTableSize);
                 }
                 catch(Exception)
                 {
@@ -314,6 +315,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.Stable,
                             o.DeploymentImage,
                             null,
+                            o.Esp32PartitionTableSize,
                             verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
@@ -373,6 +375,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             false,
                             o.DeploymentImage,
                             appFlashAddress,
+                            o.Esp32PartitionTableSize,
                             verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
