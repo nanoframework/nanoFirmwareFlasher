@@ -168,9 +168,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // need to get deployment address here
                 // length must both be multiples of the SPI flash erase sector size. This is 0x1000 (4096) bytes for supported flash chips.
 
-                var flashPartition = firmware.FlashPartitions.First();
-
-                var fileStream = File.OpenRead(flashPartition.Value);
+                var fileStream = File.OpenRead(firmware.BootloaderPath);
 
                 uint fileLength = (uint)Math.Ceiling((decimal)fileStream.Length / 0x1000) * 0x1000;
 
