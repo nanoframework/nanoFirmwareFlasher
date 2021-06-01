@@ -1,8 +1,10 @@
 trigger:
   branches:
-    include: ["main", "develop", "release*", "refs/tags/*" ]
+    include: [main, develop, "release-*" ]
   paths:
-    exclude: [ "doc", "*.md", ".gitignore", "README.md" ]
+    exclude: [README.md, LICENSE.md, NuGet.Config, .github_changelog_generator, .gitignore]
+  tags:
+    include: ["v*"]
 
 # no pr config, we want to trigger builds for all PRs on all branches
 
@@ -129,7 +131,7 @@ jobs:
     vmImage: 'windows-2019'
 
   variables:
-    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    DOTNET_NOLOGO: true
     buildPlatform: 'x64'
     buildConfiguration: 'Release'
     solution: 'nanoFirmwareFlasher.sln'
@@ -145,10 +147,7 @@ jobs:
       git config --global user.name "nfbot"
     displayName: Setup git identity
 
-  - task: NuGetToolInstaller@0
-    displayName: 'Install specifc version of NuGet'
-    inputs:
-      versionSpec: '5.8.0'
+  - template: azure-pipelines-templates/install-nuget.yml@templates
 
   - task: UseDotNet@2
     displayName: Install .NET Core SDK
@@ -261,9 +260,9 @@ jobs:
       ArtifactName: deployables
       ArtifactType: Container
 
-  # push NuGet packages to AzureArtifacts feed (always happens except on PR builds)
+  # push NuGet packages to AzureArtifacts feed (happens on all builds except PRs)
   - task: NuGetCommand@2
-    condition: succeeded()
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
     displayName: Push NuGet packages to AzureArtifacts
     continueOnError: true
     inputs:
@@ -272,7 +271,7 @@ jobs:
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts-nanoFirmwareFlasher'
 
-  # push NuGet class lib package to NuGet (happens on tag builds for any branch)
+  # push NuGet class lib package to NuGet (happens on all builds except PRs)
   - task: NuGetCommand@2
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
     displayName: Push NuGet packages to NuGet
