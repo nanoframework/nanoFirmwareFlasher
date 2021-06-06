@@ -40,7 +40,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2019);
 
             // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
-            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            string codeBase = Assembly.GetExecutingAssembly().Location;
             var uri = new UriBuilder(codeBase);
             var fullPath = Uri.UnescapeDataString(uri.Path);
             ExecutingPath = Path.GetDirectoryName(fullPath);

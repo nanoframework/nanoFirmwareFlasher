@@ -150,10 +150,10 @@ jobs:
   - template: azure-pipelines-templates/install-nuget.yml@templates
 
   - task: UseDotNet@2
-    displayName: Install .NET Core SDK
+    displayName: Install .NET SDK
     inputs:
       packageType: sdk
-      version: 3.1.101
+      version: 5.0.300
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
@@ -164,7 +164,7 @@ jobs:
       feedsToUse: config
       nugetConfigPath: NuGet.Config
 
-  - script: dotnet build -r win-x64 -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
+  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
     displayName: Build NuGet package
 
   - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
