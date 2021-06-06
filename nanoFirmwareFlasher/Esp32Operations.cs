@@ -92,7 +92,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             PartitionTableSize? partitionTableSize,
             VerbosityLevel verbosity)
         {
-            ExitCodes operationResult = ExitCodes.OK;
+            var operationResult = ExitCodes.OK;
             uint address = 0;
 
             // if a target name wasn't specified use the default (and only available) ESP32 target
@@ -142,7 +142,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     firmware.FlashPartitions = new Dictionary<int, string>()
                     {
                         {
-                            updateFw ? firmware.DeploymentPartionAddress : (int)address,
+                            updateFw ? firmware.DeploymentPartitionAddress : (int)address,
                             applicationBinary
                         }
                     };

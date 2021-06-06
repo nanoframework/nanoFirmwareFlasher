@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
-    public enum ExitCodes : int
+    public enum ExitCodes
     {
         /// <summary>
         /// Execution terminated without any error
