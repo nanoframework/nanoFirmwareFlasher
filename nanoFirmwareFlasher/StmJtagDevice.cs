@@ -62,9 +62,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else
             {
                 // JTAG id supplied, try to connect to device to check availability
-                var cliOuput = RunStLinkCli($"-c SN={jtagId} HOTPLUG");
+                var cliOutput = RunStLinkCli($"-c SN={jtagId} HOTPLUG");
 
-                if (!cliOuput.Contains("Connected via SWD."))
+                if (!cliOutput.Contains("Connected via SWD."))
                 {
                     throw new CantConnectToJtagDeviceException();
                 }
@@ -90,9 +90,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // try to connect to device with RESET
-            var cliOuput = RunStLinkCli($"-c SN={DeviceId} UR");
+            var cliOutput = RunStLinkCli($"-c SN={DeviceId} UR");
 
-            if (!cliOuput.Contains("Connected via SWD."))
+            if (!cliOutput.Contains("Connected via SWD."))
             {
                 return ExitCodes.E5002;
             }
@@ -105,9 +105,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.Write("Mass erase device...");
                 }
 
-                cliOuput = RunStLinkCli($"-c SN={DeviceId} UR -ME");
+                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -ME");
 
-                if (!cliOuput.Contains("Flash memory erased."))
+                if (!cliOutput.Contains("Flash memory erased."))
                 {
                     return ExitCodes.E5005;
                 }
@@ -142,9 +142,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                cliOuput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P {hexFile}");
+                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P \"{hexFile}\"");
 
-                if (!cliOuput.Contains("Programming Complete."))
+                if (!cliOutput.Contains("Programming Complete."))
                 {
                     return ExitCodes.E5006;
                 }
@@ -211,9 +211,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // try to connect to device with RESET
-            var cliOuput = RunStLinkCli($"-c SN={DeviceId} UR");
+            var cliOutput = RunStLinkCli($"-c SN={DeviceId} UR");
 
-            if (!cliOuput.Contains("Connected via SWD."))
+            if (!cliOutput.Contains("Connected via SWD."))
             {
                 return ExitCodes.E5002;
             }
@@ -226,9 +226,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.Write("Mass erase device...");
                 }
 
-                cliOuput = RunStLinkCli($"-c SN={DeviceId} UR -ME");
+                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -ME");
 
-                if (!cliOuput.Contains("Flash memory erased."))
+                if (!cliOutput.Contains("Flash memory erased."))
                 {
                     Console.WriteLine("");
                     return ExitCodes.E5005;
@@ -265,9 +265,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
-                cliOuput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P {binFile} {addresses.ElementAt(index++)}");
+                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P \"{binFile}\" {addresses.ElementAt(index++)}");
 
-                if (!cliOuput.Contains("Programming Complete."))
+                if (!cliOutput.Contains("Programming Complete."))
                 {
                     return ExitCodes.E5006;
                 }
@@ -291,7 +291,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>A collection of connected STM JTAG devices.</returns>
         public static List<string> ListDevices()
         {
-            var cliOuput = RunStLinkCli("-List");
+            var cliOutput = RunStLinkCli("-List");
 
             // (successful) output from the above is
             //
@@ -311,7 +311,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string regexPattern = @"(?<=SN:\s)(?<serial>.{24})";
 
             var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
-            var jtagMatches = myRegex1.Matches(cliOuput);
+            var jtagMatches = myRegex1.Matches(cliOutput);
 
             if(jtagMatches.Count == 0)
             {
@@ -328,9 +328,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public ExitCodes ResetMcu()
         {
             // try to connect to device with RESET
-            var cliOuput = RunStLinkCli($"-c SN={DeviceId} UR");
+            var cliOutput = RunStLinkCli($"-c SN={DeviceId} UR");
 
-            if (!cliOuput.Contains("Connected via SWD."))
+            if (!cliOutput.Contains("Connected via SWD."))
             {
                 return ExitCodes.E5002;
             }
@@ -340,9 +340,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.Write("Reset MCU on device...");
             }
 
-            cliOuput = RunStLinkCli("-Rst");
+            cliOutput = RunStLinkCli("-Rst");
 
-            if (!cliOuput.Contains("MCU Reset."))
+            if (!cliOutput.Contains("MCU Reset."))
             {
                 Console.WriteLine("");
                 return ExitCodes.E5010;
