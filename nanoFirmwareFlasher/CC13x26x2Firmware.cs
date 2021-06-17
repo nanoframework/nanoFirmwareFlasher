@@ -13,7 +13,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// </summary>
     internal class CC13x26x2Firmware : FirmwarePackage
     {
-        public string nanoCLRFile { get; internal set; }
+        public string nanoCLRFile { get; private set; }
 
         public CC13x26x2Firmware(string targetName, string fwVersion, bool stable)
             :base(targetName, fwVersion, stable)

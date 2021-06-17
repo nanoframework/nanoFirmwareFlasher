@@ -22,7 +22,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// GUID of interface class declared by ST DFU devices
         /// </summary>
-        private static Guid s_dfuGuid = new Guid("3FE809AB-FB91-4CB5-A643-69670D52366E");
+        private static Guid s_dfuGuid = new("3FE809AB-FB91-4CB5-A643-69670D52366E");
 
         private readonly string _deviceId;
 
@@ -59,8 +59,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             ManagementObjectCollection usbDevicesCollection;
 
             // build a managed object searcher to find USB devices with the ST DFU VID & PID along with the device description
-            using (var searcher = new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE DeviceID Like ""USB\\VID_0483&PID_DF11%"" AND Description Like ""STM Device in DFU Mode"" "))
+            using (var searcher = new ManagementObjectSearcher(
+                @"SELECT * FROM Win32_PnPEntity WHERE DeviceID Like ""USB\\VID_0483&PID_DF11%"" AND Description Like ""STM Device in DFU Mode"" "))
+            {
                 usbDevicesCollection = searcher.Get();
+            }
 
             // are we to connect to a specific device?
             if (deviceId == null)
@@ -71,7 +74,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else
             {
                 // yes, filter the connect devices collection with the requested device ID
-                deviceId = usbDevicesCollection.OfType<ManagementObject>().Select(mo => mo.Properties["DeviceID"].Value as string).FirstOrDefault(d => d.Contains(deviceId));
+                deviceId = usbDevicesCollection.OfType<ManagementObject>()
+                    .Select(mo => mo.Properties["DeviceID"].Value as string)
+                    .Where(d => d is not null)
+                    .FirstOrDefault(d => d.Contains(deviceId));
             }
 
             // sanity check for no device found
@@ -144,12 +150,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
             ManagementObjectCollection usbDevicesCollection;
 
             // build a managed object searcher to find USB devices with the ST DFU VID & PID along with the device description
-            using (var searcher = new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE DeviceID Like ""USB\\VID_0483&PID_DF11%"" AND Description Like ""STM Device in DFU Mode"" "))
+            using (var searcher = new ManagementObjectSearcher(
+                @"SELECT * FROM Win32_PnPEntity WHERE DeviceID Like ""USB\\VID_0483&PID_DF11%"" AND Description Like ""STM Device in DFU Mode"" "))
+            {
                 usbDevicesCollection = searcher.Get();
+            }
 
             // the split bellow is to get only the ID part of the USB ID
             // that follows the pattern: USB\\VID_0483&PID_DF11\\3380386D3134
-            return usbDevicesCollection.OfType<ManagementObject>().Select(mo => (mo.Properties["DeviceID"].Value as string).Split('\\', ' ')[2]).ToList();
+            return usbDevicesCollection.OfType<ManagementObject>()
+                .Select(mo => mo.Properties["DeviceID"].Value as string)
+                .Where(deviceId => deviceId is not null)
+                .Select(deviceId => deviceId.Split('\\', ' ')[2])
+                .ToList();
         }
 
         /// <summary>
@@ -165,13 +178,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // create the process start info
 
             // prepare the process start of the esptool
-            Process dfuCommandTool = new Process();
-            dfuCommandTool.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stdfu", "qmk-dfuse.exe"), commandWithArguments)
+            var dfuCommandTool = new Process
             {
-                WorkingDirectory = Path.Combine(Program.ExecutingPath, "stdfu"),
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
+                StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stdfu", "qmk-dfuse.exe"),
+                    commandWithArguments)
+                {
+                    WorkingDirectory = Path.Combine(Program.ExecutingPath, "stdfu"),
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                }
             };
 
             // start esptool and wait for exit
@@ -188,7 +204,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EspToolExecutionException("Error starting DfuSeCommand!");
             }
 
-            StringBuilder messageBuilder = new StringBuilder();
+            var messageBuilder = new StringBuilder();
 
             // showing progress is a little bit tricky
             if (Verbosity >= VerbosityLevel.Detailed)

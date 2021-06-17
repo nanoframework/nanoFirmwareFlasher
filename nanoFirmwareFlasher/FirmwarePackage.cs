@@ -21,27 +21,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal abstract class FirmwarePackage : IDisposable
     {
         // HttpClient is intended to be instantiated once per application, rather than per-use.
-        static HttpClient _cloudsmithClient = new HttpClient();
+        static readonly HttpClient _cloudsmithClient = new();
 
         /// <summary>
         /// Uri of Cloudsmith API
         /// </summary>
-        internal const string _cloudsmithPackages = "https://api.cloudsmith.io/v1/packages/net-nanoframework";
+        private const string _cloudsmithPackages = "https://api.cloudsmith.io/v1/packages/net-nanoframework";
 
-        internal const string _refTargetsDevRepo = "nanoframework-images-dev";
-        internal const string _refTargetsStableRepo = "nanoframework-images";
-        internal const string _communityTargetsepo = "nanoframework-images-community-targets";
+        private const string _refTargetsDevRepo = "nanoframework-images-dev";
+        private const string _refTargetsStableRepo = "nanoframework-images";
+        private const string _communityTargetsRepo = "nanoframework-images-community-targets";
 
-        internal string _targetName;
-        internal string _fwVersion;
-        internal bool _stable;
+        private readonly string _targetName;
+        private string _fwVersion;
+        private readonly bool _stable;
 
-        internal const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
+        private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
 
         /// <summary>
         /// Path with the location of the downloaded firmware.
         /// </summary>
-        public string LocationPath { get; internal set; }
+        public string LocationPath { get; private set; }
 
         /// <summary>
         /// Version of the available firmware.
@@ -84,7 +84,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string downloadUrl = string.Empty;
 
             // flag to signal if the work-flow step was successful
-            bool stepSuccesful = false;
+            bool stepSuccessful = false;
 
             // flag to skip download if the fw package exists and it's recent
             bool skipDownload = false;
@@ -160,10 +160,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         // try with community targets
 
-                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsepo}/?page=1&query={_targetName} {fwVersion}";
-                        repoName = _communityTargetsepo;
+                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsRepo}/?page=1&query={_targetName} {fwVersion}";
 
-                        response = await _cloudsmithClient.GetAsync(requestUri);
+                        await _cloudsmithClient.GetAsync(requestUri);
 
                         if (responseBody == "[]")
                         {
@@ -211,7 +210,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // set exposed property
                     Version = _fwVersion;
 
-                    stepSuccesful = true;
+                    stepSuccessful = true;
                 }
                 catch
                 {
@@ -231,11 +230,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // check for file existence or download one
-            if (stepSuccesful &&
+            if (stepSuccessful &&
                 !skipDownload)
             {
                 // reset flag
-                stepSuccesful = false;
+                stepSuccessful = false;
 
                 fwFileName = $"{_targetName}-{_fwVersion}.zip";
 
@@ -257,15 +256,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         {
                             if (fwFileResponse.IsSuccessStatusCode)
                             {
-                                using (var readStream = await fwFileResponse.Content.ReadAsStreamAsync())
-                                {
-                                    using (var fileStream = new FileStream(
-                                        Path.Combine(LocationPath, fwFileName),
-                                        FileMode.Create, FileAccess.Write))
-                                    {
-                                        await readStream.CopyToAsync(fileStream);
-                                    }
-                                }
+                                using var readStream = await fwFileResponse.Content.ReadAsStreamAsync();
+                                using var fileStream = new FileStream(
+                                    Path.Combine(LocationPath, fwFileName),
+                                    FileMode.Create, FileAccess.Write);
+                                await readStream.CopyToAsync(fileStream);
                             }
                             else
                             {
@@ -278,7 +273,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             Console.WriteLine("OK");
                         }
 
-                        stepSuccesful = true;
+                        stepSuccessful = true;
                     }
                     catch
                     {
@@ -288,11 +283,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 else
                 {
                     // file already exists
-                    stepSuccesful = true;
+                    stepSuccessful = true;
                 }
             }
 
-            if (!stepSuccesful)
+            if (!stepSuccessful)
             {
                 // couldn't download the fw file
                 // check if there is one available
@@ -363,11 +358,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         #region IDisposable Support
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool _disposedValue = false; // To detect redundant calls
 
-        protected virtual void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -388,7 +383,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 }
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 

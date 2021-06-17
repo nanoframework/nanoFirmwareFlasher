@@ -81,22 +81,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
             /// <summary>
             /// Version of the esptool.py
             /// </summary>
-            internal Version ToolVersion { get; private set; }
+            internal Version ToolVersion { get; }
 
             /// <summary>
             /// Name of the ESP32 chip
             /// </summary>
-            internal string ChipName { get; private set; }
+            internal string ChipName { get; }
 
             /// <summary>
             /// ESP32 chip features
             /// </summary>
-            internal string Features { get; private set; }
+            internal string Features { get; }
 
             /// <summary>
             /// MAC address of the ESP32 chip
             /// </summary>
-            internal PhysicalAddress MacAddress { get; private set; }
+            internal PhysicalAddress MacAddress { get; }
 
             /// <summary>
             /// Flash manufacturer ID.
@@ -104,7 +104,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             /// <remarks>
             /// See http://code.coreboot.org/p/flashrom/source/tree/HEAD/trunk/flashchips.h for more details.
             /// </remarks>
-            internal byte FlashManufacturerId { get; private set; }
+            internal byte FlashManufacturerId { get; }
 
             /// <summary>
             /// Flash device type ID.
@@ -112,17 +112,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
             /// <remarks>
             /// See http://code.coreboot.org/p/flashrom/source/tree/HEAD/trunk/flashchips.h for more details.
             /// </remarks>
-            internal short FlashDeviceModelId { get; private set; }
+            internal short FlashDeviceModelId { get; }
 
             /// <summary>
             /// The size of the flash in bytes; 4 MB = 0x40000 bytes
             /// </summary>
-            internal int FlashSize { get; private set; }
+            internal int FlashSize { get; }
 
             /// <summary>
             /// Constructor
             /// </summary>
             /// <param name="toolVersion">Version of the esptool.py</param>
+            /// <param name="chipName">ESP32 chip name</param>
             /// <param name="features">ESP32 chip features</param>
             /// <param name="macAddress">MAC address of the ESP32 chip</param>
             /// <param name="flashManufacturerId">Flash manufacturer ID</param>
@@ -163,7 +164,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             PartitionTableSize? partitionTableSize)
         {
             // open/close the port to see if it is available
-            using (SerialPort test = new SerialPort(serialPort, baudRate))
+            using (var test = new SerialPort(serialPort, baudRate))
             {
                 try
                 {
@@ -202,7 +203,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EspToolExecutionException(messages);
             }
 
-            Match match = Regex.Match(messages, "(esptool.py v)(?<version>[0-9.]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)");
+            var match = Regex.Match(messages, "(esptool.py v)(?<version>[0-9.]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)");
             if (!match.Success)
             {
                 throw new EspToolExecutionException(messages);
@@ -239,7 +240,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // collect and return all information
             // convert the flash size into bytes
             string unit = size.Substring(size.Length - 2).ToUpperInvariant();
-            _flashSize = int.Parse(size.Remove(size.Length - 2)) * (unit == "MB" ? 0x100000 : unit == "KB" ? 0x400 : 1);
+            _flashSize = int.Parse(size.Remove(size.Length - 2)) * unit switch
+            {
+                "MB" => 0x100000,
+                "KB" => 0x400,
+                _ => 1,
+            };
 
             return new DeviceInfo(
                 new Version(version),
@@ -257,8 +263,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="backupFilename">Backup file including full path</param>
         /// <param name="flashSize">Flash size in bytes</param>
         /// <returns>true if successful</returns>
-        internal ExitCodes BackupFlash(
-            string backupFilename,
+        internal void BackupFlash(string backupFilename,
             int flashSize)
         {
             // execute read_flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
@@ -267,7 +272,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new ReadEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
+            var match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new ReadEsp32FlashException(messages);
@@ -277,8 +282,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 Console.WriteLine(match.Groups["message"].ToString().Trim());
             }
-
-            return ExitCodes.OK;
         }
 
         /// <summary>
@@ -293,7 +296,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EraseEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, "(?<message>Chip erase completed successfully.*)(.*?\n)*");
+            var match = Regex.Match(messages, "(?<message>Chip erase completed successfully.*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new EraseEsp32FlashException(messages);
@@ -322,7 +325,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EraseEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, "(?<message>Erase completed successfully.*)(.*?\n)*");
+            var match = Regex.Match(messages, "(?<message>Erase completed successfully.*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new EraseEsp32FlashException(messages);
@@ -344,12 +347,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal ExitCodes WriteFlash(Dictionary<int, string> partsToWrite)
         {
             // put the parts to flash together and prepare the regex for parsing the output
-            StringBuilder partsArguments = new StringBuilder();
-            StringBuilder regexPattern = new StringBuilder();
+            var partsArguments = new StringBuilder();
+            var regexPattern = new StringBuilder();
             int counter = 1;
-            List<string> regexGroupNames = new List<string>();
+            var regexGroupNames = new List<string>();
 
-            foreach (KeyValuePair<int, string> part in partsToWrite)
+            foreach (var part in partsToWrite)
             {
                 // start address followed by filename
                 partsArguments.Append($"0x{part.Key:X} \"{part.Value}\" ");
@@ -360,15 +363,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // if flash size was detected already use it for the --flash_size parameter; otherwise use the default "detect"
-            string flashSize = "detect";
-            if (_flashSize >= 0x100000)
+            string flashSize = _flashSize switch
             {
-                flashSize = $"{_flashSize / 0x100000}MB";
-            }
-            else if (_flashSize > 0)
-            {
-                flashSize = $"{_flashSize / 0x400}KB";
-            }
+                >= 0x100000 => $"{_flashSize / 0x100000}MB",
+                > 0 => $"{_flashSize / 0x400}KB",
+                _ => "detect",
+            };
 
             // execute write_flash command and parse the result; progress message can be found be searching for linefeed
             if (!RunEspTool($"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}", false, true, '\r', out string messages))
@@ -376,7 +376,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new WriteEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, regexPattern.ToString());
+            var match = Regex.Match(messages, regexPattern.ToString());
             if (!match.Success)
             {
                 throw new WriteEsp32FlashException(messages);
@@ -454,7 +454,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EspToolExecutionException("Error starting esptool!");
             }
 
-            StringBuilder messageBuilder = new StringBuilder();
+            var messageBuilder = new StringBuilder();
 
             // showing progress is a little bit tricky
             if (progressTestChar.HasValue && Verbosity >= VerbosityLevel.Detailed)
@@ -469,7 +469,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         if (next != -1)
                         {
                             // append the char to the message buffer
-                            char nextChar = (char)next;
                             messageBuilder.Append((char)next);
                             // try to find a progress message
                             string progress = FindProgress(messageBuilder, progressTestChar.Value);
@@ -519,7 +518,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             // search for the given char (backspace or linefeed)
             // only if we have 100 chars at minimum and only if the last char is the test char
-            if (messageBuilder.Length > 100 && messageBuilder[messageBuilder.Length - 1] == progressTestChar && messageBuilder[messageBuilder.Length - 2] != progressTestChar)
+            if (messageBuilder.Length > 100 && 
+                messageBuilder[messageBuilder.Length - 1] == progressTestChar && 
+                messageBuilder[messageBuilder.Length - 2] != progressTestChar)
             {
                 // trim the test char and convert \r\n into \r
                 string progress = messageBuilder.ToString().Trim(progressTestChar).Replace("\r\n", "\r");
