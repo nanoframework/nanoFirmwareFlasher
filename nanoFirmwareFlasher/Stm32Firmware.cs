@@ -17,11 +17,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         public bool HasDfuPackage => !string.IsNullOrEmpty(DfuPackage);
 
-        public string nanoBooterFile { get; internal set; }
+        public string NanoBooterFile { get; private set; }
 
-        public string nanoCLRFile { get; internal set; }
+        public string NanoClrFile { get; private set; }
 
-        public string DfuPackage { get; internal set; }
+        public string DfuPackage { get; private set; }
 
         public Stm32Firmware(string targetName, string fwVersion, bool stable)
             :base(targetName, fwVersion, stable)
@@ -35,13 +35,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (executionResult == ExitCodes.OK)
             {
-                var dfuFile = Directory.EnumerateFiles(LocationPath, "*.dfu");
-                if (dfuFile.Count() > 0)
+                var dfuFile = Directory.EnumerateFiles(LocationPath, "*.dfu").ToArray();
+                if (dfuFile.Any())
                 {
-                    DfuPackage = dfuFile.FirstOrDefault();
+                    DfuPackage = dfuFile.First();
                 }
-                nanoBooterFile = Directory.EnumerateFiles(LocationPath, "nanoBooter.hex").FirstOrDefault();
-                nanoCLRFile = Directory.EnumerateFiles(LocationPath, "nanoCLR.hex").FirstOrDefault();
+                NanoBooterFile = Directory.EnumerateFiles(LocationPath, "nanoBooter.hex").FirstOrDefault();
+                NanoClrFile = Directory.EnumerateFiles(LocationPath, "nanoCLR.hex").FirstOrDefault();
             }
 
             return executionResult;

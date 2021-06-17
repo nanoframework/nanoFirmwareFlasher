@@ -57,8 +57,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (updateFw)
             {
-                filesToFlash.Add(firmware.nanoBooterFile);
-                filesToFlash.Add(firmware.nanoCLRFile);
+                filesToFlash.Add(firmware.NanoBooterFile);
+                filesToFlash.Add(firmware.NanoClrFile);
             }
 
             // need to include application file?
@@ -125,7 +125,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else if (connectedStJtagDevices.Count != 0)
             {
-                // JATG device
+                // JTAG device
                 jtagDevice = new StmJtagDevice(jtagId);
 
                 if (!jtagDevice.DevicePresent)
@@ -154,7 +154,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (programResult == ExitCodes.OK && isApplicationBinFile)
                 {
                     // now program the application file
-                    programResult = jtagDevice.FlashBinFiles(new List<string>() { applicationPath }, new List<string>() { deploymentAddress });
+                    programResult = jtagDevice.FlashBinFiles(new [] { applicationPath }, new [] { deploymentAddress });
                 }
 
                 if(updateFw)

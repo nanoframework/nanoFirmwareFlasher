@@ -19,7 +19,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// ESP32 nanoCLR is available for 2MB, 4MB, 8MB and 16MB flash sizes
         /// </summary>
-        internal List<int> SupportedFlashSizes => new List<int> { 0x200000, 0x400000, 0x800000, 0x1000000 };
+        private List<int> SupportedFlashSizes => new() { 0x200000, 0x400000, 0x800000, 0x1000000 };
 
         internal string BootloaderPath;
 
@@ -30,7 +30,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Address of the deployment partition.
         /// </summary>
-        internal int DeploymentPartionAddress =>  0x110000;
+        internal int DeploymentPartitionAddress =>  0x110000;
 
         public Esp32Firmware(string targetName, string fwVersion, bool stable, PartitionTableSize? partitionTableSize)
             :base(targetName, fwVersion, stable)
@@ -67,7 +67,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 BootloaderPath = "bootloader.bin";
                 
                 // get ESP32 partitions
-                FlashPartitions = new Dictionary<int, string>()
+                FlashPartitions = new Dictionary<int, string>
                 {
 				    // bootloader goes to 0x1000
 				    { 0x1000, Path.Combine(LocationPath, BootloaderPath) },

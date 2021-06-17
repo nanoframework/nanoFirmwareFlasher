@@ -40,7 +40,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Creates a new <see cref="StmJtagDevice"/>. If a JTAG device ID is provided it will try to connect to that device.
         /// </summary>
-        /// <param name="deviceId">ID of the device to connect to.</param>
         public StmJtagDevice(string jtagId = null)
         {
             if (string.IsNullOrEmpty(jtagId))
@@ -78,15 +77,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Flash the HEX supplied to the connected device.
         /// </summary>
         /// <param name="files"></param>
-        public ExitCodes FlashHexFiles(IEnumerable<string> files)
+        public ExitCodes FlashHexFiles(IList<string> files)
         {
             // check file existence
-            foreach (string f in files)
+            if (files.Any(f => !File.Exists(f)))
             {
-                if (!File.Exists(f))
-                {
-                    return ExitCodes.E5003;
-                }
+                return ExitCodes.E5003;
             }
 
             // try to connect to device with RESET
@@ -167,21 +163,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="files"></param>
         /// <param name="addresses"></param>
-        public ExitCodes FlashBinFiles(IEnumerable<string> files, IEnumerable<string> addresses)
+        public ExitCodes FlashBinFiles(IList<string> files, IList<string> addresses)
         {
             // check file existence
-            foreach (string f in files)
+            if (files.Any(f => !File.Exists(f)))
             {
-                if (!File.Exists(f))
-                {
-                    return ExitCodes.E5003;
-                }
+                return ExitCodes.E5003;
             }
 
             // check address(es)
 
             // need to match files count
-            if(files.Count() != addresses.Count())
+            if(files.Count != addresses.Count)
             {
                 return ExitCodes.E5009;
             }
@@ -192,21 +185,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     return ExitCodes.E5007;
                 }
-                else
-                {
-                    // format too
-                    if (!address.StartsWith("0x"))
-                    {
-                        return ExitCodes.E5008;
-                    }
 
-                    // try parse
-                    // need to remove the leading 0x and to specify that hexadecimal values are allowed
-                    int dummyAddress;
-                    if (!int.TryParse(address.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out dummyAddress))
-                    {
-                        return ExitCodes.E5008;
-                    }
+                // format too
+                if (!address.StartsWith("0x"))
+                {
+                    return ExitCodes.E5008;
+                }
+
+                // try parse
+                // need to remove the leading 0x and to specify that hexadecimal values are allowed
+                if (!int.TryParse(address.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out _))
+                {
+                    return ExitCodes.E5008;
                 }
             }
 
@@ -308,12 +298,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             //----------------------------------
 
             // set pattern to serial number
-            string regexPattern = @"(?<=SN:\s)(?<serial>.{24})";
+            const string regexPattern = @"(?<=SN:\s)(?<serial>.{24})";
 
             var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
             var jtagMatches = myRegex1.Matches(cliOutput);
 
-            if(jtagMatches.Count == 0)
+            if (jtagMatches.Count == 0)
             {
                 // no JTAG found
                 return new List<string>();
@@ -364,12 +354,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             try
             {
-                Process stLinkCli = new Process();
-                stLinkCli.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stlink", "ST-LINK_CLI.exe"), arguments)
+                var stLinkCli = new Process
                 {
-                    WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink"),
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true
+                    StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stlink", "ST-LINK_CLI.exe"),
+                        arguments)
+                    {
+                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink"),
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true
+                    }
                 };
 
 

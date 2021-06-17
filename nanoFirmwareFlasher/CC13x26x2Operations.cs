@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -24,7 +23,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             VerbosityLevel verbosity)
         {
             bool isApplicationBinFile = false;
-            CC13x26x2Device ccDevice;
 
             // if a target name wasn't specified use the default (and only available) ESP32 target
             if (string.IsNullOrEmpty(targetName))
@@ -101,10 +99,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E7000;
             }
 
-            ccDevice = new CC13x26x2Device(configFile);
+            var ccDevice = new CC13x26x2Device(configFile) {Verbosity = verbosity};
 
             // set verbosity
-            ccDevice.Verbosity = verbosity;
 
             ExitCodes programResult = ExitCodes.OK;
             // write HEX files to flash
@@ -116,7 +113,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (programResult == ExitCodes.OK && isApplicationBinFile)
             {
                 // now program the application file
-                programResult = ccDevice.FlashBinFiles(new List<string>() { applicationPath }, new List<string>() { deploymentAddress });
+                programResult = ccDevice.FlashBinFiles(new [] { applicationPath }, new [] { deploymentAddress });
             }
 
             if (updateFw)
@@ -134,12 +131,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 string driversPath = Path.Combine(Program.ExecutingPath, "uniflash\\emulation\\windows\\xds110_drivers");
 
-                Process uniflashCli = new Process();
-                uniflashCli.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "uniflash", "dpinst_64_eng.exe"), $"/SE /SW /SA /PATH {driversPath}")
+                var uniflashCli = new Process
                 {
-                    WorkingDirectory = Path.Combine(Program.ExecutingPath, "uniflash"),
-                    // need to use ShellExecute to show elevate prompt
-                    UseShellExecute = true,
+                    StartInfo = new ProcessStartInfo(
+                        Path.Combine(Program.ExecutingPath, "uniflash", "dpinst_64_eng.exe"),
+                        $"/SE /SW /SA /PATH {driversPath}")
+                    {
+                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "uniflash"),
+                        // need to use ShellExecute to show elevate prompt
+                        UseShellExecute = true,
+                    }
                 };
 
                 // execution command and...

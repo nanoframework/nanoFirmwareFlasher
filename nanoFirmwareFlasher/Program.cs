@@ -20,28 +20,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         private static ExitCodes _exitCode;
         private static string _extraMessage;
-        private static VerbosityLevel verbosityLevel = VerbosityLevel.Normal;
-        private static AssemblyInformationalVersionAttribute informationalVersionAttribute;
-        private static string headerInfo;
-        private static CopyrightInfo copyrightInfo;
+        private static VerbosityLevel _verbosityLevel = VerbosityLevel.Normal;
+        private static AssemblyInformationalVersionAttribute _informationalVersionAttribute;
+        private static string _headerInfo;
+        private static CopyrightInfo _copyrightInfo;
 
         internal static string ExecutingPath;
 
         public static async Task<int> Main(string[] args)
         {
             // take care of static fields
-            informationalVersionAttribute = Attribute.GetCustomAttribute(
-                Assembly.GetEntryAssembly(),
+            _informationalVersionAttribute = Attribute.GetCustomAttribute(
+                Assembly.GetEntryAssembly()!,
                 typeof(AssemblyInformationalVersionAttribute))
             as AssemblyInformationalVersionAttribute;
 
-            headerInfo = $"nanoFramework Firmware Flasher v{informationalVersionAttribute.InformationalVersion}";
+            _headerInfo = $"nanoFramework Firmware Flasher v{_informationalVersionAttribute.InformationalVersion}";
 
-            copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2019);
+            _copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2019);
 
             // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
-            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-            UriBuilder uri = new UriBuilder(codeBase);
+            string codeBase = Assembly.GetExecutingAssembly().Location;
+            var uri = new UriBuilder(codeBase);
             var fullPath = Uri.UnescapeDataString(uri.Path);
             ExecutingPath = Path.GetDirectoryName(fullPath);
             
@@ -53,11 +53,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // because of short-comings in CommandLine parsing 
                 // need to customize the output to provide a consistent output
                 var parser = new Parser(config => config.HelpWriter = null);
-                var result = parser.ParseArguments<Options>(new string[] { "", ""});
+                var result = parser.ParseArguments<Options>(new[] { "", "" });
 
                 var helpText = new HelpText(
-                    new HeadingInfo(headerInfo),
-                    copyrightInfo)
+                    new HeadingInfo(_headerInfo),
+                    _copyrightInfo)
                         .AddPreOptionsLine("No command was provided.")
                         .AddPreOptionsLine("")
                         .AddPreOptionsLine(HelpText.RenderUsageText(result))
@@ -72,18 +72,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
             var parsedArguments = Parser.Default.ParseArguments<Options>(args);
 
             await parsedArguments
-                .WithParsedAsync(opts => RunOptionsAndReturnExitCodeAsync(opts))
-                .WithNotParsedAsync(errors => HandleErrorsAsync(errors));
+                .WithParsedAsync(RunOptionsAndReturnExitCodeAsync)
+                .WithNotParsedAsync(HandleErrorsAsync);
 
-            if (verbosityLevel > VerbosityLevel.Quiet)
+            if (_verbosityLevel > VerbosityLevel.Quiet)
             {
-                OutputError(_exitCode, verbosityLevel > VerbosityLevel.Normal, _extraMessage);
+                OutputError(_exitCode, _verbosityLevel > VerbosityLevel.Normal, _extraMessage);
             }
 
             return (int)_exitCode;
         }
 
-        static Task HandleErrorsAsync(IEnumerable<Error> errors)
+        private static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
             _exitCode = ExitCodes.E9000;
             return Task.CompletedTask;
@@ -98,31 +98,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // quiet
                 case "q":
                 case "quiet":
-                    verbosityLevel = VerbosityLevel.Quiet;
+                    _verbosityLevel = VerbosityLevel.Quiet;
                     break;
 
                 // minimal
                 case "m":
                 case "minimal":
-                    verbosityLevel = VerbosityLevel.Minimal;
+                    _verbosityLevel = VerbosityLevel.Minimal;
                     break;
 
                 // normal
                 case "n":
                 case "normal":
-                    verbosityLevel = VerbosityLevel.Normal;
+                    _verbosityLevel = VerbosityLevel.Normal;
                     break;
 
                 // detailed
                 case "d":
                 case "detailed":
-                    verbosityLevel = VerbosityLevel.Detailed;
+                    _verbosityLevel = VerbosityLevel.Detailed;
                     break;
 
                 // diagnostic
                 case "diag":
                 case "diagnostic":
-                    verbosityLevel = VerbosityLevel.Diagnostic;
+                    _verbosityLevel = VerbosityLevel.Diagnostic;
                     break;
 
                 default:
@@ -131,8 +131,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
-            Console.WriteLine(headerInfo);
-            Console.WriteLine(copyrightInfo);
+            Console.WriteLine(_headerInfo);
+            Console.WriteLine(_copyrightInfo);
             Console.WriteLine();
 
             #region target processing
@@ -263,7 +263,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return;
                 }
 
-                if (verbosityLevel >= VerbosityLevel.Normal)
+                if (_verbosityLevel >= VerbosityLevel.Normal)
                 {
                     Console.WriteLine($"Connected to ESP32 { esp32Device.ChipName } with MAC address { esp32Device.MacAddress }");
                     Console.WriteLine($"features { esp32Device.Features }");
@@ -274,7 +274,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 // set verbosity
-                espTool.Verbosity = verbosityLevel;
+                espTool.Verbosity = _verbosityLevel;
 
                 // backup requested
                 if (!string.IsNullOrEmpty(o.BackupPath) ||
@@ -283,7 +283,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     try
                     {
                         // backup path specified, backup deployment
-                        _exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, o.BackupPath, o.BackupFile, verbosityLevel);
+                        _exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, o.BackupPath, o.BackupFile, _verbosityLevel);
                         if (_exitCode != ExitCodes.OK)
                         {
                             // done here
@@ -316,7 +316,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.DeploymentImage,
                             null,
                             o.Esp32PartitionTableSize,
-                            verbosityLevel);
+                            _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -376,7 +376,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.DeploymentImage,
                             appFlashAddress,
                             o.Esp32PartitionTableSize,
-                            verbosityLevel);
+                            _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -494,13 +494,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         return;
                     }
 
-                    if (verbosityLevel >= VerbosityLevel.Normal)
+                    if (_verbosityLevel >= VerbosityLevel.Normal)
                     {
                         Console.WriteLine($"Connected to DFU device with ID { dfuDevice.DeviceId }");
                     }
 
                     // set verbosity
-                    dfuDevice.Verbosity = verbosityLevel;
+                    dfuDevice.Verbosity = _verbosityLevel;
 
                     // get mass erase option
                     dfuDevice.DoMassErase = o.MassErase;
@@ -550,13 +550,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             return;
                         }
 
-                        if (verbosityLevel >= VerbosityLevel.Normal)
+                        if (_verbosityLevel >= VerbosityLevel.Normal)
                         {
                             Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.DeviceId }");
                         }
 
                         // set verbosity
-                        jtagDevice.Verbosity = verbosityLevel;
+                        jtagDevice.Verbosity = _verbosityLevel;
 
                         // get mass erase option
                         jtagDevice.DoMassErase = o.MassErase;
@@ -610,7 +610,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             appFlashAddress,
                             o.DfuDeviceId,
                             o.JtagDeviceId,
-                            verbosityLevel);
+                            _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -647,7 +647,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         appFlashAddress,
                                         o.DfuDeviceId,
                                         o.JtagDeviceId,
-                                        verbosityLevel);
+                                        _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -661,7 +661,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         _exitCode = Stm32Operations.ResetMcu(
                                         o.JtagDeviceId,
-                                        verbosityLevel);
+                                        _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -702,7 +702,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             true,
                             o.DeploymentImage,
                             appFlashAddress,
-                            verbosityLevel);
+                            _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -737,7 +737,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         false,
                                         o.DeploymentImage,
                                         appFlashAddress,
-                                        verbosityLevel);
+                                        _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -761,7 +761,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if(o.TIInstallXdsDrivers)
                 {
 
-                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(verbosityLevel);
+                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
 
                     if (_exitCode != ExitCodes.OK)
                     {
@@ -777,39 +777,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static void OutputError(ExitCodes errorCode, bool outputMessage, string extraMessage = null)
         {
-            if (errorCode != ExitCodes.OK)
+            if (errorCode == ExitCodes.OK)
             {
-                if (outputMessage)
+                return;
+            }
+
+            if (outputMessage)
+            {
+                Console.Write($"Error {errorCode}");
+                
+                var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
+
+                if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
                 {
-                    Console.Write($"Error {errorCode}");
+                    Console.Write($": { exitCodeDisplayName.Name }");
+                }
+
+                if (string.IsNullOrEmpty(extraMessage))
+                {
+                    Console.WriteLine();
                 }
                 else
                 {
-                    Console.Write($"{errorCode}");
+                    Console.WriteLine($" ({ extraMessage })");
                 }
-
-                if (outputMessage)
-                {
-                    var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
-
-                    if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
-                    {
-                        Console.Write($": { exitCodeDisplayName.Name }");
-                    }
-
-                    if (string.IsNullOrEmpty(extraMessage))
-                    {
-                        Console.WriteLine();
-                    }
-                    else
-                    {
-                        Console.WriteLine($" ({ extraMessage })");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("");
-                }
+            }
+            else
+            {
+                Console.Write($"{errorCode}");
+                Console.WriteLine();
             }
         }
     }

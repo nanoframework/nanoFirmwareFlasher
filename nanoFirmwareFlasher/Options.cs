@@ -57,13 +57,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "hexfile",
             Required = false,
             HelpText = "HEX file(s) to be flashed into the device. Only JTAG connected targets are supported.")]
-        public IEnumerable<string> HexFile { get; set; }
+        public IList<string> HexFile { get; set; }
 
         [Option(
             "binfile",
             Required = false,
             HelpText = "BIN file(s) to be flashed into the device.")]
-        public IEnumerable<string> BinFile { get; set; }
+        public IList<string> BinFile { get; set; }
 
         #endregion
 
@@ -219,7 +219,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "address",
             Required = false,
             HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with -binfile argument or flashing a deployment image with -deployment argument.")]
-        public IEnumerable<string> FlashAddress { get; set; }
+        public IList<string> FlashAddress { get; set; }
 
         [Option(
             "reset",
@@ -232,21 +232,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
 
         [Usage(ApplicationAlias = "nanoff")]
-        public static IEnumerable<Example> Examples
-        {
-            get
+        public static IEnumerable<Example> Examples =>
+            new List<Example>
             {
-                return new List<Example>() {
-                    new Example("Update ESP32 device with latest available firmware (nF org preview repository)", new Options { TargetName = "ESP32_WROOM_32" , Update = true}),
-                    new Example("Update ESP32 device with latest available firmware (nF org stable repository)", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true }),
-                    new Example("Update ESP32 device with latest available firmware (nF org stable repository), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true, SerialPort = "COM31" }),
-                    new Example("Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP32_WROOM_32" , DeploymentImage = "<location of file>.bin"}),
-                    new Example("Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (nF org preview repository)", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true}),
-                    new Example("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (nf org preview repository), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, DfuDeviceId = "3380386D3134" }),
-                    new Example("List all STM32 devices connected through JTAG", new Options { Platform = "stm32", ListJtagDevices = true}),
-                };
-            }
-        }
+                new("Update ESP32 device with latest available firmware (nF org preview repository)", new Options { TargetName = "ESP32_WROOM_32" , Update = true}),
+                new("Update ESP32 device with latest available firmware (nF org stable repository)", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true }),
+                new("Update ESP32 device with latest available firmware (nF org stable repository), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true, SerialPort = "COM31" }),
+                new("Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP32_WROOM_32" , DeploymentImage = "<location of file>.bin"}),
+                new("Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (nF org preview repository)", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true}),
+                new("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (nf org preview repository), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, DfuDeviceId = "3380386D3134" }),
+                new("List all STM32 devices connected through JTAG", new Options { Platform = "stm32", ListJtagDevices = true}),
+            };
     }
 
     public enum VerbosityLevel
