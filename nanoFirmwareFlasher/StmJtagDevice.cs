@@ -138,7 +138,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P {hexFile}");
+                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P \"{hexFile}\"");
 
                 if (!cliOutput.Contains("Programming Complete."))
                 {
@@ -255,7 +255,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
-                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P {binFile} {addresses.ElementAt(index++)}");
+                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P \"{binFile}\" {addresses.ElementAt(index++)}");
 
                 if (!cliOutput.Contains("Programming Complete."))
                 {
