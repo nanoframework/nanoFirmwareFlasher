@@ -601,6 +601,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             appFlashAddress = o.FlashAddress.ElementAt(0);
                         }
 
+                        Interface updateInterface = Interface.None;
+                        
+                        if (o.DfuUpdate && o.JtagUpdate)
+                        {
+                            // can't select both JTAG and DFU simultaneously
+                            _exitCode = ExitCodes.E9000;
+                            return;
+                        }
+                        else if (o.DfuUpdate)
+                        {
+                            updateInterface = Interface.Dfu;
+                        }
+                        else if(o.JtagUpdate)
+                        {
+                            updateInterface = Interface.Jtag;
+                        }
+
                         _exitCode = await Stm32Operations.UpdateFirmwareAsync(
                             o.TargetName,
                             o.FwVersion,
@@ -610,6 +627,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             appFlashAddress,
                             o.DfuDeviceId,
                             o.JtagDeviceId,
+                            updateInterface,
                             _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
@@ -625,7 +643,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // this to flash a deployment image without updating the firmware
 
                         // need to take care of flash address
-                        string appFlashAddress = null;
+                        string appFlashAddress;
 
                         if (o.FlashAddress.Any())
                         {
@@ -638,6 +656,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             return;
                         }
 
+                        Interface updateInterface = Interface.None;
+
+                        if(o.DfuUpdate && o.JtagUpdate)
+                        {
+                            // can't select both JTAG and DFU simultaneously
+                            _exitCode = ExitCodes.E9000;
+                            return;
+                        }
+                        else if (o.DfuUpdate)
+                        {
+                            updateInterface = Interface.Dfu;
+                        }
+                        else if (o.JtagUpdate)
+                        {
+                            updateInterface = Interface.Jtag;
+                        }
+
                         _exitCode = await Stm32Operations.UpdateFirmwareAsync(
                                         o.TargetName,
                                         null,
@@ -647,6 +682,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         appFlashAddress,
                                         o.DfuDeviceId,
                                         o.JtagDeviceId,
+                                        updateInterface,
                                         _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)

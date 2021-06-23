@@ -21,6 +21,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string deploymentAddress,
             string dfuDeviceId,
             string jtagId,
+            Interface updateInterface,
             VerbosityLevel verbosity)
         {
             bool isApplicationBinFile = false;
@@ -88,9 +89,55 @@ namespace nanoFramework.Tools.FirmwareFlasher
             var connectedStDfuDevices = StmDfuDevice.ListDfuDevices();
             var connectedStJtagDevices = StmJtagDevice.ListDevices();
 
-            // need DFU or JTAG device
-            if (firmware.HasDfuPackage && connectedStDfuDevices.Count !=0)
+            if (updateInterface != Interface.None)
             {
+                // check specified interface option
+                if (updateInterface == Interface.Dfu
+                    && !connectedStDfuDevices.Any())
+                {
+                    // no DFU device was found to update.
+                    return ExitCodes.E1000;
+                }
+
+                if (updateInterface == Interface.Jtag
+                   && !connectedStJtagDevices.Any())
+                {
+                    // no JTAG device was found to update.
+                    return ExitCodes.E5001;
+                }
+            }
+            else
+            {
+                // try to make a smart guess on what interface to use
+                // prefer JTAG for STM32 devices
+                if (dfuDeviceId != null
+                    || connectedStDfuDevices.Any())
+                {
+                    updateInterface = Interface.Dfu;
+                }
+                else if (jtagId != null
+                         || connectedStJtagDevices.Any())
+                {
+                    updateInterface = Interface.Jtag;
+                }
+            }
+
+            if(!connectedStDfuDevices.Any()
+                && !connectedStJtagDevices.Any())
+            {
+                // no device was found
+                return ExitCodes.E9010;
+            }
+
+            // update using DFU
+            if (updateInterface == Interface.Dfu)
+            {
+                 if(!firmware.HasDfuPackage)
+                {
+                    // firmware doesn't have a DFU package
+                    return ExitCodes.E1004;
+                }
+
                 // DFU package
                 dfuDevice = new StmDfuDevice(dfuDeviceId);
 
@@ -123,7 +170,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return ExitCodes.E1003;
                 }
             }
-            else if (connectedStJtagDevices.Count != 0)
+            else
             {
                 // JTAG device
                 jtagDevice = new StmJtagDevice(jtagId);
@@ -145,6 +192,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 jtagDevice.Verbosity = verbosity;
 
                 ExitCodes programResult = ExitCodes.OK;
+
                 // write HEX files to flash
                 if ( filesToFlash.Any(f => f.EndsWith(".hex")) ) 
                 {
@@ -164,11 +212,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 return programResult;
-            }
-            else
-            {
-                // no device was found to update.
-                return ExitCodes.E7000;
             }
         }
 
@@ -198,5 +241,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform reset
             return jtagDevice.ResetMcu();
         }
+    }
+
+    public enum Interface
+    {
+        None = 0,
+
+        Jtag,
+
+        Dfu
     }
 }
