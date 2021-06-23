@@ -198,8 +198,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "stable",
             Required = false,
             Default = false,
-            HelpText = "Stable version. If the firmware is going to be downloaded the stable version will be preferred, if available.")]
-        public bool Stable { get; set; }
+            HelpText = "Preview version. Will download the firmware package from the preview repository.")]
+        public bool Preview { get; set; }
 
         [Option(
             "image",
@@ -235,12 +235,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public static IEnumerable<Example> Examples =>
             new List<Example>
             {
-                new("Update ESP32 device with latest available firmware (nF org preview repository)", new Options { TargetName = "ESP32_WROOM_32" , Update = true}),
-                new("Update ESP32 device with latest available firmware (nF org stable repository)", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true }),
-                new("Update ESP32 device with latest available firmware (nF org stable repository), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true, SerialPort = "COM31" }),
+                new("Update ESP32 device with latest available firmware (preview version)", new Options { TargetName = "ESP32_WROOM_32" , Update = true, Preview = true}),
+                new("Update ESP32 device with latest available firmware (stable version)", new Options { TargetName = "ESP32_WROOM_32", Update = true }),
+                new("Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, SerialPort = "COM31" }),
                 new("Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP32_WROOM_32" , DeploymentImage = "<location of file>.bin"}),
-                new("Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (nF org preview repository)", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true}),
-                new("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (nf org preview repository), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, DfuDeviceId = "3380386D3134" }),
+                new("Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (preview version)", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, Preview = true}),
+                new("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (preview version), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, Preview = true, DfuDeviceId = "3380386D3134" }),
                 new("List all STM32 devices connected through JTAG", new Options { Platform = "stm32", ListJtagDevices = true}),
             };
     }

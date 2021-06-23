@@ -312,7 +312,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.TargetName,
                             true,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             o.DeploymentImage,
                             null,
                             o.Esp32PartitionTableSize,
@@ -604,7 +604,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = await Stm32Operations.UpdateFirmwareAsync(
                             o.TargetName,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             true,
                             o.DeploymentImage,
                             appFlashAddress,
@@ -698,7 +698,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
                             o.TargetName,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             true,
                             o.DeploymentImage,
                             appFlashAddress,

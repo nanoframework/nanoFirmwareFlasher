@@ -32,8 +32,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         internal int DeploymentPartitionAddress =>  0x110000;
 
-        public Esp32Firmware(string targetName, string fwVersion, bool stable, PartitionTableSize? partitionTableSize)
-            :base(targetName, fwVersion, stable)
+        public Esp32Firmware(
+            string targetName,
+            string fwVersion,
+            bool stable,
+            PartitionTableSize? partitionTableSize)
+            :base(
+                 targetName,
+                 fwVersion,
+                 stable)
         {
             _partitionTableSize = partitionTableSize;
         }

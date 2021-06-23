@@ -86,7 +86,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string targetName,
             bool updateFw,
             string fwVersion, 
-            bool stable, 
+            bool preview, 
             string applicationPath,
             string deploymentAddress,
             PartitionTableSize? partitionTableSize,
@@ -104,7 +104,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Esp32Firmware firmware = new Esp32Firmware(
                 targetName, 
                 fwVersion, 
-                stable,
+                preview,
                 partitionTableSize)
             {
                 Verbosity = verbosity

@@ -34,7 +34,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private readonly string _targetName;
         private string _fwVersion;
-        private readonly bool _stable;
+        private readonly bool _preview;
 
         private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
 
@@ -54,11 +54,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Constructor
         /// </summary>
         /// <param name="targetName">Target name as designated in the repositories.</param>
-        protected FirmwarePackage(string targetName, string fwVersion, bool stable)
+        protected FirmwarePackage(
+            string targetName,
+            string fwVersion,
+            bool preview)
         {
             _targetName = targetName;
             _fwVersion = fwVersion;
-            _stable = stable;
+            _preview = preview;
         }
 
         /// <summary>
@@ -76,7 +79,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // https://dl.cloudsmith.io/public/net-nanoframework/REPO-NAME-HERE/raw/names/PACKAGE-NAME-HERE/versions/VERSION-HERE/ST_STM32F429I_DISCOVERY-1.6.2-preview.9.zip
 
             // reference targets
-            var repoName = _stable ? _refTargetsStableRepo : _refTargetsDevRepo;
+            var repoName = _preview ? _refTargetsDevRepo : _refTargetsStableRepo;
             // get the firmware version if it is defined
             var fwVersion = string.IsNullOrEmpty(_fwVersion) ? "latest" : _fwVersion;
             string requestUri = $"{_cloudsmithPackages}/{repoName}/?page=1&query={_targetName} {fwVersion}";
@@ -142,7 +145,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.Write($"Trying to find {_targetName} in {(_stable ? "stable" : "developement")} repository...");
+                        Console.Write($"Trying to find {_targetName} in {(_preview ? "developement" : "stable")} repository...");
                     }
 
                     HttpResponseMessage response = await _cloudsmithClient.GetAsync(requestUri);

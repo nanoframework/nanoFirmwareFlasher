@@ -16,7 +16,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             string targetName,
             string fwVersion,
-            bool stable,
+            bool preview,
             bool updateFw,
             string applicationPath,
             string deploymentAddress,
@@ -33,7 +33,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             CC13x26x2Firmware firmware = new CC13x26x2Firmware(
                 targetName,
                 fwVersion,
-                stable)
+                preview)
             {
                 Verbosity = verbosity
             };
