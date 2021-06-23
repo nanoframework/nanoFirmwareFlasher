@@ -13,6 +13,9 @@ using System.Linq;
 using CommandLine.Text;
 using System.IO;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -37,7 +40,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             _headerInfo = $"nanoFramework Firmware Flasher v{_informationalVersionAttribute.InformationalVersion}";
 
-            _copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2019);
+            _copyrightInfo = new CopyrightInfo(true, $".NET Foundation and nanoFramework project contributors", 2019);
 
             // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
             string codeBase = Assembly.GetExecutingAssembly().Location;
@@ -81,6 +84,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return (int)_exitCode;
+        }
+
+        private static void CheckVersion(Version currentVversion)
+        {
+            Version latestVersion;
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
+
+                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("nanoff", currentVversion.ToString()));
+
+                HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/nanoframework/nanoFirmwareFlasher/releases/latest").Result;
+
+                dynamic responseContent = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
+                string tagName = responseContent.tag_name.ToString();
+
+                latestVersion = Version.Parse(tagName.Substring(1));
+            }
+
+            if(latestVersion > currentVversion)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("** There is a new version available, update is recommended **");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         }
 
         private static Task HandleErrorsAsync(IEnumerable<Error> errors)
@@ -131,9 +160,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
+            Console.ForegroundColor = ConsoleColor.White;
+
             Console.WriteLine(_headerInfo);
             Console.WriteLine(_copyrightInfo);
             Console.WriteLine();
+
+            CheckVersion(Assembly.GetExecutingAssembly().GetName().Version);
+            Console.WriteLine();
+
+            Console.ForegroundColor = ConsoleColor.White;
 
             #region target processing
 
@@ -205,10 +241,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     o.Platform = "esp32";
                 }
+                // drivers install
+                else if(o.TIInstallXdsDrivers)
+                {
+                    o.Platform = "cc13x2";
+                }
+                else if (
+                    o.InstallDfuDrivers
+                    || o.InstallJtagDrivers)
+                {
+                    o.Platform = "stm32";
+                }
             }
 
             #endregion
-
 
             #region ESP32 platform options
 
@@ -312,7 +358,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.TargetName,
                             true,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             o.DeploymentImage,
                             null,
                             o.Esp32PartitionTableSize,
@@ -415,12 +461,37 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == "stm32")
             {
+                if (o.InstallDfuDrivers)
+                {
+                    _exitCode = Stm32Operations.InstallDfuDrivers(_verbosityLevel);
+
+                    if (_exitCode != ExitCodes.OK)
+                    {
+                        // done here
+                        return;
+                    }
+                }
+
+                if (o.InstallJtagDrivers)
+                {
+                    _exitCode = Stm32Operations.InstallJtagDrivers(_verbosityLevel);
+
+                    if (_exitCode != ExitCodes.OK)
+                    {
+                        // done here
+                        return;
+                    }
+                }
+
                 if (o.ListDevicesInDfuMode)
                 {
                     var connecteDevices = StmDfuDevice.ListDfuDevices();
 
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+
                     if (connecteDevices.Count == 0)
                     {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("No DFU devices found");
                     }
                     else
@@ -435,6 +506,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.WriteLine("---------------------------");
                     }
 
+                    Console.ForegroundColor = ConsoleColor.White;
+
                     // done here, this command has no further processing
                     _exitCode = ExitCodes.OK;
 
@@ -446,6 +519,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     try
                     {
                         var connecteDevices = StmJtagDevice.ListDevices();
+
+                        Console.ForegroundColor = ConsoleColor.Cyan;
 
                         if (connecteDevices.Count == 0)
                         {
@@ -472,6 +547,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E5000;
                         _extraMessage = ex.Message;
                     }
+
+                    Console.ForegroundColor = ConsoleColor.White;
 
                     return;
                 }
@@ -601,15 +678,33 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             appFlashAddress = o.FlashAddress.ElementAt(0);
                         }
 
+                        Interface updateInterface = Interface.None;
+                        
+                        if (o.DfuUpdate && o.JtagUpdate)
+                        {
+                            // can't select both JTAG and DFU simultaneously
+                            _exitCode = ExitCodes.E9000;
+                            return;
+                        }
+                        else if (o.DfuUpdate)
+                        {
+                            updateInterface = Interface.Dfu;
+                        }
+                        else if(o.JtagUpdate)
+                        {
+                            updateInterface = Interface.Jtag;
+                        }
+
                         _exitCode = await Stm32Operations.UpdateFirmwareAsync(
                             o.TargetName,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             true,
                             o.DeploymentImage,
                             appFlashAddress,
                             o.DfuDeviceId,
                             o.JtagDeviceId,
+                            updateInterface,
                             _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
@@ -625,7 +720,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // this to flash a deployment image without updating the firmware
 
                         // need to take care of flash address
-                        string appFlashAddress = null;
+                        string appFlashAddress;
 
                         if (o.FlashAddress.Any())
                         {
@@ -638,6 +733,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             return;
                         }
 
+                        Interface updateInterface = Interface.None;
+
+                        if(o.DfuUpdate && o.JtagUpdate)
+                        {
+                            // can't select both JTAG and DFU simultaneously
+                            _exitCode = ExitCodes.E9000;
+                            return;
+                        }
+                        else if (o.DfuUpdate)
+                        {
+                            updateInterface = Interface.Dfu;
+                        }
+                        else if (o.JtagUpdate)
+                        {
+                            updateInterface = Interface.Jtag;
+                        }
+
                         _exitCode = await Stm32Operations.UpdateFirmwareAsync(
                                         o.TargetName,
                                         null,
@@ -647,6 +759,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         appFlashAddress,
                                         o.DfuDeviceId,
                                         o.JtagDeviceId,
+                                        updateInterface,
                                         _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
@@ -679,6 +792,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == "cc13x2")
             {
+                if (o.TIInstallXdsDrivers)
+                {
+
+                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
+
+                    if (_exitCode != ExitCodes.OK)
+                    {
+                        // done here
+                        return;
+                    }
+                }
+
                 if (!string.IsNullOrEmpty(o.TargetName))
                 {
                     // update operation requested?
@@ -698,7 +823,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
                             o.TargetName,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             true,
                             o.DeploymentImage,
                             appFlashAddress,
@@ -757,18 +882,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         return;
                     }
                 }
-
-                if(o.TIInstallXdsDrivers)
-                {
-
-                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
-
-                    if (_exitCode != ExitCodes.OK)
-                    {
-                        // done here
-                        return;
-                    }
-                }
             }
 
 #endregion
@@ -781,6 +894,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 return;
             }
+
+            Console.ForegroundColor = ConsoleColor.Red;
 
             if (outputMessage)
             {
@@ -807,6 +922,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.Write($"{errorCode}");
                 Console.WriteLine();
             }
+
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
 }

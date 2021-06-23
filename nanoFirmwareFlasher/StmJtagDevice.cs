@@ -61,7 +61,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else
             {
                 // JTAG id supplied, try to connect to device to check availability
-                var cliOutput = RunStLinkCli($"-c SN={jtagId} HOTPLUG");
+                var cliOutput = RunSTM32ProgrammerCLI($"-c SN={jtagId} HOTPLUG");
 
                 if (!cliOutput.Contains("Connected via SWD."))
                 {
@@ -86,9 +86,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // try to connect to device with RESET
-            var cliOutput = RunStLinkCli($"-c SN={DeviceId} UR");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR reset=HWrst");
 
-            if (!cliOutput.Contains("Connected via SWD."))
+            if (cliOutput.Contains("Error:"))
             {
                 return ExitCodes.E5002;
             }
@@ -98,10 +98,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.Write("Mass erase device...");
                 }
 
-                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -ME");
+                cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -e all");
 
                 if (!cliOutput.Contains("Flash memory erased."))
                 {
@@ -110,12 +111,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine(" OK");
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("");
                 }
+                Console.ForegroundColor = ConsoleColor.White;
 
                 // toggle mass erase so it's only performed before the first file is flashed
                 DoMassErase = false;
@@ -123,10 +127,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Flashing device...");
             }
 
@@ -135,12 +141,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P \"{hexFile}\"");
+                cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -w \"{hexFile}\"");
 
-                if (!cliOutput.Contains("Programming Complete."))
+                if (!cliOutput.Contains("File download complete"))
                 {
                     return ExitCodes.E5006;
                 }
@@ -148,12 +155,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(" OK");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Flashing completed...");
             }
+            Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -201,7 +211,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // try to connect to device with RESET
-            var cliOutput = RunStLinkCli($"-c SN={DeviceId} UR");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR");
 
             if (!cliOutput.Contains("Connected via SWD."))
             {
@@ -213,25 +223,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.Write("Mass erase device...");
                 }
 
-                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -ME");
+                cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -e all");
 
                 if (!cliOutput.Contains("Flash memory erased."))
                 {
-                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR");
                     return ExitCodes.E5005;
                 }
 
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine(" OK");
                 }
                 else
                 {
                     Console.WriteLine("");
                 }
+                Console.ForegroundColor = ConsoleColor.White;
 
                 // toggle mass erase so it's only performed before the first file is flashed
                 DoMassErase = false;
@@ -239,10 +253,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Flashing device...");
             }
 
@@ -252,10 +268,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
-                cliOutput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P \"{binFile}\" {addresses.ElementAt(index++)}");
+                cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -w \"{binFile}\" {addresses.ElementAt(index++)}");
 
                 if (!cliOutput.Contains("Programming Complete."))
                 {
@@ -265,10 +282,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(" OK");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Flashing completed...");
             }
 
@@ -281,24 +300,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>A collection of connected STM JTAG devices.</returns>
         public static List<string> ListDevices()
         {
-            var cliOutput = RunStLinkCli("-List");
+            var cliOutput = RunSTM32ProgrammerCLI("--list");
 
             // (successful) output from the above is
             //
-            //---Available ST - LINK Probes List ---
+            //-------- Connected ST-LINK Probes List --------
             //
-            // ST - LINK Probe 0:
-            //     SN: 066CFF535752877167012515
-            //     FW: V2J29M18
-            //
-            // ST - LINK Probe 1:
-            //     SN: 066CDD535752877167010000
-            //     FW: V2J29M18
-            //
-            //----------------------------------
+            //ST-Link Probe 0 :
+            //   ST-LINK SN  : 066CFF535752877167012515
+            //   ST-LINK FW  : V2J37M27
+            //-----------------------------------------------
 
             // set pattern to serial number
-            const string regexPattern = @"(?<=SN:\s)(?<serial>.{24})";
+            const string regexPattern = @"(?<=ST-LINK SN  :\s)(?<serial>.{24})";
 
             var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
             var jtagMatches = myRegex1.Matches(cliOutput);
@@ -317,56 +331,61 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public ExitCodes ResetMcu()
         {
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("Reset MCU on device...");
+            }
+            
             // try to connect to device with RESET
-            var cliOutput = RunStLinkCli($"-c SN={DeviceId} UR");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -rst");
 
-            if (!cliOutput.Contains("Connected via SWD."))
+            if (cliOutput.Contains("Error:"))
             {
                 return ExitCodes.E5002;
             }
 
-            if (Verbosity >= VerbosityLevel.Normal)
+            if (!cliOutput.Contains("MCU Reset"))
             {
-                Console.Write("Reset MCU on device...");
-            }
-
-            cliOutput = RunStLinkCli("-Rst");
-
-            if (!cliOutput.Contains("MCU Reset."))
-            {
-                Console.WriteLine("");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ERROR");
+                Console.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.E5010;
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(" OK");
             }
             else
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("");
             }
+
+            Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
 
-        private static string RunStLinkCli(string arguments)
+        private static string RunSTM32ProgrammerCLI(string arguments)
         {
             try
             {
                 var stLinkCli = new Process
                 {
-                    StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stlink", "ST-LINK_CLI.exe"),
+                    StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stlink", "bin", "STM32_Programmer_CLI.exe"),
                         arguments)
                     {
-                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink"),
+                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink", "bin"),
                         UseShellExecute = false,
                         RedirectStandardOutput = true
                     }
                 };
 
 
-                // start ST Link CLI and...
+                // start STM32 Programmer CLI and...
                 stLinkCli.Start();
 
                 // ... wait for exit

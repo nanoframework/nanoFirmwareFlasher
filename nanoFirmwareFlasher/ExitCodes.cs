@@ -37,6 +37,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Error flashing DFU dvice.")]
         E1003 = 1003,
 
+        /// <summary>
+        /// Firmware package doesn't have DFU package
+        /// </summary>
+        [Display(Name = "Firmware package doesn't have a DFU package.")]
+        E1004 = 1004,
+
         ////////////////////////
         // ESP32 tools Errors //
         ////////////////////////
@@ -77,14 +83,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Failed to open specified COM port.")]
         E4005 = 4005,
 
-        ////////////////////
-        // ST Link Errors //
-        ////////////////////
+        //////////////////////////
+        // ST Programmer Errors //
+        //////////////////////////
 
         /// <summary>
-        /// Error executing ST Link CLI command.
+        /// Error executing STM32 Programmer CLI command.
         /// </summary>
-        [Display(Name = "Error executing ST Link CLI command.")]
+        [Display(Name = "Error executing STM32 Programmer CLI command.")]
         E5000 = 5000,
 
         /// <summary>
@@ -231,5 +237,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Can't program deployment BIN file without specifying a valid deployment address.")]
         E9009 = 9009,
 
+        /// <summary>
+        /// Couldn't find any device connected
+        /// </summary>
+        [Display(Name = "Couldn't find any device connected.")]
+        E9010 = 9010,
     }
 }

@@ -34,6 +34,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "ID of the DFU device to update. If not specified the first connected DFU device will be used.")]
         public string DfuDeviceId{ get; set; }
 
+        [Option(
+            "dfu",
+            Required = false,
+            Default = false,
+            HelpText = "Use DFU to update the device.")]
+        public bool DfuUpdate { get; set; }
+
+        [Option(
+            "installdfudrivers",
+            Required = false,
+            Default = false,
+            HelpText = "Install STM32 DFU drivers.")]
+        public bool InstallDfuDrivers { get; set; }
+
         #endregion
 
 
@@ -65,6 +79,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "BIN file(s) to be flashed into the device.")]
         public IList<string> BinFile { get; set; }
 
+        [Option(
+            "jtag",
+            Required = false,
+            Default = false,
+            HelpText = "Use JTAG to update the device.")]
+        public bool JtagUpdate { get; set; }
+
+
+        [Option(
+            "installjtagdrivers",
+            Required = false,
+            Default = false,
+            HelpText = "Install STM32 JTAG drivers.")]
+        public bool InstallJtagDrivers { get; set; }
         #endregion
 
 
@@ -118,7 +146,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
 
         [Option(
-            "installdrivers",
+            "installxdsdrivers",
             Required = false,
             Default = false,
             HelpText = "Install XDS110 drivers.")]
@@ -198,8 +226,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "stable",
             Required = false,
             Default = false,
-            HelpText = "Stable version. If the firmware is going to be downloaded the stable version will be preferred, if available.")]
-        public bool Stable { get; set; }
+            HelpText = "Preview version. Will download the firmware package from the preview repository.")]
+        public bool Preview { get; set; }
 
         [Option(
             "image",
@@ -235,13 +263,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public static IEnumerable<Example> Examples =>
             new List<Example>
             {
-                new("Update ESP32 device with latest available firmware (nF org preview repository)", new Options { TargetName = "ESP32_WROOM_32" , Update = true}),
-                new("Update ESP32 device with latest available firmware (nF org stable repository)", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true }),
-                new("Update ESP32 device with latest available firmware (nF org stable repository), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true, SerialPort = "COM31" }),
+                new("Update ESP32 device with latest available firmware (stable version)", new Options { TargetName = "ESP32_WROOM_32", Update = true }),
+                new("Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, SerialPort = "COM31" }),
                 new("Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP32_WROOM_32" , DeploymentImage = "<location of file>.bin"}),
-                new("Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (nF org preview repository)", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true}),
-                new("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (nf org preview repository), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, DfuDeviceId = "3380386D3134" }),
+                new("Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (preview version), using JTAG interface", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, Preview = true, JtagUpdate = true}),
+                new("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (preview version), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, Preview = true, DfuDeviceId = "3380386D3134" }),
                 new("List all STM32 devices connected through JTAG", new Options { Platform = "stm32", ListJtagDevices = true}),
+                new("Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
             };
     }
 

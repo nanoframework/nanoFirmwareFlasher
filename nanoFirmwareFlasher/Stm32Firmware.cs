@@ -23,8 +23,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         public string DfuPackage { get; private set; }
 
-        public Stm32Firmware(string targetName, string fwVersion, bool stable)
-            :base(targetName, fwVersion, stable)
+        public Stm32Firmware(
+            string targetName,
+            string fwVersion,
+            bool preview)
+            :base(
+                 targetName,
+                 fwVersion,
+                 preview)
         {
         }
 

@@ -15,8 +15,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         public string nanoCLRFile { get; private set; }
 
-        public CC13x26x2Firmware(string targetName, string fwVersion, bool stable)
-            :base(targetName, fwVersion, stable)
+        public CC13x26x2Firmware(
+            string targetName,
+            string fwVersion,
+            bool preview)
+            :base(
+                 targetName,
+                 fwVersion,
+                 preview)
         {
         }
 
