@@ -13,6 +13,9 @@ using System.Linq;
 using CommandLine.Text;
 using System.IO;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -83,6 +86,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return (int)_exitCode;
         }
 
+        private static void CheckVersion(Version currentVversion)
+        {
+            Version latestVersion;
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
+
+                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("nanoff", currentVversion.ToString()));
+
+                HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/nanoframework/nanoFirmwareFlasher/releases/latest").Result;
+
+                dynamic responseContent = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
+                string tagName = responseContent.tag_name.ToString();
+
+                latestVersion = Version.Parse(tagName.Substring(1));
+            }
+
+            if(latestVersion > currentVversion)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("** There is a new version available, update is recommended **");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+        }
+
         private static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
             _exitCode = ExitCodes.E9000;
@@ -133,6 +162,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             Console.WriteLine(_headerInfo);
             Console.WriteLine(_copyrightInfo);
+            Console.WriteLine();
+
+            CheckVersion(Assembly.GetExecutingAssembly().GetName().Version);
             Console.WriteLine();
 
             #region target processing
