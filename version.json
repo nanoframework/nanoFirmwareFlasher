@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
-  "version": "1.22.0",
+  "version": "1.22",
   "assemblyVersion": {
-    "precision": "revision"
+    "precision": "minor"
   },
   "nuGetPackageVersion": {
     "semVer": 2.0
