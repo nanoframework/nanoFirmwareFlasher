@@ -260,17 +260,6 @@ jobs:
       ArtifactName: deployables
       ArtifactType: Container
 
-  # push NuGet packages to AzureArtifacts feed (happens on all builds except PRs)
-  - task: NuGetCommand@2
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
-    displayName: Push NuGet packages to AzureArtifacts
-    continueOnError: true
-    inputs:
-      command: push
-      nuGetFeedType: external
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'AzureArtifacts-nanoFirmwareFlasher'
-
   # push NuGet class lib package to NuGet (happens on all builds except PRs)
   - task: NuGetCommand@2
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
