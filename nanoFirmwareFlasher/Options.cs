@@ -146,7 +146,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
 
         [Option(
-            "installdrivers",
+            "installxdsdrivers",
             Required = false,
             Default = false,
             HelpText = "Install XDS110 drivers.")]
