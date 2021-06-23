@@ -98,6 +98,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.Write("Mass erase device...");
                 }
 
@@ -110,12 +111,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine(" OK");
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("");
                 }
+                Console.ForegroundColor = ConsoleColor.White;
 
                 // toggle mass erase so it's only performed before the first file is flashed
                 DoMassErase = false;
@@ -123,10 +127,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Flashing device...");
             }
 
@@ -135,6 +141,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
@@ -148,12 +155,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(" OK");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Flashing completed...");
             }
+            Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -213,6 +223,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.Write("Mass erase device...");
                 }
 
@@ -220,18 +231,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!cliOutput.Contains("Flash memory erased."))
                 {
-                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR");
                     return ExitCodes.E5005;
                 }
 
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine(" OK");
                 }
                 else
                 {
                     Console.WriteLine("");
                 }
+                Console.ForegroundColor = ConsoleColor.White;
 
                 // toggle mass erase so it's only performed before the first file is flashed
                 DoMassErase = false;
@@ -239,10 +253,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Flashing device...");
             }
 
@@ -252,6 +268,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
@@ -265,10 +282,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(" OK");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Flashing completed...");
             }
 
@@ -314,6 +333,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (Verbosity >= VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Reset MCU on device...");
             }
             
@@ -327,18 +347,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!cliOutput.Contains("MCU Reset"))
             {
-                Console.WriteLine("");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ERROR");
+                Console.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.E5010;
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(" OK");
             }
             else
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("");
             }
+
+            Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }

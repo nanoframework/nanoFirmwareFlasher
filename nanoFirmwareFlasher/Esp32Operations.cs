@@ -67,13 +67,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if(verbosity >= VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"Backing up the firmware to \r\n{backupFilePath}...");
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
             tool.BackupFlash(backupFilePath, device.FlashSize);
 
             if (verbosity > VerbosityLevel.Quiet)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine($"Flash backup saved to {fileName}");
             }
 
@@ -155,6 +158,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write($"Erasing flash...");
             }
 
@@ -181,12 +185,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("OK");
                 }
                 else
                 {
                     Console.WriteLine("");
                 }
+
+                Console.ForegroundColor = ConsoleColor.White;
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
@@ -200,6 +207,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (verbosity >= VerbosityLevel.Normal)
                     {
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("OK");
                     }
                     else
@@ -207,6 +215,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.WriteLine("");
                     }
                 }
+
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
             return operationResult;

@@ -106,7 +106,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if(latestVersion > currentVversion)
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("** There is a new version available, update is recommended **");
                 Console.ForegroundColor = ConsoleColor.White;
             }
@@ -160,12 +160,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
+            Console.ForegroundColor = ConsoleColor.White;
+
             Console.WriteLine(_headerInfo);
             Console.WriteLine(_copyrightInfo);
             Console.WriteLine();
 
             CheckVersion(Assembly.GetExecutingAssembly().GetName().Version);
             Console.WriteLine();
+
+            Console.ForegroundColor = ConsoleColor.White;
 
             #region target processing
 
@@ -483,8 +487,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     var connecteDevices = StmDfuDevice.ListDfuDevices();
 
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+
                     if (connecteDevices.Count == 0)
                     {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("No DFU devices found");
                     }
                     else
@@ -499,6 +506,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.WriteLine("---------------------------");
                     }
 
+                    Console.ForegroundColor = ConsoleColor.White;
+
                     // done here, this command has no further processing
                     _exitCode = ExitCodes.OK;
 
@@ -510,6 +519,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     try
                     {
                         var connecteDevices = StmJtagDevice.ListDevices();
+
+                        Console.ForegroundColor = ConsoleColor.Cyan;
 
                         if (connecteDevices.Count == 0)
                         {
@@ -536,6 +547,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E5000;
                         _extraMessage = ex.Message;
                     }
+
+                    Console.ForegroundColor = ConsoleColor.White;
 
                     return;
                 }
@@ -882,6 +895,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return;
             }
 
+            Console.ForegroundColor = ConsoleColor.Red;
+
             if (outputMessage)
             {
                 Console.Write($"Error {errorCode}");
@@ -907,6 +922,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.Write($"{errorCode}");
                 Console.WriteLine();
             }
+
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
 }

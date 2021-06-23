@@ -152,7 +152,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"Connected to DFU device with ID { dfuDevice.DeviceId }");
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
 
                 // set verbosity
@@ -186,7 +188,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.DeviceId }");
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
 
                 // set verbosity
@@ -247,6 +251,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             try
             {
+                if (verbosityLevel >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write("Calling installer for STM32 DFU drivers...");
+                }
+
                 var infPath = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver\\STM32Bootloader.inf");
 
                 Process installerCli = new Process
@@ -281,9 +291,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     StartInfo = new ProcessStartInfo(installerPath)
                     {
                         WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver"),
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
+                        UseShellExecute = true
                     }
                 };
 
@@ -293,8 +301,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // ... wait for exit
                 installerCli.WaitForExit();
 
-                var error = installerCli.StandardError.ReadToEnd();
-                var log = installerCli.StandardOutput.ReadToEnd();
+                if (verbosityLevel >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("OK");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
 
                 // always true as the drivers will be installed depending on user answering yes to elevate prompt
                 // any errors or exceptions will be presented by the installer
@@ -302,12 +314,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             catch (Exception ex)
             {
-                throw new UniflashCliExecutionException(ex.Message);
+                if (verbosityLevel >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR");
+                }
+
+                throw new Exception(ex.Message);
             }
         }
 
         internal static ExitCodes InstallJtagDrivers(VerbosityLevel verbosityLevel)
         {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+
+            if (verbosityLevel >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write("Calling installer for STM32 JTAG drivers...");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
             try
             {
                 string installerPath;
@@ -336,8 +363,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // ... wait for exit
                 installerCli.WaitForExit();
 
-                //var error = installerCli.StandardError.ReadToEnd();
-                //var log = installerCli.StandardOutput.ReadToEnd();
+                if (verbosityLevel >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("OK");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
 
                 // always true as the drivers will be installed depending on user answering yes to elevate prompt
                 // any errors or exceptions will be presented by the installer
@@ -345,7 +376,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             catch (Exception ex)
             {
-                throw new UniflashCliExecutionException(ex.Message);
+                if (verbosityLevel >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                throw new Exception(ex.Message);
             }
         }
 
