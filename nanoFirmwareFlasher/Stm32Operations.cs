@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -241,6 +242,113 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform reset
             return jtagDevice.ResetMcu();
         }
+
+        internal static ExitCodes InstallDfuDrivers(VerbosityLevel verbosityLevel)
+        {
+            try
+            {
+                var infPath = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver\\STM32Bootloader.inf");
+
+                Process installerCli = new Process
+                {
+                    StartInfo = new ProcessStartInfo("pnputil")
+                    {
+                        Arguments = $"-i -a {infPath}",
+                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver"),
+                        UseShellExecute = true
+                    }
+                };
+
+                // execution command and...
+                installerCli.Start();
+
+                // ... wait for exit
+                installerCli.WaitForExit();
+
+                string installerPath;
+
+                if(Environment.Is64BitOperatingSystem)
+                {
+                    installerPath = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver\\installer_x64.exe");
+                } 
+                else
+                {
+                    installerPath = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver\\installer_x86.exe");
+                }
+
+                installerCli = new Process
+                {
+                    StartInfo = new ProcessStartInfo(installerPath)
+                    {
+                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver"),
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                    }
+                };
+
+                // execution command and...
+                installerCli.Start();
+
+                // ... wait for exit
+                installerCli.WaitForExit();
+
+                var error = installerCli.StandardError.ReadToEnd();
+                var log = installerCli.StandardOutput.ReadToEnd();
+
+                // always true as the drivers will be installed depending on user answering yes to elevate prompt
+                // any errors or exceptions will be presented by the installer
+                return ExitCodes.OK;
+            }
+            catch (Exception ex)
+            {
+                throw new UniflashCliExecutionException(ex.Message);
+            }
+        }
+
+        internal static ExitCodes InstallJtagDrivers(VerbosityLevel verbosityLevel)
+        {
+            try
+            {
+                string installerPath;
+
+                if (Environment.Is64BitOperatingSystem)
+                {
+                    installerPath = Path.Combine(Program.ExecutingPath, "stlink\\stsw-link009_v3\\dpinst_amd64.exe");
+                }
+                else
+                {
+                    installerPath = Path.Combine(Program.ExecutingPath, "stlink\\stsw-link009_v3\\dpinst_x86.exe");
+                }
+
+                Process installerCli = new Process
+                {
+                    StartInfo = new ProcessStartInfo(installerPath)
+                    {
+                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink\\stsw-link009_v3"),
+                        UseShellExecute = true
+                    }
+                };
+
+                // execution command and...
+                installerCli.Start();
+
+                // ... wait for exit
+                installerCli.WaitForExit();
+
+                //var error = installerCli.StandardError.ReadToEnd();
+                //var log = installerCli.StandardOutput.ReadToEnd();
+
+                // always true as the drivers will be installed depending on user answering yes to elevate prompt
+                // any errors or exceptions will be presented by the installer
+                return ExitCodes.OK;
+            }
+            catch (Exception ex)
+            {
+                throw new UniflashCliExecutionException(ex.Message);
+            }
+        }
+
     }
 
     public enum Interface

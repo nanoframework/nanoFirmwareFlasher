@@ -205,10 +205,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     o.Platform = "esp32";
                 }
+                // drivers install
+                else if(o.TIInstallXdsDrivers)
+                {
+                    o.Platform = "cc13x2";
+                }
+                else if (
+                    o.InstallDfuDrivers
+                    || o.InstallJtagDrivers)
+                {
+                    o.Platform = "stm32";
+                }
             }
 
             #endregion
-
 
             #region ESP32 platform options
 
@@ -415,6 +425,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == "stm32")
             {
+                if (o.InstallDfuDrivers)
+                {
+                    _exitCode = Stm32Operations.InstallDfuDrivers(_verbosityLevel);
+
+                    if (_exitCode != ExitCodes.OK)
+                    {
+                        // done here
+                        return;
+                    }
+                }
+
+                if (o.InstallJtagDrivers)
+                {
+                    _exitCode = Stm32Operations.InstallJtagDrivers(_verbosityLevel);
+
+                    if (_exitCode != ExitCodes.OK)
+                    {
+                        // done here
+                        return;
+                    }
+                }
+
                 if (o.ListDevicesInDfuMode)
                 {
                     var connecteDevices = StmDfuDevice.ListDfuDevices();
@@ -715,6 +747,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == "cc13x2")
             {
+                if (o.TIInstallXdsDrivers)
+                {
+
+                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
+
+                    if (_exitCode != ExitCodes.OK)
+                    {
+                        // done here
+                        return;
+                    }
+                }
+
                 if (!string.IsNullOrEmpty(o.TargetName))
                 {
                     // update operation requested?
@@ -789,18 +833,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // would require to specify the exact target name and then had to try parsing that 
                         _exitCode = ExitCodes.E9000;
 
-                        // done here
-                        return;
-                    }
-                }
-
-                if(o.TIInstallXdsDrivers)
-                {
-
-                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
-
-                    if (_exitCode != ExitCodes.OK)
-                    {
                         // done here
                         return;
                     }
