@@ -82,9 +82,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         ////////////////////
 
         /// <summary>
-        /// Error executing ST Link CLI command.
+        /// Error executing STM32 Programmer CLI command.
         /// </summary>
-        [Display(Name = "Error executing ST Link CLI command.")]
+        [Display(Name = "Error executing STM32 Programmer CLI command.")]
         E5000 = 5000,
 
         /// <summary>
