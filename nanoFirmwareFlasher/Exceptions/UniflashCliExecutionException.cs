@@ -15,7 +15,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal class UniflashCliExecutionException : Exception
     {
         /// <summary>
-        /// Error message from ST Link CLI.
+        /// Error message from UniFlash CLI.
         /// </summary>
         public string ExecutionError;
 
