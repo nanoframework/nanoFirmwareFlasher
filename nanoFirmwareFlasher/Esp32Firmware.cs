@@ -17,6 +17,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal class Esp32Firmware : FirmwarePackage
     {
         /// <summary>
+        /// Address of the CLR partition.
+        /// </summary>
+        public const int CLRAddress = 0x10000;
+
+        /// <summary>
         /// ESP32 nanoCLR is available for 2MB, 4MB, 8MB and 16MB flash sizes
         /// </summary>
         private List<int> SupportedFlashSizes => new() { 0x200000, 0x400000, 0x800000, 0x1000000 };
@@ -80,7 +85,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 				    { 0x1000, Path.Combine(LocationPath, BootloaderPath) },
 
 				    // nanoCLR goes to 0x10000
-				    { 0x10000, Path.Combine(LocationPath, "nanoCLR.bin") },
+				    { CLRAddress, Path.Combine(LocationPath, "nanoCLR.bin") },
 
 				    // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
 				    { 0x8000, Path.Combine(LocationPath, $"partitions_{humanReadable.ToLowerInvariant()}.bin") }

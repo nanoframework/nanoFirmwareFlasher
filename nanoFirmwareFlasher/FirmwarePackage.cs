@@ -365,9 +365,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"Updating to {Version}");
-            Console.ForegroundColor = ConsoleColor.White;
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Updating to {Version}");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
 
             return ExitCodes.OK;
         }
