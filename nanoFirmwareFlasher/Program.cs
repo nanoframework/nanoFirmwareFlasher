@@ -237,7 +237,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     !string.IsNullOrEmpty(o.SerialPort) ||
                     (o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
-                    (o.Esp32FlashFrequency != 40))
+                    (o.Esp32FlashFrequency != 40) ||
+                    !string.IsNullOrEmpty(o.Esp32ClrFile))
                 {
                     o.Platform = "esp32";
                 }
@@ -361,8 +362,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.Preview,
                             o.DeploymentImage,
                             null,
-                            o.Esp32PartitionTableSize,
-                            _verbosityLevel);
+                            o.Esp32ClrFile,
+                            _verbosityLevel,
+                            o.Esp32PartitionTableSize);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -421,8 +423,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             false,
                             o.DeploymentImage,
                             appFlashAddress,
-                            o.Esp32PartitionTableSize,
-                            _verbosityLevel);
+                            null,
+                            _verbosityLevel,
+                            o.Esp32PartitionTableSize);
 
                         if (_exitCode != ExitCodes.OK)
                         {

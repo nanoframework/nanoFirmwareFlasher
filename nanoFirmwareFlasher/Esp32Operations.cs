@@ -92,11 +92,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool preview, 
             string applicationPath,
             string deploymentAddress,
-            PartitionTableSize? partitionTableSize,
-            VerbosityLevel verbosity)
+            string clrFile,
+            VerbosityLevel verbosity,
+            PartitionTableSize? partitionTableSize)
         {
             var operationResult = ExitCodes.OK;
             uint address = 0;
+            bool updateCLRfile = !string.IsNullOrEmpty(clrFile);
 
             // if a target name wasn't specified use the default (and only available) ESP32 target
             if (string.IsNullOrEmpty(targetName))
@@ -113,15 +115,44 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Verbosity = verbosity
             };
 
+            // if this is updating with a local CLR file, download the package silently
+            if (updateCLRfile)
+            {
+                // check file
+                if (!File.Exists(clrFile))
+                {
+                    return ExitCodes.E9011;
+                }
+
+                // has to be a binary file
+                if (Path.GetExtension(clrFile) != ".bin")
+                {
+                    return ExitCodes.E9012;
+                }
+
+                firmware.Verbosity = VerbosityLevel.Quiet;
+            }
+
             // need to download update package?
             if (updateFw)
             {
                 operationResult = await firmware.DownloadAndExtractAsync(esp32Device.FlashSize);
+                
                 if (operationResult != ExitCodes.OK)
                 {
                     return operationResult;
                 }
                 // download successful
+            }
+
+            // if updating with a CRL file, need to have a new fw package
+            if(updateCLRfile)
+            {
+                // remove the CLR file from the image
+                firmware.FlashPartitions.Remove(Esp32Firmware.CLRAddress);
+
+                // add it back with the file image from the command line option
+                firmware.FlashPartitions.Add(Esp32Firmware.CLRAddress, clrFile);
             }
 
             // need to include application file?
@@ -197,7 +228,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.Write($"Flashing firmware...");
+                    Console.WriteLine($"Flashing firmware...");
                 }
 
                 // write to flash

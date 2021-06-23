@@ -302,11 +302,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EraseEsp32FlashException(messages);
             }
 
-            if (Verbosity >= VerbosityLevel.Detailed)
-            {
-                Console.WriteLine(match.Groups["message"].ToString().Trim());
-            }
-
             return ExitCodes.OK;
         }
 

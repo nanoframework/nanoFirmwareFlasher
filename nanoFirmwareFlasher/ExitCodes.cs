@@ -242,5 +242,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Couldn't find any device connected.")]
         E9010 = 9010,
+
+        /// <summary>
+        /// Couldn't find CLR image file. Check the path.
+        /// </summary>
+        [Display(Name = "Couldn't find CLR image file. Check the path.")]
+        E9011 = 9011,
+
+        /// <summary>
+        /// CLR image file has wrong format. It has to be a binary file.
+        /// </summary>
+        [Display(Name = "CLR image file has wrong format.It has to be a binary file.")]
+        E9012 = 9012,
     }
 }

@@ -58,12 +58,23 @@ The tool includes help for all available commands. You can see a list of all ava
 nanoff --help
 ```
 
+## ESP32 usage examples 
+
 ### Update the firmware of an ESP32_WROOM_32 target
 
 To update the firmware of an ESP32_WROOM_32 target connected to COM31, to the latest available development version.
 
 ```console
 nanoff --update --target ESP32_WROOM_32 --serialport COM31
+```
+
+### Update the firmware of an ESP32_WROOM_32 target with a local CLR file
+
+To update the firmware of an ESP32_WROOM_32 target connected to COM31 with a local CLR file (for example from a build).
+This file has to be a binary file with a valid CLR from a build. No other checks or validations are performed on the file content.
+
+```console
+nanoff --update --target ESP32_WROOM_32 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
 ```
 
 ### Deploy a managed application to an ESP32_WROOM_32 target
@@ -85,6 +96,8 @@ This example uses the binary format file that was saved on a previous backup ope
 ```console
 nanoff --update --target ESP32_WROOM_32 --serialport COM31 --deployment "c:\eps32-backups\my_awesome_app.bin"
 ```
+
+## STMP32 usage examples 
 
 ### Update the firmware of a specific STM32 target
 
@@ -145,6 +158,8 @@ To install the drivers for STM32 DFU connected targets.
 ```console
 nanoff --installdfudrivers
 ```
+
+## TI CC13x2 usage examples 
 
 ### Update the firmware of a specific TI CC13x2 target
 
