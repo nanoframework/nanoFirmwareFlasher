@@ -19,19 +19,19 @@
     <Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
     <!-- need this to allow async Main() -->
     <LangVersion>latest</LangVersion>
-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp5;net48</TargetFrameworks>
     <Platforms>x64;x86</Platforms>
 	  <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackGlobalTool)' != true">
-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp5;net48</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackGlobalTool)' == true">
     <PackAsTool>true</PackAsTool>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp5</TargetFrameworks>
     <PackageId>nanoff</PackageId>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
