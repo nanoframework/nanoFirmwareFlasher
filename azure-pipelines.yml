@@ -262,7 +262,7 @@ jobs:
 
   # push NuGet class lib package to NuGet (happens on all builds except PRs)
   - task: NuGetCommand@2
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Push NuGet packages to NuGet
     continueOnError: true
     inputs:
@@ -303,6 +303,7 @@ jobs:
       assetUploadMode: replace
       isPreRelease: false
       addChangeLog: false
+      action: edit
 
 ##################################
 # report build failure to Discord
