@@ -231,7 +231,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool Deploy { get; set; }
 
         [Option(
-            "stable",
+            "preview",
             Required = false,
             Default = false,
             HelpText = "Preview version. Will download the firmware package from the preview repository.")]
