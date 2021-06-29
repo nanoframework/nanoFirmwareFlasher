@@ -151,7 +151,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     HttpResponseMessage response = await _cloudsmithClient.GetAsync(requestUri);
 
-                    var responseBody = await response.Content.ReadAsStringAsync();
+                    string responseBody = await response.Content.ReadAsStringAsync();
 
                     // check for empty array 
                     if (responseBody == "[]")
@@ -167,7 +167,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         requestUri = $"{_cloudsmithPackages}/{_communityTargetsRepo}/?page=1&query={_targetName} {fwVersion}";
 
-                        await _cloudsmithClient.GetAsync(requestUri);
+                        response = await _cloudsmithClient.GetAsync(requestUri);
+
+                        responseBody = await response.Content.ReadAsStringAsync();
 
                         if (responseBody == "[]")
                         {
