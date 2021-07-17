@@ -125,12 +125,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E9006;
             }
 
-            var fwFiles = Directory.EnumerateFiles(LocationPath, $"{_targetName}-*.zip").OrderByDescending(f => f).ToList();
+            List<FileInfo> fwFiles = new();
+
+            if (_preview)
+            {
+                fwFiles = Directory.GetFiles(LocationPath)
+                                   .Select(f => new FileInfo(f))
+                                   .Where(f => f.Name.Contains("-preview.") && f.Extension == ".zip")
+                                   .OrderByDescending(f => f.Name)
+                                   .ToList();
+            }
+            else
+            {
+                fwFiles = Directory.GetFiles(LocationPath)
+                                   .Select(f => new FileInfo(f))
+                                   .Where(f => !f.Name.Contains("-preview.") && f.Extension == ".zip")
+                                   .OrderByDescending(f => f.Name)
+                                   .ToList();
+            }
 
             if (fwFiles.Any())
             {
                 // get file creation date (from the 1st one)
-                if ((DateTime.UtcNow - File.GetLastWriteTimeUtc(fwFiles.First())).TotalHours < 4)
+                if ((DateTime.UtcNow - File.GetLastWriteTimeUtc(fwFiles.First().FullName)).TotalHours < 4)
                 {
                     // fw package has less than 4 hours
                     // skip download
@@ -301,12 +318,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // couldn't download the fw file
                 // check if there is one available
-                fwFiles = Directory.EnumerateFiles(LocationPath, $"{_targetName}-*.zip").OrderByDescending(f => f).ToList();
 
                 if (fwFiles.Any())
                 {
                     // take the 1st one
-                    fwFileName = fwFiles.First();
+                    fwFileName = fwFiles.First().FullName;
 
                     // get the version form the file name
                     var pattern = @"(\d+\.\d+\.\d+)(\.\d+|-.+)(?=\.zip)";
@@ -357,15 +373,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
-            // be nice to the user and delete any fw packages other than the last one
-            var allFwFiles = Directory.EnumerateFiles(LocationPath, "*.zip").OrderByDescending(f => f).ToList();
-            if (allFwFiles.Count > 1)
-            {
-                foreach (var file in allFwFiles.Skip(1))
-                {
-                    File.Delete(file);
-                }
-            }
+            // be nice to the user and delete any fw packages older than a month
+            Directory.GetFiles(LocationPath)
+                     .Select(f => new FileInfo(f))
+                     .Where(f => f.Extension == ".zip" && f.LastWriteTime < DateTime.Now.AddMonths(-1))
+                     .ToList()
+                     .ForEach(f => f.Delete());
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
