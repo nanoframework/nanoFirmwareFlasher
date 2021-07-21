@@ -82,7 +82,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             var repoName = _preview ? _refTargetsDevRepo : _refTargetsStableRepo;
             // get the firmware version if it is defined
             var fwVersion = string.IsNullOrEmpty(_fwVersion) ? "latest" : _fwVersion;
-            string requestUri = $"{_cloudsmithPackages}/{repoName}/?page=1&query={_targetName} {fwVersion}";
+            string requestUri = $"{_cloudsmithPackages}/{repoName}/?page=1&query=^{_targetName}$ {fwVersion}";
 
             string downloadUrl = string.Empty;
 
@@ -182,7 +182,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         // try with community targets
 
-                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsRepo}/?page=1&query={_targetName} {fwVersion}";
+                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsRepo}/?page=1&query=^{_targetName}$ {fwVersion}";
 
                         response = await _cloudsmithClient.GetAsync(requestUri);
 
