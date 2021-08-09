@@ -190,7 +190,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.Write($"Erasing flash...");
+                Console.WriteLine($"Erasing flash...");
             }
 
             if (updateFw)
