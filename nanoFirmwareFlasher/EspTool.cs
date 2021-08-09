@@ -61,6 +61,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// true if the stub program is already active and we can use the --before no_reset_no_sync parameter 
         /// </summary>
         private bool _isStubActive = false;
+        private bool connectPatternFound;
+        private DateTime connectTimeStamp;
+        private bool connectPromptShown;
 
         /// <summary>
         /// This property is <see langword="true"/> if the specified COM port is valid.
@@ -197,10 +200,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>The filled info structure with all the information about the connected ESP32 chip or null if an error occured</returns>
         internal DeviceInfo TestChip()
         {
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"Reading MAC from chip...");
+            }
+
             // execute read_mac command and parse the result
             if (!RunEspTool("read_mac", true, false, null, out string messages))
             {
                 throw new EspToolExecutionException(messages);
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("OK");
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
             var match = Regex.Match(messages, "(esptool.py v)(?<version>[0-9.]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)");
@@ -209,21 +225,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EspToolExecutionException(messages);
             }
 
-            // that gives us the version of the esptool.py, the chip name and the MAC address
+            // that gives us the chip version, name, features and the MAC address
             string version = match.Groups["version"].ToString().Trim();
             string name = match.Groups["name"].ToString().Trim();
             string features = match.Groups["features"].ToString().Trim();
             string mac = match.Groups["mac"].ToString().Trim();
 
-            if (Verbosity >= VerbosityLevel.Diagnostic)
+            if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Executed esptool.py version {version}");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"Reading flash ID from chip...");
             }
 
             // execute flash_id command and parse the result
             if (!RunEspTool("flash_id", false, false, null, out messages))
             {
                 throw new EspToolExecutionException(messages);
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("OK");
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
             match = Regex.Match(messages, $"(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
@@ -435,55 +459,88 @@ namespace nanoFramework.Tools.FirmwareFlasher
             };
 
             // start esptool and wait for exit
-            if (espTool.Start())
-            {
-                // if no progress output needed wait unlimited time until esptool exit
-                if (Verbosity < VerbosityLevel.Detailed &&
-                    !progressTestChar.HasValue)
-                {
-                    espTool.WaitForExit();
-                }
-            }
-            else
+            if (!espTool.Start())
             {
                 throw new EspToolExecutionException("Error starting esptool!");
             }
 
             var messageBuilder = new StringBuilder();
 
+            // reset these
+            connectPromptShown = false;
+            connectPatternFound = false;
+            connectTimeStamp = DateTime.UtcNow;
+
             // showing progress is a little bit tricky
-            if (progressTestChar.HasValue && Verbosity >= VerbosityLevel.Detailed)
+            if (Verbosity > VerbosityLevel.Quiet)
             {
-                // loop until esptool exit
-                while (!espTool.HasExited)
+                if (progressTestChar.HasValue)
                 {
-                    // loop until there is no next char to read from standard output
-                    while (true)
+                    // need to look for progress test char
+
+                    // loop until esptool exit
+                    while (!espTool.HasExited)
                     {
-                        int next = espTool.StandardOutput.Read();
-                        if (next != -1)
+                        // loop until there is no next char to read from standard output
+                        while (true)
                         {
-                            // append the char to the message buffer
-                            messageBuilder.Append((char)next);
-                            // try to find a progress message
-                            string progress = FindProgress(messageBuilder, progressTestChar.Value);
-                            if (progress != null)
+                            int next = espTool.StandardOutput.Read();
+                            if (next != -1)
                             {
-                                // print progress and set the cursor to the beginning of the line (\r)
-                                Console.Write(progress);
-                                Console.Write("\r");
+                                // append the char to the message buffer
+                                messageBuilder.Append((char)next);
+
+                                // try to find a progress message
+                                string progress = FindProgress(messageBuilder, progressTestChar.Value);
+                                if (progress != null && Verbosity > VerbosityLevel.Quiet)
+                                {
+                                    // print progress and set the cursor to the beginning of the line (\r)
+                                    Console.Write(progress);
+                                    Console.Write("\r");
+                                }
+
+                                ProcessConnectPattern(messageBuilder);
+                            }
+                            else
+                            {
+                                break;
                             }
                         }
-                        else
+                    }
+
+                    // collect the last messages
+                    messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
+                    messageBuilder.Append(espTool.StandardError.ReadToEnd());
+                }
+                else
+                {
+                    // when not looking for progress char, look for connect pattern
+                    
+                    // loop until esptool exit
+                    while (!espTool.HasExited)
+                    {
+                        // loop until there is no next char to read from standard output
+                        while (true)
                         {
-                            break;
+                            int next = espTool.StandardOutput.Read();
+                            if (next != -1)
+                            {
+                                // append the char to the message buffer
+                                messageBuilder.Append((char)next);
+
+                                ProcessConnectPattern(messageBuilder);
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
                     }
-                }
 
-                // collect the last messages
-                messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
-                messageBuilder.Append(espTool.StandardError.ReadToEnd());
+                    // collect the last messages
+                    messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
+                    messageBuilder.Append(espTool.StandardError.ReadToEnd());
+                }
             }
             else
             {
@@ -499,6 +556,50 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // true if exit code was 0 (success)
             return espTool.ExitCode == 0;
+        }
+
+        private void ProcessConnectPattern(StringBuilder messageBuilder)
+        {
+            // try to find a connect pattern
+            connectPatternFound = FindConnectPattern(messageBuilder);
+
+            var timeToConnect = DateTime.UtcNow.Subtract(connectTimeStamp).TotalSeconds;
+
+            // if esptool is struggling to connect for more than 5 seconds
+
+            // prompt user
+            if (!connectPromptShown &&
+                connectPatternFound && 
+                timeToConnect > 5)
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+
+                Console.WriteLine("*** Hold down the BOOT/FLASH button in ESP32 board ***");
+
+                Console.ForegroundColor = ConsoleColor.White;
+
+                // set flag
+                connectPromptShown = true;
+            }
+        }
+
+        private bool FindConnectPattern(StringBuilder messageBuilder)
+        {
+            if (messageBuilder.Length > 2)
+            {
+                var previousChar = messageBuilder[messageBuilder.Length - 2];
+                var newChar = messageBuilder[messageBuilder.Length - 1];
+
+                // don't look for double dot (..) sequence so it doesn't mistake it with an ellipsis (...)
+                return ((previousChar == '.'
+                         && newChar == '_') ||
+                        (previousChar == '_'
+                         && newChar == '_') ||
+                        (previousChar == '_'
+                         && newChar == '.'));
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -60,6 +60,12 @@ nanoff --help
 
 ## ESP32 usage examples 
 
+>Note: some ESP32 boards have issues entering bootloader mode. This can be usually overcome by holding down the BOOT/FLASH button in the board.
+In case nanoff detects this situation the following warning is shown: 
+```console
+*** Hold down the BOOT/FLASH button in ESP32 board ***
+```
+
 ### Update the firmware of an ESP32_WROOM_32 target
 
 To update the firmware of an ESP32_WROOM_32 target connected to COM31, to the latest available development version.
