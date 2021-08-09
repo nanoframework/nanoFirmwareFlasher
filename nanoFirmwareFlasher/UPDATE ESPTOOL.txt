@@ -13,4 +13,5 @@ When a new release of Esptool is available, the contents of the Esptool folder c
 
 ** requirements
 - pip: install instructions @ https://pip.pypa.io/en/stable/installing/#upgrading-pip
+- pypiwin32: pre-requisite for PyInstaller on Windows: install instructions @ https://pypi.org/project/pypiwin32/219/
 - PyInstaller: install instructions @ https://pyinstaller.readthedocs.io/en/stable/installation.html

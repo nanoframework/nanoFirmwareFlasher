@@ -6,7 +6,15 @@
 
 # requirements
 # pip: install instructions @ https://pip.pypa.io/en/stable/installing/#upgrading-pip
+# pypiwin32: pre-requisite for PyInstaller on Windows: install instructions @ https://pypi.org/project/pypiwin32/219/
 # PyInstaller: install instructions @ https://pyinstaller.readthedocs.io/en/stable/installation.html
+
+
+# move to destination path
+$repoPath = Join-Path -Path $PSScriptRoot -ChildPath "\.." -Resolve
+$libPath = Join-Path -Path $repoPath -ChildPath "lib"
+
+Set-Location $libPath
 
 Write-Host ""
 Write-Host "Install esptool..."
@@ -20,11 +28,7 @@ Write-Host "Packaging esptool Python in Windows executable..."
 Write-Host ""
 
 # create a package that can run esptool without python via PyInstaller
-pyinstaller --distpath esptool__ --workpath esptool-python\build --specpath esptool-python esptool-python\esptool.py
-
-# clean esptool folder (to catch new and deleted files)
-# keep bin files
-Remove-Item -Path esptool -Exclude *.bin -Recurse -Force
+pyinstaller --specpath "esptool-python" --distpath "esptool__" --workpath "esptool-python\build" "esptool-python\esptool.py"
 
 # copy esptool files 
 Get-ChildItem "esptool__\esptool" -File -Recurse | Copy-Item -Destination "esptool" -Force
