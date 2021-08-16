@@ -289,13 +289,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return;
                 }
 
-                EspTool.DeviceInfo esp32Device;
+                Esp32DeviceInfo esp32Device;
 
                 if (espTool.ComPortAvailable)
                 {
                     try
                     {
-                        esp32Device = espTool.TestChip();
+                        esp32Device = espTool.GetDeviceDetails();
                     }
                     catch (EspToolExecutionException ex)
                     {
@@ -316,12 +316,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (_verbosityLevel >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine($"Connected to ESP32 { esp32Device.ChipName } with MAC address { esp32Device.MacAddress }");
-                    Console.WriteLine($"features { esp32Device.Features }");
-
-                    string flashSize = esp32Device.FlashSize >= 0x10000 ? $"{ esp32Device.FlashSize / 0x100000 }MB" : $"{ esp32Device.FlashSize / 0x400 }kB";
-
-                    Console.WriteLine($"Flash information: manufacturer 0x{ esp32Device.FlashManufacturerId } device 0x{ esp32Device.FlashDeviceModelId } size { flashSize }");
+                    Console.WriteLine("");
+                    Console.WriteLine($"Connected to:");
+                    Console.WriteLine($"{ esp32Device }");
                 }
 
                 // set verbosity
@@ -352,6 +349,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // done here
                         return;
                     }
+                }
+
+                // show device details
+                if(o.DeviceDetails)
+                {
+                    // device details already output
+                    _exitCode = ExitCodes.OK;
+
+                    // done here
+                    return;
                 }
 
                 // update operation requested?
