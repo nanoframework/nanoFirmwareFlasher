@@ -96,30 +96,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // erase flash
             if (DoMassErase)
             {
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Mass erase device...");
-                }
+                var eraseResult = MassErase();
 
-                cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -e all");
-
-                if (!cliOutput.Contains("Flash memory erased."))
+                if (eraseResult != ExitCodes.OK)
                 {
-                    return ExitCodes.E5005;
+                    return eraseResult;
                 }
-
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine(" OK");
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine("");
-                }
-                Console.ForegroundColor = ConsoleColor.White;
 
                 // toggle mass erase so it's only performed before the first file is flashed
                 DoMassErase = false;
@@ -221,31 +203,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // erase flash
             if (DoMassErase)
             {
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Mass erase device...");
-                }
+                var eraseResult = MassErase();
 
-                cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -e all");
-
-                if (!cliOutput.Contains("Flash memory erased."))
+                if (eraseResult != ExitCodes.OK)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ERROR");
-                    return ExitCodes.E5005;
+                    return eraseResult;
                 }
-
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine(" OK");
-                }
-                else
-                {
-                    Console.WriteLine("");
-                }
-                Console.ForegroundColor = ConsoleColor.White;
 
                 // toggle mass erase so it's only performed before the first file is flashed
                 DoMassErase = false;
@@ -361,6 +324,42 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else
             {
                 Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("");
+            }
+
+            Console.ForegroundColor = ConsoleColor.White;
+
+            return ExitCodes.OK;
+        }
+
+
+        /// <summary>
+        /// Reset MCU of connected JTAG device.
+        /// </summary>
+        public ExitCodes MassErase()
+        {
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("Mass erase device...");
+            }
+
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -e all");
+
+            if (!cliOutput.Contains("Mass erase successfully achieved"))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ERROR");
+                return ExitCodes.E5005;
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(" OK");
+            }
+            else
+            {
                 Console.WriteLine("");
             }
 
