@@ -127,10 +127,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // trying to use a target that's not compatible with the connected device 
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("");
-                Console.WriteLine("************************************** WARNING *************************************");
+                Console.WriteLine("***************************************** WARNING ****************************************");
                 Console.WriteLine("Seems that you're about to use a firmware image for a revision 3 device, but the");
                 Console.WriteLine($"connected device is {esp32Device.ChipName}. You should use the 'ESP32_WROOM_32' instead.");
-                Console.WriteLine("************************************************************************************");
+                Console.WriteLine("******************************************************************************************");
                 Console.WriteLine("");
             }
 
@@ -140,10 +140,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // trying to use a traget with BT and the connected device doens't have support for it
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("");
-                Console.WriteLine("************************************** WARNING *************************************");
+                Console.WriteLine("******************************************* WARNING ********************************************");
                 Console.WriteLine("Seems that you're about to use a firmware image that includes Bluetooth, but the");
-                Console.WriteLine($"connected device does have support for it. You should use a target without BLE in the name");
-                Console.WriteLine("************************************************************************************");
+                Console.WriteLine($"connected device does not have support for it. You should use a target without BLE in the name.");
+                Console.WriteLine("************************************************************************************************");
                 Console.WriteLine("");
             }
 
