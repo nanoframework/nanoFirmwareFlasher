@@ -86,10 +86,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // try to connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR reset=HWrst");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=NORMAL");
 
             if (cliOutput.Contains("Error:"))
             {
+                Console.WriteLine("");
                 return ExitCodes.E5002;
             }
 
