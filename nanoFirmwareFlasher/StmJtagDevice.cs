@@ -16,6 +16,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal class StmJtagDevice
     {
         /// <summary>
+        /// Error message from ST CLI.
+        /// </summary>
+        private static string _stCLIErrorMessage;
+
+        /// <summary>
         /// This property is <see langword="true"/> if a JTAG device is connected.
         /// </summary>
         public bool DevicePresent => !string.IsNullOrEmpty(DeviceId);
@@ -65,6 +70,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!cliOutput.Contains("Connected via SWD."))
                 {
+                    if (!string.IsNullOrEmpty(_stCLIErrorMessage))
+                    {
+                        // show error detail, if available
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.WriteLine(_stCLIErrorMessage);
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
                     throw new CantConnectToJtagDeviceException();
                 }
             }
@@ -91,6 +106,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (cliOutput.Contains("Error:"))
             {
                 Console.WriteLine("");
+                
+                if (!string.IsNullOrEmpty(_stCLIErrorMessage))
+                {
+                    // show error detail, if available
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine(_stCLIErrorMessage);
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
                 return ExitCodes.E5002;
             }
 
@@ -132,6 +158,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!cliOutput.Contains("File download complete"))
                 {
+                    if (!string.IsNullOrEmpty(_stCLIErrorMessage))
+                    {
+                        // show error detail, if available
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.WriteLine(_stCLIErrorMessage);
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
                     return ExitCodes.E5006;
                 }
             }
@@ -198,6 +234,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!cliOutput.Contains("Connected via SWD."))
             {
+                Console.WriteLine("");
+
+                if (!string.IsNullOrEmpty(_stCLIErrorMessage))
+                {
+                    // show error detail, if available
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine(_stCLIErrorMessage);
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
                 return ExitCodes.E5002;
             }
 
@@ -240,6 +288,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!cliOutput.Contains("Programming Complete."))
                 {
+                    if (!string.IsNullOrEmpty(_stCLIErrorMessage))
+                    {
+                        // show error detail, if available
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.WriteLine(_stCLIErrorMessage);
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
                     return ExitCodes.E5006;
                 }
             }
@@ -306,6 +364,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (cliOutput.Contains("Error:"))
             {
+                Console.WriteLine("");
+
+                if (!string.IsNullOrEmpty(_stCLIErrorMessage))
+                {
+                    // show error detail, if available
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine(_stCLIErrorMessage);
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
                 return ExitCodes.E5002;
             }
 
@@ -349,8 +419,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!cliOutput.Contains("Mass erase successfully achieved"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ERROR");
+                Console.WriteLine("");
+
+                if (!string.IsNullOrEmpty(_stCLIErrorMessage))
+                {
+                    // show error detail, if available
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine(_stCLIErrorMessage);
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
                 return ExitCodes.E5005;
             }
 
@@ -373,6 +453,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             try
             {
+                // reset error message
+                _stCLIErrorMessage = string.Empty;
+
                 var stLinkCli = new Process
                 {
                     StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stlink", "bin", "STM32_Programmer_CLI.exe"),
@@ -384,7 +467,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 };
 
-
                 // start STM32 Programmer CLI and...
                 stLinkCli.Start();
 
@@ -392,11 +474,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 stLinkCli.WaitForExit();
 
                 // collect output messages
-                return stLinkCli.StandardOutput.ReadToEnd();
+                string cliOutput = stLinkCli.StandardOutput.ReadToEnd();
+
+                // check and parse any error in the output
+                _stCLIErrorMessage = GetErrorMessageFromSTM32CLI(cliOutput);
+
+                return cliOutput;
             }
             catch(Exception ex)
             {
                 throw new StLinkCliExecutionException(ex.Message);
+            }
+        }
+
+        private static string GetErrorMessageFromSTM32CLI(string cliOutput)
+        {
+            var regEx = new Regex(@"Error: (?<error>.+).", RegexOptions.IgnoreCase);
+
+            var match = regEx.Match(cliOutput);
+
+            if (match.Success)
+            {
+                return match.Groups["error"].Value;
+            }
+            else
+            {
+                return "";
             }
         }
     }
