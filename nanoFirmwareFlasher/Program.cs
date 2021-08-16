@@ -121,6 +121,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
         {
+            bool operationPerformed = false;
+
             #region parse verbosity option
 
             switch (o.Verbosity)
@@ -333,11 +335,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         // backup path specified, backup deployment
                         _exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, o.BackupPath, o.BackupFile, _verbosityLevel);
+                        
                         if (_exitCode != ExitCodes.OK)
                         {
                             // done here
                             return;
                         }
+
+                        operationPerformed = true;
                     }
                     catch (ReadEsp32FlashException ex)
                     {
@@ -470,22 +475,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     _exitCode = Stm32Operations.InstallDfuDrivers(_verbosityLevel);
 
-                    if (_exitCode != ExitCodes.OK)
-                    {
-                        // done here
-                        return;
-                    }
+                    // done here
+                    return;
                 }
 
                 if (o.InstallJtagDrivers)
                 {
                     _exitCode = Stm32Operations.InstallJtagDrivers(_verbosityLevel);
 
-                    if (_exitCode != ExitCodes.OK)
-                    {
-                        // done here
-                        return;
-                    }
+                    // done here
+                    return;
                 }
 
                 if (o.ListDevicesInDfuMode)
@@ -712,6 +711,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             updateInterface,
                             _verbosityLevel);
 
+                        operationPerformed = true;
+
                         if (_exitCode != ExitCodes.OK)
                         {
                             // done here
@@ -767,6 +768,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         updateInterface,
                                         _verbosityLevel);
 
+                        operationPerformed = true;
+
                         if (_exitCode != ExitCodes.OK)
                         {
                             // done here
@@ -814,14 +817,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (o.TIInstallXdsDrivers)
                 {
-
                     _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
 
-                    if (_exitCode != ExitCodes.OK)
-                    {
-                        // done here
-                        return;
-                    }
+                    // done here
+                    return;
                 }
 
                 if (!string.IsNullOrEmpty(o.TargetName))
@@ -848,6 +847,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.DeploymentImage,
                             appFlashAddress,
                             _verbosityLevel);
+
+                        operationPerformed = true;
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -884,6 +885,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         appFlashAddress,
                                         _verbosityLevel);
 
+                        operationPerformed = true;
+
                         if (_exitCode != ExitCodes.OK)
                         {
                             // done here
@@ -906,23 +909,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
-            // done nothing...
-            // because of short-comings in CommandLine parsing 
-            // need to customize the output to provide a consistent output
-            var parser = new Parser(config => config.HelpWriter = null);
-            var result = parser.ParseArguments<Options>(new[] { "", "" });
+            // done nothing... or maybe not...
+            if (!operationPerformed)
+            {
+                // because of short-comings in CommandLine parsing 
+                // need to customize the output to provide a consistent output
+                var parser = new Parser(config => config.HelpWriter = null);
+                var result = parser.ParseArguments<Options>(new[] { "", "" });
 
-            var helpText = new HelpText(
-                new HeadingInfo(_headerInfo),
-                _copyrightInfo)
-                    .AddPreOptionsLine("")
-                    .AddPreOptionsLine("No operation was performed with the options supplied.")
-                    .AddPreOptionsLine("")
-                    .AddPreOptionsLine(HelpText.RenderUsageText(result))
-                    .AddPreOptionsLine("")
-                    .AddOptions(result);
+                var helpText = new HelpText(
+                    new HeadingInfo(_headerInfo),
+                    _copyrightInfo)
+                        .AddPreOptionsLine("")
+                        .AddPreOptionsLine("No operation was performed with the options supplied.")
+                        .AddPreOptionsLine("")
+                        .AddPreOptionsLine(HelpText.RenderUsageText(result))
+                        .AddPreOptionsLine("")
+                        .AddOptions(result);
 
-            Console.WriteLine(helpText.ToString());
+                Console.WriteLine(helpText.ToString());
+            }
         }
 
         private static void OutputError(ExitCodes errorCode, bool outputMessage, string extraMessage = null)
