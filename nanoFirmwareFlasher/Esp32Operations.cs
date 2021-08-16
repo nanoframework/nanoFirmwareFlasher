@@ -18,7 +18,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         public static ExitCodes BackupFlash(
             EspTool tool, 
-            EspTool.DeviceInfo device,
+            Esp32DeviceInfo device,
             string backupPath,
             string fileName,
             VerbosityLevel verbosity)
@@ -47,7 +47,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // file name specified
             if(string.IsNullOrEmpty(fileName))
             {
-                fileName = $"{device.ChipName}_0x{device.MacAddress:X}_{DateTime.UtcNow.ToShortDateString()}.bin";
+                fileName = $"{device.ChipName}_0x{device.MacAddress}_{DateTime.UtcNow.ToShortDateString()}.bin";
             }
 
             var backupFilePath = Path.Combine(backupPath, fileName);
@@ -85,7 +85,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             EspTool espTool, 
-            EspTool.DeviceInfo esp32Device, 
+            Esp32DeviceInfo esp32Device, 
             string targetName,
             bool updateFw,
             string fwVersion, 
@@ -104,6 +104,47 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (string.IsNullOrEmpty(targetName))
             {
                 targetName = _esp32TargetName;
+            }
+
+            // perform sanity checks for the specified target agains the connected device details
+            if(esp32Device.ChipType != "ESP32")
+            {
+                // connected to a device not supported
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("");
+                Console.WriteLine("************************************** WARNING *************************************");
+                Console.WriteLine("Seems that the device that you have connected is not supported by .NET nanoFramework");
+                Console.WriteLine("Most likely it won't boot");
+                Console.WriteLine("************************************************************************************");
+                Console.WriteLine("");
+            }
+
+            if (targetName.Contains("ESP32_WROOM_32_V3") &&
+                (esp32Device.ChipName.Contains("revision 0") ||
+                esp32Device.ChipName.Contains("revision 1") ||
+                esp32Device.ChipName.Contains("revision 2")))
+            {
+                // trying to use a target that's not compatible with the connected device 
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("");
+                Console.WriteLine("************************************** WARNING *************************************");
+                Console.WriteLine("Seems that you're about to use a firmware image for a revision 3 device, but the");
+                Console.WriteLine($"connected device is {esp32Device.ChipName}. You should use the 'ESP32_WROOM_32' instead.");
+                Console.WriteLine("************************************************************************************");
+                Console.WriteLine("");
+            }
+
+            if (targetName.Contains("BLE") &&
+                !esp32Device.Features.Contains(", BT,"))
+            {
+                // trying to use a traget with BT and the connected device doens't have support for it
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("");
+                Console.WriteLine("************************************** WARNING *************************************");
+                Console.WriteLine("Seems that you're about to use a firmware image that includes Bluetooth, but the");
+                Console.WriteLine($"connected device does have support for it. You should use a target without BLE in the name");
+                Console.WriteLine("************************************************************************************");
+                Console.WriteLine("");
             }
 
             Esp32Firmware firmware = new Esp32Firmware(

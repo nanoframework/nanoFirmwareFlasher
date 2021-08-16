@@ -18,7 +18,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// <summary>
     /// Class the handles all the calls to the esptool.exe.
     /// </summary>
-    internal class EspTool
+    internal partial class EspTool
     {
         /// <summary>
         /// The serial port over which all the communication goes
@@ -77,81 +77,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public VerbosityLevel Verbosity { get; internal set; } = VerbosityLevel.Normal;
 
         /// <summary>
-        /// Structure for holding the information about the connected ESP32 together
-        /// </summary>
-        internal struct DeviceInfo
-        {
-            /// <summary>
-            /// Version of the esptool.py
-            /// </summary>
-            internal Version ToolVersion { get; }
-
-            /// <summary>
-            /// Name of the ESP32 chip
-            /// </summary>
-            internal string ChipName { get; }
-
-            /// <summary>
-            /// ESP32 chip features
-            /// </summary>
-            internal string Features { get; }
-
-            /// <summary>
-            /// MAC address of the ESP32 chip
-            /// </summary>
-            internal PhysicalAddress MacAddress { get; }
-
-            /// <summary>
-            /// Flash manufacturer ID.
-            /// </summary>
-            /// <remarks>
-            /// See http://code.coreboot.org/p/flashrom/source/tree/HEAD/trunk/flashchips.h for more details.
-            /// </remarks>
-            internal byte FlashManufacturerId { get; }
-
-            /// <summary>
-            /// Flash device type ID.
-            /// </summary>
-            /// <remarks>
-            /// See http://code.coreboot.org/p/flashrom/source/tree/HEAD/trunk/flashchips.h for more details.
-            /// </remarks>
-            internal short FlashDeviceModelId { get; }
-
-            /// <summary>
-            /// The size of the flash in bytes; 4 MB = 0x40000 bytes
-            /// </summary>
-            internal int FlashSize { get; }
-
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            /// <param name="toolVersion">Version of the esptool.py</param>
-            /// <param name="chipName">ESP32 chip name</param>
-            /// <param name="features">ESP32 chip features</param>
-            /// <param name="macAddress">MAC address of the ESP32 chip</param>
-            /// <param name="flashManufacturerId">Flash manufacturer ID</param>
-            /// <param name="flashDeviceModelId">Flash device type ID</param>
-            /// <param name="flashSize">The size of the flash in bytes</param>
-            internal DeviceInfo(
-                Version toolVersion, 
-                string chipName, 
-                string features, 
-                PhysicalAddress macAddress, 
-                byte flashManufacturerId, 
-                short flashDeviceModelId, 
-                int flashSize)
-            {
-                ToolVersion = toolVersion;
-                ChipName = chipName;
-                Features = features;
-                MacAddress = macAddress;
-                FlashManufacturerId = flashManufacturerId;
-                FlashDeviceModelId = flashDeviceModelId;
-                FlashSize = flashSize;
-            }
-        }
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="serialPort">The serial port over which all the communication goes.</param>
@@ -195,50 +120,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
-        /// Tests the connection to the ESP32 chip.
+        /// Tries reading ESP32 device details.
         /// </summary>
-        /// <returns>The filled info structure with all the information about the connected ESP32 chip or null if an error occured</returns>
-        internal DeviceInfo TestChip()
+        /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occured</returns>
+        internal Esp32DeviceInfo GetDeviceDetails()
         {
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"Reading MAC from chip...");
-            }
-
-            // execute read_mac command and parse the result
-            if (!RunEspTool("read_mac", true, false, null, out string messages))
-            {
-                throw new EspToolExecutionException(messages);
-            }
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("OK");
-                Console.ForegroundColor = ConsoleColor.White;
-            }
-
-            var match = Regex.Match(messages, "(esptool.py v)(?<version>[0-9.]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)");
-            if (!match.Success)
-            {
-                throw new EspToolExecutionException(messages);
-            }
-
-            // that gives us the chip version, name, features and the MAC address
-            string version = match.Groups["version"].ToString().Trim();
-            string name = match.Groups["name"].ToString().Trim();
-            string features = match.Groups["features"].ToString().Trim();
-            string mac = match.Groups["mac"].ToString().Trim();
+            string messages;
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"Reading flash ID from chip...");
+                Console.WriteLine($"Reading details from chip...");
             }
 
             // execute flash_id command and parse the result
-            if (!RunEspTool("flash_id", false, false, null, out messages))
+            if (!RunEspTool("flash_id", true, false, null, out messages))
             {
                 throw new EspToolExecutionException(messages);
             }
@@ -250,13 +146,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
-            match = Regex.Match(messages, $"(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
+            var match = Regex.Match(messages, $"(Detecting chip type... )(?<type>.*)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(Crystal is )(?<crystal>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
             if (!match.Success)
             {
                 throw new EspToolExecutionException(messages);
             }
 
-            // that gives us the flash manufacturer, flash device type ID and flash size
+            // grab details
+            string chipType = match.Groups["type"].ToString().Trim();
+            string name = match.Groups["name"].ToString().Trim();
+            string features = match.Groups["features"].ToString().Trim();
+            string mac = match.Groups["mac"].ToString().Trim();
+            string crystal = match.Groups["crystal"].ToString().Trim();
             string manufacturer = match.Groups["manufacturer"].ToString().Trim();
             string device = match.Groups["device"].ToString().Trim();
             string size = match.Groups["size"].ToString().Trim();
@@ -271,11 +172,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 _ => 1,
             };
 
-            return new DeviceInfo(
-                new Version(version),
+            return new Esp32DeviceInfo(
+                chipType,
                 name,
                 features,
-                PhysicalAddress.Parse(mac.Replace(':', '-').ToUpperInvariant()),
+                crystal,
+                mac.ToUpperInvariant(),
                 byte.Parse(manufacturer, NumberStyles.AllowHexSpecifier),
                 short.Parse(device, NumberStyles.HexNumber),
                 _flashSize);
@@ -449,7 +351,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // prepare the process start of the esptool
             Process espTool = new Process();
-            string parameter = $"--port {_serialPort} {baudRateParameter} --chip esp32 {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
+            string parameter = $"--port {_serialPort} {baudRateParameter} --chip auto {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
             espTool.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "esptool", "esptool.exe"), parameter)
             {
                 WorkingDirectory = Path.Combine(Program.ExecutingPath, "esptool"),

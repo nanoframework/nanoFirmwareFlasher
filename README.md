@@ -83,6 +83,14 @@ This file has to be a binary file with a valid CLR from a build. No other checks
 nanoff --update --target ESP32_WROOM_32 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
 ```
 
+### Show details of the connected ESP32 device
+
+To show the details of the ESP32 device connected to COM31.
+
+```console
+nanoff --platform esp32 --serialport COM31 --devicedetails 
+```
+
 ### Deploy a managed application to an ESP32_WROOM_32 target
 
 To deploy a managed application to an ESP32_WROOM_32 target connected to COM31, which has the deployment region at 0x190000 flash address.
