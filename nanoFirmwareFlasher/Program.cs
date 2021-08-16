@@ -781,12 +781,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         o.JtagDeviceId,
                                         _verbosityLevel);
 
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
+                        // done here
+                        return;
                     }
+                }
+                else if(o.MassErase)
+                {
+                    _exitCode = Stm32Operations.MassErase(
+                                    o.JtagDeviceId,
+                                    _verbosityLevel);
+
+                    // done here
+                    return;
+                }
+                else if (o.ResetMcu)
+                {
+                    _exitCode = Stm32Operations.ResetMcu(
+                                    o.JtagDeviceId,
+                                    _verbosityLevel);
+
+                    // done here
+                    return;
                 }
             }
 

@@ -247,6 +247,33 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return jtagDevice.ResetMcu();
         }
 
+        internal static ExitCodes MassErase(
+            string jtagId,
+            VerbosityLevel verbosity)
+        {
+            // JATG device
+            StmJtagDevice jtagDevice = new StmJtagDevice(jtagId);
+
+            if (!jtagDevice.DevicePresent)
+            {
+                // no JTAG device found
+
+                // done here, this command has no further processing
+                return ExitCodes.E5001;
+            }
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.DeviceId }");
+            }
+
+            // set verbosity
+            jtagDevice.Verbosity = verbosity;
+
+            // perform erase operation
+            return jtagDevice.MassErase();
+        }
+
         internal static ExitCodes InstallDfuDrivers(VerbosityLevel verbosityLevel)
         {
             try
