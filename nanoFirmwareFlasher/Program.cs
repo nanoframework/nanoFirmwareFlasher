@@ -889,8 +889,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-#endregion
+            #endregion
 
+            // done nothing...
+            // because of short-comings in CommandLine parsing 
+            // need to customize the output to provide a consistent output
+            var parser = new Parser(config => config.HelpWriter = null);
+            var result = parser.ParseArguments<Options>(new[] { "", "" });
+
+            var helpText = new HelpText(
+                new HeadingInfo(_headerInfo),
+                _copyrightInfo)
+                    .AddPreOptionsLine("")
+                    .AddPreOptionsLine("No operation was performed with the options supplied.")
+                    .AddPreOptionsLine("")
+                    .AddPreOptionsLine(HelpText.RenderUsageText(result))
+                    .AddPreOptionsLine("")
+                    .AddOptions(result);
+
+            Console.WriteLine(helpText.ToString());
         }
 
         private static void OutputError(ExitCodes errorCode, bool outputMessage, string extraMessage = null)
