@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -99,6 +100,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 return ExitCodes.E5003;
             }
+
+            // need a couple of seconds before issuing next command
+            Thread.Sleep(2000);
 
             // try to connect to device with RESET
             var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=NORMAL");
@@ -229,8 +233,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
+            // need a couple of seconds before issuing next command
+            Thread.Sleep(2000);
+
             // try to connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=NORMAL");
 
             if (!cliOutput.Contains("Connected via SWD."))
             {
