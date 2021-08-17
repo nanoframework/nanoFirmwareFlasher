@@ -316,9 +316,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (_verbosityLevel >= VerbosityLevel.Normal)
                 {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+
                     Console.WriteLine("");
                     Console.WriteLine($"Connected to:");
                     Console.WriteLine($"{ esp32Device }");
+
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
 
                 // set verbosity
@@ -377,6 +381,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.DeploymentImage,
                             null,
                             o.Esp32ClrFile,
+                            !o.FitCheck,
                             _verbosityLevel,
                             o.Esp32PartitionTableSize);
 
@@ -438,6 +443,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.DeploymentImage,
                             appFlashAddress,
                             null,
+                            !o.FitCheck,
                             _verbosityLevel,
                             o.Esp32PartitionTableSize);
 
@@ -715,6 +721,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             appFlashAddress,
                             o.DfuDeviceId,
                             o.JtagDeviceId,
+                            !o.FitCheck,
                             updateInterface,
                             _verbosityLevel);
 
@@ -772,6 +779,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         appFlashAddress,
                                         o.DfuDeviceId,
                                         o.JtagDeviceId,
+                                        !o.FitCheck,
                                         updateInterface,
                                         _verbosityLevel);
 
