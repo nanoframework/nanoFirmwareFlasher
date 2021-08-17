@@ -71,15 +71,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!cliOutput.Contains("Connected via SWD."))
                 {
-                    if (!string.IsNullOrEmpty(_stCLIErrorMessage))
-                    {
-                        // show error detail, if available
-                        Console.ForegroundColor = ConsoleColor.Red;
-
-                        Console.WriteLine(_stCLIErrorMessage);
-
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
+                    ShowCLIOutput(cliOutput);
 
                     throw new CantConnectToJtagDeviceException();
                 }
@@ -101,25 +93,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E5003;
             }
 
-            // need a couple of seconds before issuing next command
-            Thread.Sleep(2000);
-
             // try to connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=NORMAL");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR");
 
-            if (cliOutput.Contains("Error:"))
+            if (cliOutput.Contains("Error"))
             {
                 Console.WriteLine("");
-                
-                if (!string.IsNullOrEmpty(_stCLIErrorMessage))
-                {
-                    // show error detail, if available
-                    Console.ForegroundColor = ConsoleColor.Red;
 
-                    Console.WriteLine(_stCLIErrorMessage);
-
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
+                ShowCLIOutput(cliOutput);
 
                 return ExitCodes.E5002;
             }
@@ -162,15 +143,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!cliOutput.Contains("File download complete"))
                 {
-                    if (!string.IsNullOrEmpty(_stCLIErrorMessage))
-                    {
-                        // show error detail, if available
-                        Console.ForegroundColor = ConsoleColor.Red;
-
-                        Console.WriteLine(_stCLIErrorMessage);
-
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
+                    ShowCLIOutput(cliOutput);
 
                     return ExitCodes.E5006;
                 }
@@ -237,21 +210,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Thread.Sleep(2000);
 
             // try to connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=NORMAL");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR");
 
             if (!cliOutput.Contains("Connected via SWD."))
             {
                 Console.WriteLine("");
 
-                if (!string.IsNullOrEmpty(_stCLIErrorMessage))
-                {
-                    // show error detail, if available
-                    Console.ForegroundColor = ConsoleColor.Red;
-
-                    Console.WriteLine(_stCLIErrorMessage);
-
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
+                ShowCLIOutput(cliOutput);
 
                 return ExitCodes.E5002;
             }
@@ -295,15 +260,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!cliOutput.Contains("Programming Complete."))
                 {
-                    if (!string.IsNullOrEmpty(_stCLIErrorMessage))
-                    {
-                        // show error detail, if available
-                        Console.ForegroundColor = ConsoleColor.Red;
-
-                        Console.WriteLine(_stCLIErrorMessage);
-
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
+                    ShowCLIOutput(cliOutput);
 
                     return ExitCodes.E5006;
                 }
@@ -369,19 +326,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // try to connect to device with RESET
             var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -rst");
 
-            if (cliOutput.Contains("Error:"))
+            if (cliOutput.Contains("Error"))
             {
                 Console.WriteLine("");
 
-                if (!string.IsNullOrEmpty(_stCLIErrorMessage))
-                {
-                    // show error detail, if available
-                    Console.ForegroundColor = ConsoleColor.Red;
-
-                    Console.WriteLine(_stCLIErrorMessage);
-
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
+                ShowCLIOutput(cliOutput);
 
                 return ExitCodes.E5002;
             }
@@ -428,15 +377,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 Console.WriteLine("");
 
-                if (!string.IsNullOrEmpty(_stCLIErrorMessage))
-                {
-                    // show error detail, if available
-                    Console.ForegroundColor = ConsoleColor.Red;
-
-                    Console.WriteLine(_stCLIErrorMessage);
-
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
+                ShowCLIOutput(cliOutput);
 
                 return ExitCodes.E5005;
             }
@@ -454,6 +395,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
+        }
+
+        private void ShowCLIOutput(string cliOutput)
+        {
+            // show CLI output, if verbosity is diagnostic
+            if (Verbosity == VerbosityLevel.Diagnostic)
+            {
+                Console.WriteLine(">>>>>>>>");
+                Console.WriteLine($"{cliOutput}");
+                Console.WriteLine(">>>>>>>>");
+            }
+
+            // show error message from CLI, if there is one
+            if (!string.IsNullOrEmpty(_stCLIErrorMessage))
+            {
+                // show error detail, if available
+                Console.ForegroundColor = ConsoleColor.Red;
+
+                Console.WriteLine(_stCLIErrorMessage);
+
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         }
 
         private static string RunSTM32ProgrammerCLI(string arguments)
@@ -506,8 +469,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else
             {
-                return "";
+                // look for DEV_USB_COMM_ERR
+                if(cliOutput.Contains("DEV_USB_COMM_ERR"))
+                {
+                    return "USB communication error. Please unplug and plug again the ST device.";
+                }
             }
+
+            return "";
         }
     }
 }
