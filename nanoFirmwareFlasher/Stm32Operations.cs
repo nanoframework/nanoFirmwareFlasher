@@ -188,37 +188,86 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
+                    Console.WriteLine("");
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.DeviceId }");
+                    Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
+                    Console.WriteLine("");
+                    Console.WriteLine($"{ jtagDevice }");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
+
+                PerformTargetCheck(targetName, jtagDevice);
+
+                ExitCodes operationResult = ExitCodes.OK;
 
                 // set verbosity
                 jtagDevice.Verbosity = verbosity;
 
-                ExitCodes programResult = ExitCodes.OK;
-
                 // write HEX files to flash
                 if ( filesToFlash.Any(f => f.EndsWith(".hex")) ) 
                 {
-                    programResult = jtagDevice.FlashHexFiles(filesToFlash);
+                    operationResult = jtagDevice.FlashHexFiles(filesToFlash);
                 }
 
-                if (programResult == ExitCodes.OK && isApplicationBinFile)
+                if (operationResult == ExitCodes.OK && isApplicationBinFile)
                 {
                     // now program the application file
-                    programResult = jtagDevice.FlashBinFiles(new [] { applicationPath }, new [] { deploymentAddress });
+                    operationResult = jtagDevice.FlashBinFiles(new [] { applicationPath }, new [] { deploymentAddress });
                 }
 
                 if(
                     updateFw 
-                    && programResult == ExitCodes.OK)
+                    && operationResult == ExitCodes.OK)
                 {
                     // reset MCU
                     jtagDevice.ResetMcu();
                 }
 
-                return programResult;
+                return operationResult;
+            }
+        }
+
+        private static void PerformTargetCheck(string target, StmJtagDevice jtagDevice)
+        {
+            string boardName;
+
+            // tweak our target name trying to mach ST names
+            string targetName = target.ToUpper().Replace("ST_", "").Replace("NUCLEO64", "NUCLEO").Replace("NUCLEO144", "NUCLEO");
+
+            // check if there is a board name available
+            if (
+                string.IsNullOrEmpty(jtagDevice.BoardName)
+                || jtagDevice.BoardName == "--")
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+
+                Console.WriteLine("");
+                Console.WriteLine("******************************************* WARNING ***************************************");
+                Console.WriteLine("It wasn't possible to validate if the firmware image that you're about to use works on the");
+                Console.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
+                Console.WriteLine("*******************************************************************************************");
+                Console.WriteLine("");
+
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            else
+            {
+                // do some parsing to match our target names
+                boardName = jtagDevice.BoardName.Replace("-", "_");
+
+                if (!targetName.Contains(boardName))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("******************************************* WARNING ***************************************");
+                    Console.WriteLine("It seems that the firmware image that you're about to use isn't the appropriate one for the");
+                    Console.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
+                    Console.WriteLine("*******************************************************************************************");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
             }
         }
 
@@ -239,7 +288,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.DeviceId }");
+                Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
             }
 
             // set verbosity
@@ -266,7 +315,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.DeviceId }");
+                Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
             }
 
             // set verbosity
