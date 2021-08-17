@@ -271,6 +271,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Perform reset on connected device after all other requested operations are successfully performed.")]
         public bool ResetMcu { get; set; }
 
+        [Option(
+            "nofitcheck",
+            Required = false,
+            Default = false,
+            HelpText = "Skip execution of sanity check if the requested target fits the connected device. This is a best effort validation and it's NOT guaranted to be fail safe.")]
+        public bool FitCheck { get; set; }
+
         #endregion
 
 

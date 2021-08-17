@@ -191,6 +191,14 @@ To install the XDS110 USB drivers.
 nanoff --installxdsdrivers
 ```
 
+### Pre-check if target fits connected device
+
+The tool tries to make a best effort sanity check on whether the requested target fits the connected target.
+Sometimes that's not possible because of the differences and variations on the target names, or lack of details provided by the connected device or even (like with DFU connected devices) because it's not possible to determine exactly what device is connected at all.
+This doesn't necessarily mean that the firmware wont' work, so take this as an advice only.
+
+To disable this validation add `--nofitcheck` option to the command line.
+
 ### Tool output verbosity
 
 The tool output verbosity can be set through the  `v|verbosity` option.

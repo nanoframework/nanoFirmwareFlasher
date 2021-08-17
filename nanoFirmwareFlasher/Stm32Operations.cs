@@ -22,6 +22,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string deploymentAddress,
             string dfuDeviceId,
             string jtagId,
+            bool fitCheck,
             Interface updateInterface,
             VerbosityLevel verbosity)
         {
@@ -150,10 +151,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return ExitCodes.E1000;
                 }
 
+                if (fitCheck)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("It's not possible to perform fit check for devices connected with DFU");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
+
                     Console.WriteLine($"Connected to DFU device with ID { dfuDevice.DeviceId }");
+
                     Console.ForegroundColor = ConsoleColor.White;
                 }
 
@@ -196,7 +210,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.ForegroundColor = ConsoleColor.White;
                 }
 
-                PerformTargetCheck(targetName, jtagDevice);
+                if (fitCheck)
+                {
+                    PerformTargetCheck(targetName, jtagDevice);
+                }
 
                 ExitCodes operationResult = ExitCodes.OK;
 
@@ -242,10 +259,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
                 Console.WriteLine("");
-                Console.WriteLine("******************************************* WARNING ***************************************");
-                Console.WriteLine("It wasn't possible to validate if the firmware image that you're about to use works on the");
+                Console.WriteLine("******************************************* WARNING ************************ *************");
+                Console.WriteLine("It wasn't possible to validate if the firmware image that's about to be used works on the");
                 Console.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
-                Console.WriteLine("*******************************************************************************************");
+                Console.WriteLine("******************************************************************************************");
                 Console.WriteLine("");
 
                 Console.ForegroundColor = ConsoleColor.White;
@@ -261,7 +278,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     Console.WriteLine("");
                     Console.WriteLine("******************************************* WARNING ***************************************");
-                    Console.WriteLine("It seems that the firmware image that you're about to use isn't the appropriate one for the");
+                    Console.WriteLine("It seems that the firmware image that's about to be used isn't the appropriate one for the");
                     Console.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
                     Console.WriteLine("*******************************************************************************************");
                     Console.WriteLine("");
