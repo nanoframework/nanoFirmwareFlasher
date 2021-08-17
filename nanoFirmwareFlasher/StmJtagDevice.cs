@@ -24,12 +24,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// This property is <see langword="true"/> if a JTAG device is connected.
         /// </summary>
-        public bool DevicePresent => !string.IsNullOrEmpty(DeviceId);
+        public bool DevicePresent => !string.IsNullOrEmpty(JtagId);
 
         /// <summary>
         /// ID of the connected JTAG device.
         /// </summary>
+        public string JtagId { get; }
+
+        /// <summary>
+        /// Name of the connected device.
+        /// </summary>
+        public string DeviceName { get; }
+
+        /// <summary>
+        /// ID of the connected device.
+        /// </summary>
         public string DeviceId { get; }
+
+        /// <summary>
+        /// CPU of the connected device.
+        /// </summary>
+        public string DeviceCPU { get; }
+
+        /// <summary>
+        /// Name of the connected deviceboard.
+        /// </summary>
+        /// <remarks>
+        /// This may not be available if it's not an ST board.
+        /// </remarks>
+        public string BoardName { get; }
 
         /// <summary>
         /// Option to output progress messages.
@@ -56,29 +79,43 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if(jtagDevices.Count > 0)
                 {
                     // take the 1st one
-                    jtagId = jtagDevices[0];
+                    JtagId = jtagDevices[0];
                 }
                 else
                 {
                     // no JTAG devices found
-                    return;
+                    throw new CantConnectToJtagDeviceException();
                 }
             }
             else
             {
-                // JTAG id supplied, try to connect to device to check availability
-                var cliOutput = RunSTM32ProgrammerCLI($"-c SN={jtagId} HOTPLUG");
-
-                if (!cliOutput.Contains("Connected via SWD."))
-                {
-                    ShowCLIOutput(cliOutput);
-
-                    throw new CantConnectToJtagDeviceException();
-                }
+                // JTAG id was supplied
+                JtagId = jtagId;
             }
 
-            // store JTAG device ID
-            DeviceId = jtagId;
+            // try to connect to JTAG ID device to check availability
+            // connect to device with RESET
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} HOTPLUG");
+
+            if (cliOutput.Contains("Error"))
+            {
+                Console.WriteLine("");
+
+                ShowCLIOutput(cliOutput);
+
+                throw new CantConnectToJtagDeviceException();
+            }
+
+            // parse the output to fill in the details
+            var match = Regex.Match(cliOutput, $"(Board       :)(?<board>.*)(.*?[\r\n]*)*(Device ID   :)(?<deviceid>.*)(.*?[\r\n]*)*(Device name :)(?<devicename>.*)(.*?[\r\n]*)*(Device CPU  :)(?<devicecpu>.*)");
+            if (match.Success)
+            {
+                // grab details
+                BoardName = match.Groups["board"].ToString().Trim();
+                DeviceId = match.Groups["deviceid"].ToString().Trim();
+                DeviceName = match.Groups["devicename"].ToString().Trim();
+                DeviceCPU = match.Groups["devicecpu"].ToString().Trim();
+            }
         }
 
         /// <summary>
@@ -91,18 +128,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (files.Any(f => !File.Exists(f)))
             {
                 return ExitCodes.E5003;
-            }
-
-            // try to connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR");
-
-            if (cliOutput.Contains("Error"))
-            {
-                Console.WriteLine("");
-
-                ShowCLIOutput(cliOutput);
-
-                return ExitCodes.E5002;
             }
 
             // erase flash
@@ -139,7 +164,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -w \"{hexFile}\"");
+                var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} mode=UR -w \"{hexFile}\"");
 
                 if (!cliOutput.Contains("File download complete"))
                 {
@@ -206,21 +231,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            // need a couple of seconds before issuing next command
-            Thread.Sleep(2000);
-
-            // try to connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR");
-
-            if (!cliOutput.Contains("Connected via SWD."))
-            {
-                Console.WriteLine("");
-
-                ShowCLIOutput(cliOutput);
-
-                return ExitCodes.E5002;
-            }
-
             // erase flash
             if (DoMassErase)
             {
@@ -256,7 +266,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
-                cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -w \"{binFile}\" {addresses.ElementAt(index++)}");
+                var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} mode=UR -w \"{binFile}\" {addresses.ElementAt(index++)}");
 
                 if (!cliOutput.Contains("Programming Complete."))
                 {
@@ -324,7 +334,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             
             // try to connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -rst");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} mode=UR -rst");
 
             if (cliOutput.Contains("Error"))
             {
@@ -371,7 +381,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.Write("Mass erase device...");
             }
 
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={DeviceId} mode=UR -e all");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} mode=UR -e all");
 
             if (!cliOutput.Contains("Mass erase successfully achieved"))
             {
@@ -395,6 +405,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            StringBuilder deviceInfo = new();
+
+            if (!string.IsNullOrEmpty(DeviceName))
+            {
+                deviceInfo.AppendLine($"Device: { DeviceName }");
+            }
+
+            if (!string.IsNullOrEmpty(BoardName))
+            {
+                deviceInfo.AppendLine($"Board: { BoardName }");
+            }
+
+            deviceInfo.AppendLine($"CPU: { DeviceCPU }");
+            deviceInfo.AppendLine($"Device ID: { DeviceId }");
+
+            return deviceInfo.ToString();
         }
 
         private void ShowCLIOutput(string cliOutput)
@@ -433,7 +464,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink", "bin"),
                         UseShellExecute = false,
-                        RedirectStandardOutput = true
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
                     }
                 };
 

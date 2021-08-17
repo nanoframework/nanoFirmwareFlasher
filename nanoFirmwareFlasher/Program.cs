@@ -640,7 +640,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (_verbosityLevel >= VerbosityLevel.Normal)
                         {
-                            Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.DeviceId }");
+                            Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
                         }
 
                         // set verbosity
