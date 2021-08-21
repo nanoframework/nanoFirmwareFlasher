@@ -295,7 +295,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     try
                     {
-                        esp32Device = espTool.GetDeviceDetails();
+                        esp32Device = espTool.GetDeviceDetails(o.TargetName);
                     }
                     catch (EspToolExecutionException ex)
                     {

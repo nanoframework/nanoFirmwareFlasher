@@ -123,7 +123,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Tries reading ESP32 device details.
         /// </summary>
         /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occured</returns>
-        internal Esp32DeviceInfo GetDeviceDetails()
+        internal Esp32DeviceInfo GetDeviceDetails(string targetName)
         {
             string messages;
 
@@ -134,7 +134,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // execute flash_id command and parse the result
-            if (!RunEspTool("flash_id", true, false, null, out messages))
+            if (!RunEspTool("flash_id", !targetName.Equals("ESP32_PICO", StringComparison.InvariantCultureIgnoreCase), false, null, out messages))
             {
                 throw new EspToolExecutionException(messages);
             }
