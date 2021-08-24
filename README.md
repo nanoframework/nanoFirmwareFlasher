@@ -36,6 +36,16 @@ You can invoke the tool using the following command: nanoff
 Tool 'nanoff' (version '9.9.9') was successfully installed.
 ```
 
+#### Install path issues
+
+>Note: That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. 
+If that's the case with your user path, for example, you have to install it in a location that does have those.
+For that, use the following .NET Core CLI command on which you specify the path where the tool will be installed:
+
+```console
+dotnet tool install nanoff --tool-path c:\a-plain-simple-path-to-install-the-tool
+```
+
 ## Update .NET **nanoFramework** Firmware Flasher
 
 To update .NET **nanoFramework** Firmware Flasher tool use the following .NET Core CLI command:
