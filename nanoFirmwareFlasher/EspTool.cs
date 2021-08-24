@@ -26,7 +26,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly string _serialPort = null;
 
         /// <summary>
-        /// The baud rate for the serial port; 921600 baud is the default
+        /// The baud rate for the serial port. The default comming from <see cref="Options.BaudRate"/> is 9216000.
         /// </summary>
         private readonly int _baudRate = 0;
 
@@ -76,6 +76,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public VerbosityLevel Verbosity { get; internal set; } = VerbosityLevel.Normal;
 
+        // ESP32 chip type to connect to.
+        // Default is 'auto'. It's replaced with the actual chip type after detection to improve operations.
+        internal string _chipType = "auto";
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -123,7 +127,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Tries reading ESP32 device details.
         /// </summary>
         /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occured</returns>
-        internal Esp32DeviceInfo GetDeviceDetails()
+        internal Esp32DeviceInfo GetDeviceDetails(bool requireFlashSize = true)
         {
             string messages;
 
@@ -134,11 +138,34 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // execute flash_id command and parse the result
-            if (!RunEspTool("flash_id", true, false, null, out messages))
+            if (!RunEspTool(
+                "flash_id",
+                true,
+                true,
+                false,
+                null,
+                out messages))
             {
                 throw new EspToolExecutionException(messages);
             }
 
+            // check if we got flash size (in case we need it)
+            if (requireFlashSize 
+                && messages.Contains("Detected flash size: Unknown"))
+            {
+                // try again now without the stub
+                if (!RunEspTool(
+                    "flash_id",
+                    false,
+                    true,
+                    false,
+                    null,
+                    out messages))
+                {
+                    throw new EspToolExecutionException(messages);
+                }
+            }
+            
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -163,14 +190,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string size = match.Groups["size"].ToString().Trim();
 
             // collect and return all information
-            // convert the flash size into bytes
+            // try to convert the flash size into bytes
             string unit = size.Substring(size.Length - 2).ToUpperInvariant();
-            _flashSize = int.Parse(size.Remove(size.Length - 2)) * unit switch
+
+            if (int.TryParse(size.Remove(size.Length - 2), out _flashSize))
             {
-                "MB" => 0x100000,
-                "KB" => 0x400,
-                _ => 1,
-            };
+                _flashSize *= unit switch
+                {
+                    "MB" => 0x100000,
+                    "KB" => 0x400,
+                    _ => 1,
+                };
+            }
+            else
+            {
+                throw new EspToolExecutionException("Can't read flash size from device");
+            }
+
+            // update chip type
+            // lower case, no hifen
+            _chipType = chipType.ToLower().Replace("-", "");
 
             return new Esp32DeviceInfo(
                 chipType,
@@ -193,7 +232,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             int flashSize)
         {
             // execute read_flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
-            if (!RunEspTool($"read_flash 0 0x{flashSize:X} \"{backupFilename}\"", false, false, (char)8, out string messages))
+            if (!RunEspTool(
+                $"read_flash 0 0x{flashSize:X} \"{backupFilename}\"",
+                false,
+                false,
+                false,
+                (char)8,
+                out string messages))
             {
                 throw new ReadEsp32FlashException(messages);
             }
@@ -217,7 +262,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal ExitCodes EraseFlash()
         {
             // execute erase_flash command and parse the result
-            if (!RunEspTool("erase_flash", false, false, null, out string messages))
+            if (!RunEspTool(
+                "erase_flash",
+                false,
+                false,
+                false,
+                null,
+                out string messages))
             {
                 throw new EraseEsp32FlashException(messages);
             }
@@ -241,7 +292,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // esptool takes care of validating this so no need to perform any sanity check before executing the command
 
             // execute erase_flash command and parse the result
-            if (!RunEspTool($"erase_region 0x{startAddress:X} 0x{length:X}", false, false, null, out string messages))
+            if (!RunEspTool(
+                $"erase_region 0x{startAddress:X} 0x{length:X}",
+                false,
+                false,
+                false,
+                null,
+                out string messages))
             {
                 throw new EraseEsp32FlashException(messages);
             }
@@ -292,7 +349,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             };
 
             // execute write_flash command and parse the result; progress message can be found be searching for linefeed
-            if (!RunEspTool($"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}", false, true, '\r', out string messages))
+            if (!RunEspTool(
+                $"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}",
+                false,
+                false,
+                true,
+                '\r',
+                out string messages))
             {
                 throw new WriteEsp32FlashException(messages);
             }
@@ -325,7 +388,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>true if the esptool exit code was 0; false otherwise</returns>
         private bool RunEspTool(
             string commandWithArguments, 
-            bool noStub, 
+            bool noStub,
+            bool useStandardBaudRate,
             bool hardResetAfterCommand, 
             char? progressTestChar, 
             out string messages)
@@ -345,13 +409,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else
             {
-                // using the stub that supports changing the baudrate
-                baudRateParameter = $"--baud {_baudRate}";
+                if (!useStandardBaudRate)
+                {
+                    // using the stub that supports changing the baudrate
+                    baudRateParameter = $"--baud {_baudRate}";
+                }
             }
 
             // prepare the process start of the esptool
             Process espTool = new Process();
-            string parameter = $"--port {_serialPort} {baudRateParameter} --chip auto {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
+            string parameter = $"--port {_serialPort} {baudRateParameter} --chip {_chipType} {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
             espTool.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "esptool", "esptool.exe"), parameter)
             {
                 WorkingDirectory = Path.Combine(Program.ExecutingPath, "esptool"),
