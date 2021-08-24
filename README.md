@@ -38,13 +38,15 @@ Tool 'nanoff' (version '9.9.9') was successfully installed.
 
 #### Install path issues
 
->Note: That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. 
+:warning: That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer. 
 If that's the case with your user path, for example, you have to install it in a location that does have those.
-For that, use the following .NET Core CLI command on which you specify the path where the tool will be installed:
+To accomplish that, use the following .NET Core CLI command on which the path where the tool will be installed is specified:
 
 ```console
 dotnet tool install nanoff --tool-path c:\a-plain-simple-path-to-install-the-tool
 ```
+
+Note that if you're not using `nanoff` with STM32 devices, this limitation does not apply.
 
 ## Update .NET **nanoFramework** Firmware Flasher
 
