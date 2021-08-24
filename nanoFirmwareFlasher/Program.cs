@@ -295,7 +295,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     try
                     {
-                        esp32Device = espTool.GetDeviceDetails();
+                        esp32Device = espTool.GetDeviceDetails(o.Esp32PartitionTableSize == null);
                     }
                     catch (EspToolExecutionException ex)
                     {
@@ -323,6 +323,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{ esp32Device }");
 
                     Console.ForegroundColor = ConsoleColor.White;
+
+                    // if this is a PICO and baudrate is not 115200 operations will most likely fail
+                    // warn user about this
+                    if(
+                        esp32Device.ChipName.Contains("ESP32-PICO")
+                        && o.BaudRate != 115200)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+
+                        Console.WriteLine("");
+                        Console.WriteLine("****************************** WARNING ******************************");
+                        Console.WriteLine("The connected device it's an ESP32 PICO which can be picky about the ");
+                        Console.WriteLine("baud rate used. Recommendation is to use --baud 115200 ");
+                        Console.WriteLine("*********************************************************************");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
                 }
 
                 // set verbosity
