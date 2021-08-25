@@ -34,7 +34,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Error flashing DFU dvice
         /// </summary>
-        [Display(Name = "Error flashing DFU dvice.")]
+        [Display(Name = "Error flashing DFU device.")]
         E1003 = 1003,
 
         /// <summary>
@@ -42,6 +42,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Firmware package doesn't have a DFU package.")]
         E1004 = 1004,
+
+        /// <summary>
+        /// Can't connect to specified DFU device.
+        /// </summary>
+        [Display(Name = "Can't connect to specified DFU device. Make sure it's connected and that the ID is correct.")]
+        E1005 = 1005,
+
+        /// <summary>
+        /// Failed to start execution on the connected device.
+        /// </summary>
+        [Display(Name = "Failed to start execition on the connected device.")]
+        E1006 = 1006,
 
         ////////////////////////
         // ESP32 tools Errors //

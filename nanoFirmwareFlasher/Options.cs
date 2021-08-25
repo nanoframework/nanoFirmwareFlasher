@@ -14,13 +14,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         #region STM32 DFU options
 
         [Option(
-            "dfufile", 
-            Required = false,
-            Default = null,
-            HelpText = "DFU file to be flashed into the device.")]
-        public string DfuFile { get; set; }
-
-        [Option(
             "listdfu",
             Required = false,
             Default = false,

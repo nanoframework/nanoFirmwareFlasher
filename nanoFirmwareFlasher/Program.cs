@@ -231,8 +231,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // DFU related
                 else if ( 
                     o.ListDevicesInDfuMode ||
-                    !string.IsNullOrEmpty(o.DfuDeviceId) ||
-                    !string.IsNullOrEmpty(o.DfuFile))
+                    !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
                     o.Platform = "stm32";
                 }
@@ -520,11 +519,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (o.ListDevicesInDfuMode)
                 {
-                    var connecteDevices = StmDfuDevice.ListDfuDevices();
+                    var connecteDevices = StmDfuDevice.ListDevices();
 
                     Console.ForegroundColor = ConsoleColor.Cyan;
 
-                    if (connecteDevices.Count == 0)
+                    if (connecteDevices.Count() == 0)
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("No DFU devices found");
@@ -533,9 +532,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         Console.WriteLine("-- Connected DFU devices --");
 
-                        foreach (string deviceId in connecteDevices)
+                        foreach ((string serial, string device) device in connecteDevices)
                         {
-                            Console.WriteLine(deviceId);
+                            Console.WriteLine($"{device.serial} @ {device.device}");
                         }
 
                         Console.WriteLine("---------------------------");
@@ -588,55 +587,65 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return;
                 }
 
-                var connectedStDfuDevices = StmDfuDevice.ListDfuDevices();
+                var connectedStDfuDevices = StmDfuDevice.ListDevices();
                 var connectedStJtagDevices = StmJtagDevice.ListDevices();
 
-                if (!string.IsNullOrEmpty(o.DfuFile) && connectedStDfuDevices.Count != 0)
+                if (o.BinFile.Any() &&
+                    o.HexFile.Any() && 
+                    connectedStDfuDevices.Count != 0)
                 {
-                    // there is a DFU file argument, so follow DFU path
-                    var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
 
-                    if (!dfuDevice.DevicePresent)
-                    {
-                        // no DFU device found
-
-                        // done here, this command has no further processing
-                        _exitCode = ExitCodes.E1000;
-
-                        return;
-                    }
-
-                    if (_verbosityLevel >= VerbosityLevel.Normal)
-                    {
-                        Console.WriteLine($"Connected to DFU device with ID { dfuDevice.DeviceId }");
-                    }
-
-                    // set verbosity
-                    dfuDevice.Verbosity = _verbosityLevel;
-
-                    // get mass erase option
-                    dfuDevice.DoMassErase = o.MassErase;
+                    #region STM32 DFU options
 
                     try
                     {
-                        dfuDevice.FlashDfuFile(o.DfuFile);
+                        var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
 
+                        if (!dfuDevice.DevicePresent)
+                        {
+                            // no JTAG device found
+
+                            // done here, this command has no further processing
+                            _exitCode = ExitCodes.E5001;
+
+                            return;
+                        }
+
+                        if (_verbosityLevel >= VerbosityLevel.Normal)
+                        {
+                            Console.WriteLine($"Connected to JTAG device with ID { dfuDevice.DfuId }");
+                        }
+
+                        // set verbosity
+                        dfuDevice.Verbosity = _verbosityLevel;
+
+                        // get mass erase option
+                        dfuDevice.DoMassErase = o.MassErase;
+
+                        if (o.HexFile.Any())
+                        {
+                            _exitCode = dfuDevice.FlashHexFiles(o.HexFile);
+
+                            // done here
+                            return;
+                        }
+
+                        if (o.BinFile.Any())
+                        {
+                            _exitCode = dfuDevice.FlashBinFiles(o.BinFile, o.FlashAddress);
+
+                            // done here
+                            return;
+                        }
+                    }
+                    catch (CantConnectToDfuDeviceException)
+                    {
                         // done here, this command has no further processing
-                        _exitCode = ExitCodes.OK;
+                        _exitCode = ExitCodes.E1005;
+                    }
 
-                        return;
-                    }
-                    catch (DfuFileDoesNotExistException)
-                    {
-                        // DFU file doesn't exist
-                        _exitCode = ExitCodes.E1002;
-                    }
-                    catch (Exception ex)
-                    {
-                        // exception with DFU operation
-                        _exitCode = ExitCodes.E1003;
-                        _extraMessage = ex.Message;
-                    }
+                    #endregion
+
                 }
                 else if (
                     o.BinFile.Any() &&
@@ -702,7 +711,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // update operation requested?
                     if (o.Update)
                     {
-                        // this to update the device with fw from Cloudsmith
+                        // this to update the device with fw from CloudSmith
 
                         // need to take care of flash address
                         string appFlashAddress = null;
