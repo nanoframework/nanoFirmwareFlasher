@@ -5,247 +5,247 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Management;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
-    // STSW-ST7009
-    // DFU Development Kit package (Device Firmware Upgrade).
-
-
-    internal class StmDfuDevice
+    internal class StmDfuDevice : StmDeviceBase
     {
-        /// <summary>
-        /// GUID of interface class declared by ST DFU devices
-        /// </summary>
-        private static Guid s_dfuGuid = new("3FE809AB-FB91-4CB5-A643-69670D52366E");
-
-        private readonly string _deviceId;
+        // Device ID of the connected DFU device.
+        private string _deviceId;
 
         /// <summary>
-        /// Property with option for performing mass erase on the connected device.
-        /// If <see langword="false"/> only the flash sectors that will programmed are erased.
+        /// Name of the connected device.
         /// </summary>
-        public bool DoMassErase { get; set; } = false;
+        public string DeviceName { get; }
 
         /// <summary>
-        /// This property is <see langword="true"/> if a DFU device is connected.
+        /// CPU of the connected device.
         /// </summary>
-        public bool DevicePresent => !string.IsNullOrEmpty(_deviceId);
+        public string DeviceCPU { get; }
+
 
         /// <summary>
         /// ID of the connected DFU device.
         /// </summary>
-        // the split bellow is to get only the ID part of the USB ID
-        // that follows the pattern: USB\\VID_0483&PID_DF11\\3380386D3134
-        public string DeviceId => _deviceId?.Split('\\', ' ')[2];
+        public string DfuId { get; }
 
         /// <summary>
-        /// Option to output progress messages.
-        /// Default is <see langword="true"/>.
+        /// This property is <see langword="true"/> if a DFU device is connected.
         /// </summary>
-        public VerbosityLevel Verbosity { get; internal set; } = VerbosityLevel.Normal;
+        public bool DevicePresent => !string.IsNullOrEmpty(DfuId);
 
         /// <summary>
         /// Creates a new <see cref="StmDfuDevice"/>. If a DFU device ID is provided it will try to connect to that device.
         /// </summary>
-        /// <param name="deviceId">ID of the device to connect to.</param>
-        public StmDfuDevice(string deviceId = null)
+        /// <param name="dfuId">ID of the device to connect to.</param>
+        public StmDfuDevice(string dfuId = null)
         {
-            ManagementObjectCollection usbDevicesCollection;
-
-            // build a managed object searcher to find USB devices with the ST DFU VID & PID along with the device description
-            using (var searcher = new ManagementObjectSearcher(
-                @"SELECT * FROM Win32_PnPEntity WHERE DeviceID Like ""USB\\VID_0483&PID_DF11%"" AND Description Like ""STM Device in DFU Mode"" "))
+            if (string.IsNullOrEmpty(dfuId))
             {
-                usbDevicesCollection = searcher.Get();
-            }
+                // no DFU id supplied, list available
+                var jtagDevices = ListDevices();
 
-            // are we to connect to a specific device?
-            if (deviceId == null)
-            {
-                // no, grab the USB device ID of the 1st listed device from the respective property
-                deviceId = usbDevicesCollection.OfType<ManagementObject>().Select(mo => mo.Properties["DeviceID"].Value as string).FirstOrDefault();
+                if (jtagDevices.Count > 0)
+                {
+                    // take the 1st one
+                    DfuId = jtagDevices[0].serial;
+
+                    _deviceId = jtagDevices[0].device;
+                }
+                else
+                {
+                    // no DFU devices found
+                    throw new CantConnectToDfuDeviceException();
+                }
             }
             else
             {
-                // yes, filter the connect devices collection with the requested device ID
-                deviceId = usbDevicesCollection.OfType<ManagementObject>()
-                    .Select(mo => mo.Properties["DeviceID"].Value as string)
-                    .Where(d => d is not null)
-                    .FirstOrDefault(d => d.Contains(deviceId));
+                // DFU id was supplied
+
+                // list available to find out the device ID
+                var jtagDevices = ListDevices();
+
+                // sanity check
+                if (jtagDevices.Any())
+                {
+                    // find the one we're looking for
+                    var dfuDevice = jtagDevices.FirstOrDefault(d => d.serial == dfuId);
+
+                    if (dfuDevice == default)
+                    {
+                        // couldn't find the requested DFU device
+                        throw new CantConnectToDfuDeviceException();
+                    }
+                    else
+                    {
+                        // found it!
+                        DfuId = dfuId;
+                        _deviceId = dfuDevice.device;
+                    }
+                }
+                else
+                {
+                    // no DFU devices found
+                    throw new CantConnectToDfuDeviceException();
+                }
             }
 
-            // sanity check for no device found
-            if (deviceId == null)
+            // try to connect to JTAG ID device to check availability
+            // connect to device with RESET
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port={_deviceId}");
+
+            if (cliOutput.Contains("Error"))
             {
-                // couldn't find any DFU device
-                return;
+                Console.WriteLine("");
+
+                ShowCLIOutput(cliOutput);
+
+                throw new CantConnectToDfuDeviceException();
             }
 
-            // ST DFU is expecting a device path with the WQL pattern:
-            // "\\?\USB#VID_0483&PID_DF11#3380386D3134#{3FE809AB-FB91-4CB5-A643-69670D52366E}"
-            // The GUID there is for the USB interface declared by DFU devices
-
-            // store USB device ID
-            _deviceId = @"\\?\" + deviceId.Replace(@"\", "#") + @"#{" + s_dfuGuid.ToString() + "}";
+            // parse the output to fill in the details
+            var match = Regex.Match(cliOutput, $"(Device name :)(?<devicename>.*)(.*?[\r\n]*)*(Device CPU  :)(?<devicecpu>.*)");
+            if (match.Success)
+            {
+                // grab details
+                DeviceName = match.Groups["devicename"].ToString().Trim();
+                DeviceCPU = match.Groups["devicecpu"].ToString().Trim();
+            }
         }
 
         /// <summary>
-        /// Flash the DFU supplied to the connected device.
+        /// Flash the HEX supplied to the connected device.
         /// </summary>
-        /// <param name="filePath"></param>
-        public void FlashDfuFile(string filePath)
+        /// <param name="files"></param>
+        public ExitCodes FlashHexFiles(IList<string> files)
         {
-            // check DFU file existence
-            if (!File.Exists(filePath))
+            return ExecuteFlashHexFiles(
+                files,
+                $"port={_deviceId}");
+        }
+
+        /// <summary>
+        /// Flash the BIN supplied to the connected device.
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="addresses"></param>
+        public ExitCodes FlashBinFiles(
+            IList<string> files,
+            IList<string> addresses)
+        {
+            return ExecuteFlashBinFiles(
+                files,
+                addresses,
+                $"port={_deviceId}");
+        }
+
+        /// <summary>
+        /// Start execution on connected device.
+        /// </summary>
+        public ExitCodes StartExecution(string startAddress)
+        {
+            if (Verbosity >= VerbosityLevel.Normal)
             {
-                throw new DfuFileDoesNotExistException();
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("Starting execution on device...");
             }
 
-            // erase flash
-            if (DoMassErase)
+            // connect to device and perform command
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port={_deviceId} --start 0x{startAddress}");
+
+            if (cliOutput.Contains("Error"))
             {
-                Console.WriteLine("WARNING: mass erase is not currently supported for DFU devices.");
+                Console.WriteLine("");
+
+                ShowCLIOutput(cliOutput);
+
+                return ExitCodes.E1005;
+            }
+
+            if (!cliOutput.Contains("Start operation achieved successfully"))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ERROR");
+                Console.ForegroundColor = ConsoleColor.White;
+                return ExitCodes.E1006;
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.Write("Flashing device...");
-            }
-
-            // write flash, verify, reboot
-            // DFU is picky about the device path: requires it to be lower caps
-            if (!RunDfuCommandTool($" -d \"{filePath}\" -D {_deviceId.ToLowerInvariant()} -v -r ", out string messages))
-            {
-                // something went wrong
-                throw new DfuOperationFailedException();
-            }
-
-            // check for successfull message
-            if (messages.Contains("Successfully left DFU mode !"))
-            {
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.WriteLine(" OK");
-                }
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(" OK");
             }
             else
             {
-                // something went wrong
-                throw new DfuOperationFailedException();
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("");
             }
+
+            Console.ForegroundColor = ConsoleColor.White;
+
+            return ExitCodes.OK;
         }
 
         /// <summary>
-        /// Search connected DFU devices.
+        /// List connected STM32 DFU devices.
         /// </summary>
-        /// <returns>A collection of connected DFU devices.</returns>
-        public static List<string> ListDfuDevices()
+        /// <returns>A collection of connected STM DFU devices.</returns>
+        public static List<(string serial, string device)> ListDevices()
         {
-            ManagementObjectCollection usbDevicesCollection;
+            var cliOutput = ExecuteListDevices();
 
-            // build a managed object searcher to find USB devices with the ST DFU VID & PID along with the device description
-            using (var searcher = new ManagementObjectSearcher(
-                @"SELECT * FROM Win32_PnPEntity WHERE DeviceID Like ""USB\\VID_0483&PID_DF11%"" AND Description Like ""STM Device in DFU Mode"" "))
+            // (successful) output from the above is
+            //===== DFU Interface =====
+            //
+            //Total number of available STM32 device in DFU mode: 1
+            //
+            //  Device Index           : USB1
+            //  USB Bus Number         : 001
+            //  USB Address Number: 003
+            //  Product ID             : STM32 BOOTLOADER
+            //  Serial number          : 358438593337
+            //  Firmware version       : 0x011a
+            //  Device ID              : 0x0431
+
+            // set pattern to serial number
+            const string regexPattern = @"(?>Device Index           : )(?<device>\w+)(.*?[\r\n]*)*(?>Serial number          : )(?<serial>\d+)";
+
+            var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
+            var dfuMatches = myRegex1.Matches(cliOutput);
+
+            if (dfuMatches.Count == 0)
             {
-                usbDevicesCollection = searcher.Get();
+                // no DFU device found
+                return new List<(string serial, string device)>();
             }
 
-            // the split bellow is to get only the ID part of the USB ID
-            // that follows the pattern: USB\\VID_0483&PID_DF11\\3380386D3134
-            return usbDevicesCollection.OfType<ManagementObject>()
-                .Select(mo => mo.Properties["DeviceID"].Value as string)
-                .Where(deviceId => deviceId is not null)
-                .Select(deviceId => deviceId.Split('\\', ' ')[2])
-                .ToList();
+            return dfuMatches.Cast<Match>().Select(i => (serial: i.Groups["serial"].Value, device: i.Groups["device"].Value)).ToList();
         }
 
         /// <summary>
-        /// Run the esptool one time
+        /// Perform mass erase on the connected device.
         /// </summary>
-        /// <param name="commandWithArguments">the esptool command (e.g. write_flash) incl. all arguments (if needed)</param>
-        /// <param name="messages">StandardOutput and StandardError messages that the esptool prints out</param>
-        /// <returns>true if the esptool exit code was 0; false otherwise</returns>
-        private bool RunDfuCommandTool(
-            string commandWithArguments,
-            out string messages)
+        public ExitCodes MassErase()
         {
-            // create the process start info
+            return ExecuteMassErase($"port={_deviceId}");
+        }
 
-            // prepare the process start of the esptool
-            var dfuCommandTool = new Process
-            {
-                StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stdfu", "qmk-dfuse.exe"),
-                    commandWithArguments)
-                {
-                    WorkingDirectory = Path.Combine(Program.ExecutingPath, "stdfu"),
-                    UseShellExecute = false,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                }
-            };
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            StringBuilder deviceInfo = new();
 
-            // start esptool and wait for exit
-            if (dfuCommandTool.Start())
+            if (!string.IsNullOrEmpty(DeviceName))
             {
-                // if no progress output needed wait unlimited time until comment exits
-                if (Verbosity < VerbosityLevel.Detailed)
-                {
-                    dfuCommandTool.WaitForExit();
-                }
-            }
-            else
-            {
-                throw new EspToolExecutionException("Error starting DfuSeCommand!");
+                deviceInfo.AppendLine($"Device: { DeviceName }");
             }
 
-            var messageBuilder = new StringBuilder();
+            deviceInfo.AppendLine($"CPU: { DeviceCPU }");
 
-            // showing progress is a little bit tricky
-            if (Verbosity >= VerbosityLevel.Detailed)
-            {
-                // loop until esptool exit
-                while (!dfuCommandTool.HasExited)
-                {
-                    // loop until there is no next char to read from standard output
-                    while (true)
-                    {
-                        int next = dfuCommandTool.StandardOutput.Read();
-                        if (next != -1)
-                        {
-                            // append the char to the message buffer
-                            char nextChar = (char)next;
-                            messageBuilder.Append((char)next);
-                            // print progress and set the cursor to the beginning of the line (\r)
-                            Console.Write(nextChar);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                // collect any last messages
-                messageBuilder.AppendLine(dfuCommandTool.StandardOutput.ReadToEnd());
-                messageBuilder.Append(dfuCommandTool.StandardError.ReadToEnd());
-            }
-            else
-            {
-                // collect all messages
-                messageBuilder.AppendLine(dfuCommandTool.StandardOutput.ReadToEnd());
-                messageBuilder.Append(dfuCommandTool.StandardError.ReadToEnd());
-            }
-
-            messages = messageBuilder.ToString();
-
-            // true if exit code was 0 (success)
-            return dfuCommandTool.ExitCode == 0;
+            return deviceInfo.ToString();
         }
     }
 }

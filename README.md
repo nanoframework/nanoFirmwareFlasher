@@ -14,8 +14,6 @@ It makes use of several 3rd party tools:
 
 - Espressif esptool
    You can find the esptool and licensing information on the repository [here](http://github.com/espressif/esptool).
-- QMKDfuSe
-   Tool based on STM DfusSe tool. You can find the source, licensing information and documentation [here](https://github.com/qmk/qmk_dfuse).
 - STM32 Cube Programmer
    You can find the source, licensing information and documentation [here](https://www.st.com/en/development-tools/stm32cubeprog.html).
 - Texas Instruments Uniflash

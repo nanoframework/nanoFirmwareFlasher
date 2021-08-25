@@ -88,7 +88,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            var connectedStDfuDevices = StmDfuDevice.ListDfuDevices();
+            var connectedStDfuDevices = StmDfuDevice.ListDevices();
             var connectedStJtagDevices = StmJtagDevice.ListDevices();
 
             if (updateInterface != Interface.None)
@@ -134,13 +134,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // update using DFU
             if (updateInterface == Interface.Dfu)
             {
-                 if(!firmware.HasDfuPackage)
-                {
-                    // firmware doesn't have a DFU package
-                    return ExitCodes.E1004;
-                }
-
-                // DFU package
+                // DFU update
                 dfuDevice = new StmDfuDevice(dfuDeviceId);
 
                 if (!dfuDevice.DevicePresent)
@@ -156,7 +150,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.ForegroundColor = ConsoleColor.Yellow;
 
                     Console.WriteLine("");
-                    Console.WriteLine("It's not possible to perform fit check for devices connected with DFU");
+                    Console.WriteLine("It's not possible to perform image fit check for devices connected with DFU");
                     Console.WriteLine("");
 
                     Console.ForegroundColor = ConsoleColor.White;
@@ -166,26 +160,41 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
 
-                    Console.WriteLine($"Connected to DFU device with ID { dfuDevice.DeviceId }");
-
+                    Console.WriteLine($"Connected to DFU device with ID { dfuDevice.DfuId }");
+                    Console.WriteLine("");
+                    Console.WriteLine($"{ dfuDevice }");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
 
                 // set verbosity
                 dfuDevice.Verbosity = verbosity;
 
-                try
-                {
-                    dfuDevice.FlashDfuFile(firmware.DfuPackage);
+                ExitCodes operationResult = ExitCodes.OK;
 
-                    // done here, this command has no further processing
-                    return ExitCodes.OK;
-                }
-                catch (Exception)
+                // set verbosity
+                dfuDevice.Verbosity = verbosity;
+
+                // write HEX files to flash
+                if (filesToFlash.Any(f => f.EndsWith(".hex")))
                 {
-                    // exception
-                    return ExitCodes.E1003;
+                    operationResult = dfuDevice.FlashHexFiles(filesToFlash);
                 }
+
+                if (operationResult == ExitCodes.OK && isApplicationBinFile)
+                {
+                    // now program the application file
+                    operationResult = dfuDevice.FlashBinFiles(new[] { applicationPath }, new[] { deploymentAddress });
+                }
+
+                if (
+                    updateFw
+                    && operationResult == ExitCodes.OK)
+                {
+                    // start execution on MCU from with bootloader address
+                    dfuDevice.StartExecution($"{firmware.GetdBooterStartAddress():X8}");
+                }
+
+                return operationResult;
             }
             else
             {
