@@ -56,6 +56,12 @@ To update .NET **nanoFramework** Firmware Flasher tool use the following .NET Co
 dotnet tool update -g nanoff
 ```
 
+If the tool was installed at a specific path, use the following .NET Core CLI command instead:
+
+```console
+dotnet tool update -g nanoff --tool-path c:\path-where-the-tool-was-installed
+```
+
 ## Usage
 
 Once the tool is installed, you can call it by using its command `nanoff`, which is a short version of the name to ease typing.
@@ -73,7 +79,8 @@ nanoff --help
 ## ESP32 usage examples 
 
 >Note: some ESP32 boards have issues entering bootloader mode. This can be usually overcome by holding down the BOOT/FLASH button in the board.
-In case nanoff detects this situation the following warning is shown: 
+In case nanoff detects this situation the following warning is shown:
+
 ```console
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
