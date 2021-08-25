@@ -21,6 +21,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         private static string _stCLIErrorMessage;
 
+        private static bool _pathChecked = false;
+
         /// <summary>
         /// This property is <see langword="true"/> if a JTAG device is connected.
         /// </summary>
@@ -456,6 +458,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // reset error message
                 _stCLIErrorMessage = string.Empty;
+
+                // check execution path for diacritics 
+                if (!_pathChecked)
+                {
+                    if (!Program.ExecutingPath.IsNormalized(NormalizationForm.FormD))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+
+                        Console.WriteLine("");
+                        Console.WriteLine("**************************** WARNING ****************************");
+                        Console.WriteLine("nanoff installation path contains diacritic chars!");
+                        Console.WriteLine("There are know issues executing some commands in this situation.");
+                        Console.WriteLine("Recommend that the tool be installed in a path without those.");
+                        Console.WriteLine("For a detailed explanation please visit https://git.io/JEcpK.");
+                        Console.WriteLine("*****************************************************************");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    // done
+                    _pathChecked = true;
+                }
 
                 var stLinkCli = new Process
                 {

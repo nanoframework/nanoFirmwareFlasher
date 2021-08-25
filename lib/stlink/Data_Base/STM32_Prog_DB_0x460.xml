@@ -23,6 +23,7 @@
 			</Interface>
 			<!-- Bootloader Interface -->
 			<Interface name="Bootloader">
+			<Configurations>
 				<Configuration	number="0x0">
 					<ValueLine> <ReadRegister address="0x1FFF77DD" mask="0xFF" value="0xFF"/> </ValueLine>
 				</Configuration>
@@ -32,6 +33,7 @@
 				<Configuration	number="0x2">
 					<ValueLine> <ReadRegister address="0x1FFF77DD" mask="0xFF" value="0x31"/> </ValueLine>
 				</Configuration>
+				</Configurations>
 			</Interface>
 		</Configurations>
 		<!-- Peripherals -->
@@ -154,7 +156,7 @@
 						<Field>
 							<Parameters name="FLASH_OPTR" size="0x4" address="0x40022020"/>
 							<AssignedBits>
-								<Bit config="0,2">
+								<Bit number="0x0,0x2">
 									<Name>BOR_EN</Name>
 									<Description/>
 									<BitOffset>0x8</BitOffset>
@@ -165,23 +167,10 @@
 										<Val value="0x1">Configurable brown out reset enabled, values of BORR_LEV and BORF_LEV taken into account</Val>
 									</Values>
 								</Bit>
-								<Bit config="0,2">
-									<Name>BORF_LEV</Name>
-									<Description>These bits contain the supply level threshold that activates/releases the reset. They can be written to program a new BOR level value into Flash memory</Description>
-									<BitOffset>0x9</BitOffset>
-									<BitWidth>0x2</BitWidth>
-									<Access>RW</Access>
-									<Values>
-										<Val value="0x0">BOR falling level 1 with threshold around 2.0 V</Val>
-										<Val value="0x1">BOR falling level 2 with threshold around 2.2 V</Val>
-										<Val value="0x2">BOR falling level 3 with threshold around 2.5 V</Val>
-										<Val value="0x3">BOR falling level 4 with threshold around 2.8 V</Val>
-									</Values>
-								</Bit>
-								<Bit config="0,2">
+								<Bit number="0x0,0x2">
 									<Name>BORR_LEV</Name>
 									<Description>These bits contain the supply level threshold that activates/releases the reset. They can be written to program a new BOR level value into Flash memory</Description>
-									<BitOffset>0xB</BitOffset>
+									<BitOffset>0x9</BitOffset>
 									<BitWidth>0x2</BitWidth>
 									<Access>RW</Access>
 									<Values>
@@ -189,6 +178,19 @@
 										<Val value="0x1">BOR rising level 2 with threshold around 2.3 V</Val>
 										<Val value="0x2">BOR rising level 3 with threshold around 2.6 V</Val>
 										<Val value="0x3">BOR rising level 4 with threshold around 2.9 V</Val>
+									</Values>
+								</Bit>
+								<Bit number="0x0,0x2">
+									<Name>BORF_LEV</Name>
+									<Description>These bits contain the supply level threshold that activates/releases the reset. They can be written to program a new BOR level value into Flash memory</Description>
+									<BitOffset>0xB</BitOffset>
+									<BitWidth>0x2</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">BOR falling level 1 with threshold around 2.0 V</Val>
+										<Val value="0x1">BOR falling level 2 with threshold around 2.2 V</Val>
+										<Val value="0x2">BOR falling level 3 with threshold around 2.5 V</Val>
+										<Val value="0x3">BOR falling level 4 with threshold around 2.8 V</Val>
 									</Values>
 								</Bit>
 							</AssignedBits>
@@ -320,7 +322,20 @@
 										<Val value="0x1">nBOOT0=1</Val>
 									</Values>
 								</Bit>
-								<Bit config="0,2">
+								<Bit number="0x0,0x2">
+									<Name>NRST_MODE</Name>
+									<Description/>
+									<BitOffset>0x1B</BitOffset>
+									<BitWidth>0x2</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">Reserved</Val>
+										<Val value="0x1">Reset Input only: a low level on the NRST pin generates system reset, internal RESET not propagated to the NSRT pin</Val>
+										<Val value="0x2">GPIO: standard GPIO pad functionality, only internal RESET possible</Val>
+										<Val value="0x3">Bidirectional reset: NRST pin configured in reset input/output mode (legacy mode)</Val>
+									</Values>
+								</Bit>	
+								<Bit number="0x0,0x2">
 									<Name>IRHEN</Name>
 									<Description>Internal reset holder enable bit</Description>
 									<BitOffset>0x1D</BitOffset>
@@ -500,7 +515,7 @@
 						<Field>
 							<Parameters address="0x1FFF7800" name="FLASH_OPTR" size="0x4"/>
 							<AssignedBits>
-								<Bit config="0,2">
+								<Bit number="0x0,0x2">
 									<Name>BOR_EN</Name>
 									<Description/>
 									<BitOffset>0x8</BitOffset>
@@ -511,23 +526,10 @@
 										<Val value="0x1">Configurable brown out reset enabled, values of BORR_LEV and BORF_LEV taken into account</Val>
 									</Values>
 								</Bit>
-								<Bit config="0,2">
-									<Name>BORF_LEV</Name>
-									<Description>These bits contain the supply level threshold that activates/releases the reset. They can be written to program a new BOR level value into Flash memory</Description>
-									<BitOffset>0x9</BitOffset>
-									<BitWidth>0x2</BitWidth>
-									<Access>RW</Access>
-									<Values>
-										<Val value="0x0">BOR falling level 1 with threshold around 2.0 V</Val>
-										<Val value="0x1">BOR falling level 2 with threshold around 2.2 V</Val>
-										<Val value="0x2">BOR falling level 3 with threshold around 2.5 V</Val>
-										<Val value="0x3">BOR falling level 4 with threshold around 2.8 V</Val>
-									</Values>
-								</Bit>
-								<Bit config="0,2">
+								<Bit number="0x0,0x2">
 									<Name>BORR_LEV</Name>
 									<Description>These bits contain the supply level threshold that activates/releases the reset. They can be written to program a new BOR level value into Flash memory</Description>
-									<BitOffset>0xB</BitOffset>
+									<BitOffset>0x9</BitOffset>
 									<BitWidth>0x2</BitWidth>
 									<Access>RW</Access>
 									<Values>
@@ -535,6 +537,19 @@
 										<Val value="0x1">BOR rising level 2 with threshold around 2.3 V</Val>
 										<Val value="0x2">BOR rising level 3 with threshold around 2.6 V</Val>
 										<Val value="0x3">BOR rising level 4 with threshold around 2.9 V</Val>
+									</Values>
+								</Bit>
+								<Bit number="0x0,0x2">
+									<Name>BORF_LEV</Name>
+									<Description>These bits contain the supply level threshold that activates/releases the reset. They can be written to program a new BOR level value into Flash memory</Description>
+									<BitOffset>0xB</BitOffset>
+									<BitWidth>0x2</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">BOR falling level 1 with threshold around 2.0 V</Val>
+										<Val value="0x1">BOR falling level 2 with threshold around 2.2 V</Val>
+										<Val value="0x2">BOR falling level 3 with threshold around 2.5 V</Val>
+										<Val value="0x3">BOR falling level 4 with threshold around 2.8 V</Val>
 									</Values>
 								</Bit>
 							</AssignedBits>
@@ -665,8 +680,21 @@
 										<Val value="0x0">nBOOT0=0</Val>
 										<Val value="0x1">nBOOT0=1</Val>
 									</Values>
+								</Bit>	
+                                <Bit number="0x0,0x2">
+									<Name>NRST_MODE</Name>
+									<Description/>
+									<BitOffset>0x1B</BitOffset>
+									<BitWidth>0x2</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">Reserved</Val>
+										<Val value="0x1">Reset Input only: a low level on the NRST pin generates system reset, internal RESET not propagated to the NSRT pin</Val>
+										<Val value="0x2">GPIO: standard GPIO pad functionality, only internal RESET possible</Val>
+										<Val value="0x3">Bidirectional reset: NRST pin configured in reset input/output mode (legacy mode)</Val>
+									</Values>
 								</Bit>									
-								<Bit config="0,2">
+								<Bit number="0x0,0x2">
 									<Name>IRHEN</Name>
 									<Description>Internal reset holder enable bit</Description>
 									<BitOffset>0x1D</BitOffset>
