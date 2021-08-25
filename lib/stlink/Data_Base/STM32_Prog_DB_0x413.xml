@@ -213,7 +213,7 @@
 					</Category>
 				</Bank>
 				<Bank interface="Bootloader">
-					<Parameters address="0x1FFFC000" name="Bank 1" size="0x8"/>
+					<Parameters address="0x1FFFC000" name="Bank 1" size="0x10"/>
 					<Category>
 						<Name>Read Out Protection</Name>
 						<Field>

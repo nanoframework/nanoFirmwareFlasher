@@ -979,7 +979,7 @@
 					</Category>
 					</Bank>
 					<Bank interface="JTAG_SWD">
-							<Parameters address="0x40022080" name="Bank 3" size="0x8"/>
+							<Parameters address="0x40022080" name="Bank 3" size="0x10"/>
 							<Category>
 								<Name>Boot Configuration</Name>
 								<Field>
@@ -1021,6 +1021,54 @@
 									<BitWidth>0x8</BitWidth>
 									<Access>W</Access>
 									<Equation multiplier="0x2000" offset="0x08000000"/>
+									</Bit>
+									</AssignedBits>
+								</Field>
+								<Field>
+									<Parameters address="0x40022088" name="FLASH_OPTR" size="0x4"/>
+									<AssignedBits>
+									<Bit>
+									<Name>BOOT_LOCK_SEC</Name>
+									<Description>A field locking the values of UBE, SWAP, and BOOT_ADDR_SEC settings.</Description>
+									<BitOffset>0x0</BitOffset>
+									<BitWidth>0x8</BitWidth>
+									<Access>R</Access>
+									<Values>
+										<Val value="0xC3">The BOOT_UBE, SWAP and BOOT_ADDR_SEC can still be modified following their individual rules.</Val>
+										<Val value="0xB4">The BOOT_UBE and BOOT_ADDR_SEC are frozen. SWAP can only be modified with TZEN set to 0xC3 (disabled).</Val>
+									</Values>
+									</Bit>
+									<Bit>
+									<Name>BOOT_ADDR_SEC</Name>
+									<Description>Unique Boot Entry Secure Adress</Description>
+									<BitOffset>0x0</BitOffset>
+									<BitWidth>0x20</BitWidth>
+									<Access>R</Access>
+									<!--<Equation multiplier="0x2000" offset="0x08000000"/> -->
+									</Bit>
+									</AssignedBits>
+								</Field>
+								<Field>
+									<Parameters address="0x4002208C" name="FLASH_OPTR" size="0x4"/>
+									<AssignedBits>
+									<Bit>
+									<Name>BOOT_LOCK_SEC</Name>
+									<Description>A field locking the values of UBE, SWAP, and BOOT_ADDR_SEC settings.</Description>
+									<BitOffset>0x0</BitOffset>
+									<BitWidth>0x8</BitWidth>
+									<Access>W</Access>
+									<Values>
+										<Val value="0xC3">The BOOT_UBE, SWAP and BOOT_ADDR_SEC can still be modified following their individual rules.</Val>
+										<Val value="0xB4">The BOOT_UBE and BOOT_ADDR_SEC are frozen. SWAP can only be modified with TZEN set to 0xC3 (disabled).</Val>
+									</Values>
+									</Bit>
+									<Bit>
+									<Name>BOOT_ADDR_SEC</Name>
+									<Description>Unique Boot Entry Secure Adress.</Description>
+									<BitOffset>0x0</BitOffset>
+									<BitWidth>0x20</BitWidth>
+									<Access>W</Access>
+									<!--<Equation multiplier="0x2000" offset="0x08000000"/> -->
 									</Bit>
 									</AssignedBits>
 								</Field>
@@ -2205,7 +2253,7 @@
 					</Category>
 					</Bank>
 					<Bank interface="JTAG_SWD">
-							<Parameters address="0x50022080" name="Bank 3" size="0x8"/>
+							<Parameters address="0x50022080" name="Bank 3" size="0x10"/>
 							<Category>
 								<Name>Boot Configuration</Name>
 								<Field>
@@ -2247,6 +2295,54 @@
 									<BitWidth>0x8</BitWidth>
 									<Access>W</Access>
 									<Equation multiplier="0x2000" offset="0x08000000"/>
+									</Bit>
+									</AssignedBits>
+								</Field>
+								<Field>
+									<Parameters address="0x50022088" name="FLASH_OPTR" size="0x4"/>
+									<AssignedBits>
+									<Bit>
+									<Name>BOOT_LOCK_SEC</Name>
+									<Description>A field locking the values of UBE, SWAP, and BOOT_ADDR_SEC settings.</Description>
+									<BitOffset>0x0</BitOffset>
+									<BitWidth>0x8</BitWidth>
+									<Access>R</Access>
+									<Values>
+										<Val value="0xC3">The BOOT_UBE, SWAP and BOOT_ADDR_SEC can still be modified following their individual rules.</Val>
+										<Val value="0xB4">The BOOT_UBE and BOOT_ADDR_SEC are frozen. SWAP can only be modified with TZEN set to 0xC3 (disabled).</Val>
+									</Values>
+									</Bit>
+									<Bit>
+									<Name>BOOT_ADDR_SEC</Name>
+									<Description>Unique Boot Entry Secure Adress</Description>
+									<BitOffset>0x0</BitOffset>
+									<BitWidth>0x20</BitWidth>
+									<Access>R</Access>
+									<!--<Equation multiplier="0x2000" offset="0x08000000"/> -->
+									</Bit>
+									</AssignedBits>
+								</Field>
+								<Field>
+									<Parameters address="0x5002208C" name="FLASH_OPTR" size="0x4"/>
+									<AssignedBits>
+									<Bit>
+									<Name>BOOT_LOCK_SEC</Name>
+									<Description>A field locking the values of UBE, SWAP, and BOOT_ADDR_SEC settings.</Description>
+									<BitOffset>0x0</BitOffset>
+									<BitWidth>0x8</BitWidth>
+									<Access>W</Access>
+									<Values>
+										<Val value="0xC3">The BOOT_UBE, SWAP and BOOT_ADDR_SEC can still be modified following their individual rules.</Val>
+										<Val value="0xB4">The BOOT_UBE and BOOT_ADDR_SEC are frozen. SWAP can only be modified with TZEN set to 0xC3 (disabled).</Val>
+									</Values>
+									</Bit>
+									<Bit>
+									<Name>BOOT_ADDR_SEC</Name>
+									<Description>Unique Boot Entry Secure Adress</Description>
+									<BitOffset>0x0</BitOffset>
+									<BitWidth>0x20</BitWidth>
+									<Access>W</Access>
+									<!--<Equation multiplier="0x2000" offset="0x08000000"/> -->
 									</Bit>
 									</AssignedBits>
 								</Field>

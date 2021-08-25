@@ -72,7 +72,7 @@
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFF75E0" default="0x80000"/>
 					<!-- 512K dual Bank -->
-				<Configuration config="0">
+				<Configuration number="0x0">
 					<Parameters address="0x08000000" name=" 512 KB Embedded Flash" size="0x080000"/>
 					<Description/>
 					<Organization>Dual</Organization>
@@ -311,6 +311,28 @@
 									<Values>
 										<Val value="0x0">Hardware window watchdog</Val>
 										<Val value="0x1">Software window watchdog</Val>
+									</Values>
+								</Bit>
+								<Bit>
+									<Name>nSWAP_BANK</Name>
+									<Description/>
+									<BitOffset>0x14</BitOffset>
+									<BitWidth>0x1</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">Bank 1</Val>
+										<Val value="0x1">Bank 2</Val>
+									</Values>
+								</Bit>
+								<Bit>
+									<Name>DUAL_BANK</Name>
+									<Description/>
+									<BitOffset>0x15</BitOffset>
+									<BitWidth>0x1</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">256 Kbytes/512 Kbytes single-bank Flash memory(contiguous addresses in Bank 1)</Val>
+										<Val value="0x1">256 Kbytes/512 Kbytes dual-bank Flash memory</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -774,6 +796,28 @@
 									<Values>
 										<Val value="0x0">Hardware window watchdog</Val>
 										<Val value="0x1">Software window watchdog</Val>
+									</Values>
+								</Bit>
+								<Bit>
+									<Name>nSWAP_BANK</Name>
+									<Description/>
+									<BitOffset>0x14</BitOffset>
+									<BitWidth>0x1</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">Bank 1</Val>
+										<Val value="0x1">Bank 2</Val>
+									</Values>
+								</Bit>
+								<Bit>
+									<Name>DUAL_BANK</Name>
+									<Description/>
+									<BitOffset>0x15</BitOffset>
+									<BitWidth>0x1</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">256 Kbytes/512 Kbytes single-bank Flash memory(contiguous addresses in Bank 1)</Val>
+										<Val value="0x1">256 Kbytes/512 Kbytes dual-bank Flash memory</Val>
 									</Values>
 								</Bit>
 								<Bit>

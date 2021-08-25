@@ -249,7 +249,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string boardName;
 
             // tweak our target name trying to mach ST names
-            string targetName = target.ToUpper().Replace("ST_", "").Replace("NUCLEO64", "NUCLEO").Replace("NUCLEO144", "NUCLEO");
+            string targetName = target.ToUpper().Replace("ST_", "").Replace("NUCLEO64", "NUCLEO").Replace("NUCLEO144", "NUCLEO").Replace("STM", "").Replace("-", "_").Replace("_", "");
 
             // check if there is a board name available
             if (

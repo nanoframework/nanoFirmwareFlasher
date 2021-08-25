@@ -253,17 +253,6 @@
 										<Val value="0x1">Dual-bank boot enable</Val>
 									</Values>
 								</Bit>
-								<Bit reference="DualBank">
-									<Name>DBANK</Name>
-									<Description/>
-									<BitOffset>0x16</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>RW</Access>
-									<Values>
-										<Val value="0x0">Single bank mode with 128 bits data read width</Val>
-										<Val value="0x1">Dual bank mode with 64 bits data</Val>
-									</Values>
-								</Bit>
 								<Bit>
 									<Name>nBOOT1</Name>
 									<Description/>
@@ -502,7 +491,7 @@
 					</Category>
 				</Bank>
 				<Bank interface="Bootloader">
-					<Parameters address="0x1FFF7800" name="Bank 1" size="0x24"/>
+					<Parameters address="0x1FFF7800" name="Bank 1" size="0x30"/>
 					<Category>
 						<Name>Read Out Protection</Name>
 						<Field>
@@ -636,17 +625,6 @@
 									<Values>
 										<Val value="0x0">Dual-bank boot disable</Val>
 										<Val value="0x1">Dual-bank boot enable</Val>
-									</Values>
-								</Bit>
-								<Bit reference="DualBank">
-									<Name>DBANK</Name>
-									<Description/>
-									<BitOffset>0x16</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>RW</Access>
-									<Values>
-										<Val value="0x0">Single bank mode with 128 bits data read width</Val>
-										<Val value="0x1">Dual bank mode with 64 bits data</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -870,6 +848,7 @@
 									<BitOffset>0x0</BitOffset>
 									<BitWidth>0x8</BitWidth>
 									<Access>RW</Access>
+									<Equation multiplier="0x1000" offset="0x08000000"/>
 								</Bit>
 								<Bit>
 									<Name>BOOT_LOCK</Name>
