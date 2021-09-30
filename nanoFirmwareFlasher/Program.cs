@@ -90,25 +90,33 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             Version latestVersion;
             Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0]);
-
-            using (var client = new HttpClient())
+            try
             {
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
 
-                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("nanoff", currentVersion.ToString()));
+                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("nanoff", currentVersion.ToString()));
 
-                HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/nanoframework/nanoFirmwareFlasher/releases/latest").Result;
+                    HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/nanoframework/nanoFirmwareFlasher/releases/latest").Result;
 
-                dynamic responseContent = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
-                string tagName = responseContent.tag_name.ToString();
+                    dynamic responseContent = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
+                    string tagName = responseContent.tag_name.ToString();
 
-                latestVersion = Version.Parse(tagName.Substring(1));
+                    latestVersion = Version.Parse(tagName.Substring(1));
+                }
+
+                if (latestVersion > currentVersion)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("** There is a new version available, update is recommended **");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
             }
-
-            if(latestVersion > currentVersion)
+            catch
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("** There is a new version available, update is recommended **");
+                Console.WriteLine("** Error Connecting to GitHub for version checking **");
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }

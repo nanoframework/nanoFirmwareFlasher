@@ -146,12 +146,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (fwFiles.Any())
             {
-                // get file creation date (from the 1st one)
-                if ((DateTime.UtcNow - File.GetLastWriteTimeUtc(fwFiles.First().FullName)).TotalHours < 4)
+                //// get file creation date (from the 1st one)
+                //if ((DateTime.UtcNow - File.GetLastWriteTimeUtc(fwFiles.First().FullName)).TotalHours < 4)
+                //{
+                //    // fw package has less than 4 hours
+                //    // skip download
+                //    skipDownload = true;
+                //}
+
+                if (!string.IsNullOrEmpty(_fwVersion))
                 {
-                    // fw package has less than 4 hours
-                    // skip download
-                    skipDownload = true;
+                    string targetFileName = $"{_targetName}-{_fwVersion}.zip";
+
+                    if (!fwFiles.Where(w => w.Name == targetFileName).Any())
+                    {
+                        // set Flag to Download the Firmware as it is not downloaded before
+                        skipDownload = false;
+                    }
                 }
             }
 
@@ -321,8 +332,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (fwFiles.Any())
                 {
-                    // take the 1st one
-                    fwFileName = fwFiles.First().FullName;
+                    if (string.IsNullOrEmpty(_fwVersion))
+                    {// take the 1st one
+                        fwFileName = fwFiles.First().FullName;
+                    }
+                    else
+                    {
+                        string targetFileName = $"{_targetName}-{_fwVersion}.zip";
+                        fwFileName = fwFiles.Where(w => w.Name == targetFileName).Select(s => s.FullName).FirstOrDefault();
+                    }
+
+                    if (string.IsNullOrEmpty(fwFileName))
+                    {
+                        return ExitCodes.E9007;
+                    }
 
                     // get the version form the file name
                     var pattern = @"(\d+\.\d+\.\d+)(\.\d+|-.+)(?=\.zip)";
