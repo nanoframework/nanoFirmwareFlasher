@@ -429,11 +429,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // prepare the process start of the esptool
+            string appName = string.Empty;
+            string appDir = string.Empty;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                appName = "esptool.exe";
+                appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolWin");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                appName = "esptool";
+                appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolMac");
+            }
+            else
+            {
+                appName = "esptool";
+                appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolLinux");
+            }
+
             Process espTool = new Process();
             string parameter = $"--port {_serialPort} {baudRateParameter} --chip {_chipType} {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
-            espTool.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "esptool", "esptool.exe"), parameter)
+            espTool.StartInfo = new ProcessStartInfo(Path.Combine(appDir, appName), parameter)
             {
-                WorkingDirectory = Path.Combine(Program.ExecutingPath, "esptool"),
+                WorkingDirectory = appDir,
                 UseShellExecute = false,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true
