@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Ports;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -89,28 +90,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="flashFrequency">The flash frequency for the esptool</param>
         /// <param name="partitionTableSize">Partition table size to use</param>
         internal EspTool(
-            string serialPort, 
+            string serialPort,
             int baudRate,
-            string flashMode, 
+            string flashMode,
             int flashFrequency,
             PartitionTableSize? partitionTableSize)
         {
-            // open/close the port to see if it is available
-            using (var test = new SerialPort(serialPort, baudRate))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                try
+                // open/close the port to see if it is available
+                using (var test = new SerialPort(serialPort, baudRate))
                 {
-                    test.Open();
-                    test.Close();
+
+                    try
+                    {
+                        test.Open();
+                        test.Close();
+                    }
+                    catch
+                    {
+                        // presume any exception here is caused by the serial not existing or not possible to open
+                        throw new EspToolExecutionException();
+                    }
                 }
-                catch
+            }
+            else
+            {
+                if (!File.Exists(serialPort))
                 {
-                    // presume any exception here is caused by the serial not existing or not possible to open
                     throw new EspToolExecutionException();
                 }
             }
 
-            if(Verbosity >= VerbosityLevel.Detailed)
+            if (Verbosity >= VerbosityLevel.Detailed)
             {
                 Console.WriteLine($"Using {serialPort} @ {baudRate} baud to connect to ESP32.");
             }
@@ -150,7 +162,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // check if we got flash size (in case we need it)
-            if (requireFlashSize 
+            if (requireFlashSize
                 && messages.Contains("Detected flash size: Unknown"))
             {
                 // try again now without the stub
@@ -165,7 +177,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     throw new EspToolExecutionException(messages);
                 }
             }
-            
+
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -387,11 +399,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="messages">StandardOutput and StandardError messages that the esptool prints out</param>
         /// <returns>true if the esptool exit code was 0; false otherwise</returns>
         private bool RunEspTool(
-            string commandWithArguments, 
+            string commandWithArguments,
             bool noStub,
             bool useStandardBaudRate,
-            bool hardResetAfterCommand, 
-            char? progressTestChar, 
+            bool hardResetAfterCommand,
+            char? progressTestChar,
             out string messages)
         {
             // create the process start info
@@ -484,7 +496,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 else
                 {
                     // when not looking for progress char, look for connect pattern
-                    
+
                     // loop until esptool exit
                     while (!espTool.HasExited)
                     {
@@ -538,7 +550,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // prompt user
             if (!connectPromptShown &&
-                connectPatternFound && 
+                connectPatternFound &&
                 timeToConnect > 5)
             {
                 Console.ForegroundColor = ConsoleColor.Magenta;
@@ -578,13 +590,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="progressTestChar">search char for the progress message delimiter (backspace or linefeed)</param>
         /// <returns></returns>
         private string FindProgress(
-            StringBuilder messageBuilder, 
+            StringBuilder messageBuilder,
             char progressTestChar)
         {
             // search for the given char (backspace or linefeed)
             // only if we have 100 chars at minimum and only if the last char is the test char
-            if (messageBuilder.Length > 100 && 
-                messageBuilder[messageBuilder.Length - 1] == progressTestChar && 
+            if (messageBuilder.Length > 100 &&
+                messageBuilder[messageBuilder.Length - 1] == progressTestChar &&
                 messageBuilder[messageBuilder.Length - 2] != progressTestChar)
             {
                 // trim the test char and convert \r\n into \r
@@ -597,7 +609,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return progress.Substring(delimiter + 1).PadRight(110);
                 }
             }
- 
+
             // no progress message found
             return null;
         }
