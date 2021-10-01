@@ -144,28 +144,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                    .ToList();
             }
 
-            if (fwFiles.Any())
-            {
-                //// get file creation date (from the 1st one)
-                //if ((DateTime.UtcNow - File.GetLastWriteTimeUtc(fwFiles.First().FullName)).TotalHours < 4)
-                //{
-                //    // fw package has less than 4 hours
-                //    // skip download
-                //    skipDownload = true;
-                //}
-
-                if (!string.IsNullOrEmpty(_fwVersion))
-                {
-                    string targetFileName = $"{_targetName}-{_fwVersion}.zip";
-
-                    if (!fwFiles.Where(w => w.Name == targetFileName).Any())
-                    {
-                        // set Flag to Download the Firmware as it is not downloaded before
-                        skipDownload = false;
-                    }
-                }
-            }
-
+           
             if (!skipDownload)
             {
                 // try to perform request
