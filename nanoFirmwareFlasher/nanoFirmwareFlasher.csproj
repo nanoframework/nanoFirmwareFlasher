@@ -76,12 +76,10 @@
 	    <Pack>true</Pack>
         <PackagePath>content\esptool;contentFiles\esptool</PackagePath>
 	</None>
-  <ItemGroup>
     <None Include="..\lib\esptool\esptoolMac\**" Link="esptool\esptoolMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>
         <PackagePath>content\esptool\esptoolMac;contentFiles\esptool\esptoolMac</PackagePath>
 	</None>
-  <ItemGroup>
     <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>
         <PackagePath>content\esptool\esptoolWin;contentFiles\esptool\esptoolWin</PackagePath>
