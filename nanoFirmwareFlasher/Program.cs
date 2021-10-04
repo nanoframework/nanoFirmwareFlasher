@@ -44,8 +44,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
             string codeBase = Assembly.GetExecutingAssembly().Location;
-            var uri = new UriBuilder(codeBase);
-            var fullPath = Uri.UnescapeDataString(uri.Path);
+            var fullPath = Path.GetFullPath(codeBase);
             ExecutingPath = Path.GetDirectoryName(fullPath);
             
             // check for empty argument collection
@@ -264,6 +263,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == "esp32")
             {
+                Console.WriteLine($"serial={o.SerialPort}");
                 // COM port is mandatory for ESP32
                 if (string.IsNullOrEmpty(o.SerialPort))
                 {

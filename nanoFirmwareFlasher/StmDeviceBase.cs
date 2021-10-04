@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -60,12 +61,30 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _pathChecked = true;
                 }
 
+                string appName = string.Empty;
+                string appDir = string.Empty;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    appName = "STM32_Programmer_CLI.exe";
+                    appDir = "stlink";
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    appName = "STM32_Programmer_CLI";
+                    appDir = "stlinkMac";
+                }
+                else
+                {
+                    appName = "STM32_Programmer_CLI";
+                    appDir = "stlinkLinux";
+                }
+
                 var stLinkCli = new Process
                 {
-                    StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stlink", "bin", "STM32_Programmer_CLI.exe"),
+                    StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, appDir, "bin", appName),
                         arguments)
                     {
-                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink", "bin"),
+                        WorkingDirectory = Path.Combine(Program.ExecutingPath, appDir, "bin"),
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true

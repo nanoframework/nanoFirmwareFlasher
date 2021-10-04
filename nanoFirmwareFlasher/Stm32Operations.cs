@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -124,7 +125,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if(!connectedStDfuDevices.Any()
+            if (!connectedStDfuDevices.Any()
                 && !connectedStJtagDevices.Any())
             {
                 // no device was found
@@ -230,7 +231,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 jtagDevice.Verbosity = verbosity;
 
                 // write HEX files to flash
-                if ( filesToFlash.Any(f => f.EndsWith(".hex")) ) 
+                if (filesToFlash.Any(f => f.EndsWith(".hex")))
                 {
                     operationResult = jtagDevice.FlashHexFiles(filesToFlash);
                 }
@@ -238,11 +239,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (operationResult == ExitCodes.OK && isApplicationBinFile)
                 {
                     // now program the application file
-                    operationResult = jtagDevice.FlashBinFiles(new [] { applicationPath }, new [] { deploymentAddress });
+                    operationResult = jtagDevice.FlashBinFiles(new[] { applicationPath }, new[] { deploymentAddress });
                 }
 
-                if(
-                    updateFw 
+                if (
+                    updateFw
                     && operationResult == ExitCodes.OK)
                 {
                     // reset MCU
@@ -353,8 +354,44 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal static ExitCodes InstallDfuDrivers(VerbosityLevel verbosityLevel)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Console.WriteLine("No driver installation needed on MacOS");
+                return ExitCodes.OK;
+            }
+
             try
             {
+                // In case Linux, we just need to copy the rules files
+                // It does require elevated privileges
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process installerLinux = new Process
+                    {
+                        StartInfo = new ProcessStartInfo("sudo")
+                        {
+                            Arguments = $"cp *.rules /etc/udev/rules.d",
+                            WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlinkLinux", "Drivers", "rules"),
+                            UseShellExecute = true
+                        }
+                    };
+
+                    // execution command and...
+                    installerLinux.Start();
+
+                    // ... wait for exit
+                    installerLinux.WaitForExit();
+
+                    if (verbosityLevel >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("OK");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    return ExitCodes.OK;
+                }
+
                 if (verbosityLevel >= VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
@@ -381,10 +418,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 string installerPath;
 
-                if(Environment.Is64BitOperatingSystem)
+                if (Environment.Is64BitOperatingSystem)
                 {
                     installerPath = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver\\installer_x64.exe");
-                } 
+                }
                 else
                 {
                     installerPath = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver\\installer_x86.exe");
@@ -430,6 +467,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal static ExitCodes InstallJtagDrivers(VerbosityLevel verbosityLevel)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Console.WriteLine("No driver installation needed on MacOS");
+                return ExitCodes.OK;
+            }
+            else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Driver installation for JTAG no supported on Linux. Please refer to the STM32 website to get the specific drivers.");
+                return ExitCodes.OK;
+            }
+
             Console.ForegroundColor = ConsoleColor.Cyan;
 
             if (verbosityLevel >= VerbosityLevel.Normal)
