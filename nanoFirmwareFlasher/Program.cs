@@ -90,7 +90,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             Version latestVersion;
             Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0]);
-           
+
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
@@ -105,13 +105,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 latestVersion = Version.Parse(tagName.Substring(1));
             }
 
-            if (latestVersion > currentVersion)
+            if(latestVersion > currentVersion)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("** There is a new version available, update is recommended **");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-           
         }
 
         private static Task HandleErrorsAsync(IEnumerable<Error> errors)
