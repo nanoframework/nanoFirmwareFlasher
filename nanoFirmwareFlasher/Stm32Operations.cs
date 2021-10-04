@@ -362,6 +362,36 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             try
             {
+                // In case Linux, we just need to copy the rules files
+                // It does require elevated privileges
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process installerLinux = new Process
+                    {
+                        StartInfo = new ProcessStartInfo("sudo")
+                        {
+                            Arguments = $"cp *.rules /etc/udev/rules.d",
+                            WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlinkLinux", "Drivers", "rules"),
+                            UseShellExecute = true
+                        }
+                    };
+
+                    // execution command and...
+                    installerLinux.Start();
+
+                    // ... wait for exit
+                    installerLinux.WaitForExit();
+
+                    if (verbosityLevel >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("OK");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    return ExitCodes.OK;
+                }
+
                 if (verbosityLevel >= VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
@@ -440,6 +470,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 Console.WriteLine("No driver installation needed on MacOS");
+                return ExitCodes.OK;
+            }
+            else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Driver installation for JTAG no supported on Linux. Please refer to the STM32 website to get the specific drivers.");
                 return ExitCodes.OK;
             }
 

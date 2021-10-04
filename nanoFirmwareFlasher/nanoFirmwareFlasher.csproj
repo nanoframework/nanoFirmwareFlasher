@@ -109,7 +109,7 @@
     <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>
         <PackagePath>content\uniflash;contentFiles\uniflash</PackagePath>
-	</None>
+	  </None>
   </ItemGroup>
 
 </Project>
