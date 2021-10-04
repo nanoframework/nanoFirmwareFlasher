@@ -83,8 +83,11 @@
     <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>
         <PackagePath>content\esptool\esptoolWin;contentFiles\esptool\esptoolWin</PackagePath>
-	</None>
-  
+	  </None>
+    <None Include="..\lib\esptool\esptoolLinux\**" Link="esptool\esptooLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+	    <Pack>true</Pack>
+        <PackagePath>content\esptool\esptoolWin;contentFiles\esptool\esptoolLinux</PackagePath>
+	  </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -94,7 +97,11 @@
 	  </None>
     <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>
-        <PackagePath>content\stlink;contentFiles\stlink</PackagePath>
+        <PackagePath>content\stlinkMac;contentFiles\stlinkMac</PackagePath>
+	  </None>
+      <None Include="..\lib\stlinkLinux\**" Link="stlinLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+	    <Pack>true</Pack>
+        <PackagePath>content\stlinkLinux;contentFiles\stlinkLinux</PackagePath>
 	  </None>
   </ItemGroup>
 
