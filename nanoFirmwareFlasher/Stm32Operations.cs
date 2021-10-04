@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -124,7 +125,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if(!connectedStDfuDevices.Any()
+            if (!connectedStDfuDevices.Any()
                 && !connectedStJtagDevices.Any())
             {
                 // no device was found
@@ -230,7 +231,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 jtagDevice.Verbosity = verbosity;
 
                 // write HEX files to flash
-                if ( filesToFlash.Any(f => f.EndsWith(".hex")) ) 
+                if (filesToFlash.Any(f => f.EndsWith(".hex")))
                 {
                     operationResult = jtagDevice.FlashHexFiles(filesToFlash);
                 }
@@ -238,11 +239,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (operationResult == ExitCodes.OK && isApplicationBinFile)
                 {
                     // now program the application file
-                    operationResult = jtagDevice.FlashBinFiles(new [] { applicationPath }, new [] { deploymentAddress });
+                    operationResult = jtagDevice.FlashBinFiles(new[] { applicationPath }, new[] { deploymentAddress });
                 }
 
-                if(
-                    updateFw 
+                if (
+                    updateFw
                     && operationResult == ExitCodes.OK)
                 {
                     // reset MCU
@@ -353,6 +354,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal static ExitCodes InstallDfuDrivers(VerbosityLevel verbosityLevel)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Console.WriteLine("No driver installation needed on MacOS");
+                return ExitCodes.OK;
+            }
+
             try
             {
                 if (verbosityLevel >= VerbosityLevel.Normal)
@@ -381,10 +388,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 string installerPath;
 
-                if(Environment.Is64BitOperatingSystem)
+                if (Environment.Is64BitOperatingSystem)
                 {
                     installerPath = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver\\installer_x64.exe");
-                } 
+                }
                 else
                 {
                     installerPath = Path.Combine(Program.ExecutingPath, "stlink\\DFU_Driver\\Driver\\installer_x86.exe");
@@ -430,6 +437,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal static ExitCodes InstallJtagDrivers(VerbosityLevel verbosityLevel)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Console.WriteLine("No driver installation needed on MacOS");
+                return ExitCodes.OK;
+            }
+
             Console.ForegroundColor = ConsoleColor.Cyan;
 
             if (verbosityLevel >= VerbosityLevel.Normal)
