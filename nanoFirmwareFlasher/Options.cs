@@ -25,7 +25,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Required = false,
             Default = null,
             HelpText = "ID of the DFU device to update. If not specified the first connected DFU device will be used.")]
-        public string DfuDeviceId{ get; set; }
+        public string DfuDeviceId { get; set; }
 
         [Option(
             "dfu",
@@ -103,7 +103,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Required = false,
             Default = 921600,
             HelpText = "Baud rate to use for the serial port.")]
-        public int BaudRate{ get; set; }
+        public int BaudRate { get; set; }
 
         [Option(
             "flashmode",
@@ -139,7 +139,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = null,
             HelpText = "Path to file with CLR image. Partitions table and bootloader file will be automatically flashed to the device.")]
         public string Esp32ClrFile { get; set; }
-      
+
         [Option(
             "devicedetails",
             Required = false,
@@ -271,6 +271,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Skip execution of sanity check if the requested target fits the connected device. This is a best effort validation and it's NOT guaranted to be fail safe.")]
         public bool FitCheck { get; set; }
 
+        [Option(
+            "listboards",
+            Required = false,
+            Default = false,
+            HelpText = "List the available boards and versions available on CloudSmith.")]
+        public bool ListBoards { get; set; }
         #endregion
 
 
@@ -285,6 +291,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (preview version), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, Preview = true, DfuDeviceId = "3380386D3134" }),
                 new("List all STM32 devices connected through JTAG", new Options { Platform = "stm32", ListJtagDevices = true}),
                 new("Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
+                new("List all boards", new Options { ListBoards = true, Preview = true, Platform = "ESP" }),
             };
     }
 

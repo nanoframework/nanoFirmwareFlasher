@@ -64,6 +64,49 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _preview = preview;
         }
 
+        public static List<CloudSmithPackageDetail> GetBoardList(bool communityTargets, bool preview, string filter, VerbosityLevel verbosity)
+        {
+            var repoName = preview ? _refTargetsDevRepo : _refTargetsStableRepo;
+            string requestUri = $"{_cloudsmithPackages}/{repoName}/?query={filter}";
+            List<CloudSmithPackageDetail> boardNames = new List<CloudSmithPackageDetail>();
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write($"Trying to find list of boards in {(preview ? "developement" : "stable")} repository");
+                if( string.IsNullOrEmpty(filter))
+                {
+                    Console.Write(" without filter");
+                }
+                else
+                {
+                    Console.Write($" with filter {filter}");
+                }
+
+                Console.WriteLine("...");
+            }
+
+            HttpResponseMessage response = _cloudsmithClient.GetAsync(requestUri).GetAwaiter().GetResult();
+
+            string responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+            // check for empty array 
+            if (responseBody == "[]")
+            {
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    Console.WriteLine("");
+                }
+
+                // can't find this target
+                return boardNames;
+            }
+
+            boardNames = JsonConvert.DeserializeObject<List<CloudSmithPackageDetail>>(responseBody);
+
+            return boardNames;
+        }
+
         /// <summary>
         /// Download the firmware zip, extract this zip file, and get the firmware parts
         /// </summary>

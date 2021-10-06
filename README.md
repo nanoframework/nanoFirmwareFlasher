@@ -46,6 +46,14 @@ dotnet tool install nanoff --tool-path c:\a-plain-simple-path-to-install-the-too
 
 Note that if you're not using `nanoff` with STM32 devices, this limitation does not apply.
 
+### MacOS users
+
+You'll need to add nanoff to your path as well, once installed run:
+
+```console
+export PATH=$PATH:~/.dotnet/tools
+```
+
 ## Update .NET **nanoFramework** Firmware Flasher
 
 To update .NET **nanoFramework** Firmware Flasher tool use the following .NET Core CLI command:
@@ -231,6 +239,16 @@ This is convenient, for example, if this tool is being used in a automated proce
 ```console
 nanoff -v q
 ```
+
+## List all supported boards
+
+You can list the supported boards, their versions, either for stable versions or preview.
+
+```console
+nanoff --listboards --platform ESP --preview
+```
+
+If you just use `--listboards` options, you'll get the list of all the stable versions for all boards. `--platform` allows you to filter.
 
 ## Exit codes
 
