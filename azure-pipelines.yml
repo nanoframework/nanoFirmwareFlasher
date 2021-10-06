@@ -260,18 +260,27 @@ jobs:
       ArtifactName: deployables
       ArtifactType: Container
 
-  # push NuGet class lib package to NuGet (happens on all builds except PRs)
-  - task: NuGetCommand@2
+  # push NuGet packages to NuGet (happens on all builds except PRs)
+  - task: DotNetCoreCLI@2  
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
+    displayName: Push NuGet nanoff package to NuGet
+    inputs:
+      command: custom
+      custom: nuget
+      arguments: push $(Build.ArtifactStagingDirectory)/nanoff.$(NBGV_NuGetPackageVersion).nupkg --source https://api.nuget.org/v3/index.json --api-key $(API_KEY) --skip-duplicate --timeout 600
+    env:
+      API_KEY: $(NuGetToken)
+
+  - task: DotNetCoreCLI@2  
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Push NuGet packages to NuGet
-    continueOnError: true
     inputs:
-      command: push
-      nuGetFeedType: external
-      allowPackageConflicts: true
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
-
+      command: custom
+      custom: nuget
+      arguments: push $(Build.ArtifactStagingDirectory)/nanoFramework.Tools.FirmwareFlasher.$(NBGV_NuGetPackageVersion).nupkg --source https://api.nuget.org/v3/index.json --api-key $(API_KEY) --skip-duplicate --timeout 600
+    env:
+      API_KEY: $(NuGetToken)
+    
   # create or update GitHub release
   - task: GithubRelease@1
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
@@ -283,8 +292,7 @@ jobs:
       title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       releaseNotesSource: inline
       releaseNotesInline: 'add description here'
-      assets: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      assetUploadMode: replace
+      assets: ''
       isPreRelease: true
       addChangeLog: false
 
@@ -299,8 +307,7 @@ jobs:
       title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       releaseNotesSource: inline
       releaseNotesInline: 'add description here'
-      assets: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      assetUploadMode: replace
+      assets: '' 
       isPreRelease: false
       addChangeLog: false
       action: edit
