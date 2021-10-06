@@ -99,7 +99,7 @@
 	    <Pack>true</Pack>
         <PackagePath>content\stlinkMac</PackagePath>
 	  </None>
-      <None Include="..\lib\stlinkLinux\**" Link="stlinLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+      <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>
         <PackagePath>content\stlinkLinux</PackagePath>
 	  </None>

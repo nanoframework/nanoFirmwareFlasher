@@ -46,7 +46,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string codeBase = Assembly.GetExecutingAssembly().Location;
             var fullPath = Path.GetFullPath(codeBase);
             ExecutingPath = Path.GetDirectoryName(fullPath);
-            
+
             // check for empty argument collection
             if (!args.Any())
             {
@@ -104,7 +104,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 latestVersion = Version.Parse(tagName.Substring(1));
             }
 
-            if(latestVersion > currentVersion)
+            if (latestVersion > currentVersion)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("** There is a new version available, update is recommended **");
@@ -176,6 +176,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region target processing
 
+            // First check if we are asked for the list of boards
+            if (o.ListBoards)
+            {
+                var boards = FirmwarePackage.GetBoardList(false, o.Preview, o.Platform, _verbosityLevel);
+                Console.WriteLine("Release targets:");
+                DisplayBoardDetails(boards);
+
+                boards = FirmwarePackage.GetBoardList(true, o.Preview, o.Platform, _verbosityLevel);
+                Console.WriteLine("Community targets:");
+                DisplayBoardDetails(boards);
+
+                return;
+            }
+
             // if a target name was specified, try to be smart and set the platform accordingly (in case it wasn't specified)
             if (string.IsNullOrEmpty(o.Platform)
                 && !string.IsNullOrEmpty(o.TargetName))
@@ -219,7 +233,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (string.IsNullOrEmpty(o.Platform))
             {
                 // JTAG related
-                if ( 
+                if (
                     o.ListJtagDevices ||
                     !string.IsNullOrEmpty(o.JtagDeviceId) ||
                     o.HexFile.Any() ||
@@ -228,7 +242,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.Platform = "stm32";
                 }
                 // DFU related
-                else if ( 
+                else if (
                     o.ListDevicesInDfuMode ||
                     !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
@@ -245,7 +259,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.Platform = "esp32";
                 }
                 // drivers install
-                else if(o.TIInstallXdsDrivers)
+                else if (o.TIInstallXdsDrivers)
                 {
                     o.Platform = "cc13x2";
                 }
@@ -270,7 +284,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _exitCode = ExitCodes.E6001;
                     return;
                 }
-                
+
                 EspTool espTool;
 
                 try
@@ -282,7 +296,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         o.Esp32FlashFrequency,
                         o.Esp32PartitionTableSize);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     _exitCode = ExitCodes.E4005;
                     return;
@@ -325,7 +339,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     // if this is a PICO and baudrate is not 115200 operations will most likely fail
                     // warn user about this
-                    if(
+                    if (
                         esp32Device.ChipName.Contains("ESP32-PICO")
                         && o.BaudRate != 115200)
                     {
@@ -353,7 +367,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         // backup path specified, backup deployment
                         _exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, o.BackupPath, o.BackupFile, _verbosityLevel);
-                        
+
                         if (_exitCode != ExitCodes.OK)
                         {
                             // done here
@@ -373,7 +387,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 // show device details
-                if(o.DeviceDetails)
+                if (o.DeviceDetails)
                 {
                     // device details already output
                     _exitCode = ExitCodes.OK;
@@ -591,7 +605,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 var connectedStJtagDevices = StmJtagDevice.ListDevices();
 
                 if (o.BinFile.Any() &&
-                    o.HexFile.Any() && 
+                    o.HexFile.Any() &&
                     connectedStDfuDevices.Count != 0)
                 {
 
@@ -655,7 +669,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // this has to be a JTAG connected device
 
-#region STM32 JTAG options
+                    #region STM32 JTAG options
 
                     try
                     {
@@ -704,7 +718,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E5002;
                     }
 
-#endregion
+                    #endregion
                 }
                 else if (!string.IsNullOrEmpty(o.TargetName))
                 {
@@ -723,7 +737,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         Interface updateInterface = Interface.None;
-                        
+
                         if (o.DfuUpdate && o.JtagUpdate)
                         {
                             // can't select both JTAG and DFU simultaneously
@@ -734,7 +748,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         {
                             updateInterface = Interface.Dfu;
                         }
-                        else if(o.JtagUpdate)
+                        else if (o.JtagUpdate)
                         {
                             updateInterface = Interface.Jtag;
                         }
@@ -782,7 +796,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         Interface updateInterface = Interface.None;
 
-                        if(o.DfuUpdate && o.JtagUpdate)
+                        if (o.DfuUpdate && o.JtagUpdate)
                         {
                             // can't select both JTAG and DFU simultaneously
                             _exitCode = ExitCodes.E9000;
@@ -830,7 +844,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         return;
                     }
                 }
-                else if(o.MassErase)
+                else if (o.MassErase)
                 {
                     _exitCode = Stm32Operations.MassErase(
                                     o.JtagDeviceId,
@@ -850,10 +864,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-#endregion
+            #endregion
 
 
-#region TI CC13x2 platform options
+            #region TI CC13x2 platform options
 
             if (o.Platform == "cc13x2")
             {
@@ -973,6 +987,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
         }
 
+        private static void DisplayBoardDetails(List<CloudSmithPackageDetail> boards)
+        {
+            foreach (var boardName in boards.Select(m => m.Name).Distinct())
+            {
+                Console.WriteLine($"  {boardName}");
+
+                foreach (var board in boards.Where(m => m.Name == boardName))
+                {
+                    Console.WriteLine($"    {board.Version}");
+                }
+            }
+        }
+
         private static void OutputError(ExitCodes errorCode, bool outputMessage, string extraMessage = null)
         {
             if (errorCode == ExitCodes.OK)
@@ -985,7 +1012,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (outputMessage)
             {
                 Console.Write($"Error {errorCode}");
-                
+
                 var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
 
                 if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
