@@ -260,7 +260,18 @@ jobs:
       ArtifactName: deployables
       ArtifactType: Container
 
-  # push NuGet class lib package to NuGet (happens on all builds except PRs)
+  # push NuGet packages to NuGet (happens on all builds except PRs)
+  - task: NuGetCommand@2
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
+    displayName: Push NuGet nanoff package to NuGet
+    continueOnError: true
+    inputs:
+      command: push
+      nuGetFeedType: external
+      allowPackageConflicts: true
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/nanoff*.nupkg'
+      publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
+
   - task: NuGetCommand@2
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Push NuGet packages to NuGet
@@ -269,7 +280,7 @@ jobs:
       command: push
       nuGetFeedType: external
       allowPackageConflicts: true
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/nanoFramework*.nupkg'
       publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
 
   # create or update GitHub release
@@ -283,8 +294,6 @@ jobs:
       title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       releaseNotesSource: inline
       releaseNotesInline: 'add description here'
-      assets: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      assetUploadMode: replace
       isPreRelease: true
       addChangeLog: false
 
@@ -299,8 +308,6 @@ jobs:
       title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       releaseNotesSource: inline
       releaseNotesInline: 'add description here'
-      assets: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      assetUploadMode: replace
       isPreRelease: false
       addChangeLog: false
       action: edit
