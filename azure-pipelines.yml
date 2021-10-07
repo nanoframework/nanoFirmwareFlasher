@@ -260,26 +260,31 @@ jobs:
       ArtifactName: deployables
       ArtifactType: Container
 
-  # push NuGet packages to NuGet (happens on all builds except PRs)
-  - task: DotNetCoreCLI@2  
+  # push NuGet class lib package to NuGet (happens on all builds except PRs)
+  - task: NuGetCommand@2
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
-    displayName: Push NuGet nanoff package to NuGet
+    displayName: Push nanoff NuGet package to NuGet
+    continueOnError: true
     inputs:
-      command: custom
-      custom: nuget
-      arguments: push $(Build.ArtifactStagingDirectory)/nanoff.$(NBGV_NuGetPackageVersion).nupkg --source https://api.nuget.org/v3/index.json --api-key $(API_KEY) --skip-duplicate --timeout 600
-    env:
-      API_KEY: $(NuGetToken)
+      command: push
+      feedsToUse: select
+      nuGetFeedType: external
+      allowPackageConflicts: true
+      packagesToPush: '$(Build.ArtifactStagingDirectory)\nanoff.$(NBGV_NuGetPackageVersion).nupkg'
+      publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
 
-  - task: DotNetCoreCLI@2  
+  # push NuGet class lib package to NuGet (happens on all builds except PRs)
+  - task: NuGetCommand@2
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
-    displayName: Push NuGet packages to NuGet
+    displayName: Push library NuGet package to NuGet
+    continueOnError: true
     inputs:
-      command: custom
-      custom: nuget
-      arguments: push $(Build.ArtifactStagingDirectory)/nanoFramework.Tools.FirmwareFlasher.$(NBGV_NuGetPackageVersion).nupkg --source https://api.nuget.org/v3/index.json --api-key $(API_KEY) --skip-duplicate --timeout 600
-    env:
-      API_KEY: $(NuGetToken)
+      command: push
+      feedsToUse: select
+      nuGetFeedType: external
+      allowPackageConflicts: true
+      packagesToPush: '$(Build.ArtifactStagingDirectory)\nanoFramework.Tools.FirmwareFlasher.$(NBGV_NuGetPackageVersion).nupkg'
+      publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
     
   # create or update GitHub release
   - task: GithubRelease@1
