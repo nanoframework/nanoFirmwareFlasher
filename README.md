@@ -93,20 +93,25 @@ In case nanoff detects this situation the following warning is shown:
 
 ### Update the firmware of an ESP32_WROOM_32 target
 
-To update the firmware of an ESP32_WROOM_32 target connected to COM31, to the latest available development version.
+To update the firmware of an ESP32 target connected to COM31, to the latest available development version.
 
 ```console
-nanoff --update --target ESP32_WROOM_32 --serialport COM31
+nanoff --update --target ESP32_REV0 --serialport COM31
 ```
+
+> Note: there are multiple ESP32 images. The ESP32_REV0 image will just work for most ESP32 series. Dedicated images are also available, check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards).
+
 
 ### Update the firmware of an ESP32_WROOM_32 target with a local CLR file
 
-To update the firmware of an ESP32_WROOM_32 target connected to COM31 with a local CLR file (for example from a build).
+To update the firmware of an ESP32 target connected to COM31 with a local CLR file (for example from a build).
 This file has to be a binary file with a valid CLR from a build. No other checks or validations are performed on the file content.
 
 ```console
-nanoff --update --target ESP32_WROOM_32 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
+nanoff --update --target ESP32_REV0 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
 ```
+
+You can adjust the name of the core image you want to use. Refer to the previous section to get the full list.
 
 ### Show details of the connected ESP32 device
 
