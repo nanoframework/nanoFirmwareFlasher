@@ -277,7 +277,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == "esp32")
             {
-                Console.WriteLine($"serial={o.SerialPort}");
                 // COM port is mandatory for ESP32
                 if (string.IsNullOrEmpty(o.SerialPort))
                 {
