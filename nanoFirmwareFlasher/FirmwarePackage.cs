@@ -66,7 +66,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         public static List<CloudSmithPackageDetail> GetBoardList(bool communityTargets, bool preview, string filter, VerbosityLevel verbosity)
         {
-            var repoName = preview ? _refTargetsDevRepo : _refTargetsStableRepo;
+            string repoName = communityTargets ? _communityTargetsRepo : preview ? _refTargetsDevRepo : _refTargetsStableRepo;
             string requestUri = $"{_cloudsmithPackages}/{repoName}/?query={filter}";
             List<CloudSmithPackageDetail> boardNames = new List<CloudSmithPackageDetail>();
 
