@@ -60,6 +60,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal int FlashSize { get; }
 
         /// <summary>
+        /// Availability of PSRAM on the device.
+        /// </summary>
+        internal PSRamAvailability PSRamAvailable { get; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="toolVersion">Version of the esptool.py</param>
@@ -77,7 +82,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string macAddress,
             byte flashManufacturerId, 
             short flashDeviceModelId, 
-            int flashSize)
+            int flashSize,
+            PSRamAvailability psramAvailability)
         {
             ChipType = chipType;
             ChipName = chipName;
@@ -87,6 +93,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             FlashManufacturerId = flashManufacturerId;
             FlashDeviceId = flashDeviceModelId;
             FlashSize = flashSize;
+            PSRamAvailable = psramAvailability;
         }
 
         internal string GetFlashSizeAsString()
