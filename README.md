@@ -91,24 +91,24 @@ In case nanoff detects this situation the following warning is shown:
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
 
-### Update the firmware of an ESP32_WROOM_32 target
+### Update the firmware of an ESP32 target
 
 To update the firmware of an ESP32 target connected to COM31, to the latest available development version.
 
 ```console
-nanoff --update --target ESP32_REV0 --serialport COM31
+nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31
 ```
 
-> Note: there are multiple ESP32 images. The ESP32_REV0 image will just work for most ESP32 series. Dedicated images are also available, check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards).
 
+> Note: there are multiple ESP32 images. The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM. Dedicated images are also available, check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards) for details.
 
-### Update the firmware of an ESP32_WROOM_32 target with a local CLR file
+### Update the firmware of an ESP_WROVER_KIT with a local CLR file
 
-To update the firmware of an ESP32 target connected to COM31 with a local CLR file (for example from a build).
+To update the firmware of an ESP_WROVER_KIT target connected to COM31 with a local CLR file (for example from a build).
 This file has to be a binary file with a valid CLR from a build. No other checks or validations are performed on the file content.
 
 ```console
-nanoff --update --target ESP32_REV0 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
+nanoff --update --target ESP_WROVER_KIT --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
 ```
 
 You can adjust the name of the core image you want to use. Refer to the previous section to get the full list.
@@ -121,14 +121,14 @@ To show the details of the ESP32 device connected to COM31.
 nanoff --platform esp32 --serialport COM31 --devicedetails 
 ```
 
-### Deploy a managed application to an ESP32_WROOM_32 target
+### Deploy a managed application to an ESP32 target
 
-To deploy a managed application to an ESP32_WROOM_32 target connected to COM31, which has the deployment region at 0x190000 flash address.
+To deploy a managed application to an ESP32_PSRAM_REV0 target connected to COM31, which has the deployment region at 0x190000 flash address.
 
 >Note: The binary file with the deployment image can be found on the Release or Debug folder of a Visual Studio project after a successful build. This file contains everything that's required to deploy a managed application to a target (meaning application executable and all referenced libraries and assemblies).
 
 ```console
-nanoff --target ESP32_WROOM_32 --serialport COM12 --deploy --image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin" --address 0x190000
+nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin" --address 0x190000
 ```
 
 ### Update the firmware of an ESP32 target along with a managed application
@@ -138,7 +138,7 @@ You have to specify the path to the managed application.
 This example uses the binary format file that was saved on a previous backup operation.
 
 ```console
-nanoff --update --target ESP32_WROOM_32 --serialport COM31 --deployment "c:\eps32-backups\my_awesome_app.bin"
+nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --deployment "c:\eps32-backups\my_awesome_app.bin"
 ```
 
 ## STMP32 usage examples 
