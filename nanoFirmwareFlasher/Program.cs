@@ -38,7 +38,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 typeof(AssemblyInformationalVersionAttribute))
             as AssemblyInformationalVersionAttribute;
 
-            _headerInfo = $"nanoFramework Firmware Flasher v{_informationalVersionAttribute.InformationalVersion}";
+            _headerInfo = $".NET nanoFramework Firmware Flasher v{_informationalVersionAttribute.InformationalVersion}";
 
             _copyrightInfo = new CopyrightInfo(true, $".NET Foundation and nanoFramework project contributors", 2019);
 
