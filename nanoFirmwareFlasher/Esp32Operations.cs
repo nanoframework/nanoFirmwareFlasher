@@ -113,7 +113,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // if a target name wasn't specified try to guess from the device characteristics 
             if (string.IsNullOrEmpty(targetName))
             {
-                //if(esp32Device.ChipName.Length s )
                 if (esp32Device.ChipName.Contains("PICO"))
                 {
                     targetName = "ESP32_PICO";
