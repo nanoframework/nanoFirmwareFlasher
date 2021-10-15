@@ -12,10 +12,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 {
     internal class Esp32Operations
     {
-        // This is the only official ESP32 target available, so it's OK to use this as the target 
-        // name whenever ESP32 is the specified platform
-        private const string _esp32TargetName = "ESP32_WROOM_32";
-
         public static ExitCodes BackupFlash(
             EspTool tool, 
             Esp32DeviceInfo device,
@@ -101,27 +97,56 @@ namespace nanoFramework.Tools.FirmwareFlasher
             uint address = 0;
             bool updateCLRfile = !string.IsNullOrEmpty(clrFile);
 
-            // if a target name wasn't specified use the default (and only available) ESP32 target
+            // perform sanity checks for the specified target against the connected device details
+            if (esp32Device.ChipType != "ESP32")
+            {
+                // connected to a device not supported
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("");
+                Console.WriteLine("******************************* WARNING *******************************");
+                Console.WriteLine("Seems that the connected device is not supported by .NET nanoFramework");
+                Console.WriteLine("Most likely it won't boot");
+                Console.WriteLine("************************************************************************");
+                Console.WriteLine("");
+            }
+
+            // if a target name wasn't specified try to guess from the device characteristics 
             if (string.IsNullOrEmpty(targetName))
             {
-                targetName = _esp32TargetName;
+                if (esp32Device.ChipName.Contains("PICO"))
+                {
+                    targetName = "ESP32_PICO";
+                }
+                else 
+                {
+                    var revisionSuffix = "REV0";
+                    var psRamSegment = "";
+
+                    if (esp32Device.ChipName.Contains("revision 3"))
+                    {
+                        revisionSuffix = "REV3";
+                    }
+
+                    if(esp32Device.PSRamAvailable == PSRamAvailability.Yes)
+                    {
+                        psRamSegment = "_PSRAM";
+                    }
+
+                    // compose target name
+                    targetName = $"ESP32{psRamSegment}_{revisionSuffix}";
+                }
+
+                Console.ForegroundColor = ConsoleColor.Blue;
+
+                Console.WriteLine("");
+                Console.WriteLine($"No target name was provided! Using '{targetName}' based on the device characteristics.");
+                Console.WriteLine("");
+
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
             if (fitCheck)
             {
-                // perform sanity checks for the specified target agains the connected device details
-                if (esp32Device.ChipType != "ESP32")
-                {
-                    // connected to a device not supported
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("");
-                    Console.WriteLine("******************************* WARNING *******************************");
-                    Console.WriteLine("Seems that the connected device is not supported by .NET nanoFramework");
-                    Console.WriteLine("Most likely it won't boot");
-                    Console.WriteLine("************************************************************************");
-                    Console.WriteLine("");
-                }
-
                 if (targetName.Contains("ESP32_WROOM_32_V3") &&
                     (esp32Device.ChipName.Contains("revision 0") ||
                     esp32Device.ChipName.Contains("revision 1") ||

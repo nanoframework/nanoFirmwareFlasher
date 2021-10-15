@@ -9,10 +9,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Ports;
-using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// The baud rate for the serial port. The default comming from <see cref="Options.BaudRate"/> is 9216000.
         /// </summary>
-        private readonly int _baudRate = 0;
+        private int _baudRate = 0;
 
         /// <summary>
         /// The flash mode for the esptool.
@@ -178,13 +178,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("OK");
-                Console.ForegroundColor = ConsoleColor.White;
-            }
-
             var match = Regex.Match(messages, $"(Detecting chip type... )(?<type>.*)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(Crystal is )(?<crystal>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
             if (!match.Success)
             {
@@ -223,6 +216,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // lower case, no hifen
             _chipType = chipType.ToLower().Replace("-", "");
 
+            // try to find out if PSRAM is present
+            PSRamAvailability psramIsAvailable;
+
+            if (name.Contains("PICO"))
+            {
+                // PICO's don't have PSRAM, so don't even bother
+                psramIsAvailable = PSRamAvailability.No;
+            }
+            else
+            {
+                psramIsAvailable = FindPSRamAvailable();
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("OK");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
             return new Esp32DeviceInfo(
                 chipType,
                 name,
@@ -231,7 +244,75 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 mac.ToUpperInvariant(),
                 byte.Parse(manufacturer, NumberStyles.AllowHexSpecifier),
                 short.Parse(device, NumberStyles.HexNumber),
-                _flashSize);
+                _flashSize,
+                psramIsAvailable);
+        }
+
+        /// <summary>
+        /// Perform detection of PSRAM availability on connected device.
+        /// </summary>
+        /// <returns>Information about availability of PSRAM, if that was possible to determine.</returns>
+        private PSRamAvailability FindPSRamAvailable()
+        {
+            PSRamAvailability pSRamAvailability = PSRamAvailability.Unknown;
+
+            // don't want to output anything from esptool
+            // backup current verbosity setting
+            var bkpVerbosity = Verbosity;
+            Verbosity = VerbosityLevel.Quiet;
+
+            // compose bootloader partition
+            var bootloaderPartition = new Dictionary<int, string>
+            {
+				// bootloader goes to 0x1000
+				{ 0x1000, Path.Combine(Program.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
+
+				// nanoCLR goes to 0x10000
+				{ 0x10000, Path.Combine(Program.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
+
+                // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
+				{ 0x8000, Path.Combine(Program.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(_flashSize).ToLowerInvariant()}.bin") }
+            };
+
+            if (WriteFlash(bootloaderPartition) == ExitCodes.OK)
+            {
+                try
+                {
+                    // open COM port and grab output
+                    SerialPort espDevice = new SerialPort(_serialPort, _baudRate);
+                    espDevice.Open();
+
+                    if (espDevice.IsOpen)
+                    {
+                        // wait 2 seconds... 
+                        Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                        // ... read output from bootloader
+                        var bootloaderOutput = espDevice.ReadExisting();
+
+                        espDevice.Close();
+
+                        // find magic string
+                        if (bootloaderOutput.Contains("PSRAM initialized"))
+                        {
+                            pSRamAvailability = PSRamAvailability.Yes;
+                        }
+                        else
+                        {
+                            pSRamAvailability = PSRamAvailability.No;
+                        }
+                    }
+                }
+                catch
+                {
+                    // don't care about any exceptions 
+                }
+            }
+
+            // restore verbosity setting
+            Verbosity = bkpVerbosity;
+
+            return pSRamAvailability;
         }
 
         /// <summary>

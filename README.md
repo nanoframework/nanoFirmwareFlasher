@@ -84,7 +84,18 @@ nanoff --help
 
 ## ESP32 usage examples 
 
->Note: some ESP32 boards have issues entering bootloader mode. This can be usually overcome by holding down the BOOT/FLASH button in the board.
+There are multiple ESP32 images available, some are build specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards). 
+
+The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM, and for all silicon revisions.
+You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
+
+When using nanoff you can add `--target MY_TARGET_NAME_HERE` to use a specific image. If, instead, you just specify the platform with `--platform esp32` nanoff will choose the most appropriate image depending on the features of the device that's connected. Output similar to this one will show to advise what's the image about to be used:
+
+```console
+No target name was provided! Using 'ESP32_REV0' based on the device characteristics.
+```
+ 
+Some ESP32 boards have issues entering bootloader mode. This can be usually overcome by holding down the BOOT/FLASH button in the board.
 In case nanoff detects this situation the following warning is shown:
 
 ```console
@@ -98,9 +109,6 @@ To update the firmware of an ESP32 target connected to COM31, to the latest avai
 ```console
 nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31
 ```
-
-
-> Note: there are multiple ESP32 images. The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM. Dedicated images are also available, check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards) for details.
 
 ### Update the firmware of an ESP_WROVER_KIT with a local CLR file
 

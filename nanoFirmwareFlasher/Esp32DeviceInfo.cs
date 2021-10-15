@@ -60,6 +60,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal int FlashSize { get; }
 
         /// <summary>
+        /// Availability of PSRAM on the device.
+        /// </summary>
+        internal PSRamAvailability PSRamAvailable { get; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="toolVersion">Version of the esptool.py</param>
@@ -77,7 +82,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string macAddress,
             byte flashManufacturerId, 
             short flashDeviceModelId, 
-            int flashSize)
+            int flashSize,
+            PSRamAvailability psramAvailability)
         {
             ChipType = chipType;
             ChipName = chipName;
@@ -87,11 +93,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             FlashManufacturerId = flashManufacturerId;
             FlashDeviceId = flashDeviceModelId;
             FlashSize = flashSize;
+            PSRamAvailable = psramAvailability;
         }
 
         internal string GetFlashSizeAsString()
         {
-            return FlashSize >= 0x10000 ? $"{ FlashSize / 0x100000 }MB" : $"{ FlashSize / 0x400 }kB";
+            return GetFlashSizeAsString(FlashSize);
+        }
+
+        public static string GetFlashSizeAsString(int flashSize)
+        {
+            return flashSize >= 0x10000 ? $"{ flashSize / 0x100000 }MB" : $"{ flashSize / 0x400 }kB";
         }
 
         /// <inheritdoc/>
@@ -113,6 +125,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             deviceInfo.AppendLine($"Features { Features }");
             deviceInfo.AppendLine($"Flash size { GetFlashSizeAsString() } { GetFlashDeviceId() } from { GetFlashManufacturer() } (manufacturer 0x{ FlashManufacturerId } device 0x{ FlashDeviceId })");
+
+            switch(PSRamAvailable)
+            {
+                case PSRamAvailability.Unknown:
+                    deviceInfo.AppendLine($"PSRAM: unknown");
+                    break;
+
+                case PSRamAvailability.Yes:
+                    deviceInfo.AppendLine($"PSRAM: available");
+                    break;
+
+                case PSRamAvailability.No:
+                    deviceInfo.AppendLine($"PSRAM: not available");
+                    break;
+            }
+
             deviceInfo.AppendLine($"Crystal { Crystal }");
             deviceInfo.AppendLine($"MAC { MacAddress }");
 
