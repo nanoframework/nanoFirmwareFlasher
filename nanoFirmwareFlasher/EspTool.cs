@@ -217,7 +217,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _chipType = chipType.ToLower().Replace("-", "");
 
             // try to find out if PSRAM is present
-            PSRamAvailability psramIsAvailable = PSRamAvailability.Unknown;
+            PSRamAvailability psramIsAvailable;
 
             if (name.Contains("PICO"))
             {
