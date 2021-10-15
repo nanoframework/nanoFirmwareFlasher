@@ -65,7 +65,7 @@ dotnet tool update -g nanoff
 If the tool was installed at a specific path, use the following .NET Core CLI command instead:
 
 ```console
-dotnet tool update -g nanoff --tool-path c:\path-where-the-tool-was-installed
+dotnet tool update nanoff --tool-path c:\path-where-the-tool-was-installed
 ```
 
 ## Usage
