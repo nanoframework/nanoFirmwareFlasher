@@ -89,6 +89,9 @@ There are multiple ESP32 images available, some are build specifically for a tar
 The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM, and for all silicon revisions.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
 
+The FEATHER_S2 image will just work for pretty much all variants of the ESP32-S2 series that expose the embedded USB CDC pins.
+You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
+
 When using nanoff you can add `--target MY_TARGET_NAME_HERE` to use a specific image. If, instead, you just specify the platform with `--platform esp32` nanoff will choose the most appropriate image depending on the features of the device that's connected. Output similar to this one will show to advise what's the image about to be used:
 
 ```console
@@ -101,6 +104,8 @@ In case nanoff detects this situation the following warning is shown:
 ```console
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
+
+:warning: To update FeatherS2 and TinyS2 the boards need to put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
 
 ### Update the firmware of an ESP32 target
 
