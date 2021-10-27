@@ -108,6 +108,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("** There is a new version available, update is recommended **");
+                Console.WriteLine("** You should consider updating via the 'dotnet tool update -g nanoff' command **");
+                Console.WriteLine("** If you have it installed on a specific path please check the instructions here: https://git.io/JiU0C **");
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
