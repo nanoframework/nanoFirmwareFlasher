@@ -21,13 +21,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// </summary>
     internal partial class EspTool
     {
+        private string _esptoolMessage;
+
         /// <summary>
         /// The serial port over which all the communication goes
         /// </summary>
         private readonly string _serialPort = null;
 
         /// <summary>
-        /// The baud rate for the serial port. The default comming from <see cref="Options.BaudRate"/> is 9216000.
+        /// The baud rate for the serial port. The default comming from <see cref="Options.BaudRate"/>.
         /// </summary>
         private int _baudRate = 0;
 
@@ -76,6 +78,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Default is <see langword="true"/>.
         /// </summary>
         public VerbosityLevel Verbosity { get; internal set; } = VerbosityLevel.Normal;
+
+        /// <summary>
+        /// Flag to report if the target couldn't be reset after flashing it.
+        /// </summary>
+        public bool CouldntResetTarget;
 
         // ESP32 chip type to connect to.
         // Default is 'auto'. It's replaced with the actual chip type after detection to improve operations.
@@ -139,7 +146,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Tries reading ESP32 device details.
         /// </summary>
         /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occured</returns>
-        internal Esp32DeviceInfo GetDeviceDetails(bool requireFlashSize = true)
+        internal Esp32DeviceInfo GetDeviceDetails(
+            string targetName,
+            bool requireFlashSize = true)
         {
             string messages;
 
@@ -152,7 +161,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // execute flash_id command and parse the result
             if (!RunEspTool(
                 "flash_id",
-                true,
+                false,
                 true,
                 false,
                 null,
@@ -168,7 +177,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // try again now without the stub
                 if (!RunEspTool(
                     "flash_id",
-                    false,
+                    true,
                     true,
                     false,
                     null,
@@ -217,16 +226,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _chipType = chipType.ToLower().Replace("-", "");
 
             // try to find out if PSRAM is present
-            PSRamAvailability psramIsAvailable;
+            PSRamAvailability psramIsAvailable = PSRamAvailability.Unknown;
 
             if (name.Contains("PICO"))
             {
                 // PICO's don't have PSRAM, so don't even bother
                 psramIsAvailable = PSRamAvailability.No;
             }
+            else if (name.Contains("ESP32-S2")
+                     && targetName == "FEATHER_S2")
+            {
+                // FEATHER_S2's have PSRAM, so don't even bother
+                psramIsAvailable = PSRamAvailability.Yes;
+            }
             else
             {
-                psramIsAvailable = FindPSRamAvailable();
+                // if a target name was provided, don't bother to check PSRAM
+                if (targetName == null)
+                {
+                    psramIsAvailable = FindPSRamAvailable();
+                }
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
@@ -274,12 +293,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
 				{ 0x8000, Path.Combine(Program.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(_flashSize).ToLowerInvariant()}.bin") }
             };
 
-            if (WriteFlash(bootloaderPartition) == ExitCodes.OK)
+            // need to use standard baud rate here because of boards put in download mode
+            if (WriteFlash(bootloaderPartition, true) == ExitCodes.OK)
             {
+                // check if the
+                if(_esptoolMessage.Contains("esptool.py can not exit the download mode over USB"))
+                {
+                    // this board was put on download mode manually, can't run the test app...
+
+                    return PSRamAvailability.Unknown;
+                }
+
                 try
                 {
                     // open COM port and grab output
-                    SerialPort espDevice = new SerialPort(_serialPort, _baudRate);
+                    // force baud rate to 115200 (standard baud rate for boootloader)
+                    SerialPort espDevice = new SerialPort(_serialPort, 115200);
                     espDevice.Open();
 
                     if (espDevice.IsOpen)
@@ -327,7 +356,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // execute read_flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
             if (!RunEspTool(
                 $"read_flash 0 0x{flashSize:X} \"{backupFilename}\"",
-                false,
+                true,
                 false,
                 false,
                 (char)8,
@@ -358,7 +387,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!RunEspTool(
                 "erase_flash",
                 false,
-                false,
+                true,
                 false,
                 null,
                 out string messages))
@@ -415,7 +444,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="partsToWrite">dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</param>
         /// <returns>true if successful</returns>
-        internal ExitCodes WriteFlash(Dictionary<int, string> partsToWrite)
+        internal ExitCodes WriteFlash(
+            Dictionary<int, string> partsToWrite,
+            bool useStandardBaudrate = false)
         {
             // put the parts to flash together and prepare the regex for parsing the output
             var partsArguments = new StringBuilder();
@@ -445,7 +476,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!RunEspTool(
                 $"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}",
                 false,
-                false,
+                useStandardBaudrate,
                 true,
                 '\r',
                 out string messages))
@@ -467,6 +498,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
+            // check if there is any mention of not being able to run the app
+            CouldntResetTarget = messages.Contains("To run the app, reset the chip manually");
+
             return ExitCodes.OK;
         }
 
@@ -475,6 +509,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="commandWithArguments">the esptool command (e.g. write_flash) incl. all arguments (if needed)</param>
         /// <param name="noStub">if true --no-stub will be added; the chip_id, read_mac and flash_id commands can be quicker executes without uploading the stub program to the chip</param>
+        /// <param name="useStandardBaudRate">If <see langword="true"/> the tool will use the standard baud rate to connect to the chip.</param>
         /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
         /// <param name="progressTestChar">If not null: After each of this char a progress message will be printed out</param>
         /// <param name="messages">StandardOutput and StandardError messages that the esptool prints out</param>
@@ -487,6 +522,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             char? progressTestChar,
             out string messages)
         {
+            // reset message
+            _esptoolMessage = string.Empty;
+
             // create the process start info
             // if we can directly talk to the ROM bootloader without a stub program use the --no-stub option
             // --nostub requires to not change the baudrate (ROM doesn't support changing baud rate. Keeping initial baud rate 115200)
@@ -510,8 +548,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // prepare the process start of the esptool
-            string appName = string.Empty;
-            string appDir = string.Empty;
+            string appName;
+            string appDir;
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 appName = "esptool.exe";
@@ -631,11 +670,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             messages = messageBuilder.ToString();
 
+            // save output messages
+            _esptoolMessage = messages;
+
             // if the stub program was used then we don't need to transfer ist again
             _isStubActive = !noStub;
 
-            // true if exit code was 0 (success)
-            return espTool.ExitCode == 0;
+            if(espTool.ExitCode == 0)
+            {
+                // exit code was 0 (success), all good
+                return true;
+            }
+            else
+            {
+                // need to look for specific error messages to do a safe guess if execution is as expected
+                if(messages.Contains("esptool.py can not exit the download mode over USB") ||
+                   messages.Contains("Staying in bootloader.") )
+                {
+                    // we are probably good with this as we can't do much about it...
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
         private void ProcessConnectPattern(StringBuilder messageBuilder)
