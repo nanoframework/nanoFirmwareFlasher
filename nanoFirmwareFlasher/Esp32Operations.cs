@@ -114,27 +114,45 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // if a target name wasn't specified try to guess from the device characteristics 
             if (string.IsNullOrEmpty(targetName))
             {
-                if (esp32Device.ChipName.Contains("PICO"))
+                if (esp32Device.ChipType == "ESP32")
                 {
-                    targetName = "ESP32_PICO";
+                    if (esp32Device.ChipName.Contains("PICO"))
+                    {
+                        targetName = "ESP32_PICO";
+                    }
+                    else
+                    {
+                        var revisionSuffix = "REV0";
+                        var psRamSegment = "";
+
+                        if (esp32Device.ChipName.Contains("revision 3"))
+                        {
+                            revisionSuffix = "REV3";
+                        }
+
+                        if (esp32Device.PSRamAvailable == PSRamAvailability.Yes)
+                        {
+                            psRamSegment = "_PSRAM";
+                        }
+
+                        // compose target name
+                        targetName = $"ESP32{psRamSegment}_{revisionSuffix}";
+                    }
                 }
-                else 
+                else if (esp32Device.ChipType == "ESP32-S2")
                 {
-                    var revisionSuffix = "REV0";
-                    var psRamSegment = "";
+                    // can't guess with certainty for this series, better have the user provide 
+                    // a target name
 
-                    if (esp32Device.ChipName.Contains("revision 3"))
-                    {
-                        revisionSuffix = "REV3";
-                    }
+                    Console.ForegroundColor = ConsoleColor.Red;
 
-                    if(esp32Device.PSRamAvailable == PSRamAvailability.Yes)
-                    {
-                        psRamSegment = "_PSRAM";
-                    }
+                    Console.WriteLine("");
+                    Console.WriteLine($"No target name was provided! Please provide an appropriate one adding this option '--target MY_ESP32_S2_TARGET'.");
+                    Console.WriteLine("");
 
-                    // compose target name
-                    targetName = $"ESP32{psRamSegment}_{revisionSuffix}";
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E9000;
                 }
 
                 Console.ForegroundColor = ConsoleColor.Blue;
