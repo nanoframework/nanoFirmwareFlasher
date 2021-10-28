@@ -96,7 +96,12 @@
         <PackagePath>content\esp32bootloader</PackagePath>
 	  </None>
   </ItemGroup>
-
+  <ItemGroup>
+      <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+	    <Pack>true</Pack>
+        <PackagePath>content\esp32s2bootloader</PackagePath>
+	  </None>
+  </ItemGroup>
   <ItemGroup>
     <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 	    <Pack>true</Pack>

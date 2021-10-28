@@ -101,7 +101,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Option(
             "baud",
             Required = false,
-            Default = 921600,
+            Default = 1500000,
             HelpText = "Baud rate to use for the serial port.")]
         public int BaudRate { get; set; }
 

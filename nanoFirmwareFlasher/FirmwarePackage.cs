@@ -428,7 +428,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
+
+                Console.WriteLine("");
                 Console.WriteLine($"Updating to {Version}");
+                Console.WriteLine("");
+
                 Console.ForegroundColor = ConsoleColor.White;
             }
 

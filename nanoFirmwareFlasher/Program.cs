@@ -309,7 +309,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     try
                     {
-                        esp32Device = espTool.GetDeviceDetails(o.Esp32PartitionTableSize == null);
+                        esp32Device = espTool.GetDeviceDetails(o.TargetName, o.Esp32PartitionTableSize == null);
                     }
                     catch (EspToolExecutionException ex)
                     {
@@ -338,11 +338,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     Console.ForegroundColor = ConsoleColor.White;
 
-                    // if this is a PICO and baudrate is not 115200 operations will most likely fail
+                    // if this is a PICO and baud rate is not 115200 or 1M5, operations will most likely fail
                     // warn user about this
                     if (
                         esp32Device.ChipName.Contains("ESP32-PICO")
-                        && o.BaudRate != 115200)
+                        && (o.BaudRate != 115200
+                            && o.BaudRate != 1500000))
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
 

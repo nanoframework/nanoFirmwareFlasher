@@ -97,7 +97,9 @@ When using nanoff you can add `--target MY_TARGET_NAME_HERE` to use a specific i
 ```console
 No target name was provided! Using 'ESP32_REV0' based on the device characteristics.
 ```
- 
+
+>Note: Please note that for ESP32-S2 targets is not possible to safely determine what's the best image to use. For this reason it's mandatory providing the appropriate target name with `--target MY_TARGET_NAME_HERE`.
+
 Some ESP32 boards have issues entering bootloader mode. This can be usually overcome by holding down the BOOT/FLASH button in the board.
 In case nanoff detects this situation the following warning is shown:
 
@@ -115,13 +117,13 @@ To update the firmware of an ESP32 target connected to COM31, to the latest avai
 nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31
 ```
 
-### Update the firmware of an ESP_WROVER_KIT with a local CLR file
+### Update the firmware of an ESP32-S2 KALUGA 1 with a local CLR file
 
-To update the firmware of an ESP_WROVER_KIT target connected to COM31 with a local CLR file (for example from a build).
+To update the firmware of an ESP32-S2 KALUGA 1 target connected to COM31 with a local CLR file (for example from a build).
 This file has to be a binary file with a valid CLR from a build. No other checks or validations are performed on the file content.
 
 ```console
-nanoff --update --target ESP_WROVER_KIT --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
+nanoff --update --target KALUGA_1 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
 ```
 
 You can adjust the name of the core image you want to use. Refer to the previous section to get the full list.
