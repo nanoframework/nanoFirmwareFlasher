@@ -98,7 +98,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool updateCLRfile = !string.IsNullOrEmpty(clrFile);
 
             // perform sanity checks for the specified target against the connected device details
-            if (esp32Device.ChipType != "ESP32")
+            if (esp32Device.ChipType != "ESP32" &&
+                esp32Device.ChipType != "ESP32-S2")
             {
                 // connected to a device not supported
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -310,6 +311,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("OK");
+
+                        // warn user if reboot is not possible
+                        if (espTool.CouldntResetTarget)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+
+                            Console.WriteLine("");
+                            Console.WriteLine("**********************************************");
+                            Console.WriteLine("The connected device is in 'download mode'.");
+                            Console.WriteLine("Please reset the chip manually to run nanoCLR.");
+                            Console.WriteLine("**********************************************");
+                            Console.WriteLine("");
+
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
                     }
                     else
                     {
