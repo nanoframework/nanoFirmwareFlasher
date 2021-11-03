@@ -290,6 +290,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 #if FEATHER_S2_DELAY
                 if (targetName.Contains("FEATHER_S2"))
                 {
+                    // by experimentation 15s seems to be the minimum for guaranteed success
                     Thread.Sleep(TimeSpan.FromSeconds(15));
                 }
 #endif
@@ -316,6 +317,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 #if FEATHER_S2_DELAY
                 if (targetName.Contains("FEATHER_S2"))
                 {
+                    // by experimentation 15s seems to be the minimum for guaranteed success
                     Thread.Sleep(TimeSpan.FromSeconds(15));
                 }
 #endif
