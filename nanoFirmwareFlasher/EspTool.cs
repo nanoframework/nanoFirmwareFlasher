@@ -60,12 +60,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         private int _flashSize = -1;
 
-        /// <summary>
-        /// true if the stub program is already active and we can use the --before no_reset_no_sync parameter 
-        /// </summary>
-        private bool _isStubActive = false;
         private bool connectPatternFound;
+
         private DateTime connectTimeStamp;
+
         private bool connectPromptShown;
 
         /// <summary>
@@ -531,7 +529,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string noStubParameter = null;
             string baudRateParameter = null;
             string beforeParameter = null;
-            string afterParameter = hardResetAfterCommand ? "hard_reset" : "no_reset";
+            string afterParameter = hardResetAfterCommand ? "hard_reset" : "no_reset_stub";
 
             if (noStub)
             {
@@ -672,9 +670,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // save output messages
             _esptoolMessage = messages;
-
-            // if the stub program was used then we don't need to transfer ist again
-            _isStubActive = !noStub;
 
             if(espTool.ExitCode == 0)
             {
