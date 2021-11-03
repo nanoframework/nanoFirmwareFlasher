@@ -3,10 +3,13 @@
 // See LICENSE file in the project root for full license information.
 //
 
+#define FEATHER_S2_DELAY
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -284,6 +287,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (updateFw)
             {
+#if FEATHER_S2_DELAY
+                if (targetName.Contains("FEATHER_S2"))
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(15));
+                }
+#endif
+
                 // erase flash
                 operationResult = espTool.EraseFlash();
             }
@@ -303,6 +313,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (operationResult == ExitCodes.OK)
             {
+#if FEATHER_S2_DELAY
+                if (targetName.Contains("FEATHER_S2"))
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(15));
+                }
+#endif
+
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
