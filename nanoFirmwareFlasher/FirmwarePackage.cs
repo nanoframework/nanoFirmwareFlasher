@@ -73,7 +73,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.Write($"Trying to find list of boards in {(preview ? "developement" : "stable")} repository");
+                Console.Write($"Trying to find list of boards in {(preview ? "development" : "stable")} repository");
                 if( string.IsNullOrEmpty(filter))
                 {
                     Console.Write(" without filter");
@@ -196,7 +196,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
                         Console.ForegroundColor = ConsoleColor.White;
-                        Console.Write($"Trying to find {_targetName} in {(_preview ? "developement" : "stable")} repository...");
+                        Console.Write($"Trying to find {_targetName} in {(_preview ? "development" : "stable")} repository...");
                     }
 
                     HttpResponseMessage response = await _cloudsmithClient.GetAsync(requestUri);
