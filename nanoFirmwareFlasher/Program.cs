@@ -464,7 +464,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = await Esp32Operations.UpdateFirmwareAsync(
                             espTool,
                             esp32Device,
-                            null,
+                            o.TargetName,
                             false,
                             null,
                             false,
