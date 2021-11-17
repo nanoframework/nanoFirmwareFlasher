@@ -33,9 +33,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal PartitionTableSize? _partitionTableSize;
 
         /// <summary>
-        /// Address of the deployment partition.
+        /// Default address of the deployment partition.
         /// </summary>
-        internal int DeploymentPartitionAddress =>  0x110000;
+        internal int DeploymentPartitionAddress => 0x1B0000;
 
         public Esp32Firmware(
             string targetName,

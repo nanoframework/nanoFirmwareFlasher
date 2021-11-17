@@ -449,17 +449,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (o.Deploy)
                 {
                     // need to take care of flash address
-                    string appFlashAddress = null;
+                    string appFlashAddress = string.Empty;
 
                     if (o.FlashAddress.Any())
                     {
                         // take the first address, it should be the only one valid
                         appFlashAddress = o.FlashAddress.ElementAt(0);
-                    }
-                    else
-                    {
-                        _exitCode = ExitCodes.E9009;
-                        return;
                     }
 
                     // this to flash a deployment image without updating the firmware
@@ -469,7 +464,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = await Esp32Operations.UpdateFirmwareAsync(
                             espTool,
                             esp32Device,
-                            null,
+                            o.TargetName,
                             false,
                             null,
                             false,
