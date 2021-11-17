@@ -251,10 +251,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // check application file
                 if (File.Exists(applicationPath))
                 {
-                    if (!updateFw)
+                    // this operation includes a deployment image
+                    // try parsing the deployment address from parameter, if provided
+                    if (!string.IsNullOrEmpty(deploymentAddress))
                     {
-                        // this is a deployment operation only
-                        // try parsing the deployment address from parameter
                         // need to remove the leading 0x and to specify that hexadecimal values are allowed
                         if (!uint.TryParse(deploymentAddress.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out address))
                         {
@@ -263,10 +263,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
 
                     string applicationBinary = new FileInfo(applicationPath).FullName;
+
+                    // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
                     firmware.FlashPartitions = new Dictionary<int, string>()
                     {
                         {
-                            updateFw ? firmware.DeploymentPartitionAddress : (int)address,
+                            address != 0 ? (int)address : firmware.DeploymentPartitionAddress,
                             applicationBinary
                         }
                     };
@@ -277,44 +279,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if (verbosity >= VerbosityLevel.Normal)
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"Erasing flash...");
-            }
-
             if (updateFw)
             {
+                // updating fw calls for a flash erase
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine($"Erasing flash...");
+                }
+
                 // erase flash
                 operationResult = espTool.EraseFlash();
-            }
-            else
-            {
-                // erase flash segment
 
-                // need to get deployment address here
-                // length must both be multiples of the SPI flash erase sector size. This is 0x1000 (4096) bytes for supported flash chips.
-                string bootpath = firmware.BootloaderPath ?? Path.Combine("esp32bootloader", "bootloader.bin");
-                var fileStream = File.OpenRead(bootpath);
-
-                uint fileLength = (uint)Math.Ceiling((decimal)fileStream.Length / 0x1000) * 0x1000;
-
-                operationResult = espTool.EraseFlashSegment(address, fileLength);
+                if (operationResult == ExitCodes.OK)
+                {
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("OK");
+                    }
+                    else
+                    {
+                        Console.WriteLine("");
+                    }
+                }
             }
 
             if (operationResult == ExitCodes.OK)
             {
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("OK");
-                }
-                else
-                {
-                    Console.WriteLine("");
-                }
-
-                Console.ForegroundColor = ConsoleColor.White;
+                 Console.ForegroundColor = ConsoleColor.White;
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
