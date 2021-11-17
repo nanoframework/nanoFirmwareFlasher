@@ -138,21 +138,21 @@ nanoff --platform esp32 --serialport COM31 --devicedetails
 
 ### Deploy a managed application to an ESP32 target
 
-To deploy a managed application to an ESP32_PSRAM_REV0 target connected to COM31, which has the deployment region at 0x190000 flash address.
+To deploy a managed application to an ESP32_PSRAM_REV0 target connected to COM31.
 
 >Note: The binary file with the deployment image can be found on the Release or Debug folder of a Visual Studio project after a successful build. This file contains everything that's required to deploy a managed application to a target (meaning application executable and all referenced libraries and assemblies).
 
 ```console
-nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin" --address 0x190000
+nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin"
 ```
 
 ### Update the firmware of an ESP32 target along with a managed application
 
-To deploy an application on an ESP32 target connected to COM31, with your application, you have to specify the path to the managed application and the deployment address.
-This example uses the binary format file that you can find when you are building an application. Note, as only application can run, when you are building a library, a bin file is not created automatically. Only for application.
+To deploy an application on an ESP32 target connected to COM31, with your application, you have to specify the path to the managed application. Optionally you can provide an address which will override the default deployment address.
+This example uses the binary format file that you can find when you are building an application. Note, as only application can run, when you are building a library, a bin file is not created automatically. Only for applications.
 
 ```console
-nanoff --target ESP32_PSRAM_REV0 --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
+nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
 ```
 
 ## STMP32 usage examples 
