@@ -142,13 +142,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else if (esp32Device.ChipType == "ESP32-S2")
                 {
-                    // can't guess with certainty for this series, better have the user provide 
-                    // a target name
+                    // can't guess with certainty for this series, better request a target name to the user
 
                     Console.ForegroundColor = ConsoleColor.Red;
 
                     Console.WriteLine("");
-                    Console.WriteLine($"No target name was provided! Please provide an appropriate one adding this option '--target MY_ESP32_S2_TARGET'.");
+                    Console.WriteLine($"For ESP32-S2 series nanoff can't make an educated guess on the best target to use");
+                    Console.WriteLine($"Please provide an appropriate one by adding this option '--target MY_ESP32_S2_TARGET'.");
                     Console.WriteLine("");
 
                     Console.ForegroundColor = ConsoleColor.White;
