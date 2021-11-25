@@ -42,6 +42,7 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageIcon>images\nf-logo.png</PackageIcon>
     <PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   
   <ItemGroup>
@@ -57,6 +58,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\..\nf-nanoFramework.Networking.Sntp\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\assets\nf-logo.png">
       <Pack>True</Pack>
       <PackagePath>images</PackagePath>
