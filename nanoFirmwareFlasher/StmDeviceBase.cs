@@ -43,7 +43,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (!Program.ExecutingPath.IsNormalized(NormalizationForm.FormD))
                     {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.ForegroundColor = ConsoleColor.Red;
 
                         Console.WriteLine("");
                         Console.WriteLine("**************************** WARNING ****************************");
