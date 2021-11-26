@@ -136,6 +136,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (updateInterface == Interface.Dfu)
             {
                 // DFU update
+                dfuDeviceId = dfuDeviceId == null ? connectedStDfuDevices[0].serial : dfuDeviceId;
                 dfuDevice = new StmDfuDevice(dfuDeviceId);
 
                 if (!dfuDevice.DevicePresent)
