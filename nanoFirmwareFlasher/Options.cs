@@ -177,7 +177,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Required = false,
             Default = null,
             HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2.")]
-        public string Platform { get; set; }
+        public SupportedPlatform? Platform { get; set; }
 
         /// <summary>
         /// Allowed values:
@@ -277,6 +277,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = false,
             HelpText = "List the available boards and versions available on CloudSmith.")]
         public bool ListBoards { get; set; }
+
+        [Option(
+            "listtargets",
+            Required = false,
+            Default = false,
+            HelpText = "List the available targets and versions. --platform and --preview options apply.")]
+        public bool ListTargets { get; set; }
+
         #endregion
 
 
@@ -289,9 +297,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP32_WROOM_32" , DeploymentImage = "<location of file>.bin"}),
                 new("Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (preview version), using JTAG interface", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, Preview = true, JtagUpdate = true}),
                 new("Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (preview version), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, Preview = true, DfuDeviceId = "3380386D3134" }),
-                new("List all STM32 devices connected through JTAG", new Options { Platform = "stm32", ListJtagDevices = true}),
+                new("List all STM32 devices connected through JTAG", new Options { Platform = SupportedPlatform.esp32, ListJtagDevices = true}),
                 new("Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
-                new("List all boards", new Options { ListBoards = true, Preview = true, Platform = "ESP" }),
+                new("List all available targets", new Options { ListTargets = true, Preview = true, Platform =  SupportedPlatform.stm32 }),
             };
     }
 
@@ -310,5 +318,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         _4 = 4,
         _8 = 8,
         _16 = 16,
+    }
+
+    public enum SupportedPlatform
+    {
+        esp32 = 0,
+        stm32 = 1,
+        cc13x2 = 2
     }
 }

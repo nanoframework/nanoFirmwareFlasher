@@ -3,6 +3,7 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -266,5 +267,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "CLR image file has wrong format.It has to be a binary file.")]
         E9012 = 9012,
+
+        /// <summary>
+        /// Unsupported platform.
+        /// </summary>
+        [Display(Name = "Unsupported platform. Valid options are: esp32, stm32, cc13x2")]
+        E9013 = 9013,
     }
 }

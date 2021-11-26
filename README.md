@@ -259,15 +259,23 @@ This is convenient, for example, if this tool is being used in a automated proce
 nanoff -v q
 ```
 
-## List all supported boards
+## List targets
 
-You can list the supported boards, their versions, either for stable versions or preview.
+You can list the supported targets, their versions, either for stable versions or preview. `--platform` allows you to filter for a platform. `--preview` filters the query to show only preview versions.
+
+List packages available for ESP32 targets in preview version.
 
 ```console
-nanoff --listboards --platform ESP --preview
+nanoff --listboards --platform esp32 --preview
 ```
 
-If you just use `--listboards` options, you'll get the list of all the stable versions for all boards. `--platform` allows you to filter.
+List packages available for STM32 targets in (stable version).
+
+```console
+nanoff --listboards --platform stm32
+```
+
+If you just use `--listtargets` switch, you'll get the list of all the stable packages for all targets.
 
 ## Exit codes
 
