@@ -89,7 +89,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     case SupportedPlatform.esp32:
                         query.Add("ESP");
                         query.Add("M5");
-                        query.Add("Pyb");
                         query.Add("FEATHER");
                         query.Add("KALUGA");
                         break;
@@ -102,6 +101,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         query.Add("GHI");
                         query.Add("IngenuityMicro");
                         query.Add("WeAct");
+                        query.Add("Pyb");
                         break;
 
                     case SupportedPlatform.cc13x2:
