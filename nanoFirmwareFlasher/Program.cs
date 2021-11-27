@@ -176,49 +176,87 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             Console.ForegroundColor = ConsoleColor.White;
 
-            #region target processing
+            #region list targets
 
             // First check if we are asked for the list of boards
-            if (o.ListBoards)
+            if (o.ListTargets ||
+                o.ListBoards)
             {
-                var boards = FirmwarePackage.GetBoardList(false, o.Preview, o.Platform, _verbosityLevel);
-                Console.WriteLine("Release targets:");
-                DisplayBoardDetails(boards);
+                if (o.ListBoards && _verbosityLevel > VerbosityLevel.Quiet)
+                {
+                    // warn about deprecated option
+                    Console.ForegroundColor = ConsoleColor.Yellow;
 
-                boards = FirmwarePackage.GetBoardList(true, o.Preview, o.Platform, _verbosityLevel);
-                Console.WriteLine("Community targets:");
-                DisplayBoardDetails(boards);
+                    Console.WriteLine("");
+                    Console.WriteLine("");
+                    Console.WriteLine("********************************** WARNING **********************************");
+                    Console.WriteLine("The --listboards option is deprecated and will be removed in a future version");
+                    Console.WriteLine("Please use --listtargets option instead");
+                    Console.WriteLine("*****************************************************************************");
+                    Console.WriteLine("");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                // get list from REFERENCE targets
+                var targets = FirmwarePackage.GetTargetList(
+                    false,
+                    o.Preview,
+                    o.Platform,
+                    _verbosityLevel);
+
+                // append list from COMMUNITY targets
+                targets = targets.Concat(
+                    FirmwarePackage.GetTargetList(
+                    true,
+                    o.Preview,
+                    o.Platform,
+                    _verbosityLevel)).ToList();
+
+                Console.WriteLine("Available targets:");
+
+                DisplayBoardDetails(targets);
 
                 return;
             }
 
+            #endregion
+
+            #region target processing
+
             // if a target name was specified, try to be smart and set the platform accordingly (in case it wasn't specified)
-            if (string.IsNullOrEmpty(o.Platform)
+            if (o.Platform == null
                 && !string.IsNullOrEmpty(o.TargetName))
             {
                 // easiest one: ESP32
-                if (o.TargetName.Contains("ESP32"))
+                if (o.TargetName.StartsWith("ESP")
+                    || o.TargetName.StartsWith("M5")
+                    || o.TargetName.StartsWith("Pyb")
+                    || o.TargetName.StartsWith("FEATHER")
+                    || o.TargetName.StartsWith("ESPKALUGA"))
                 {
-                    o.Platform = "esp32";
+                    o.Platform = SupportedPlatform.esp32;
                 }
                 else if (
-                    o.TargetName.Contains("ST") ||
-                    o.TargetName.Contains("MBN_QUAIL") ||
-                    o.TargetName.Contains("NETDUINO3") ||
-                    o.TargetName.Contains("GHI FEZ") ||
-                    o.TargetName.Contains("IngenuityMicro") ||
-                    o.TargetName.Contains("ORGPAL")
+                    o.TargetName.StartsWith("ST")
+                    || o.TargetName.StartsWith("MBN_QUAIL")
+                    || o.TargetName.StartsWith("NETDUINO3")
+                    || o.TargetName.StartsWith("GHI")
+                    || o.TargetName.StartsWith("IngenuityMicro")
+                    || o.TargetName.StartsWith("WeAct")
+                    || o.TargetName.StartsWith("ORGPAL")
                 )
                 {
                     // candidates for STM32
-                    o.Platform = "stm32";
+                    o.Platform =  SupportedPlatform.stm32;
                 }
                 else if (
-                   o.TargetName.Contains("TI_CC1352")
+                   o.TargetName.StartsWith("TI")
                 )
                 {
                     // candidates for TI CC13x2
-                    o.Platform = "cc13x2";
+                    o.Platform = SupportedPlatform.cc13x2;
                 }
                 else
                 {
@@ -232,7 +270,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             #region platform specific options
 
             // if an option was specified and has an obvious platform, try to be smart and set the platform accordingly (in case it wasn't specified)
-            if (string.IsNullOrEmpty(o.Platform))
+            if (o.Platform == null)
             {
                 // JTAG related
                 if (
@@ -241,7 +279,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.HexFile.Any() ||
                     o.BinFile.Any())
                 {
-                    o.Platform = "stm32";
+                    o.Platform = SupportedPlatform.stm32;
                 }
                 // DFU related
                 else if (
@@ -249,7 +287,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.DfuUpdate ||
                     !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
-                    o.Platform = "stm32";
+                    o.Platform = SupportedPlatform.stm32;
                 }
                 // ESP32 related
                 else if (
@@ -259,18 +297,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     (o.Esp32FlashFrequency != 40) ||
                     !string.IsNullOrEmpty(o.Esp32ClrFile))
                 {
-                    o.Platform = "esp32";
+                    o.Platform = SupportedPlatform.esp32;
                 }
                 // drivers install
                 else if (o.TIInstallXdsDrivers)
                 {
-                    o.Platform = "cc13x2";
+                    o.Platform = SupportedPlatform.cc13x2;
                 }
                 else if (
                     o.InstallDfuDrivers
                     || o.InstallJtagDrivers)
                 {
-                    o.Platform = "stm32";
+                    o.Platform = SupportedPlatform.stm32;
                 }
             }
 
@@ -278,7 +316,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region ESP32 platform options
 
-            if (o.Platform == "esp32")
+            if (o.Platform == SupportedPlatform.esp32)
             {
                 // COM port is mandatory for ESP32
                 if (string.IsNullOrEmpty(o.SerialPort))
@@ -511,7 +549,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region STM32 platform options
 
-            if (o.Platform == "stm32")
+            if (o.Platform == SupportedPlatform.stm32)
             {
                 if (o.InstallDfuDrivers)
                 {
@@ -867,7 +905,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region TI CC13x2 platform options
 
-            if (o.Platform == "cc13x2")
+            if (o.Platform == SupportedPlatform.cc13x2)
             {
                 if (o.TIInstallXdsDrivers)
                 {

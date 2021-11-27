@@ -11,7 +11,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Web;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -64,23 +63,75 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _preview = preview;
         }
 
-        public static List<CloudSmithPackageDetail> GetBoardList(bool communityTargets, bool preview, string filter, VerbosityLevel verbosity)
+        /// <summary>
+        /// Get a list of all available targets from Cloudsmith repository.
+        /// </summary>
+        /// <param name="communityTargets"><see langword="true"/> to list community targets.<see langword="false"/> to list reference targets.</param>
+        /// <param name="preview">Option for preview version.</param>
+        /// <param name="platform">Platform code to use on search.</param>
+        /// <param name="verbosity">VerbosityLevel to use when outputting progress and error messages.</param>
+        /// <returns>List of <see cref="CloudSmithPackageDetail"/> with details on target firmware packages.</returns>
+        public static List<CloudSmithPackageDetail> GetTargetList(
+            bool communityTargets,
+            bool preview,
+            SupportedPlatform? platform,
+            VerbosityLevel verbosity)
         {
-            string repoName = communityTargets ? _communityTargetsRepo : preview ? _refTargetsDevRepo : _refTargetsStableRepo;
-            string requestUri = $"{_cloudsmithPackages}/{repoName}/?query={filter}";
-            List<CloudSmithPackageDetail> boardNames = new List<CloudSmithPackageDetail>();
+            string queryFilter = string.Empty;
 
-            if (verbosity >= VerbosityLevel.Normal)
+            // build query filter according to platform using package name
+            if (platform != null)
+            {
+                List<string> query = new(); 
+
+                switch(platform)
+                {
+                    case SupportedPlatform.esp32:
+                        query.Add("ESP");
+                        query.Add("M5");
+                        query.Add("FEATHER");
+                        query.Add("KALUGA");
+                        break;
+
+                    case SupportedPlatform.stm32:
+                        query.Add("ST");
+                        query.Add("ORGPAL");
+                        query.Add("NETDUINO3");
+                        query.Add("QUAIL");
+                        query.Add("GHI");
+                        query.Add("IngenuityMicro");
+                        query.Add("WeAct");
+                        query.Add("Pyb");
+                        break;
+
+                    case SupportedPlatform.cc13x2:
+                        query.Add("TI");
+                        break;
+                }
+
+                queryFilter = string.Join(" OR ", query.Select(t => $"name:{t}"));
+            }
+
+            string repoName = communityTargets ? _communityTargetsRepo : preview ? _refTargetsDevRepo : _refTargetsStableRepo;
+            string requestUri = $"{_cloudsmithPackages}/{repoName}/?query={queryFilter}";
+            List<CloudSmithPackageDetail> targetPackages = new();
+
+            if (verbosity > VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.Write($"Trying to find list of boards in {(preview ? "development" : "stable")} repository");
-                if( string.IsNullOrEmpty(filter))
+
+                Console.Write($"Listing {platform} targets from '{repoName}' repository");
+
+                if (!communityTargets)
                 {
-                    Console.Write(" without filter");
-                }
-                else
-                {
-                    Console.Write($" with filter {filter}");
+                    if (preview)
+                    {
+                        Console.Write(" [PREVIEW]");
+                    }
+                    else
+                    {
+                        Console.Write(" [STABLE]");
+                    }
                 }
 
                 Console.WriteLine("...");
@@ -99,12 +150,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 // can't find this target
-                return boardNames;
+                return targetPackages;
             }
 
-            boardNames = JsonConvert.DeserializeObject<List<CloudSmithPackageDetail>>(responseBody);
+            targetPackages = JsonConvert.DeserializeObject<List<CloudSmithPackageDetail>>(responseBody);
 
-            return boardNames;
+            return targetPackages;
         }
 
         /// <summary>
@@ -223,12 +274,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (responseBody == "[]")
                         {
+                            // can't find this target
+
+                            Console.WriteLine("");
+
                             if (Verbosity >= VerbosityLevel.Normal)
                             {
-                                Console.WriteLine("");
-                            }
+                                // output helpful message
+                                Console.ForegroundColor = ConsoleColor.Yellow;
 
-                            // can't find this target
+                                Console.WriteLine("");
+                                Console.WriteLine("*************************** ERROR **************************");
+                                Console.WriteLine("Couldn't find this target in our Cloudsmith repositories!");
+                                Console.WriteLine("To list the available targets use this option --listtargets.");
+                                Console.WriteLine("************************************************************");
+                                Console.WriteLine("");
+
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
                             return ExitCodes.E9005;
                         }
                     }
