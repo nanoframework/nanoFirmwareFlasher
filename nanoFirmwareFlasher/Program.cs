@@ -256,7 +256,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 )
                 {
                     // candidates for TI CC13x2
-                    o.Platform = SupportedPlatform.cc13x2;
+                    o.Platform = SupportedPlatform.ti_simplelink;
                 }
                 else
                 {
@@ -302,7 +302,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // drivers install
                 else if (o.TIInstallXdsDrivers)
                 {
-                    o.Platform = SupportedPlatform.cc13x2;
+                    o.Platform = SupportedPlatform.ti_simplelink;
                 }
                 else if (
                     o.InstallDfuDrivers
@@ -905,7 +905,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region TI CC13x2 platform options
 
-            if (o.Platform == SupportedPlatform.cc13x2)
+            if (o.Platform == SupportedPlatform.ti_simplelink)
             {
                 if (o.TIInstallXdsDrivers)
                 {

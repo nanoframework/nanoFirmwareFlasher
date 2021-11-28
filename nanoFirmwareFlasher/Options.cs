@@ -324,6 +324,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         esp32 = 0,
         stm32 = 1,
-        cc13x2 = 2
+        ti_simplelink = 2
     }
 }
