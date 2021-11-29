@@ -4,7 +4,8 @@ trigger:
   paths:
     exclude: [README.md,  CHANGELOG.md, CODE_OF_CONDUCT.md, LICENSE.md, NuGet.Config, .github_changelog_generator, .gitignore]
   tags:
-    include: ["v*"]
+    include:
+    - refs/tags/v*
 
 # PR always trigger build
 pr:
