@@ -77,43 +77,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             SupportedPlatform? platform,
             VerbosityLevel verbosity)
         {
-            string queryFilter = string.Empty;
-
-            // build query filter according to platform using package name
-            if (platform != null)
-            {
-                List<string> query = new(); 
-
-                switch(platform)
-                {
-                    case SupportedPlatform.esp32:
-                        query.Add("ESP");
-                        query.Add("M5");
-                        query.Add("FEATHER");
-                        query.Add("KALUGA");
-                        break;
-
-                    case SupportedPlatform.stm32:
-                        query.Add("ST");
-                        query.Add("ORGPAL");
-                        query.Add("NETDUINO3");
-                        query.Add("QUAIL");
-                        query.Add("GHI");
-                        query.Add("IngenuityMicro");
-                        query.Add("WeAct");
-                        query.Add("Pyb");
-                        break;
-
-                    case SupportedPlatform.cc13x2:
-                        query.Add("TI");
-                        break;
-                }
-
-                queryFilter = string.Join(" OR ", query.Select(t => $"name:{t}"));
-            }
-
             string repoName = communityTargets ? _communityTargetsRepo : preview ? _refTargetsDevRepo : _refTargetsStableRepo;
-            string requestUri = $"{_cloudsmithPackages}/{repoName}/?query={queryFilter}";
+            string requestUri = $"{_cloudsmithPackages}/{repoName}/?tag={platform}";
             List<CloudSmithPackageDetail> targetPackages = new();
 
             if (verbosity > VerbosityLevel.Normal)
