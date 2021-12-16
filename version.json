@@ -13,10 +13,11 @@
     "^refs/heads/v\\d+(?:\\.\\d+)?$"
   ],
   "cloudBuild": {
+    "setVersionVariables": true,
     "setAllVariables": true,
     "buildNumber": {
       "enabled": true,
-      "includeCommitId": { "when": "always" }
+      "includeCommitId": { "when": "nonPublicReleaseOnly" }
     }
   },
   "release": {

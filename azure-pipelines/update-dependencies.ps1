@@ -41,7 +41,7 @@ git checkout --quiet develop | Out-Null
 Write-Host "Updating nanoFramework.Tools.FirmwareFlasher version in VS Code extension..."
 
 $versionRegex = "nanoFlasherVersion\s=\s\""v\d+.\d+.\d+\"""
-$newVersion = "nanoFlasherVersion = ""$packageTargetVersion"""
+$newVersion = "nanoFlasherVersion = ""v$packageTargetVersion"""
 
 $buildFileName = 'scripts/build.ps1'
 $buildFileContent = Get-Content $buildFileName -Encoding UTF8

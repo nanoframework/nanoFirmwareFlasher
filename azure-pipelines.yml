@@ -80,9 +80,12 @@ jobs:
   - task: DotNetCoreCLI@2  
     displayName: Install NBGV tool
     condition: >-
-      or(
-        eq(variables['StartReleaseCandidate'], true),
-        ne(variables['system.pullrequest.isfork'], true)
+      and(
+        eq( variables['StartReleaseCandidate'], false),      
+        or(
+          eq(variables['StartReleaseCandidate'], true),
+          ne(variables['system.pullrequest.isfork'], true)
+        )
       )
     inputs:
       command: custom
@@ -90,7 +93,7 @@ jobs:
       arguments: install -g nbgv
 
   - task: PowerShell@2
-    condition: eq( variables['StartReleaseCandidate'], true )
+    condition: eq( variables['StartReleaseCandidate'], true)
     displayName: NBGV prepare release
     inputs:
       targetType: 'inline'
@@ -175,6 +178,7 @@ jobs:
     buildPlatform: 'x64'
     buildConfiguration: 'Release'
     solution: 'nanoFirmwareFlasher.sln'
+    run_update_dependents: dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']
 
   steps:
 
@@ -205,7 +209,7 @@ jobs:
       arguments: install -g nbgv
 
   # only required when updating dependents
-  - script: nbgv cloud
+  - script: nbgv cloud -a -c
     condition: eq(variables['UPDATE_DEPENDENTS'], 'true')
     displayName: Set Could Version
 
@@ -384,23 +388,6 @@ jobs:
       packagesToPush: '$(Build.ArtifactStagingDirectory)\nanoFramework.Tools.FirmwareFlasher.$(NBGV_NuGetPackageVersion).nupkg'
       publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
 
-  # update dependencies
-  - task: PowerShell@2
-    condition: >-
-      and(
-        or(
-          eq(variables['UPDATE_DEPENDENTS'], 'true'),
-          eq(variables['RUN_UPDATE_DEPENDENTS'], 'true')
-        ),
-        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-      )
-    displayName: Update dependent tools
-    inputs:
-      targetType: filePath
-      filePath: azure-pipelines/update-dependencies.ps1
-    env:
-      MY_GITHUB_TOKEN: $(GitHubToken)
-
   # create or update GitHub release
   - task: GithubRelease@1
     condition: >-
@@ -443,6 +430,23 @@ jobs:
       isPreRelease: false
       addChangeLog: false
       action: edit
+
+  # update dependencies
+  - task: PowerShell@2
+    condition: >-
+      and(
+        or(
+          eq(variables['UPDATE_DEPENDENTS'], 'true'),
+          eq(variables['RUN_UPDATE_DEPENDENTS'], 'true')
+        ),
+        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+      )
+    displayName: Update dependent tools
+    inputs:
+      targetType: filePath
+      filePath: azure-pipelines/update-dependencies.ps1
+    env:
+      MY_GITHUB_TOKEN: $(GitHubToken)
 
 ##################################
 # report build failure to Discord
