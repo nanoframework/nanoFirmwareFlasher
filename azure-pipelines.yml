@@ -45,14 +45,20 @@ jobs:
     displayName: Evaluate build options
 
   - task: DotNetCoreCLI@2  
+    displayName: Install NBGV tool
+    condition: >-
+      or(
+        eq(variables['StartReleaseCandidate'], true),
+        ne(variables['system.pullrequest.isfork'], true)
+      )
     inputs:
       command: custom
       custom: tool
       arguments: install -g nbgv
-    condition: or( eq( variables['StartReleaseCandidate'], true ), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Install NBGV tool
 
   - task: PowerShell@2
+    condition: eq( variables['StartReleaseCandidate'], true )
+    displayName: NBGV prepare release
     inputs:
       targetType: 'inline'
       script: |
@@ -120,8 +126,6 @@ jobs:
         }
       workingDirectory: $(Agent.TempDirectory)
       ignoreLASTEXITCODE: true
-    condition: eq( variables['StartReleaseCandidate'], true )
-    displayName: NBGV prepare release
 
 ###########################################################
 # build tool
