@@ -156,7 +156,7 @@ jobs:
     displayName: Install .NET SDK
     inputs:
       packageType: sdk
-      version: 5.0.300
+      version: 6.x
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages

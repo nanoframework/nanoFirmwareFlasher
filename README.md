@@ -7,7 +7,7 @@
 ### Welcome to the .NET **nanoFramework** firmware flasher tool repository
 
 This repo contains the nano firmware flasher tool.
-It's a [.NET Core CLI Global Tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools) that allows flashing a .NET **nanoFramework** target with nanoBooter, nanoCLR, managed application or backup files.
+It's a [.NET Core Tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools) that allows flashing a .NET **nanoFramework** target with a firmware image (nanoBooter and nanoCLR), the application deployment (all assemblies required to run a .NET application) and restore previously saved deployment images.
 Is part of .NET **nanoFramework** toolbox, along with other various tools that are required in .NET **nanoFramework** development, usage or repository management.
 
 It makes use of several 3rd party tools:
@@ -34,7 +34,7 @@ You can invoke the tool using the following command: nanoff
 Tool 'nanoff' (version '9.9.9') was successfully installed.
 ```
 
-#### Install path issues
+### Install path issues
 
 :warning: That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer. 
 If that's the case with your user path, for example, you have to install it in a location that does have those.
@@ -48,7 +48,7 @@ Note that if you're not using `nanoff` with STM32 devices, this limitation does 
 
 ### MacOS users
 
-You'll need to add nanoff to your path as well, once installed run:
+You'll need to add `nanoff` to your path as well, once installed run:
 
 ```console
 export PATH=$PATH:~/.dotnet/tools
@@ -82,9 +82,9 @@ The tool includes help for all available commands. You can see a list of all ava
 nanoff --help
 ```
 
-## ESP32 usage examples 
+## ESP32 usage examples
 
-There are multiple ESP32 images available, some are build specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards). 
+There are multiple ESP32 images available, some are build specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards).
 
 The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM, and for all silicon revisions.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
@@ -92,7 +92,7 @@ You can read more about the differences between the various images [here](https:
 The FEATHER_S2 image will just work for pretty much all variants of the ESP32-S2 series that expose the embedded USB CDC pins.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
 
-When using nanoff you can add `--target MY_TARGET_NAME_HERE` to use a specific image. If, instead, you just specify the platform with `--platform esp32` nanoff will choose the most appropriate image depending on the features of the device that's connected. Output similar to this one will show to advise what's the image about to be used:
+When using `nanoff` you can add `--target MY_TARGET_NAME_HERE` to use a specific image. If, instead, you just specify the platform with `--platform esp32` `nanoff` will choose the most appropriate image depending on the features of the device that's connected. Output similar to this one will show to advise what's the image about to be used:
 
 ```console
 No target name was provided! Using 'ESP32_REV0' based on the device characteristics.
@@ -101,7 +101,7 @@ No target name was provided! Using 'ESP32_REV0' based on the device characterist
 >Note: Please note that for ESP32-S2 targets is not possible to safely determine what's the best image to use. For this reason it's mandatory providing the appropriate target name with `--target MY_TARGET_NAME_HERE`.
 
 Some ESP32 boards have issues entering bootloader mode. This can be usually overcome by holding down the BOOT/FLASH button in the board.
-In case nanoff detects this situation the following warning is shown:
+In case `nanoff` detects this situation the following warning is shown:
 
 ```console
 *** Hold down the BOOT/FLASH button in ESP32 board ***
@@ -155,7 +155,7 @@ This example uses the binary format file that you can find when you are building
 nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
 ```
 
-## STMP32 usage examples 
+## STMP32 usage examples
 
 ### Update the firmware of a specific STM32 target
 
@@ -217,7 +217,7 @@ To install the drivers for STM32 DFU connected targets.
 nanoff --installdfudrivers
 ```
 
-## TI CC13x2 usage examples 
+## TI CC13x2 usage examples
 
 ### Update the firmware of a specific TI CC13x2 target
 
