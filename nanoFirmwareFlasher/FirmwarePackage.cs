@@ -219,46 +219,68 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     string responseBody = await response.Content.ReadAsStringAsync();
 
+                    bool targetNotFound = false;
+
                     // check for empty array 
                     if (responseBody == "[]")
                     {
+                        targetNotFound = true;
+                    }
+                    else
+                    {
+                        // parse response
+                        List<CloudsmithPackageInfo> packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
+
+                        // if no specific version was requested, use latest available
+                        if (string.IsNullOrEmpty(_fwVersion))
+                        {
+                            _fwVersion = packageInfo.ElementAt(0).Version;
+                            // grab download URL
+                            downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
+                        }
+                        else
+                        {
+                            //get the download Url from the Cloudsmith Package info
+                            // addition check if the cloudsmith json return empty json
+                            if(packageInfo is null || packageInfo.Count == 0)
+                            {    
+                               return ExitCodes.E9005;
+                            }
+                            else
+                            {
+                                downloadUrl = packageInfo.Where(w => w.Version == _fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
+                            }
+                        }
+
+                        // sanity check for target name matching requested
+                        if(packageInfo.ElementAt(0).TargetName != _targetName)
+                        {
+                            targetNotFound = true;
+                        }
+                    }
+
+                    if(targetNotFound)
+                    {
+                        // can't find this target
+
+                        Console.WriteLine("");
+
                         if (Verbosity >= VerbosityLevel.Normal)
                         {
+                            // output helpful message
+                            Console.ForegroundColor = ConsoleColor.Red;
+
+                            Console.WriteLine("");
+                            Console.WriteLine("*************************** ERROR **************************");
+                            Console.WriteLine("Couldn't find this target in our Cloudsmith repositories!");
+                            Console.WriteLine("To list the available targets use this option --listtargets.");
+                            Console.WriteLine("************************************************************");
+                            Console.WriteLine("");
+
                             Console.ForegroundColor = ConsoleColor.White;
-                            Console.WriteLine("");
-                            Console.Write($"Trying to find {_targetName} in community targets repository...");
                         }
 
-                        // try with community targets
-
-                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsRepo}/?page=1&query=^{_targetName}$ {fwVersion}";
-
-                        response = await _cloudsmithClient.GetAsync(requestUri);
-
-                        responseBody = await response.Content.ReadAsStringAsync();
-
-                        if (responseBody == "[]")
-                        {
-                            // can't find this target
-
-                            Console.WriteLine("");
-
-                            if (Verbosity >= VerbosityLevel.Normal)
-                            {
-                                // output helpful message
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-
-                                Console.WriteLine("");
-                                Console.WriteLine("*************************** ERROR **************************");
-                                Console.WriteLine("Couldn't find this target in our Cloudsmith repositories!");
-                                Console.WriteLine("To list the available targets use this option --listtargets.");
-                                Console.WriteLine("************************************************************");
-                                Console.WriteLine("");
-
-                                Console.ForegroundColor = ConsoleColor.White;
-                            }
-                            return ExitCodes.E9005;
-                        }
+                        return ExitCodes.E9005;
                     }
 
                     if (Verbosity >= VerbosityLevel.Normal)
@@ -266,30 +288,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"OK");
                         Console.ForegroundColor = ConsoleColor.White;
-                    }
-
-                    // parse response
-                    List<CloudsmithPackageInfo> packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
-
-                    // if no specific version was requested, use latest available
-                    if (string.IsNullOrEmpty(_fwVersion))
-                    {
-                        _fwVersion = packageInfo.ElementAt(0).Version;
-                        // grab download URL
-                        downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
-                    }
-                    else
-                    {
-                        //get the download Url from the Cloudsmith Package info
-                        // addition check if the cloudsmith json return empty json
-                        if(packageInfo is null || packageInfo.Count == 0)
-                        {    
-                           return ExitCodes.E9005;
-                        }
-                        else
-                        {
-                            downloadUrl = packageInfo.Where(w => w.Version == _fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
-                        }
                     }
 
                     // set exposed property
