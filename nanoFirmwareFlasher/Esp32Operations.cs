@@ -167,7 +167,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (fitCheck)
             {
-                if (targetName.Contains("ESP32_WROOM_32_V3") &&
+                if (targetName.EndsWith("REV3") &&
                     (esp32Device.ChipName.Contains("revision 0") ||
                     esp32Device.ChipName.Contains("revision 1") ||
                     esp32Device.ChipName.Contains("revision 2")))

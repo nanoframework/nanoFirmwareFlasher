@@ -16,5 +16,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         
         [JsonProperty("cdn_url")]
         public string DownloadUrl { get; set; }
+
+        [JsonProperty("name")]
+        public string TargetName { get; set; }
     }
 }
