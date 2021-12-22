@@ -19,5 +19,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         [JsonProperty("name")]
         public string TargetName { get; set; }
+
+        [JsonProperty("uploaded_at")]
+        public DateTime PackageDate { get; set; }
     }
 }
