@@ -78,7 +78,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             VerbosityLevel verbosity)
         {
             string repoName = communityTargets ? _communityTargetsRepo : preview ? _refTargetsDevRepo : _refTargetsStableRepo;
-            string requestUri = $"{_cloudsmithPackages}/{repoName}/?tag={platform}";
+            string requestUri = $"{_cloudsmithPackages}/{repoName}/?&q=uploaded:>'2 months ago'&tag={platform}";
             List<CloudSmithPackageDetail> targetPackages = new();
 
             if (verbosity > VerbosityLevel.Normal)
@@ -203,7 +203,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                    .ToList();
             }
 
-           
+
             if (!skipDownload)
             {
                 // try to perform request
@@ -220,6 +220,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     string responseBody = await response.Content.ReadAsStringAsync();
 
                     bool targetNotFound = false;
+                    bool packageOutdated = false;
+                    List<CloudsmithPackageInfo> packageInfo = null;
 
                     // check for empty array 
                     if (responseBody == "[]")
@@ -229,7 +231,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     else
                     {
                         // parse response
-                        List<CloudsmithPackageInfo> packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
+                        packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
 
                         // if no specific version was requested, use latest available
                         if (string.IsNullOrEmpty(_fwVersion))
@@ -242,9 +244,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         {
                             //get the download Url from the Cloudsmith Package info
                             // addition check if the cloudsmith json return empty json
-                            if(packageInfo is null || packageInfo.Count == 0)
-                            {    
-                               return ExitCodes.E9005;
+                            if (packageInfo is null || packageInfo.Count == 0)
+                            {
+                                return ExitCodes.E9005;
                             }
                             else
                             {
@@ -253,13 +255,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         // sanity check for target name matching requested
-                        if(packageInfo.ElementAt(0).TargetName != _targetName)
+                        if (packageInfo.ElementAt(0).TargetName != _targetName)
                         {
                             targetNotFound = true;
                         }
+                        else
+                        {
+                            // check package published date
+                            if (packageInfo.ElementAt(0).PackageDate < DateTime.UtcNow.AddMonths(-2))
+                            {
+                                // if older than 2 months warn user
+                                packageOutdated = true;
+                            }
+                        }
                     }
 
-                    if(targetNotFound)
+                    if (targetNotFound)
                     {
                         // can't find this target
 
@@ -287,6 +298,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"OK");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    if (packageOutdated)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.WriteLine();
+
+                        Console.WriteLine("******************************* WARNING ******************************");
+                        Console.WriteLine($"** This firmware package was released at {packageInfo.ElementAt(0).PackageDate.ToShortDateString()}                 **");
+                        Console.WriteLine("** The target it's probably outdated.                               **");
+                        Console.WriteLine("** Please check the current target names here: https://git.io/JyfuI **");
+                        Console.WriteLine("**********************************************************************");
+
+                        Console.WriteLine();
                         Console.ForegroundColor = ConsoleColor.White;
                     }
 
