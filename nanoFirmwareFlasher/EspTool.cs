@@ -103,20 +103,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // open/close the port to see if it is available
-                using (var test = new SerialPort(serialPort, baudRate))
-                {
+                // open/close the COM port to check if it is available
+                var test = new SerialPort(serialPort, baudRate);
 
-                    try
+                try
+                {
+                    test.Open();
+                    test.Close();
+                }
+                catch(Exception ex)
+                {
+                    if (Verbosity >= VerbosityLevel.Detailed)
                     {
-                        test.Open();
-                        test.Close();
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                            
+                        Console.WriteLine("");
+                        Console.WriteLine("******************* EXCEPTION *****************");
+                        Console.WriteLine($"Exception occurred while trying to open <{serialPort}>:");
+                        Console.WriteLine($"{ex.Message}");
+                        Console.WriteLine("***********************************************");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
-                    catch
-                    {
-                        // presume any exception here is caused by the serial not existing or not possible to open
-                        throw new EspToolExecutionException();
-                    }
+
+                    // presume any exception here is caused by the serial not existing or not possible to open
+                    throw new EspToolExecutionException();
                 }
             }
             else
