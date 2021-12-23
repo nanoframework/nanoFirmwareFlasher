@@ -40,14 +40,9 @@ git checkout --quiet develop | Out-Null
 
 Write-Host "Updating nanoFramework.Tools.FirmwareFlasher version in VS Code extension..."
 
-$versionRegex = "nanoFlasherVersion\s=\s\""v\d+.\d+.\d+\"""
-$newVersion = "nanoFlasherVersion = ""v$packageTargetVersion"""
+Set-Location nanoFirmwareFlasher | Out-Null
 
-$buildFileName = 'scripts/build.ps1'
-$buildFileContent = Get-Content $buildFileName -Encoding UTF8
-
-attrib $buildFileName -r
-$buildFileContent -replace $versionRegex, $newVersion | Out-File $buildFileName -Encoding utf8
+git checkout tags/v$packageTargetVersion
 
 #####################
 
@@ -74,44 +69,54 @@ Write-Debug "Checkout branch"
 # checkout branch
 git checkout $newBranchName
 
-Write-Debug "Add changes" 
+# check if anything was changed
+$repoStatus = "$(git status --short --porcelain)"
 
-# commit changes
-git add -A > $null
-
-Write-Debug "Commit changed files"
-
-git commit -m "$prTitle ***NO_CI***" -m "$commitMessage" > $null
-
-Write-Debug "Push changes"
-
-git -c http.extraheader="AUTHORIZATION: $auth" push --set-upstream origin $newBranchName > $null
-
-# start PR
-# we are hardcoding to 'develop' branch to have a fixed one
-# this is very important for tags (which don't have branch information)
-# considering that the base branch can be changed at the PR there is no big deal about this 
-$prRequestBody = @{title="$prTitle";body="$commitMessage";head="$newBranchName";base="develop"} | ConvertTo-Json
-$githubApiEndpoint = "https://api.github.com/repos/nanoframework/$repoName/pulls"
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-$headers = @{}
-$headers.Add("Authorization","$auth")
-$headers.Add("Accept","application/vnd.github.symmetra-preview+json")
-
-try 
+if ($repoStatus -ne "")
 {
-    $result = Invoke-RestMethod -Method Post -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::InternetExplorer -Uri  $githubApiEndpoint -Header $headers -ContentType "application/json" -Body $prRequestBody
-    'Started PR with dependencies update...' | Write-Host -NoNewline
-    'OK' | Write-Host -ForegroundColor Green
+    Write-Debug "Add changes" 
+
+    # commit changes
+    git add -A > $null
+
+    Write-Debug "Commit changed files"
+
+    git commit -m "$prTitle ***NO_CI***" -m "$commitMessage" > $null
+
+    Write-Debug "Push changes"
+
+    git -c http.extraheader="AUTHORIZATION: $auth" push --set-upstream origin $newBranchName > $null
+
+    # start PR
+    # we are hardcoding to 'develop' branch to have a fixed one
+    # this is very important for tags (which don't have branch information)
+    # considering that the base branch can be changed at the PR there is no big deal about this 
+    $prRequestBody = @{title="$prTitle";body="$commitMessage";head="$newBranchName";base="develop"} | ConvertTo-Json
+    $githubApiEndpoint = "https://api.github.com/repos/nanoframework/$repoName/pulls"
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+    $headers = @{}
+    $headers.Add("Authorization","$auth")
+    $headers.Add("Accept","application/vnd.github.symmetra-preview+json")
+
+    try 
+    {
+        $result = Invoke-RestMethod -Method Post -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::InternetExplorer -Uri  $githubApiEndpoint -Header $headers -ContentType "application/json" -Body $prRequestBody
+        'Started PR with dependencies update...' | Write-Host -NoNewline
+        'OK' | Write-Host -ForegroundColor Green
+    }
+    catch 
+    {
+        $result = $_.Exception.Response.GetResponseStream()
+        $reader = New-Object System.IO.StreamReader($result)
+        $reader.BaseStream.Position = 0
+        $reader.DiscardBufferedData()
+        $responseBody = $reader.ReadToEnd();
+
+        throw "Error creating PR: $responseBody"
+    }
 }
-catch 
+else
 {
-    $result = $_.Exception.Response.GetResponseStream()
-    $reader = New-Object System.IO.StreamReader($result)
-    $reader.BaseStream.Position = 0
-    $reader.DiscardBufferedData()
-    $responseBody = $reader.ReadToEnd();
-
-    throw "Error creating PR: $responseBody"
+    Write-Host "Nothing udpate at nanoFramework Deployer."
 }
