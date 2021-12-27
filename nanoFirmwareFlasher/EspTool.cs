@@ -75,7 +75,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Option to output progress messages.
         /// Default is <see langword="true"/>.
         /// </summary>
-        public VerbosityLevel Verbosity { get; internal set; } = VerbosityLevel.Normal;
+        public VerbosityLevel Verbosity { get; set; }
 
         /// <summary>
         /// Flag to report if the target couldn't be reset after flashing it.
@@ -99,8 +99,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             int baudRate,
             string flashMode,
             int flashFrequency,
-            PartitionTableSize? partitionTableSize)
+            PartitionTableSize? partitionTableSize,
+            VerbosityLevel verbosity)
         {
+            Verbosity = verbosity;
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // open/close the COM port to check if it is available
@@ -118,10 +121,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.ForegroundColor = ConsoleColor.DarkRed;
                             
                         Console.WriteLine("");
-                        Console.WriteLine("******************* EXCEPTION *****************");
+                        Console.WriteLine("******************** EXCEPTION ******************");
                         Console.WriteLine($"Exception occurred while trying to open <{serialPort}>:");
                         Console.WriteLine($"{ex.Message}");
-                        Console.WriteLine("***********************************************");
+                        Console.WriteLine("*************************************************");
                         Console.WriteLine("");
 
                         Console.ForegroundColor = ConsoleColor.White;
