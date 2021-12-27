@@ -334,7 +334,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         o.BaudRate,
                         o.Esp32FlashMode,
                         o.Esp32FlashFrequency,
-                        o.Esp32PartitionTableSize);
+                        o.Esp32PartitionTableSize,
+                        _verbosityLevel);
                 }
                 catch (Exception)
                 {
