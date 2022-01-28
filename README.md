@@ -4,7 +4,7 @@
 
 -----
 
-### Welcome to the .NET **nanoFramework** firmware flasher tool repository
+# Welcome to the .NET **nanoFramework** firmware flasher tool repository
 
 This repo contains the nano firmware flasher tool.
 It's a [.NET Core Tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools) that allows flashing a .NET **nanoFramework** target with a firmware image (nanoBooter and nanoCLR), the application deployment (all assemblies required to run a .NET application) and restore previously saved deployment images.
@@ -33,6 +33,8 @@ After a successful installation a message is displayed showing the command that'
 You can invoke the tool using the following command: nanoff
 Tool 'nanoff' (version '9.9.9') was successfully installed.
 ```
+
+![nanoff install flash](./assets/getting-started-install-nanoff-flash-esp32.gif)
 
 ### Install path issues
 
@@ -84,7 +86,7 @@ nanoff --help
 
 ## ESP32 usage examples
 
-There are multiple ESP32 images available, some are build specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards).
+There are multiple ESP32 images available, some are build specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards). You will need as well to know the COM port used by your device. Find [how to do this here](#finding-the-device-com-port-on-windows).
 
 The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM, and for all silicon revisions.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
@@ -258,6 +260,14 @@ This is convenient, for example, if this tool is being used in a automated proce
 ```console
 nanoff -v q
 ```
+
+## Finding the device COM port on Windows
+
+You need to know the COM Port attached to your device. Search for **Computer Management**, select **Device Manager** then expand **Ports (COM & LPT)**, you will find the COM port of the connected device.
+
+> IMPORTANT: you may have to install drivers. Refer to the vendor website or use Windows Update to install the latest version of the drivers.
+
+![Finding COM Port](./assets/getting-started-guides/getting-started-find-com-port.gif)
 
 ## List targets
 
