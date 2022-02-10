@@ -1,11 +1,24 @@
 trigger:
   branches:
-    include: [main, develop, "release-*" ]
+    include: 
+      - main
+      - develop
+      - release-*
   paths:
-    exclude: [README.md,  README.zh-cn.md, CHANGELOG.md, CODE_OF_CONDUCT.md, LICENSE.md, NuGet.Config, .github_changelog_generator, .gitignore]
+    exclude: 
+      - README.md
+      - README.zh-cn.md
+      - CHANGELOG.md
+      - CODE_OF_CONDUCT.md
+      - LICENSE.md
+      - NuGet.Config
+      - .github_changelog_generator
+      - .gitignore
+      - assets/*
+      - config/*
   tags:
     include:
-    - refs/tags/v*
+      - refs/tags/v*
 
 # PR always trigger build
 pr:
@@ -24,7 +37,7 @@ jobs:
 ##############################
 - job: Check_Build_Options
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
 
   steps:
   
@@ -76,21 +89,6 @@ jobs:
   
     name: BuildOptions
     displayName: Evaluate build options
-
-  - task: DotNetCoreCLI@2  
-    displayName: Install NBGV tool
-    condition: >-
-      and(
-        eq( variables['StartReleaseCandidate'], false),      
-        or(
-          eq(variables['StartReleaseCandidate'], true),
-          ne(variables['system.pullrequest.isfork'], true)
-        )
-      )
-    inputs:
-      command: custom
-      custom: tool
-      arguments: install -g nbgv
 
   - task: PowerShell@2
     condition: eq( variables['StartReleaseCandidate'], true)
