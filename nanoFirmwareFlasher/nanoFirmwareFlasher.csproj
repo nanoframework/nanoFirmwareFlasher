@@ -20,13 +20,14 @@
     <!-- need this to allow async Main() -->
     <LangVersion>latest</LangVersion>
     <TargetFrameworks>netcoreapp6;net48</TargetFrameworks>
-    <Platforms>x64;x86</Platforms>
+    <Platforms>x64;x86;anycpu</Platforms>
 	  <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackGlobalTool)' != true">
     <TargetFrameworks>netcoreapp6</TargetFrameworks>
+    <PlatformTarget>anycpu</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackGlobalTool)' == true">
