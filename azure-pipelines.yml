@@ -198,14 +198,6 @@ jobs:
       packageType: sdk
       version: 6.x
 
-  - task: DotNetCoreCLI@2  
-    displayName: Install NBGV tool
-    condition: ne(variables['system.pullrequest.isfork'], true)
-    inputs:
-      command: custom
-      custom: tool
-      arguments: install -g nbgv
-
   # only required when updating dependents
   - script: nbgv cloud -a -c
     condition: eq(variables['UPDATE_DEPENDENTS'], 'true')
