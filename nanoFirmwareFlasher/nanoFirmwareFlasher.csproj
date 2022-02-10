@@ -8,7 +8,7 @@
     <RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
     <AssemblyName>nanoff</AssemblyName>
     <PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
-    <Authors>.NET nanoFramework project contributors</Authors>
+    <Authors>nanoframework</Authors>
     <Product>.NET nanoFramework Firmware Flasher</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <Company>.NET nanoFramework</Company>
