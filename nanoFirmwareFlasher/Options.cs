@@ -285,6 +285,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "List the available targets and versions. --platform and --preview options apply.")]
         public bool ListTargets { get; set; }
 
+        [Option(
+            "listports",
+            Required = false,
+            Default = false,
+            HelpText = "List the all the COM ports on this machine.")]
+        public bool ListComPorts { get; set; }
+
         #endregion
 
 
