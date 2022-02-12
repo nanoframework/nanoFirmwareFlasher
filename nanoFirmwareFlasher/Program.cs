@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
+using System.IO.Ports;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -176,6 +177,30 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             Console.ForegroundColor = ConsoleColor.White;
 
+            if (o.ListComPorts)
+            {
+                var ports = SerialPort.GetPortNames();
+                if (ports.Any())
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine("Available COM ports:");
+                    foreach (var p in ports)
+                    {
+                        Console.WriteLine($"  {p}");
+                    }
+                        }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("No available COM port.");
+                }
+
+                Console.WriteLine();
+
+                Console.ForegroundColor = ConsoleColor.White;
+                return;
+            }
+
             #region list targets
 
             // First check if we are asked for the list of boards
@@ -249,7 +274,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 )
                 {
                     // candidates for STM32
-                    o.Platform =  SupportedPlatform.stm32;
+                    o.Platform = SupportedPlatform.stm32;
                 }
                 else if (
                    o.TargetName.StartsWith("TI")

@@ -87,7 +87,11 @@ nanoff --help
 
 ## ESP32 usage examples
 
-There are multiple ESP32 images available, some are build specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards). You will need as well to know the COM port used by your device. Find [how to do this here](#finding-the-device-com-port-on-windows).
+There are multiple ESP32 images available, some are build specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards). You will need as well to know the COM port used by your device. Find [how to do this here](#finding-the-device-com-port-on-windows). Alternatively, you can as well list the available COM ports. If you list them first without the device to flash and then plugging the device, the additional port which will show up is the one for the device to flash. This method works for all OS:
+
+```console
+nanoff --listports
+```
 
 The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM, and for all silicon revisions.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
@@ -268,7 +272,28 @@ You need to know the COM Port attached to your device. Search for **Computer Man
 
 > IMPORTANT: you may have to install drivers. Refer to the vendor website or use Windows Update to install the latest version of the drivers.
 
-![Finding COM Port](./assets/getting-started-guides/getting-started-find-com-port.gif)
+![Finding COM Port](./assets/getting-started-find-com-port.gif)
+
+## Finding the device COM port using nanoff
+
+You can use the --listports command with nanoff to list the available COM ports. This method works on all OS. If you run the command first without your device plugged, you'll get a first list. Then plug your device and run the command again. The new COM port showing up is the one from your device!
+
+```console
+nanoff --listports
+```
+
+Example of outcomes when there is no device plugged in:
+
+```text
+No available COM port
+```
+
+And when you then plug the device and run the command again:
+
+```text
+Available COM ports:
+  COM12
+```
 
 ## List targets
 
