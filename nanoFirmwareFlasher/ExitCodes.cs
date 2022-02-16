@@ -273,5 +273,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Unsupported platform. Valid options are: esp32, stm32, cc13x2")]
         E9013 = 9013,
+
+        /// <summary>
+        /// Error clearing cache location.
+        /// </summary>
+        [Display(Name = "Error occured when clearing the firmware cache location.")]
+        E9014 = 9014,
+
     }
 }

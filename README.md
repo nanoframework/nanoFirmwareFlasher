@@ -313,6 +313,17 @@ nanoff --listboards --platform stm32
 
 If you just use `--listtargets` switch, you'll get the list of all the stable packages for all targets.
 
+## Clear cache location
+
+If needed one can clear the local cache from the firmware packages that are stored there.
+As an additional information the cache location is the directory `-nanoFramework\fw_cache` in the user folder.
+
+When this option is included in the command no other options are processed.
+
+```console
+nanoff --clearcache
+```
+
 ## Exit codes
 
 The exit codes can be checked in [this source file](https://github.com/nanoframework/nanoFirmwareFlasher/blob/develop/nanoFirmwareFlasher/ExitCodes.cs).

@@ -37,6 +37,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
 
+
+        /// <summary>
+        /// Path with the base location for firmware packages.
+        /// </summary>
+        public static string LocationPathBase
+        {
+            get
+            {
+                return Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    ".nanoFramework",
+                    "fw_cache");
+            }
+        }
+
         /// <summary>
         /// Path with the location of the downloaded firmware.
         /// </summary>
@@ -153,26 +168,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // setup download folder
             // set download path
-            LocationPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".nanoFramework");
-
             try
             {
-                // create home directory
-                Directory.CreateDirectory(LocationPath);
+                // create "home" directory
+                Directory.CreateDirectory(LocationPathBase);
 
                 // add readme file
                 File.WriteAllText(
                     Path.Combine(
-                        LocationPath,
+                        LocationPathBase,
                         "README.txt"),
                     _readmeContent);
 
                 // set location path to target folder
                 LocationPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".nanoFramework",
+                    LocationPathBase,
                     _targetName);
 
                 Directory.CreateDirectory(LocationPath);
@@ -531,6 +541,5 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         #endregion
-
     }
 }
