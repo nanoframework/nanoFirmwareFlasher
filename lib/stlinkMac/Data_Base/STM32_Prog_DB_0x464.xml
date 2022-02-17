@@ -43,6 +43,8 @@
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFF75E0" default="0x80000"/>
+				<DBGMCU_CR address="0xE0042004" mask="0x007"/>
+				<DBGMCU_APB1_FZ address="0xE0042008" mask="0x1800"/>
 				<!-- 512KB single Bank -->
 				<Configuration>
 					<Parameters address="0x08000000" name=" 128 Kbytes Embedded Flash" size="0x20000"/>

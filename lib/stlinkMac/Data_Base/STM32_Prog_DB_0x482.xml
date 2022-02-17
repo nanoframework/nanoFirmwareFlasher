@@ -107,7 +107,7 @@
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x0BFA07A0" default="0x200000"/>
-				<!--BootloaderVersion address="0x0BF99EFE"/-->
+				<BootloaderVersion address="0x0BF99EFE"/>
 				<DBGMCU_CR address="0xE0044004" mask="0x06"/>
                 <DBGMCU_APB1_FZ address="0xE0044008" mask="0x1800"/>
 				<Configuration config="0,8,10"> <!-- Single Bank -->
@@ -172,7 +172,7 @@
 				<Description>The Data EEPROM memory block. It contains user data.</Description>
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
-				<Configuration config="2,4,7,9">
+				<Configuration config="2,4,7,9,10">
 					<Parameters address="0x08000000" name=" 2 Mbyte Data EEPROM" size="0x200000"/>
 					<Description/>
 					<Organization>Single</Organization>
@@ -183,7 +183,7 @@
 						</Field>
 					</Bank>
 				</Configuration>
-				<Configuration config="3,5,6,8">
+				<Configuration config="3,5,6,8,11">
 					<Parameters address="0x08000000" name=" 2 Mbyte Data EEPROM" size="0x200000"/>
 					<Description/>
 					<Organization>Single</Organization>
@@ -245,7 +245,7 @@
 				<Access>RW</Access>
 				<Configuration config="0,1,10,11">
 				<Bank interface="JTAG_SWD">
-						<Parameters address="0x40022040" name="Bank 1" size="0x20"/>
+						<Parameters address="0x40022040" name="Bank 1" size="0x24"/>
 					<Category>
 						<Name>Read Out Protection</Name>
 						<Field>
@@ -293,6 +293,17 @@
 						<Field>
 								<Parameters address="0x40022040" name="FLASH_OPTR" size="0x4"/>
 							<AssignedBits>
+							<Bit>
+									<Name>TZEN</Name>
+									<Description>Global TrustZone security enable. disable this OB by Unchecking TZEN + RDP regression from level 1 to 0 simultaneously</Description>
+									<BitOffset>0x1F</BitOffset>
+									<BitWidth>0x1</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">Global TrustZone security disabled</Val>
+										<Val value="0x1">Global TrustZone security enabled</Val>
+									</Values>
+								</Bit>
 								<Bit>
 									<Name>nRST_STOP</Name>
 									<Description/>
@@ -500,17 +511,6 @@
 									<Values>
 										<Val value="0x0">High-speed IO at low VDDIO2 voltage feature disabled (VDDIO2 can exceed 2.5 V)</Val>
 										<Val value="0x1">High-speed IO at low VDDIO2 voltage feature enabled (VDDIO2 remains below 2.5 V)</Val>
-									</Values>
-								</Bit>
-								<Bit>
-									<Name>TZEN</Name>
-									<Description>Global TrustZone security enable</Description>
-									<BitOffset>0x1F</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>RW</Access>
-									<Values>
-										<Val value="0x0">Global TrustZone security disabled</Val>
-										<Val value="0x1">Global TrustZone security enabled</Val>
 									</Values>
 								</Bit>
 							</AssignedBits>
@@ -799,6 +799,17 @@
 							<Field>
 								<Parameters address="0x50022040" name="FLASH_OPTR" size="0x4"/>
 								<AssignedBits>
+								<Bit>
+									<Name>TZEN</Name>
+									<Description>Global TrustZone security enable. disable this OB by Unchecking TZEN + RDP regression from level 1 to 0 simultaneously</Description>
+									<BitOffset>0x1F</BitOffset>
+									<BitWidth>0x1</BitWidth>
+									<Access>RW</Access>
+									<Values>
+											<Val value="0x0">Global TrustZone security disabled</Val>
+											<Val value="0x1">Global TrustZone security enabled</Val>
+										</Values>
+									</Bit>
 									<Bit>
 										<Name>nRST_STOP</Name>
 										<Description/>
@@ -1019,17 +1030,6 @@
 										<Val value="0x1">High-speed IO at low VDDIO2 voltage feature enabled (VDDIO2 remains below 2.5 V)</Val>
 									</Values>
 								</Bit>
-								<Bit>
-									<Name>TZEN</Name>
-									<Description>Global TrustZone security enable</Description>
-									<BitOffset>0x1F</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>RW</Access>
-									<Values>
-											<Val value="0x0">Global TrustZone security disabled</Val>
-											<Val value="0x1">Global TrustZone security enabled</Val>
-										</Values>
-									</Bit>
 								</AssignedBits>
 							</Field>
 					</Category>
@@ -1492,6 +1492,17 @@
 							<Field>
 								<Parameters address="0x40022040" name="FLASH_OPTR" size="0x4"/>
 								<AssignedBits>
+								<Bit>
+									<Name>TZEN</Name>
+									<Description>Global TrustZone security enable. disable this OB by Unchecking TZEN + RDP regression from level 1 to 0 simultaneously</Description>
+									<BitOffset>0x1F</BitOffset>
+									<BitWidth>0x1</BitWidth>
+									<Access>RW</Access>
+									<Values>
+											<Val value="0x0">Global TrustZone security disabled</Val>
+											<Val value="0x1">Global TrustZone security enabled</Val>
+										</Values>
+									</Bit>
 									<Bit>
 										<Name>nRST_STOP</Name>
 										<Description/>
@@ -1712,17 +1723,6 @@
 										<Val value="0x1">High-speed IO at low VDDIO2 voltage feature enabled (VDDIO2 remains below 2.5 V)</Val>
 									</Values>
 								</Bit>
-								<Bit>
-									<Name>TZEN</Name>
-									<Description>Global TrustZone security enable</Description>
-									<BitOffset>0x1F</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>RW</Access>
-									<Values>
-											<Val value="0x0">Global TrustZone security disabled</Val>
-											<Val value="0x1">Global TrustZone security enabled</Val>
-										</Values>
-									</Bit>
 								</AssignedBits>
 							</Field>
 							</Category>
@@ -2184,6 +2184,17 @@
 						<Field>
 							<Parameters address="0x40022040" name="FLASH_OPTR" size="0x4"/>
 							<AssignedBits>
+							<Bit>
+									<Name>TZEN</Name>
+									<Description>Global TrustZone security enable. disable this OB by Unchecking TZEN + RDP regression from level 1 to 0 simultaneously</Description>
+									<BitOffset>0x1F</BitOffset>
+									<BitWidth>0x1</BitWidth>
+									<Access>RW</Access>
+									<Values>
+										<Val value="0x0">Global TrustZone security disabled</Val>
+										<Val value="0x1">Global TrustZone security enabled</Val>
+									</Values>
+								</Bit>
 								<Bit>
 									<Name>nRST_STOP</Name>
 									<Description/>
@@ -2347,17 +2358,6 @@
 									<Values>
 										<Val value="0x0">USB power delivery dead-battery enabled/ TDI pull-up deactivated</Val>
 										<Val value="0x1">USB power delivery dead-battery disabled/ TDI pull-up activated</Val>
-									</Values>
-								</Bit>
-								<Bit>
-									<Name>TZEN</Name>
-									<Description>Global TrustZone security enable</Description>
-									<BitOffset>0x1F</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>RW</Access>
-									<Values>
-										<Val value="0x0">Global TrustZone security disabled</Val>
-										<Val value="0x1">Global TrustZone security enabled</Val>
 									</Values>
 								</Bit>
 								</AssignedBits>

@@ -347,12 +347,12 @@
 							</AssignedBits>
 						</Field>
 					</Category>
-					<Category>
+					<Category config="0,2">
 						<Name>PCROP Protection</Name>
 						<Field>
 							<Parameters address="0x40022024" name="FLASH_PCROP1SR" size="0x4"/>
 							<AssignedBits>
-								<Bit>
+								<Bit config="0,2">
 									<Name>PCROP1A_STRT</Name>
 									<Description>Flash Area A PCROP start address</Description>
 									<BitOffset>0x0</BitOffset>
@@ -389,7 +389,7 @@
 						<Field>
 							<Parameters address="0x40022034" name="FLASH_PCROP1BSR" size="0x4"/>
 							<AssignedBits>
-								<Bit>
+								<Bit config="0,2">
 									<Name>PCROP1B_STRT</Name>
 									<Description>Flash Area B PCROP start address</Description>
 									<BitOffset>0x0</BitOffset>
@@ -402,7 +402,7 @@
 						<Field>
 							<Parameters address="0x40022038" name="FLASH_PCROP1BER" size="0x4"/>
 							<AssignedBits>
-								<Bit>
+								<Bit config="0,2">
 									<Name>PCROP1B_END</Name>
 									<Description>Flash Area B PCROP End address(excluded). Deactivation of PCROP can be done by enabling PCROP_RDP and changing RDP from level 1 to level 0</Description>
 									<BitOffset>0x0</BitOffset>
@@ -458,7 +458,7 @@
 							</AssignedBits>
 						</Field>
 					</Category>
-					<Category>
+					<Category config="0,2" >
 						<Name>FLASH security</Name>
 						<Field>
 							<Parameters address="0x40022080" name="FLASH_SECR" size="0x4"/>
@@ -706,7 +706,7 @@
 							</AssignedBits>
 						</Field>
 					</Category>
-					<Category>
+					<Category config="0,2">
 						<Name>PCROP Protection</Name>
 						<Field>
 							<Parameters address="0x1FFF7808" name="FLASH_PCROP1SR" size="0x4"/>
@@ -794,7 +794,7 @@
 				</Bank>
 				<Bank interface="Bootloader">
 					<Parameters address="0x1FFF7870" name="Bank 2" size="0x4"/>
-					<Category>
+					<Category config="0,2">
 						<Name>FLASH security</Name>
 						<Field>
 							<Parameters address="0x1FFF7870" name="FLASH_SECR" size="0x4"/>

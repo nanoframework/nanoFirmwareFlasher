@@ -103,7 +103,7 @@
 				<Description/>
 				<Access>RW</Access>
 				<Bank interface="JTAG_SWD">
-					<Parameters address="0x40022020" name="Bank 1" size="0x14"/>
+					<Parameters address="0x40022020" name="Bank 1" size="0x54"/>
 					<Category>
 						<Name>Read Out Protection</Name>
 						<Field>
@@ -395,9 +395,6 @@
 							</AssignedBits>
 						</Field>
 					</Category>
-				</Bank>
-				<Bank interface="JTAG_SWD">
-				<Parameters address="0x40022070" name="Bank 2" size="0x4"/>
 					<Category>
 						<Name>Secure Protection</Name>
 						<Field>
@@ -426,7 +423,7 @@
 					</Category>
 				</Bank>
 				<Bank interface="Bootloader">
-					<Parameters address="0x1FFF7800" name="Bank 1" size="0x24"/>
+					<Parameters address="0x1FFF7800" name="Bank 1" size="0x2C"/>
 					<Category>
 						<Name>Read Out Protection</Name>
 						<Field>
@@ -723,9 +720,6 @@
 							</AssignedBits>
 						</Field>
 					</Category>
-				</Bank>
-				<Bank interface="Bootloader">
-					<Parameters address="0x1FFF7828" name="Bank 2" size="0x4"/>
 					<Category>
 						<Name>Secure Protection</Name>
 						<Field>
