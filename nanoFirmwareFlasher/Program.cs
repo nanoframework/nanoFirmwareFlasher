@@ -177,6 +177,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             Console.ForegroundColor = ConsoleColor.White;
 
+            if (o.ClearCache)
+            {
+                Console.WriteLine();
+
+                if (Directory.Exists(FirmwarePackage.LocationPathBase))
+                {
+                    Console.WriteLine("Clearing firmware cache location.");
+
+                    try
+                    {
+                        Directory.Delete(FirmwarePackage.LocationPathBase);
+                    }
+                    catch (Exception ex)
+                    {
+                        _exitCode = ExitCodes.E9014;
+                        _extraMessage = ex.Message;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Firmware cache location does not exist. Nothing to do.");
+                }
+
+                return;
+            }
+
             if (o.ListComPorts)
             {
                 var ports = SerialPort.GetPortNames();
@@ -188,7 +214,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         Console.WriteLine($"  {p}");
                     }
-                        }
+                }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;

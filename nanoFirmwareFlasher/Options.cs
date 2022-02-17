@@ -292,6 +292,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "List the all the COM ports on this machine.")]
         public bool ListComPorts { get; set; }
 
+        [Option(
+            "clearcache",
+            Required = false,
+            Default = false,
+            HelpText = "Clear the cache folder with firmware images.")]
+        public bool ClearCache { get; set; }
+
         #endregion
 
 
