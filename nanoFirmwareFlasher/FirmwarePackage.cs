@@ -37,7 +37,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
 
-
         /// <summary>
         /// Path with the base location for firmware packages.
         /// </summary>

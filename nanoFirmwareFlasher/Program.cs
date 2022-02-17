@@ -219,7 +219,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine("No available COM port.");
-
                 }
 
                 Console.WriteLine();
