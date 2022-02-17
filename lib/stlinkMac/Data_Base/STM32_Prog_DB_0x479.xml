@@ -117,7 +117,7 @@
 				<Description/>
 				<Access>RW</Access>
 				<Bank interface="JTAG_SWD">
-					<Parameters address="0x40022020" name="Bank 1" size="0x14"/>
+					<Parameters address="0x40022020" name="Bank 1" size="0x54"/>
 					<Category>
 						<Name>Read Out Protection</Name>
 						<Field>
@@ -472,7 +472,7 @@
 									<Name>SEC_SIZE1</Name>
 									<Description>sets the number of pages used in the bank 1 securable area</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x8</BitWidth>
+									<BitWidth>0x9</BitWidth>
 									<Access>RW</Access>
 								</Bit>
 								<Bit>
@@ -846,7 +846,7 @@
 									<Name>SEC_SIZE1</Name>
 									<Description>sets the number of pages used in the bank 1 securable area</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x8</BitWidth>
+									<BitWidth>0x9</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x1000" offset="0x08000000"/>
 								</Bit>

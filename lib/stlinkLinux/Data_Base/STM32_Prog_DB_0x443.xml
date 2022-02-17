@@ -44,6 +44,7 @@
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFF777C" default="0x8000"/>
+				<BootloaderVersion address="0x1FFF17FE"/>
 				<!-- 32KB  -->
 				<Configuration>
 					<Parameters address="0x08000000" name=" 32 KB Embedded Flash" size="0x8000"/>
@@ -438,9 +439,9 @@
 						</Field>
 												
 					</Category>
-				</Bank>
+				<!--</Bank>
 				<Bank interface="JTAG_SWD">
-					<Parameters address="0x40022080" name="Bank 2" size="0x10"/>
+					<Parameters address="0x40022080" name="Bank 2" size="0x10"/>-->
 					<Category>
 						<Name>FLASH security</Name>
 						<Field>
@@ -844,9 +845,9 @@
 							</AssignedBits>
 						</Field>		
 					</Category>
-				</Bank>
+				<!--</Bank>
 				<Bank interface="Bootloader">
-					<Parameters address="0x1FFF7870" name="Bank 2" size="0x4"/>
+					<Parameters address="0x1FFF7870" name="Bank 2" size="0x4"/>-->
 					<Category>
 						<Name>FLASH security</Name>
 						<Field>

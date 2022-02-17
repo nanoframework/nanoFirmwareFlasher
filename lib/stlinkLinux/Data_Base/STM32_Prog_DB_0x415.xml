@@ -60,13 +60,13 @@
 				<!-- 512KB Dual Bank-->
 				<Configuration number="0x5"> <!-- DBANK=0x1-->
 					<DualBank>
-						<ReadRegister address="0x1FFF7815" mask="0x200000" value="0x200000"/>
+						<ReadRegister address="0x1FFF7800" mask="0x200000" value="0x200000"/>
 					</DualBank>
 				</Configuration>
 				<!-- 512KB Single Bank-->
 				<Configuration number="0x6"> <!-- DBANK=0x0-->
 					<DualBank>
-						<ReadRegister address="0x1FFF7815" mask="0x200000" value="0x0"/>
+						<ReadRegister address="0x1FFF7800" mask="0x200000" value="0x0"/>
 					</DualBank>
 				</Configuration>
 			</Interface>
@@ -100,8 +100,10 @@
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFF75E0" default="0x100000"/>
+				<DBGMCU_CR address="0xE0042004" mask="0x007"/>
+				<DBGMCU_APB1_FZ address="0xE0042008" mask="0x1800"/>
 				<!-- 1MB dual Bank -->
-				<Configuration config="0,5">
+				<Configuration config="0,5,6">
 					<Parameters address="0x08000000" name=" 1 Mbyte Embedded Flash" size="0x100000"/>
 					<Description/>
 					<Organization>Dual</Organization>
