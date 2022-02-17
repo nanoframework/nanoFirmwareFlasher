@@ -42,10 +42,10 @@
 				<Description>The Flash memory interface manages CPU AHB I-Code and D-Code accesses to the Flash memory. It implements the erase and program Flash memory operations and the read and write protection mechanisms</Description>
 				<ErasedValue>0x00</ErasedValue>
 				<Access>RWE</Access>
-				<FlashSize address="0x1FF800CC" default="0x20000"/>
+				<FlashSize address="0x1FF800CC" default="0x60000"/>
 				<!-- 384KB dual Bank -->
 				<Configuration>
-					<Parameters address="0x08000000" name=" 384 Kbytes Embedded Flash" size="0x20000"/>
+					<Parameters address="0x08000000" name=" 384 Kbytes Embedded Flash" size="0x60000"/>
 					<Description/>
 					<Organization>Dual</Organization>
 					<Allignement>0x4</Allignement>
