@@ -46,6 +46,11 @@ Expand-Archive $outputMac -DestinationPath $env:TEMP  -Force > $null
 Expand-Archive $outputLinux -DestinationPath $env:TEMP  -Force > $null
 "OK" | Write-Host -ForegroundColor Green
 
+# clean destination folders
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve) -Include *.* -Force -Recurse
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac\LICENSE" -Resolve) -Include *.* -Force -Recurse
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux\LICENSE" -Resolve) -Include *.* -Force -Recurse
+
 # copy files to the correct locations
 "Copying files to tools folders..." | Write-Host -ForegroundColor White -NoNewline
 Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-win64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve)
