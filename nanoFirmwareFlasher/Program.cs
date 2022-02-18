@@ -51,6 +51,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // check for empty argument collection
             if (!args.Any())
             {
+                // perform version check
+                CheckVersion();
+                Console.WriteLine();
+
                 // no argument provided, show help text and usage examples
 
                 // because of short-comings in CommandLine parsing 
@@ -61,7 +65,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 var helpText = new HelpText(
                     new HeadingInfo(_headerInfo),
                     _copyrightInfo)
+                        .AddPreOptionsLine("")
                         .AddPreOptionsLine("No command was provided.")
+                        .AddPreOptionsLine("")
+                        .AddPreOptionsLine("Follow some examples on how to use nanoff. For more detailed explanations please check:")
+                        .AddPreOptionsLine("https://github.com/nanoframework/nanoFirmwareFlasher#usage")
                         .AddPreOptionsLine("")
                         .AddPreOptionsLine(HelpText.RenderUsageText(result))
                         .AddPreOptionsLine("")
