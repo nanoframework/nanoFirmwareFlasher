@@ -239,7 +239,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _chipType = chipType.ToLower().Replace("-", "");
 
             // try to find out if PSRAM is present
-            PSRamAvailability psramIsAvailable = PSRamAvailability.Unknown;
+            PSRamAvailability psramIsAvailable = PSRamAvailability.Undetermined;
 
             if (name.Contains("PICO"))
             {
@@ -286,7 +286,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>Information about availability of PSRAM, if that was possible to determine.</returns>
         private PSRamAvailability FindPSRamAvailable()
         {
-            PSRamAvailability pSRamAvailability = PSRamAvailability.Unknown;
+            PSRamAvailability pSRamAvailability = PSRamAvailability.Undetermined;
 
             // don't want to output anything from esptool
             // backup current verbosity setting
@@ -314,7 +314,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // this board was put on download mode manually, can't run the test app...
 
-                    return PSRamAvailability.Unknown;
+                    return PSRamAvailability.Undetermined;
                 }
 
                 try

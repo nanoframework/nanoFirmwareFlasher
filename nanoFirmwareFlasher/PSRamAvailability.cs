@@ -11,9 +11,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal enum PSRamAvailability
     {
         /// <summary>
-        /// Availability unknown.
+        /// Availability hasn't been determined.
         /// </summary>
-        Unknown = 0,
+        Undetermined = 0,
 
         /// <summary>
         /// PSRAM is available.

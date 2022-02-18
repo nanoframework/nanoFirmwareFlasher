@@ -128,8 +128,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             switch(PSRamAvailable)
             {
-                case PSRamAvailability.Unknown:
-                    deviceInfo.AppendLine($"PSRAM: unknown");
+                case PSRamAvailability.Undetermined:
+                    deviceInfo.AppendLine($"PSRAM: undetermined");
                     break;
 
                 case PSRamAvailability.Yes:
