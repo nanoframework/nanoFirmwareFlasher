@@ -326,12 +326,11 @@ jobs:
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
 
-  # publish artifacts (only possible if this is not a PR originated on a fork)
+  # publish artifacts
   - task: PublishBuildArtifacts@1
     condition: >-
       and(
         succeeded(),
-        ne(variables['system.pullrequest.isfork'], true),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
     displayName: Publish deployables artifacts
