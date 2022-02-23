@@ -20,12 +20,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal abstract class FirmwarePackage : IDisposable
     {
         // HttpClient is intended to be instantiated once per application, rather than per-use.
-        static readonly HttpClient _cloudsmithClient = new();
-
-        /// <summary>
-        /// Uri of Cloudsmith API
-        /// </summary>
-        private const string _cloudsmithPackages = "https://api.cloudsmith.io/v1/packages/net-nanoframework";
+        static readonly HttpClient _cloudsmithClient;
 
         private const string _refTargetsDevRepo = "nanoframework-images-dev";
         private const string _refTargetsStableRepo = "nanoframework-images";
@@ -63,6 +58,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         public VerbosityLevel Verbosity { get; internal set; }
 
+        static FirmwarePackage()
+        {
+            _cloudsmithClient = new HttpClient();
+            _cloudsmithClient.BaseAddress = new Uri("https://api.cloudsmith.io/v1/packages/net-nanoframework/");
+            _cloudsmithClient.DefaultRequestHeaders.Add("Accept", "*/*");
+        }
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -92,7 +94,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             VerbosityLevel verbosity)
         {
             string repoName = communityTargets ? _communityTargetsRepo : preview ? _refTargetsDevRepo : _refTargetsStableRepo;
-            string requestUri = $"{_cloudsmithPackages}/{repoName}/?&q=uploaded:>'2 months ago'&tag={platform}";
+
+            // NOTE: the query seems to be the oposite, it should be LESS THAN.
+            // this has been reported to Cloudsmith and it's being checked. Maybe need to revisit this if changes are made in their API.
+            string requestUri = $"{repoName}/?page_size=500&q=uploaded:'>1 month ago' AND tag:{platform}";
+            
             List<CloudSmithPackageDetail> targetPackages = new();
 
             if (verbosity > VerbosityLevel.Normal)
@@ -145,17 +151,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             string fwFileName = null;
 
-            // query URL
-            // https://api.cloudsmith.io/v1/packages/net-nanoframework/REPO-NAME-HERE/?page=1&query=/PACKAGE-NAME-HERE latest
-
-            // download URL
-            // https://dl.cloudsmith.io/public/net-nanoframework/REPO-NAME-HERE/raw/names/PACKAGE-NAME-HERE/versions/VERSION-HERE/ST_STM32F429I_DISCOVERY-1.6.2-preview.9.zip
-
             // reference targets
             var repoName = _preview ? _refTargetsDevRepo : _refTargetsStableRepo;
+
             // get the firmware version if it is defined
             var fwVersion = string.IsNullOrEmpty(_fwVersion) ? "latest" : _fwVersion;
-            string requestUri = $"{_cloudsmithPackages}/{repoName}/?page=1&query=^{_targetName}$ {fwVersion}";
+
+            // compose query
+            string requestUri = $"{repoName}/?query=name:{_targetName} version:^{fwVersion}$";
 
             string downloadUrl = string.Empty;
 
