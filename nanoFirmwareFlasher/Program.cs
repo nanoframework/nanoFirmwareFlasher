@@ -1089,7 +1089,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 Console.WriteLine($"  {boardName}");
 
-                foreach (var board in boards.Where(m => m.Name == boardName))
+                foreach (var board in boards.Where(m => m.Name == boardName).OrderBy(m => m.Name).Take(3))
                 {
                     Console.WriteLine($"    {board.Version}");
                 }
