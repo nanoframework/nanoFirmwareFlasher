@@ -56,7 +56,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // no JTAG id supplied, list available
                 var jtagDevices = ListDevices();
 
-                if(jtagDevices.Count > 0)
+                if (jtagDevices.Count > 0)
                 {
                     // take the 1st one
                     JtagId = jtagDevices[0];

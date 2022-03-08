@@ -473,7 +473,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.WriteLine("No driver installation needed on MacOS");
                 return ExitCodes.OK;
             }
-            else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("Driver installation for JTAG no supported on Linux. Please refer to the STM32 website to get the specific drivers.");

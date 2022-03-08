@@ -42,7 +42,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string fwVersion,
             bool stable,
             PartitionTableSize? partitionTableSize)
-            :base(
+            : base(
                  targetName,
                  fwVersion,
                  stable)
@@ -76,7 +76,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (executionResult == ExitCodes.OK)
             {
                 BootloaderPath = "bootloader.bin";
-                
+
                 // get ESP32 partitions
                 FlashPartitions = new Dictionary<int, string>
                 {

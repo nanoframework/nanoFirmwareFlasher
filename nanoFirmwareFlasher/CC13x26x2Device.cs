@@ -133,7 +133,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // check address(es)
 
             // need to match files count
-            if(files.Count != addresses.Count)
+            if (files.Count != addresses.Count)
             {
                 return ExitCodes.E5009;
             }
@@ -279,7 +279,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // collect output messages
                 return uniflashCli.StandardOutput.ReadToEnd();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new UniflashCliExecutionException(ex.Message);
             }

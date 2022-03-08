@@ -13,7 +13,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         [JsonProperty("version")]
         public string Version { get; set; }
-        
+
         [JsonProperty("cdn_url")]
         public string DownloadUrl { get; set; }
 

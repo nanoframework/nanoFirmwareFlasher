@@ -14,7 +14,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal class Esp32Operations
     {
         public static ExitCodes BackupFlash(
-            EspTool tool, 
+            EspTool tool,
             Esp32DeviceInfo device,
             string backupPath,
             string fileName,
@@ -42,7 +42,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // file name specified
-            if(string.IsNullOrEmpty(fileName))
+            if (string.IsNullOrEmpty(fileName))
             {
                 fileName = $"{device.ChipName}_0x{device.MacAddress}_{DateTime.UtcNow.ToShortDateString()}.bin";
             }
@@ -62,7 +62,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if(verbosity >= VerbosityLevel.Normal)
+            if (verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"Backing up the firmware to \r\n{backupFilePath}...");
@@ -81,12 +81,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         internal static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
-            EspTool espTool, 
-            Esp32DeviceInfo esp32Device, 
+            EspTool espTool,
+            Esp32DeviceInfo esp32Device,
             string targetName,
             bool updateFw,
-            string fwVersion, 
-            bool preview, 
+            string fwVersion,
+            bool preview,
             string applicationPath,
             string deploymentAddress,
             string clrFile,
@@ -197,8 +197,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             Esp32Firmware firmware = new Esp32Firmware(
-                targetName, 
-                fwVersion, 
+                targetName,
+                fwVersion,
                 preview,
                 partitionTableSize)
             {
@@ -227,7 +227,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (updateFw)
             {
                 operationResult = await firmware.DownloadAndExtractAsync(esp32Device.FlashSize);
-                
+
                 if (operationResult != ExitCodes.OK)
                 {
                     return operationResult;
@@ -236,7 +236,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // if updating with a CRL file, need to have a new fw package
-            if(updateCLRfile)
+            if (updateCLRfile)
             {
                 // remove the CLR file from the image
                 firmware.FlashPartitions.Remove(Esp32Firmware.CLRAddress);
@@ -307,7 +307,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (operationResult == ExitCodes.OK)
             {
-                 Console.ForegroundColor = ConsoleColor.White;
+                Console.ForegroundColor = ConsoleColor.White;
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {

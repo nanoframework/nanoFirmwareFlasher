@@ -27,7 +27,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// ESP32 chip features
         /// </summary>
         internal string Features { get; }
-            
+
         /// <summary>
         /// Crystal fitted in ESP32.
         /// </summary>
@@ -76,12 +76,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="flashSize">The size of the flash in bytes</param>
         internal Esp32DeviceInfo(
             string chipType,
-            string chipName, 
+            string chipName,
             string features,
             string crystal,
             string macAddress,
-            byte flashManufacturerId, 
-            short flashDeviceModelId, 
+            byte flashManufacturerId,
+            short flashDeviceModelId,
             int flashSize,
             PSRamAvailability psramAvailability)
         {
@@ -126,7 +126,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             deviceInfo.AppendLine($"Features { Features }");
             deviceInfo.AppendLine($"Flash size { GetFlashSizeAsString() } { GetFlashDeviceId() } from { GetFlashManufacturer() } (manufacturer 0x{ FlashManufacturerId } device 0x{ FlashDeviceId })");
 
-            switch(PSRamAvailable)
+            switch (PSRamAvailable)
             {
                 case PSRamAvailability.Undetermined:
                     deviceInfo.AppendLine($"PSRAM: undetermined");

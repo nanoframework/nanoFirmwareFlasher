@@ -114,12 +114,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     test.Open();
                     test.Close();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     if (Verbosity >= VerbosityLevel.Detailed)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkRed;
-                            
+
                         Console.WriteLine("");
                         Console.WriteLine("******************** EXCEPTION ******************");
                         Console.WriteLine($"Exception occurred while trying to open <{serialPort}>:");
@@ -310,7 +310,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (WriteFlash(bootloaderPartition, true) == ExitCodes.OK)
             {
                 // check if the
-                if(_esptoolMessage.Contains("esptool.py can not exit the download mode over USB"))
+                if (_esptoolMessage.Contains("esptool.py can not exit the download mode over USB"))
                 {
                     // this board was put on download mode manually, can't run the test app...
 
@@ -686,7 +686,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // save output messages
             _esptoolMessage = messages;
 
-            if(espTool.ExitCode == 0)
+            if (espTool.ExitCode == 0)
             {
                 // exit code was 0 (success), all good
                 return true;
@@ -694,8 +694,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else
             {
                 // need to look for specific error messages to do a safe guess if execution is as expected
-                if(messages.Contains("esptool.py can not exit the download mode over USB") ||
-                   messages.Contains("Staying in bootloader.") )
+                if (messages.Contains("esptool.py can not exit the download mode over USB") ||
+                   messages.Contains("Staying in bootloader."))
                 {
                     // we are probably good with this as we can't do much about it...
                     return true;

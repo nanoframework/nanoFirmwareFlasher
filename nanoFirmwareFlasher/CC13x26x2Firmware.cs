@@ -19,7 +19,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string targetName,
             string fwVersion,
             bool preview)
-            :base(
+            : base(
                  targetName,
                  fwVersion,
                  preview)

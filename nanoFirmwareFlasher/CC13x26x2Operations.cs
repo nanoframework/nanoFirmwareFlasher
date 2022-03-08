@@ -84,8 +84,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // find Uniflash configuration file
             string configFile;
-            
-            if(targetName.Contains("CC1352R"))
+
+            if (targetName.Contains("CC1352R"))
             {
                 configFile = Path.Combine(Program.ExecutingPath, "uniflash", "CC1352R1F3.ccxml");
             }
@@ -99,13 +99,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E7000;
             }
 
-            var ccDevice = new CC13x26x2Device(configFile) {Verbosity = verbosity};
+            var ccDevice = new CC13x26x2Device(configFile) { Verbosity = verbosity };
 
             // set verbosity
 
             ExitCodes programResult = ExitCodes.OK;
             // write HEX files to flash
-            if ( filesToFlash.Any(f => f.EndsWith(".hex")) ) 
+            if (filesToFlash.Any(f => f.EndsWith(".hex")))
             {
                 programResult = ccDevice.FlashHexFiles(filesToFlash);
             }
@@ -113,7 +113,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (programResult == ExitCodes.OK && isApplicationBinFile)
             {
                 // now program the application file
-                programResult = ccDevice.FlashBinFiles(new [] { applicationPath }, new [] { deploymentAddress });
+                programResult = ccDevice.FlashBinFiles(new[] { applicationPath }, new[] { deploymentAddress });
             }
 
             if (updateFw)
