@@ -590,6 +590,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 RedirectStandardOutput = true
             };
 
+
+            if (Verbosity == VerbosityLevel.Diagnostic)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+
+                Console.WriteLine("");
+                Console.WriteLine("Executing esptool with the following parameters:");
+                Console.WriteLine($"'{parameter}'");
+                Console.WriteLine("");
+            }
+
             // start esptool and wait for exit
             if (!espTool.Start())
             {
