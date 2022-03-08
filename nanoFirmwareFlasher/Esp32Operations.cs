@@ -147,8 +147,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.ForegroundColor = ConsoleColor.Red;
 
                     Console.WriteLine("");
-                    Console.WriteLine($"For ESP32-S2 series nanoff can't make an educated guess on the best target to use");
-                    Console.WriteLine($"Please provide an appropriate one by adding this option '--target MY_ESP32_S2_TARGET'.");
+                    Console.WriteLine($"For ESP32-S2 series nanoff isn't able to make an educated guess on the best target to use.");
+                    Console.WriteLine($"Please provide a valid target name using this option '--target MY_ESP32_S2_TARGET' instead of '--platform esp32'.");
                     Console.WriteLine("");
 
                     Console.ForegroundColor = ConsoleColor.White;
