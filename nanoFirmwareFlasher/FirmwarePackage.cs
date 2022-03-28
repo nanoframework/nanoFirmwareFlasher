@@ -97,7 +97,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // NOTE: the query seems to be the oposite, it should be LESS THAN.
             // this has been reported to Cloudsmith and it's being checked. Maybe need to revisit this if changes are made in their API.
-            string requestUri = $"{repoName}/?page_size=500&q=uploaded:'>1 month ago' AND tag:{platform}";
+            string requestUri = $"{repoName}/?page_size=500&q=uploaded:'>{(preview ? "1" : "6")} month ago'{(platform.HasValue ? "AND tag:" + platform.Value : "")}"; // AND tag:{platform}";
 
             List<CloudSmithPackageDetail> targetPackages = new();
 
