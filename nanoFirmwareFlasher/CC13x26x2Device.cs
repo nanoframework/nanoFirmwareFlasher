@@ -42,18 +42,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Flash the HEX supplied to the connected device.
         /// </summary>
         /// <param name="files"></param>
-        public ExitCodes FlashHexFiles(IEnumerable<string> files)
+        public ExitCodes FlashHexFiles(IList<string> files)
         {
             // check file existence
-            foreach (string f in files)
+            if (files.Any(f => !File.Exists(f)))
             {
-                if (!File.Exists(f))
-                {
-                    return ExitCodes.E5003;
-                }
+                return ExitCodes.E5003;
             }
-
-            string cliOuput;
 
             // TODO
             // use the -d switch
@@ -65,9 +60,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             //        Console.Write("Mass erase device...");
             //    }
 
-            //    cliOuput = RunUniflashCli($"-c SN={DeviceId} UR -ME");
+            //    cliOutput = RunUniflashCli($"-c SN={DeviceId} UR -ME");
 
-            //    if (!cliOuput.Contains("Flash memory erased."))
+            //    if (!cliOutput.Contains("Flash memory erased."))
             //    {
             //        return ExitCodes.E5005;
             //    }
@@ -102,9 +97,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                cliOuput = RunUniflashCli($" flash -c {ConfigurationFile} -f -v {hexFile}");
+                var cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -f -v {hexFile}");
 
-                if (!cliOuput.Contains("Program verification successful"))
+                if (!cliOutput.Contains("Program verification successful"))
                 {
                     return ExitCodes.E5006;
                 }
@@ -127,21 +122,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="files"></param>
         /// <param name="addresses"></param>
-        public ExitCodes FlashBinFiles(IEnumerable<string> files, IEnumerable<string> addresses)
+        public ExitCodes FlashBinFiles(IList<string> files, IList<string> addresses)
         {
             // check file existence
-            foreach (string f in files)
+            if (files.Any(f => !File.Exists(f)))
             {
-                if (!File.Exists(f))
-                {
-                    return ExitCodes.E5003;
-                }
+                return ExitCodes.E5003;
             }
 
             // check address(es)
 
             // need to match files count
-            if(files.Count() != addresses.Count())
+            if (files.Count != addresses.Count)
             {
                 return ExitCodes.E5009;
             }
@@ -152,25 +144,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     return ExitCodes.E5007;
                 }
-                else
-                {
-                    // format too
-                    if (!address.StartsWith("0x"))
-                    {
-                        return ExitCodes.E5008;
-                    }
 
-                    // try parse
-                    // need to remove the leading 0x and to specify that hexadecimal values are allowed
-                    int dummyAddress;
-                    if (!int.TryParse(address.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out dummyAddress))
-                    {
-                        return ExitCodes.E5008;
-                    }
+                // format too
+                if (!address.StartsWith("0x"))
+                {
+                    return ExitCodes.E5008;
+                }
+
+                // try parse
+                // need to remove the leading 0x and to specify that hexadecimal values are allowed
+                if (!int.TryParse(address.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out int _))
+                {
+                    return ExitCodes.E5008;
                 }
             }
-
-            string cliOuput;
 
             // TODO
             // use the -d switch
@@ -182,9 +169,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             //        Console.Write("Mass erase device...");
             //    }
 
-            //    cliOuput = RunUniflashCli($"-b");
+            //    cliOutput = RunUniflashCli($"-b");
 
-            //    if (!cliOuput.Contains("Flash memory erased."))
+            //    if (!cliOutput.Contains("Flash memory erased."))
             //    {
             //        Console.WriteLine("");
             //        return ExitCodes.E5005;
@@ -221,9 +208,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
-                cliOuput = RunUniflashCli($" flash -c {ConfigurationFile} -f -v {binFile},{addresses.ElementAt(index++)}");
+                var cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -f -v {binFile},{addresses.ElementAt(index++)}");
 
-                if (!cliOuput.Contains("Program verification successful"))
+                if (!cliOutput.Contains("Program verification successful"))
                 {
                     return ExitCodes.E5006;
                 }
@@ -247,9 +234,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public ExitCodes ResetMcu()
         {
             // try to connect to device with RESET
-            var cliOuput = RunUniflashCli($" flash -c {ConfigurationFile} -r 0");
+            var cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -r 0");
 
-            if (!cliOuput.Contains("CPU Reset is issued"))
+            if (!cliOutput.Contains("CPU Reset is issued"))
             {
                 Console.WriteLine("");
                 return ExitCodes.E5010;
@@ -271,12 +258,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             try
             {
-                Process uniflashCli = new Process();
-                uniflashCli.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "uniflash\\DebugServer\\bin", "DSLite.exe"), arguments)
+                var uniflashCli = new Process
                 {
-                    WorkingDirectory = Path.Combine(Program.ExecutingPath, "uniflash"),
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
+                    StartInfo = new ProcessStartInfo(
+                        Path.Combine(Program.ExecutingPath, "uniflash\\DebugServer\\bin", "DSLite.exe"), arguments)
+                    {
+                        WorkingDirectory = Path.Combine(Program.ExecutingPath, "uniflash"),
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                    }
                 };
 
 
@@ -289,7 +279,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // collect output messages
                 return uniflashCli.StandardOutput.ReadToEnd();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new UniflashCliExecutionException(ex.Message);
             }

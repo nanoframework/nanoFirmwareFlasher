@@ -11,7 +11,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Web;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -21,27 +20,36 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal abstract class FirmwarePackage : IDisposable
     {
         // HttpClient is intended to be instantiated once per application, rather than per-use.
-        static HttpClient _cloudsmithClient = new HttpClient();
+        static readonly HttpClient _cloudsmithClient;
+
+        private const string _refTargetsDevRepo = "nanoframework-images-dev";
+        private const string _refTargetsStableRepo = "nanoframework-images";
+        private const string _communityTargetsRepo = "nanoframework-images-community-targets";
+
+        private readonly string _targetName;
+        private string _fwVersion;
+        private readonly bool _preview;
+
+        private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
 
         /// <summary>
-        /// Uri of Cloudsmith API
+        /// Path with the base location for firmware packages.
         /// </summary>
-        internal const string _cloudsmithPackages = "https://api.cloudsmith.io/v1/packages/net-nanoframework";
-
-        internal const string _refTargetsDevRepo = "nanoframework-images-dev";
-        internal const string _refTargetsStableRepo = "nanoframework-images";
-        internal const string _communityTargetsepo = "nanoframework-images-community-targets";
-
-        internal string _targetName;
-        internal string _fwVersion;
-        internal bool _stable;
-
-        internal const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
+        public static string LocationPathBase
+        {
+            get
+            {
+                return Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    ".nanoFramework",
+                    "fw_cache");
+            }
+        }
 
         /// <summary>
         /// Path with the location of the downloaded firmware.
         /// </summary>
-        public string LocationPath { get; internal set; }
+        public string LocationPath { get; private set; }
 
         /// <summary>
         /// Version of the available firmware.
@@ -50,15 +58,89 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         public VerbosityLevel Verbosity { get; internal set; }
 
+        static FirmwarePackage()
+        {
+            _cloudsmithClient = new HttpClient();
+            _cloudsmithClient.BaseAddress = new Uri("https://api.cloudsmith.io/v1/packages/net-nanoframework/");
+            _cloudsmithClient.DefaultRequestHeaders.Add("Accept", "*/*");
+        }
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="targetName">Target name as designated in the repositories.</param>
-        protected FirmwarePackage(string targetName, string fwVersion, bool stable)
+        protected FirmwarePackage(
+            string targetName,
+            string fwVersion,
+            bool preview)
         {
             _targetName = targetName;
             _fwVersion = fwVersion;
-            _stable = stable;
+            _preview = preview;
+        }
+
+        /// <summary>
+        /// Get a list of all available targets from Cloudsmith repository.
+        /// </summary>
+        /// <param name="communityTargets"><see langword="true"/> to list community targets.<see langword="false"/> to list reference targets.</param>
+        /// <param name="preview">Option for preview version.</param>
+        /// <param name="platform">Platform code to use on search.</param>
+        /// <param name="verbosity">VerbosityLevel to use when outputting progress and error messages.</param>
+        /// <returns>List of <see cref="CloudSmithPackageDetail"/> with details on target firmware packages.</returns>
+        public static List<CloudSmithPackageDetail> GetTargetList(
+            bool communityTargets,
+            bool preview,
+            SupportedPlatform? platform,
+            VerbosityLevel verbosity)
+        {
+            string repoName = communityTargets ? _communityTargetsRepo : preview ? _refTargetsDevRepo : _refTargetsStableRepo;
+
+            // NOTE: the query seems to be the oposite, it should be LESS THAN.
+            // this has been reported to Cloudsmith and it's being checked. Maybe need to revisit this if changes are made in their API.
+            string requestUri = $"{repoName}/?page_size=500&q=uploaded:'>1 month ago' AND tag:{platform}";
+
+            List<CloudSmithPackageDetail> targetPackages = new();
+
+            if (verbosity > VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+
+                Console.Write($"Listing {platform} targets from '{repoName}' repository");
+
+                if (!communityTargets)
+                {
+                    if (preview)
+                    {
+                        Console.Write(" [PREVIEW]");
+                    }
+                    else
+                    {
+                        Console.Write(" [STABLE]");
+                    }
+                }
+
+                Console.WriteLine("...");
+            }
+
+            HttpResponseMessage response = _cloudsmithClient.GetAsync(requestUri).GetAwaiter().GetResult();
+
+            string responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+            // check for empty array 
+            if (responseBody == "[]")
+            {
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    Console.WriteLine("");
+                }
+
+                // can't find this target
+                return targetPackages;
+            }
+
+            targetPackages = JsonConvert.DeserializeObject<List<CloudSmithPackageDetail>>(responseBody);
+
+            return targetPackages;
         }
 
         /// <summary>
@@ -69,46 +151,40 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             string fwFileName = null;
 
-            // query URL
-            // https://api.cloudsmith.io/v1/packages/net-nanoframework/REPO-NAME-HERE/?page=1&query=/PACKAGE-NAME-HERE latest
-
-            // download URL
-            // https://dl.cloudsmith.io/public/net-nanoframework/REPO-NAME-HERE/raw/names/PACKAGE-NAME-HERE/versions/VERSION-HERE/ST_STM32F429I_DISCOVERY-1.6.2-preview.9.zip
-
             // reference targets
-            var repoName = _stable ? _refTargetsStableRepo : _refTargetsDevRepo;
-            string requestUri = $"{_cloudsmithPackages}/{repoName}/?page=1&query={_targetName} latest";
+            var repoName = _preview ? _refTargetsDevRepo : _refTargetsStableRepo;
+
+            // get the firmware version if it is defined
+            var fwVersion = string.IsNullOrEmpty(_fwVersion) ? "latest" : _fwVersion;
+
+            // compose query
+            string requestUri = $"{repoName}/?query=name:{_targetName} version:^{fwVersion}$";
 
             string downloadUrl = string.Empty;
 
             // flag to signal if the work-flow step was successful
-            bool stepSuccesful = false;
+            bool stepSuccessful = false;
 
             // flag to skip download if the fw package exists and it's recent
             bool skipDownload = false;
 
             // setup download folder
             // set download path
-            LocationPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".nanoFramework");
-
             try
             {
-                // create home directory
-                Directory.CreateDirectory(LocationPath);
+                // create "home" directory
+                Directory.CreateDirectory(LocationPathBase);
 
                 // add readme file
                 File.WriteAllText(
                     Path.Combine(
-                        LocationPath,
+                        LocationPathBase,
                         "README.txt"),
                     _readmeContent);
 
                 // set location path to target folder
                 LocationPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".nanoFramework",
+                    LocationPathBase,
                     _targetName);
 
                 Directory.CreateDirectory(LocationPath);
@@ -120,18 +196,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E9006;
             }
 
-            var fwFiles = Directory.EnumerateFiles(LocationPath, $"{_targetName}-*.zip").OrderByDescending(f => f).ToList();
+            List<FileInfo> fwFiles = new();
 
-            if (fwFiles.Any())
+            if (_preview)
             {
-                // get file creation date (from the 1st one)
-                if ((DateTime.UtcNow - File.GetLastWriteTimeUtc(fwFiles.First())).TotalHours < 4)
-                {
-                    // fw package has less than 4 hours
-                    // skip download
-                    skipDownload = true;
-                }
+                fwFiles = Directory.GetFiles(LocationPath)
+                                   .Select(f => new FileInfo(f))
+                                   .Where(f => f.Name.Contains("-preview.") && f.Extension == ".zip")
+                                   .OrderByDescending(f => f.Name)
+                                   .ToList();
             }
+            else
+            {
+                fwFiles = Directory.GetFiles(LocationPath)
+                                   .Select(f => new FileInfo(f))
+                                   .Where(f => !f.Name.Contains("-preview.") && f.Extension == ".zip")
+                                   .OrderByDescending(f => f.Name)
+                                   .ToList();
+            }
+
 
             if (!skipDownload)
             {
@@ -140,61 +223,115 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.Write($"Trying to find {_targetName} in {(_stable ? "stable" : "developement")} repository...");
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Write($"Trying to find {_targetName} in {(_preview ? "development" : "stable")} repository...");
                     }
 
                     HttpResponseMessage response = await _cloudsmithClient.GetAsync(requestUri);
 
-                    var responseBody = await response.Content.ReadAsStringAsync();
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    bool targetNotFound = false;
+                    bool packageOutdated = false;
+                    List<CloudsmithPackageInfo> packageInfo = null;
 
                     // check for empty array 
                     if (responseBody == "[]")
                     {
+                        targetNotFound = true;
+                    }
+                    else
+                    {
+                        // parse response
+                        packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
+
+                        // if no specific version was requested, use latest available
+                        if (string.IsNullOrEmpty(_fwVersion))
+                        {
+                            _fwVersion = packageInfo.ElementAt(0).Version;
+                            // grab download URL
+                            downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
+                        }
+                        else
+                        {
+                            //get the download Url from the Cloudsmith Package info
+                            // addition check if the cloudsmith json return empty json
+                            if (packageInfo is null || packageInfo.Count == 0)
+                            {
+                                return ExitCodes.E9005;
+                            }
+                            else
+                            {
+                                downloadUrl = packageInfo.Where(w => w.Version == _fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
+                            }
+                        }
+
+                        // sanity check for target name matching requested
+                        if (packageInfo.ElementAt(0).TargetName != _targetName)
+                        {
+                            targetNotFound = true;
+                        }
+                        else
+                        {
+                            // check package published date
+                            if (packageInfo.ElementAt(0).PackageDate < DateTime.UtcNow.AddMonths(-2))
+                            {
+                                // if older than 2 months warn user
+                                packageOutdated = true;
+                            }
+                        }
+                    }
+
+                    if (targetNotFound)
+                    {
+                        // can't find this target
+
+                        Console.WriteLine("");
+
                         if (Verbosity >= VerbosityLevel.Normal)
                         {
+                            // output helpful message
+                            Console.ForegroundColor = ConsoleColor.Red;
+
                             Console.WriteLine("");
-                            Console.Write($"Trying to find {_targetName} in community targets repository...");
+                            Console.WriteLine("*************************** ERROR **************************");
+                            Console.WriteLine("Couldn't find this target in our Cloudsmith repositories!");
+                            Console.WriteLine("To list the available targets use this option --listtargets.");
+                            Console.WriteLine("************************************************************");
+                            Console.WriteLine("");
+
+                            Console.ForegroundColor = ConsoleColor.White;
                         }
 
-                        // try with community targets
-                        requestUri = $"{_cloudsmithPackages}/{_communityTargetsepo}/?page=1&query={_targetName} latest";
-                        repoName = _communityTargetsepo;
-
-                        response = await _cloudsmithClient.GetAsync(requestUri);
-
-                        if (responseBody == "[]")
-                        {
-                            if (Verbosity >= VerbosityLevel.Normal)
-                            {
-                                Console.WriteLine("");
-                            }
-
-                            // can't find this target
-                            return ExitCodes.E9005;
-                        }
+                        return ExitCodes.E9005;
                     }
 
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"OK");
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
 
-                    // parse response
-                    List<CloudsmithPackageInfo> packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
-
-                    // if no specific version was requested, use latest available
-                    if (string.IsNullOrEmpty(_fwVersion))
+                    if (packageOutdated)
                     {
-                        _fwVersion = packageInfo.ElementAt(0).Version;
-                    }
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.WriteLine();
 
-                    // grab download URL
-                    downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
+                        Console.WriteLine("******************************* WARNING ******************************");
+                        Console.WriteLine($"** This firmware package was released at {packageInfo.ElementAt(0).PackageDate.ToShortDateString()}                 **");
+                        Console.WriteLine("** The target it's probably outdated.                               **");
+                        Console.WriteLine("** Please check the current target names here: https://git.io/JyfuI **");
+                        Console.WriteLine("**********************************************************************");
+
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
 
                     // set exposed property
                     Version = _fwVersion;
 
-                    stepSuccesful = true;
+                    stepSuccessful = true;
                 }
                 catch
                 {
@@ -214,11 +351,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // check for file existence or download one
-            if (stepSuccesful &&
+            if (stepSuccessful &&
                 !skipDownload)
             {
                 // reset flag
-                stepSuccesful = false;
+                stepSuccessful = false;
 
                 fwFileName = $"{_targetName}-{_fwVersion}.zip";
 
@@ -230,6 +367,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
+                        Console.ForegroundColor = ConsoleColor.White;
                         Console.Write($"Downloading firmware package...");
                     }
 
@@ -240,15 +378,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         {
                             if (fwFileResponse.IsSuccessStatusCode)
                             {
-                                using (var readStream = await fwFileResponse.Content.ReadAsStreamAsync())
-                                {
-                                    using (var fileStream = new FileStream(
-                                        Path.Combine(LocationPath, fwFileName),
-                                        FileMode.Create, FileAccess.Write))
-                                    {
-                                        await readStream.CopyToAsync(fileStream);
-                                    }
-                                }
+                                using var readStream = await fwFileResponse.Content.ReadAsStreamAsync();
+                                using var fileStream = new FileStream(
+                                    Path.Combine(LocationPath, fwFileName),
+                                    FileMode.Create, FileAccess.Write);
+                                await readStream.CopyToAsync(fileStream);
                             }
                             else
                             {
@@ -258,10 +392,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (Verbosity >= VerbosityLevel.Normal)
                         {
+                            Console.ForegroundColor = ConsoleColor.Green;
                             Console.WriteLine("OK");
+                            Console.ForegroundColor = ConsoleColor.White;
                         }
 
-                        stepSuccesful = true;
+                        stepSuccessful = true;
                     }
                     catch
                     {
@@ -271,20 +407,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 else
                 {
                     // file already exists
-                    stepSuccesful = true;
+                    stepSuccessful = true;
                 }
             }
 
-            if (!stepSuccesful)
+            if (!stepSuccessful)
             {
                 // couldn't download the fw file
                 // check if there is one available
-                fwFiles = Directory.EnumerateFiles(LocationPath, $"{_targetName}-*.zip").OrderByDescending(f => f).ToList();
 
                 if (fwFiles.Any())
                 {
-                    // take the 1st one
-                    fwFileName = fwFiles.First();
+                    if (string.IsNullOrEmpty(_fwVersion))
+                    {// take the 1st one
+                        fwFileName = fwFiles.First().FullName;
+                    }
+                    else
+                    {
+                        string targetFileName = $"{_targetName}-{_fwVersion}.zip";
+                        fwFileName = fwFiles.Where(w => w.Name == targetFileName).Select(s => s.FullName).FirstOrDefault();
+                    }
+
+                    if (string.IsNullOrEmpty(fwFileName))
+                    {
+                        return ExitCodes.E9007;
+                    }
 
                     // get the version form the file name
                     var pattern = @"(\d+\.\d+\.\d+)(\.\d+|-.+)(?=\.zip)";
@@ -295,7 +442,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("Using cached firmware package");
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
                 else
@@ -304,7 +453,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Failure to download package and couldn't find one in the cache.");
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
 
                     return ExitCodes.E9007;
@@ -316,6 +467,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // unzip the firmware
             if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write($"Extracting {Path.GetFileName(fwFileName)}...");
             }
 
@@ -325,20 +477,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("OK");
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
-            // be nice to the user and delete any fw packages other than the last one
-            var allFwFiles = Directory.EnumerateFiles(LocationPath, "*.zip").OrderByDescending(f => f).ToList();
-            if (allFwFiles.Count > 1)
+            // be nice to the user and delete any fw packages older than a month
+            Directory.GetFiles(LocationPath)
+                     .Select(f => new FileInfo(f))
+                     .Where(f => f.Extension == ".zip" && f.LastWriteTime < DateTime.Now.AddMonths(-1))
+                     .ToList()
+                     .ForEach(f => f.Delete());
+
+            if (Verbosity >= VerbosityLevel.Normal)
             {
-                foreach (var file in allFwFiles.Skip(1))
-                {
-                    File.Delete(file);
-                }
-            }
+                Console.ForegroundColor = ConsoleColor.Yellow;
 
-            Console.WriteLine($"Updating to {Version}");
+                Console.WriteLine("");
+                Console.WriteLine($"Updating to {Version}");
+                Console.WriteLine("");
+
+                Console.ForegroundColor = ConsoleColor.White;
+            }
 
             return ExitCodes.OK;
         }
@@ -346,11 +506,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         #region IDisposable Support
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool _disposedValue = false; // To detect redundant calls
 
-        protected virtual void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -371,7 +531,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 }
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
@@ -383,6 +543,5 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         #endregion
-
     }
 }

@@ -1,94 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <ToolCommandName>nanoff</ToolCommandName>
-    <PackageOutputPath>../../artifacts</PackageOutputPath>
-    <RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
-    <AssemblyName>nanoff</AssemblyName>
-    <PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
-    <Authors>.NET nanoFramework project contributors</Authors>
-    <Product>.NET nanoFramework Firmware Flasher</Product>
-    <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
-    <Company>.NET nanoFramework</Company>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
-    <PackageIconUrl></PackageIconUrl>
-    <Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
-    <!-- need this to allow async Main() -->
-    <LangVersion>latest</LangVersion>
-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
-    <Platforms>x64;x86</Platforms>
-	  <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<ToolCommandName>nanoff</ToolCommandName>
+		<PackageOutputPath>../../artifacts</PackageOutputPath>
+		<RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
+		<AssemblyName>nanoff</AssemblyName>
+		<PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
+		<Authors>nanoframework</Authors>
+		<Product>.NET nanoFramework Firmware Flasher</Product>
+		<Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
+		<Company>.NET nanoFramework</Company>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
+		<PackageIconUrl></PackageIconUrl>
+		<Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
+		<!-- need this to allow async Main() -->
+		<LangVersion>latest</LangVersion>
+		<TargetFrameworks>netcoreapp6;net48</TargetFrameworks>
+		<Platforms>x64;x86;anycpu</Platforms>
+		<RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(PackGlobalTool)' != true">
-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(PackGlobalTool)' != true">
+		<TargetFrameworks>netcoreapp6</TargetFrameworks>
+		<PlatformTarget>anycpu</PlatformTarget>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(PackGlobalTool)' == true">
-    <PackAsTool>true</PackAsTool>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
-    <PackageId>nanoff</PackageId>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(PackGlobalTool)' == true">
+		<PackAsTool>true</PackAsTool>
+		<TargetFrameworks>netcoreapp6</TargetFrameworks>
+		<PackageId>nanoff</PackageId>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
-    <NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageIcon>images\nf-logo.png</PackageIcon>
-    <PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.1.91" PrivateAssets="All" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
-    <PackageReference Include="System.IO.Ports" Version="4.7.0" />
-    <PackageReference Include="System.Management" Version="4.7.0" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-  </ItemGroup>
+	<PropertyGroup>
+		<!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
+		<NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<PackageIcon>images\nf-logo.png</PackageIcon>
+		<PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\assets\nf-logo.png">
-      <Pack>True</Pack>
-      <PackagePath>images</PackagePath>
-    </None>
-    <None Include="..\lib\stdfu\**" Link="stdfu\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-	    <Pack>true</Pack>
-        <PackagePath>content\stdfu;contentFiles\stdfu</PackagePath>
-	</None>
-    <None Include="..\LICENSE.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="CommandLineParser" Version="2.8.0" />
+		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All"/>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1"  />
+		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0"  />
+		<PackageReference Include="System.IO.Ports" Version="6.0.0" />
+		<PackageReference Include="System.Management" Version="6.0.0" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" />
+		<PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\lib\esptool\**" Link="esptool\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-	    <Pack>true</Pack>
-        <PackagePath>content\esptool;contentFiles\esptool</PackagePath>
-	</None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\assets\nf-logo.png">
+			<Pack>True</Pack>
+			<PackagePath>images</PackagePath>
+		</None>
+		<None Include="..\LICENSE.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-	    <Pack>true</Pack>
-        <PackagePath>content\stlink;contentFiles\stlink</PackagePath>
-	</None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\lib\esptool\**" Link="esptool\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-	    <Pack>true</Pack>
-        <PackagePath>content\uniflash;contentFiles\uniflash</PackagePath>
-	</None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+		</None>
+		<None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+		</None>
+		<None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+		</None>
+	</ItemGroup>
 
 </Project>

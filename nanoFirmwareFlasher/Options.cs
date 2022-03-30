@@ -14,13 +14,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         #region STM32 DFU options
 
         [Option(
-            "dfufile", 
-            Required = false,
-            Default = null,
-            HelpText = "DFU file to be flashed into the device.")]
-        public string DfuFile { get; set; }
-
-        [Option(
             "listdfu",
             Required = false,
             Default = false,
@@ -32,7 +25,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Required = false,
             Default = null,
             HelpText = "ID of the DFU device to update. If not specified the first connected DFU device will be used.")]
-        public string DfuDeviceId{ get; set; }
+        public string DfuDeviceId { get; set; }
+
+        [Option(
+            "dfu",
+            Required = false,
+            Default = false,
+            HelpText = "Use DFU to update the device.")]
+        public bool DfuUpdate { get; set; }
+
+        [Option(
+            "installdfudrivers",
+            Required = false,
+            Default = false,
+            HelpText = "Install STM32 DFU drivers.")]
+        public bool InstallDfuDrivers { get; set; }
 
         #endregion
 
@@ -57,14 +64,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "hexfile",
             Required = false,
             HelpText = "HEX file(s) to be flashed into the device. Only JTAG connected targets are supported.")]
-        public IEnumerable<string> HexFile { get; set; }
+        public IList<string> HexFile { get; set; }
 
         [Option(
             "binfile",
             Required = false,
             HelpText = "BIN file(s) to be flashed into the device.")]
-        public IEnumerable<string> BinFile { get; set; }
+        public IList<string> BinFile { get; set; }
 
+        [Option(
+            "jtag",
+            Required = false,
+            Default = false,
+            HelpText = "Use JTAG to update the device.")]
+        public bool JtagUpdate { get; set; }
+
+
+        [Option(
+            "installjtagdrivers",
+            Required = false,
+            Default = false,
+            HelpText = "Install STM32 JTAG drivers.")]
+        public bool InstallJtagDrivers { get; set; }
         #endregion
 
 
@@ -80,9 +101,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Option(
             "baud",
             Required = false,
-            Default = 921600,
+            Default = 1500000,
             HelpText = "Baud rate to use for the serial port.")]
-        public int BaudRate{ get; set; }
+        public int BaudRate { get; set; }
 
         [Option(
             "flashmode",
@@ -98,14 +119,42 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Flash frequency to use [MHz].")]
         public int Esp32FlashFrequency { get; set; }
 
+        /// <summary>
+        /// Allowed values:
+        /// 2
+        /// 4
+        /// 8
+        /// 16
+        /// </summary>
+        [Option(
+            "partitiontablesize",
+            Required = false,
+            Default = null,
+            HelpText = "Partition table size to use. Valid sizes are: 2, 4, 8 and 16.")]
+        public PartitionTableSize? Esp32PartitionTableSize { get; set; }
+
+        [Option(
+            "clrfile",
+            Required = false,
+            Default = null,
+            HelpText = "Path to file with CLR image. Partitions table and bootloader file will be automatically flashed to the device.")]
+        public string Esp32ClrFile { get; set; }
+
+        [Option(
+            "devicedetails",
+            Required = false,
+            Default = false,
+            HelpText = "Reads details from ESP32 device.")]
+        public bool DeviceDetails { get; set; }
+
         #endregion
 
 
-        # region TI options
+        #region TI options
 
 
         [Option(
-            "installdrivers",
+            "installxdsdrivers",
             Required = false,
             Default = false,
             HelpText = "Install XDS110 drivers.")]
@@ -128,7 +177,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Required = false,
             Default = null,
             HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2.")]
-        public string Platform { get; set; }
+        public SupportedPlatform? Platform { get; set; }
 
         /// <summary>
         /// Allowed values:
@@ -182,11 +231,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool Deploy { get; set; }
 
         [Option(
-            "stable",
+            "preview",
             Required = false,
             Default = false,
-            HelpText = "Stable version. If the firmware is going to be downloaded the stable version will be preferred, if available.")]
-        public bool Stable { get; set; }
+            HelpText = "Preview version. Will download the firmware package from the preview repository.")]
+        public bool Preview { get; set; }
 
         [Option(
             "image",
@@ -206,7 +255,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "address",
             Required = false,
             HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with -binfile argument or flashing a deployment image with -deployment argument.")]
-        public IEnumerable<string> FlashAddress { get; set; }
+        public IList<string> FlashAddress { get; set; }
 
         [Option(
             "reset",
@@ -215,23 +264,58 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Perform reset on connected device after all other requested operations are successfully performed.")]
         public bool ResetMcu { get; set; }
 
+        [Option(
+            "nofitcheck",
+            Required = false,
+            Default = false,
+            HelpText = "Skip execution of sanity check if the requested target fits the connected device. This is a best effort validation and it's NOT guaranted to be fail safe.")]
+        public bool FitCheck { get; set; }
+
+        [Option(
+            "listboards",
+            Required = false,
+            Default = false,
+            HelpText = "List the available boards and versions available on CloudSmith.")]
+        public bool ListBoards { get; set; }
+
+        [Option(
+            "listtargets",
+            Required = false,
+            Default = false,
+            HelpText = "List the available targets and versions. --platform and --preview options apply.")]
+        public bool ListTargets { get; set; }
+
+        [Option(
+            "listports",
+            Required = false,
+            Default = false,
+            HelpText = "List the all the COM ports on this machine.")]
+        public bool ListComPorts { get; set; }
+
+        [Option(
+            "clearcache",
+            Required = false,
+            Default = false,
+            HelpText = "Clear the cache folder with firmware images.")]
+        public bool ClearCache { get; set; }
+
         #endregion
 
 
         [Usage(ApplicationAlias = "nanoff")]
-        public static IEnumerable<Example> Examples
-        {
-            get
+        public static IEnumerable<Example> Examples =>
+            new List<Example>
             {
-                return new List<Example>() {
-                    new Example("Update ESP32 device with latest fw (stable version)", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true }),
-                    new Example("Update ESP32 device with latest fw (stable version), device is connected to COM31", new Options { TargetName = "ESP32_WROOM_32", Update = true, Stable = true, SerialPort = "COM31" }),
-                    new Example("Update STM32 device with latest fw (development repository)", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true}),
-                    new Example("Update STM32 device with latest fw (development repository), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, DfuDeviceId = "3380386D3134" }),
-                    new Example("List all STM32 devices connected through JTAG", new Options { Platform = "stm32", ListJtagDevices = true}),
-                };
-            }
-        }
+                new("- Update ESP32 WROVER Kit device with latest available firmware (stable version)", new Options { TargetName = "ESP_WROVER_KIT", Update = true }),
+                new("- Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (preview version), using JTAG interface", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, Preview = true, JtagUpdate = true}),
+                new("- Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { TargetName = "ESP32_PSRAM_REV0", Update = true, SerialPort = "COM31" }),
+                new("- Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP_WROVER_KIT" , DeploymentImage = "<location of file>.bin"}),
+                new("- Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (preview version), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, Preview = true, DfuDeviceId = "3380386D3134" }),
+                new("- List all STM32 devices connected through JTAG", new Options { Platform = SupportedPlatform.esp32, ListJtagDevices = true}),
+                new("- Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
+                new("- List all available STM32 targets", new Options { ListTargets = true, Preview = true, Platform =  SupportedPlatform.stm32 }),
+                new("- List all available COM ports", new Options { ListComPorts = true }),
+            };
     }
 
     public enum VerbosityLevel
@@ -243,4 +327,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
         Diagnostic = 4
     }
 
+    public enum PartitionTableSize
+    {
+        _2 = 2,
+        _4 = 4,
+        _8 = 8,
+        _16 = 16,
+    }
+
+    public enum SupportedPlatform
+    {
+        esp32 = 0,
+        stm32 = 1,
+        ti_simplelink = 2
+    }
 }

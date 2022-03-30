@@ -13,6 +13,10 @@ using System.Linq;
 using CommandLine.Text;
 using System.IO;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using System.IO.Ports;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -20,45 +24,52 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         private static ExitCodes _exitCode;
         private static string _extraMessage;
-        private static VerbosityLevel verbosityLevel = VerbosityLevel.Normal;
-        private static AssemblyInformationalVersionAttribute informationalVersionAttribute;
-        private static string headerInfo;
-        private static CopyrightInfo copyrightInfo;
+        private static VerbosityLevel _verbosityLevel = VerbosityLevel.Normal;
+        private static AssemblyInformationalVersionAttribute _informationalVersionAttribute;
+        private static string _headerInfo;
+        private static CopyrightInfo _copyrightInfo;
 
         internal static string ExecutingPath;
 
         public static async Task<int> Main(string[] args)
         {
             // take care of static fields
-            informationalVersionAttribute = Attribute.GetCustomAttribute(
-                Assembly.GetEntryAssembly(),
+            _informationalVersionAttribute = Attribute.GetCustomAttribute(
+                Assembly.GetEntryAssembly()!,
                 typeof(AssemblyInformationalVersionAttribute))
             as AssemblyInformationalVersionAttribute;
 
-            headerInfo = $"nanoFramework Firmware Flasher v{informationalVersionAttribute.InformationalVersion}";
+            _headerInfo = $".NET nanoFramework Firmware Flasher v{_informationalVersionAttribute.InformationalVersion}";
 
-            copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2019);
+            _copyrightInfo = new CopyrightInfo(true, $".NET Foundation and nanoFramework project contributors", 2019);
 
             // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
-            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-            UriBuilder uri = new UriBuilder(codeBase);
-            var fullPath = Uri.UnescapeDataString(uri.Path);
+            string codeBase = Assembly.GetExecutingAssembly().Location;
+            var fullPath = Path.GetFullPath(codeBase);
             ExecutingPath = Path.GetDirectoryName(fullPath);
-            
+
             // check for empty argument collection
             if (!args.Any())
             {
+                // perform version check
+                CheckVersion();
+                Console.WriteLine();
+
                 // no argument provided, show help text and usage examples
 
                 // because of short-comings in CommandLine parsing 
                 // need to customize the output to provide a consistent output
                 var parser = new Parser(config => config.HelpWriter = null);
-                var result = parser.ParseArguments<Options>(new string[] { "", ""});
+                var result = parser.ParseArguments<Options>(new[] { "", "" });
 
                 var helpText = new HelpText(
-                    new HeadingInfo(headerInfo),
-                    copyrightInfo)
+                    new HeadingInfo(_headerInfo),
+                    _copyrightInfo)
+                        .AddPreOptionsLine("")
                         .AddPreOptionsLine("No command was provided.")
+                        .AddPreOptionsLine("")
+                        .AddPreOptionsLine("Follow some examples on how to use nanoff. For more detailed explanations please check:")
+                        .AddPreOptionsLine("https://github.com/nanoframework/nanoFirmwareFlasher#usage")
                         .AddPreOptionsLine("")
                         .AddPreOptionsLine(HelpText.RenderUsageText(result))
                         .AddPreOptionsLine("")
@@ -72,18 +83,47 @@ namespace nanoFramework.Tools.FirmwareFlasher
             var parsedArguments = Parser.Default.ParseArguments<Options>(args);
 
             await parsedArguments
-                .WithParsedAsync(opts => RunOptionsAndReturnExitCodeAsync(opts))
-                .WithNotParsedAsync(errors => HandleErrorsAsync(errors));
+                .WithParsedAsync(RunOptionsAndReturnExitCodeAsync)
+                .WithNotParsedAsync(HandleErrorsAsync);
 
-            if (verbosityLevel > VerbosityLevel.Quiet)
+            if (_verbosityLevel > VerbosityLevel.Quiet)
             {
-                OutputError(_exitCode, verbosityLevel > VerbosityLevel.Normal, _extraMessage);
+                OutputError(_exitCode, _verbosityLevel > VerbosityLevel.Normal, _extraMessage);
             }
 
             return (int)_exitCode;
         }
 
-        static Task HandleErrorsAsync(IEnumerable<Error> errors)
+        private static void CheckVersion()
+        {
+            Version latestVersion;
+            Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0]);
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
+
+                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("nanoff", currentVersion.ToString()));
+
+                HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/nanoframework/nanoFirmwareFlasher/releases/latest").Result;
+
+                dynamic responseContent = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
+                string tagName = responseContent.tag_name.ToString();
+
+                latestVersion = Version.Parse(tagName.Substring(1));
+            }
+
+            if (latestVersion > currentVersion)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("** There is a new version available, update is recommended **");
+                Console.WriteLine("** You should consider updating via the 'dotnet tool update -g nanoff' command **");
+                Console.WriteLine("** If you have it installed on a specific path please check the instructions here: https://git.io/JiU0C **");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+        }
+
+        private static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
             _exitCode = ExitCodes.E9000;
             return Task.CompletedTask;
@@ -91,6 +131,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
         {
+            bool operationPerformed = false;
+
             #region parse verbosity option
 
             switch (o.Verbosity)
@@ -98,31 +140,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // quiet
                 case "q":
                 case "quiet":
-                    verbosityLevel = VerbosityLevel.Quiet;
+                    _verbosityLevel = VerbosityLevel.Quiet;
                     break;
 
                 // minimal
                 case "m":
                 case "minimal":
-                    verbosityLevel = VerbosityLevel.Minimal;
+                    _verbosityLevel = VerbosityLevel.Minimal;
                     break;
 
                 // normal
                 case "n":
                 case "normal":
-                    verbosityLevel = VerbosityLevel.Normal;
+                    _verbosityLevel = VerbosityLevel.Normal;
                     break;
 
                 // detailed
                 case "d":
                 case "detailed":
-                    verbosityLevel = VerbosityLevel.Detailed;
+                    _verbosityLevel = VerbosityLevel.Detailed;
                     break;
 
                 // diagnostic
                 case "diag":
                 case "diagnostic":
-                    verbosityLevel = VerbosityLevel.Diagnostic;
+                    _verbosityLevel = VerbosityLevel.Diagnostic;
                     break;
 
                 default:
@@ -131,39 +173,149 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
-            Console.WriteLine(headerInfo);
-            Console.WriteLine(copyrightInfo);
+            Console.ForegroundColor = ConsoleColor.White;
+
+            Console.WriteLine(_headerInfo);
+            Console.WriteLine(_copyrightInfo);
             Console.WriteLine();
+
+            // perform version check
+            CheckVersion();
+            Console.WriteLine();
+
+            Console.ForegroundColor = ConsoleColor.White;
+
+            if (o.ClearCache)
+            {
+                Console.WriteLine();
+
+                if (Directory.Exists(FirmwarePackage.LocationPathBase))
+                {
+                    Console.WriteLine("Clearing firmware cache location.");
+
+                    try
+                    {
+                        Directory.Delete(FirmwarePackage.LocationPathBase);
+                    }
+                    catch (Exception ex)
+                    {
+                        _exitCode = ExitCodes.E9014;
+                        _extraMessage = ex.Message;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Firmware cache location does not exist. Nothing to do.");
+                }
+
+                return;
+            }
+
+            if (o.ListComPorts)
+            {
+                var ports = SerialPort.GetPortNames();
+                if (ports.Any())
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine("Available COM ports:");
+                    foreach (var p in ports)
+                    {
+                        Console.WriteLine($"  {p}");
+                    }
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("No available COM port.");
+                }
+
+                Console.WriteLine();
+
+                Console.ForegroundColor = ConsoleColor.White;
+                return;
+            }
+
+            #region list targets
+
+            // First check if we are asked for the list of boards
+            if (o.ListTargets ||
+                o.ListBoards)
+            {
+                if (o.ListBoards && _verbosityLevel > VerbosityLevel.Quiet)
+                {
+                    // warn about deprecated option
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("");
+                    Console.WriteLine("********************************** WARNING **********************************");
+                    Console.WriteLine("The --listboards option is deprecated and will be removed in a future version");
+                    Console.WriteLine("Please use --listtargets option instead");
+                    Console.WriteLine("*****************************************************************************");
+                    Console.WriteLine("");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                // get list from REFERENCE targets
+                var targets = FirmwarePackage.GetTargetList(
+                    false,
+                    o.Preview,
+                    o.Platform,
+                    _verbosityLevel);
+
+                // append list from COMMUNITY targets
+                targets = targets.Concat(
+                    FirmwarePackage.GetTargetList(
+                    true,
+                    o.Preview,
+                    o.Platform,
+                    _verbosityLevel)).ToList();
+
+                Console.WriteLine("Available targets:");
+
+                DisplayBoardDetails(targets);
+
+                return;
+            }
+
+            #endregion
 
             #region target processing
 
             // if a target name was specified, try to be smart and set the platform accordingly (in case it wasn't specified)
-            if (string.IsNullOrEmpty(o.Platform)
+            if (o.Platform == null
                 && !string.IsNullOrEmpty(o.TargetName))
             {
                 // easiest one: ESP32
-                if (o.TargetName.Contains("ESP32"))
+                if (o.TargetName.StartsWith("ESP")
+                    || o.TargetName.StartsWith("M5")
+                    || o.TargetName.StartsWith("Pyb")
+                    || o.TargetName.StartsWith("FEATHER")
+                    || o.TargetName.StartsWith("ESPKALUGA"))
                 {
-                    o.Platform = "esp32";
+                    o.Platform = SupportedPlatform.esp32;
                 }
                 else if (
-                    o.TargetName.Contains("ST") ||
-                    o.TargetName.Contains("MBN_QUAIL") ||
-                    o.TargetName.Contains("NETDUINO3") ||
-                    o.TargetName.Contains("GHI FEZ") ||
-                    o.TargetName.Contains("IngenuityMicro") ||
-                    o.TargetName.Contains("ORGPAL")
+                    o.TargetName.StartsWith("ST")
+                    || o.TargetName.StartsWith("MBN_QUAIL")
+                    || o.TargetName.StartsWith("NETDUINO3")
+                    || o.TargetName.StartsWith("GHI")
+                    || o.TargetName.StartsWith("IngenuityMicro")
+                    || o.TargetName.StartsWith("WeAct")
+                    || o.TargetName.StartsWith("ORGPAL")
                 )
                 {
                     // candidates for STM32
-                    o.Platform = "stm32";
+                    o.Platform = SupportedPlatform.stm32;
                 }
                 else if (
-                   o.TargetName.Contains("TI_CC1352")
+                   o.TargetName.StartsWith("TI")
                 )
                 {
                     // candidates for TI CC13x2
-                    o.Platform = "cc13x2";
+                    o.Platform = SupportedPlatform.ti_simplelink;
                 }
                 else
                 {
@@ -177,42 +329,53 @@ namespace nanoFramework.Tools.FirmwareFlasher
             #region platform specific options
 
             // if an option was specified and has an obvious platform, try to be smart and set the platform accordingly (in case it wasn't specified)
-            if (string.IsNullOrEmpty(o.Platform))
+            if (o.Platform == null)
             {
                 // JTAG related
-                if ( 
+                if (
                     o.ListJtagDevices ||
                     !string.IsNullOrEmpty(o.JtagDeviceId) ||
                     o.HexFile.Any() ||
                     o.BinFile.Any())
                 {
-                    o.Platform = "stm32";
+                    o.Platform = SupportedPlatform.stm32;
                 }
                 // DFU related
-                else if ( 
+                else if (
                     o.ListDevicesInDfuMode ||
-                    !string.IsNullOrEmpty(o.DfuDeviceId) ||
-                    !string.IsNullOrEmpty(o.DfuFile))
+                    o.DfuUpdate ||
+                    !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
-                    o.Platform = "stm32";
+                    o.Platform = SupportedPlatform.stm32;
                 }
                 // ESP32 related
                 else if (
                     !string.IsNullOrEmpty(o.SerialPort) ||
                     (o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
-                    (o.Esp32FlashFrequency != 40))
+                    (o.Esp32FlashFrequency != 40) ||
+                    !string.IsNullOrEmpty(o.Esp32ClrFile))
                 {
-                    o.Platform = "esp32";
+                    o.Platform = SupportedPlatform.esp32;
+                }
+                // drivers install
+                else if (o.TIInstallXdsDrivers)
+                {
+                    o.Platform = SupportedPlatform.ti_simplelink;
+                }
+                else if (
+                    o.InstallDfuDrivers
+                    || o.InstallJtagDrivers)
+                {
+                    o.Platform = SupportedPlatform.stm32;
                 }
             }
 
             #endregion
 
-
             #region ESP32 platform options
 
-            if (o.Platform == "esp32")
+            if (o.Platform == SupportedPlatform.esp32)
             {
                 // COM port is mandatory for ESP32
                 if (string.IsNullOrEmpty(o.SerialPort))
@@ -220,7 +383,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _exitCode = ExitCodes.E6001;
                     return;
                 }
-                
+
                 EspTool espTool;
 
                 try
@@ -229,21 +392,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         o.SerialPort,
                         o.BaudRate,
                         o.Esp32FlashMode,
-                        o.Esp32FlashFrequency);
+                        o.Esp32FlashFrequency,
+                        o.Esp32PartitionTableSize,
+                        _verbosityLevel);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     _exitCode = ExitCodes.E4005;
                     return;
                 }
 
-                EspTool.DeviceInfo esp32Device;
+                Esp32DeviceInfo esp32Device;
 
                 if (espTool.ComPortAvailable)
                 {
                     try
                     {
-                        esp32Device = espTool.TestChip();
+                        esp32Device = espTool.GetDeviceDetails(o.TargetName, o.Esp32PartitionTableSize == null);
                     }
                     catch (EspToolExecutionException ex)
                     {
@@ -262,18 +427,38 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return;
                 }
 
-                if (verbosityLevel >= VerbosityLevel.Normal)
+                if (_verbosityLevel >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine($"Connected to ESP32 { esp32Device.ChipName } with MAC address { esp32Device.MacAddress }");
-                    Console.WriteLine($"features { esp32Device.Features }");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
 
-                    string flashSize = esp32Device.FlashSize >= 0x10000 ? $"{ esp32Device.FlashSize / 0x100000 }MB" : $"{ esp32Device.FlashSize / 0x400 }kB";
+                    Console.WriteLine("");
+                    Console.WriteLine($"Connected to:");
+                    Console.WriteLine($"{ esp32Device }");
 
-                    Console.WriteLine($"Flash information: manufacturer 0x{ esp32Device.FlashManufacturerId } device 0x{ esp32Device.FlashDeviceModelId } size { flashSize }");
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    // if this is a PICO and baud rate is not 115200 or 1M5, operations will most likely fail
+                    // warn user about this
+                    if (
+                        esp32Device.ChipName.Contains("ESP32-PICO")
+                        && (o.BaudRate != 115200
+                            && o.BaudRate != 1500000))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+
+                        Console.WriteLine("");
+                        Console.WriteLine("****************************** WARNING ******************************");
+                        Console.WriteLine("The connected device it's an ESP32 PICO which can be picky about the ");
+                        Console.WriteLine("baud rate used. Recommendation is to use --baud 115200 ");
+                        Console.WriteLine("*********************************************************************");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
                 }
 
                 // set verbosity
-                espTool.Verbosity = verbosityLevel;
+                espTool.Verbosity = _verbosityLevel;
 
                 // backup requested
                 if (!string.IsNullOrEmpty(o.BackupPath) ||
@@ -282,12 +467,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     try
                     {
                         // backup path specified, backup deployment
-                        _exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, o.BackupPath, o.BackupFile, verbosityLevel);
+                        _exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, o.BackupPath, o.BackupFile, _verbosityLevel);
+
                         if (_exitCode != ExitCodes.OK)
                         {
                             // done here
                             return;
                         }
+
+                        operationPerformed = true;
                     }
                     catch (ReadEsp32FlashException ex)
                     {
@@ -297,6 +485,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // done here
                         return;
                     }
+                }
+
+                // show device details
+                if (o.DeviceDetails)
+                {
+                    // device details already output
+                    _exitCode = ExitCodes.OK;
+
+                    // done here
+                    return;
                 }
 
                 // update operation requested?
@@ -311,10 +509,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.TargetName,
                             true,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             o.DeploymentImage,
                             null,
-                            verbosityLevel);
+                            o.Esp32ClrFile,
+                            !o.FitCheck,
+                            _verbosityLevel,
+                            o.Esp32PartitionTableSize);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -347,17 +548,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (o.Deploy)
                 {
                     // need to take care of flash address
-                    string appFlashAddress = null;
+                    string appFlashAddress = string.Empty;
 
                     if (o.FlashAddress.Any())
                     {
                         // take the first address, it should be the only one valid
                         appFlashAddress = o.FlashAddress.ElementAt(0);
-                    }
-                    else
-                    {
-                        _exitCode = ExitCodes.E9009;
-                        return;
                     }
 
                     // this to flash a deployment image without updating the firmware
@@ -367,13 +563,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = await Esp32Operations.UpdateFirmwareAsync(
                             espTool,
                             esp32Device,
-                            null,
+                            o.TargetName,
                             false,
                             null,
                             false,
                             o.DeploymentImage,
                             appFlashAddress,
-                            verbosityLevel);
+                            null,
+                            !o.FitCheck,
+                            _verbosityLevel,
+                            o.Esp32PartitionTableSize);
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -410,27 +609,48 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region STM32 platform options
 
-            if (o.Platform == "stm32")
+            if (o.Platform == SupportedPlatform.stm32)
             {
+                if (o.InstallDfuDrivers)
+                {
+                    _exitCode = Stm32Operations.InstallDfuDrivers(_verbosityLevel);
+
+                    // done here
+                    return;
+                }
+
+                if (o.InstallJtagDrivers)
+                {
+                    _exitCode = Stm32Operations.InstallJtagDrivers(_verbosityLevel);
+
+                    // done here
+                    return;
+                }
+
                 if (o.ListDevicesInDfuMode)
                 {
-                    var connecteDevices = StmDfuDevice.ListDfuDevices();
+                    var connecteDevices = StmDfuDevice.ListDevices();
 
-                    if (connecteDevices.Count == 0)
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+
+                    if (connecteDevices.Count() == 0)
                     {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("No DFU devices found");
                     }
                     else
                     {
                         Console.WriteLine("-- Connected DFU devices --");
 
-                        foreach (string deviceId in connecteDevices)
+                        foreach ((string serial, string device) device in connecteDevices)
                         {
-                            Console.WriteLine(deviceId);
+                            Console.WriteLine($"{device.serial} @ {device.device}");
                         }
 
                         Console.WriteLine("---------------------------");
                     }
+
+                    Console.ForegroundColor = ConsoleColor.White;
 
                     // done here, this command has no further processing
                     _exitCode = ExitCodes.OK;
@@ -443,6 +663,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     try
                     {
                         var connecteDevices = StmJtagDevice.ListDevices();
+
+                        Console.ForegroundColor = ConsoleColor.Cyan;
 
                         if (connecteDevices.Count == 0)
                         {
@@ -470,58 +692,70 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _extraMessage = ex.Message;
                     }
 
+                    Console.ForegroundColor = ConsoleColor.White;
+
                     return;
                 }
 
-                var connectedStDfuDevices = StmDfuDevice.ListDfuDevices();
+                var connectedStDfuDevices = StmDfuDevice.ListDevices();
                 var connectedStJtagDevices = StmJtagDevice.ListDevices();
 
-                if (!string.IsNullOrEmpty(o.DfuFile) && connectedStDfuDevices.Count != 0)
+                if (o.BinFile.Any() &&
+                    o.HexFile.Any() &&
+                    connectedStDfuDevices.Count != 0)
                 {
-                    // there is a DFU file argument, so follow DFU path
-                    var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
 
-                    if (!dfuDevice.DevicePresent)
-                    {
-                        // no DFU device found
-
-                        // done here, this command has no further processing
-                        _exitCode = ExitCodes.E1000;
-
-                        return;
-                    }
-
-                    if (verbosityLevel >= VerbosityLevel.Normal)
-                    {
-                        Console.WriteLine($"Connected to DFU device with ID { dfuDevice.DeviceId }");
-                    }
-
-                    // set verbosity
-                    dfuDevice.Verbosity = verbosityLevel;
-
-                    // get mass erase option
-                    dfuDevice.DoMassErase = o.MassErase;
+                    #region STM32 DFU options
 
                     try
                     {
-                        dfuDevice.FlashDfuFile(o.DfuFile);
+                        var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
 
+                        if (!dfuDevice.DevicePresent)
+                        {
+                            // no JTAG device found
+
+                            // done here, this command has no further processing
+                            _exitCode = ExitCodes.E5001;
+
+                            return;
+                        }
+
+                        if (_verbosityLevel >= VerbosityLevel.Normal)
+                        {
+                            Console.WriteLine($"Connected to JTAG device with ID { dfuDevice.DfuId }");
+                        }
+
+                        // set verbosity
+                        dfuDevice.Verbosity = _verbosityLevel;
+
+                        // get mass erase option
+                        dfuDevice.DoMassErase = o.MassErase;
+
+                        if (o.HexFile.Any())
+                        {
+                            _exitCode = dfuDevice.FlashHexFiles(o.HexFile);
+
+                            // done here
+                            return;
+                        }
+
+                        if (o.BinFile.Any())
+                        {
+                            _exitCode = dfuDevice.FlashBinFiles(o.BinFile, o.FlashAddress);
+
+                            // done here
+                            return;
+                        }
+                    }
+                    catch (CantConnectToDfuDeviceException)
+                    {
                         // done here, this command has no further processing
-                        _exitCode = ExitCodes.OK;
+                        _exitCode = ExitCodes.E1005;
+                    }
 
-                        return;
-                    }
-                    catch (DfuFileDoesNotExistException)
-                    {
-                        // DFU file doesn't exist
-                        _exitCode = ExitCodes.E1002;
-                    }
-                    catch (Exception ex)
-                    {
-                        // exception with DFU operation
-                        _exitCode = ExitCodes.E1003;
-                        _extraMessage = ex.Message;
-                    }
+                    #endregion
+
                 }
                 else if (
                     o.BinFile.Any() &&
@@ -531,7 +765,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // this has to be a JTAG connected device
 
-#region STM32 JTAG options
+                    #region STM32 JTAG options
 
                     try
                     {
@@ -547,13 +781,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             return;
                         }
 
-                        if (verbosityLevel >= VerbosityLevel.Normal)
+                        if (_verbosityLevel >= VerbosityLevel.Normal)
                         {
-                            Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.DeviceId }");
+                            Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
                         }
 
                         // set verbosity
-                        jtagDevice.Verbosity = verbosityLevel;
+                        jtagDevice.Verbosity = _verbosityLevel;
 
                         // get mass erase option
                         jtagDevice.DoMassErase = o.MassErase;
@@ -580,14 +814,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = ExitCodes.E5002;
                     }
 
-#endregion
+                    #endregion
                 }
                 else if (!string.IsNullOrEmpty(o.TargetName))
                 {
                     // update operation requested?
                     if (o.Update)
                     {
-                        // this to update the device with fw from Cloudsmith
+                        // this to update the device with fw from CloudSmith
 
                         // need to take care of flash address
                         string appFlashAddress = null;
@@ -598,16 +832,37 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             appFlashAddress = o.FlashAddress.ElementAt(0);
                         }
 
+                        Interface updateInterface = Interface.None;
+
+                        if (o.DfuUpdate && o.JtagUpdate)
+                        {
+                            // can't select both JTAG and DFU simultaneously
+                            _exitCode = ExitCodes.E9000;
+                            return;
+                        }
+                        else if (o.DfuUpdate)
+                        {
+                            updateInterface = Interface.Dfu;
+                        }
+                        else if (o.JtagUpdate)
+                        {
+                            updateInterface = Interface.Jtag;
+                        }
+
                         _exitCode = await Stm32Operations.UpdateFirmwareAsync(
                             o.TargetName,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             true,
                             o.DeploymentImage,
                             appFlashAddress,
                             o.DfuDeviceId,
                             o.JtagDeviceId,
-                            verbosityLevel);
+                            !o.FitCheck,
+                            updateInterface,
+                            _verbosityLevel);
+
+                        operationPerformed = true;
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -622,7 +877,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // this to flash a deployment image without updating the firmware
 
                         // need to take care of flash address
-                        string appFlashAddress = null;
+                        string appFlashAddress;
 
                         if (o.FlashAddress.Any())
                         {
@@ -635,6 +890,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             return;
                         }
 
+                        Interface updateInterface = Interface.None;
+
+                        if (o.DfuUpdate && o.JtagUpdate)
+                        {
+                            // can't select both JTAG and DFU simultaneously
+                            _exitCode = ExitCodes.E9000;
+                            return;
+                        }
+                        else if (o.DfuUpdate)
+                        {
+                            updateInterface = Interface.Dfu;
+                        }
+                        else if (o.JtagUpdate)
+                        {
+                            updateInterface = Interface.Jtag;
+                        }
+
                         _exitCode = await Stm32Operations.UpdateFirmwareAsync(
                                         o.TargetName,
                                         null,
@@ -644,7 +916,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         appFlashAddress,
                                         o.DfuDeviceId,
                                         o.JtagDeviceId,
-                                        verbosityLevel);
+                                        !o.FitCheck,
+                                        updateInterface,
+                                        _verbosityLevel);
+
+                        operationPerformed = true;
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -658,24 +934,47 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         _exitCode = Stm32Operations.ResetMcu(
                                         o.JtagDeviceId,
-                                        verbosityLevel);
+                                        _verbosityLevel);
 
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
+                        // done here
+                        return;
                     }
+                }
+                else if (o.MassErase)
+                {
+                    _exitCode = Stm32Operations.MassErase(
+                                    o.JtagDeviceId,
+                                    _verbosityLevel);
+
+                    // done here
+                    return;
+                }
+                else if (o.ResetMcu)
+                {
+                    _exitCode = Stm32Operations.ResetMcu(
+                                    o.JtagDeviceId,
+                                    _verbosityLevel);
+
+                    // done here
+                    return;
                 }
             }
 
-#endregion
+            #endregion
 
 
-#region TI CC13x2 platform options
+            #region TI CC13x2 platform options
 
-            if (o.Platform == "cc13x2")
+            if (o.Platform == SupportedPlatform.ti_simplelink)
             {
+                if (o.TIInstallXdsDrivers)
+                {
+                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
+
+                    // done here
+                    return;
+                }
+
                 if (!string.IsNullOrEmpty(o.TargetName))
                 {
                     // update operation requested?
@@ -695,11 +994,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
                             o.TargetName,
                             o.FwVersion,
-                            o.Stable,
+                            o.Preview,
                             true,
                             o.DeploymentImage,
                             appFlashAddress,
-                            verbosityLevel);
+                            _verbosityLevel);
+
+                        operationPerformed = true;
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -734,7 +1035,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         false,
                                         o.DeploymentImage,
                                         appFlashAddress,
-                                        verbosityLevel);
+                                        _verbosityLevel);
+
+                        operationPerformed = true;
 
                         if (_exitCode != ExitCodes.OK)
                         {
@@ -754,60 +1057,81 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         return;
                     }
                 }
-
-                if(o.TIInstallXdsDrivers)
-                {
-
-                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(verbosityLevel);
-
-                    if (_exitCode != ExitCodes.OK)
-                    {
-                        // done here
-                        return;
-                    }
-                }
             }
 
-#endregion
+            #endregion
 
+            // done nothing... or maybe not...
+            if (!operationPerformed)
+            {
+                // because of short-comings in CommandLine parsing 
+                // need to customize the output to provide a consistent output
+                var parser = new Parser(config => config.HelpWriter = null);
+                var result = parser.ParseArguments<Options>(new[] { "", "" });
+
+                var helpText = new HelpText(
+                    new HeadingInfo(_headerInfo),
+                    _copyrightInfo)
+                        .AddPreOptionsLine("")
+                        .AddPreOptionsLine("No operation was performed with the options supplied.")
+                        .AddPreOptionsLine("")
+                        .AddPreOptionsLine(HelpText.RenderUsageText(result))
+                        .AddPreOptionsLine("")
+                        .AddOptions(result);
+
+                Console.WriteLine(helpText.ToString());
+            }
+        }
+
+        private static void DisplayBoardDetails(List<CloudSmithPackageDetail> boards)
+        {
+            foreach (var boardName in boards.Select(m => m.Name).Distinct())
+            {
+                Console.WriteLine($"  {boardName}");
+
+                foreach (var board in boards.Where(m => m.Name == boardName).OrderBy(m => m.Name).Take(3))
+                {
+                    Console.WriteLine($"    {board.Version}");
+                }
+            }
         }
 
         private static void OutputError(ExitCodes errorCode, bool outputMessage, string extraMessage = null)
         {
-            if (errorCode != ExitCodes.OK)
+            if (errorCode == ExitCodes.OK)
             {
-                if (outputMessage)
+                return;
+            }
+
+            Console.ForegroundColor = ConsoleColor.Red;
+
+            if (outputMessage)
+            {
+                Console.Write($"Error {errorCode}");
+
+                var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
+
+                if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
                 {
-                    Console.Write($"Error {errorCode}");
+                    Console.Write($": { exitCodeDisplayName.Name }");
+                }
+
+                if (string.IsNullOrEmpty(extraMessage))
+                {
+                    Console.WriteLine();
                 }
                 else
                 {
-                    Console.Write($"{errorCode}");
-                }
-
-                if (outputMessage)
-                {
-                    var exitCodeDisplayName = errorCode.GetAttribute<DisplayAttribute>();
-
-                    if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
-                    {
-                        Console.Write($": { exitCodeDisplayName.Name }");
-                    }
-
-                    if (string.IsNullOrEmpty(extraMessage))
-                    {
-                        Console.WriteLine();
-                    }
-                    else
-                    {
-                        Console.WriteLine($" ({ extraMessage })");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("");
+                    Console.WriteLine($" ({ extraMessage })");
                 }
             }
+            else
+            {
+                Console.Write($"{errorCode}");
+                Console.WriteLine();
+            }
+
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
 }

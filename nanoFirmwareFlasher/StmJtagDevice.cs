@@ -5,42 +5,50 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
-    internal class StmJtagDevice
+    internal class StmJtagDevice : StmDeviceBase
     {
         /// <summary>
         /// This property is <see langword="true"/> if a JTAG device is connected.
         /// </summary>
-        public bool DevicePresent => !string.IsNullOrEmpty(DeviceId);
+        public bool DevicePresent => !string.IsNullOrEmpty(JtagId);
 
         /// <summary>
         /// ID of the connected JTAG device.
         /// </summary>
+        public string JtagId { get; }
+
+        /// <summary>
+        /// Name of the connected device.
+        /// </summary>
+        public string DeviceName { get; }
+
+        /// <summary>
+        /// ID of the connected device.
+        /// </summary>
         public string DeviceId { get; }
 
         /// <summary>
-        /// Option to output progress messages.
-        /// Default is <see langword="true"/>.
+        /// CPU of the connected device.
         /// </summary>
-        public VerbosityLevel Verbosity { get; internal set; } = VerbosityLevel.Normal;
+        public string DeviceCPU { get; }
 
         /// <summary>
-        /// Property with option for performing mass erase on the connected device.
-        /// If <see langword="false"/> only the flash sectors that will programmed are erased.
+        /// Name of the connected deviceboard.
         /// </summary>
-        public bool DoMassErase { get; set; } = false;
+        /// <remarks>
+        /// This may not be available if it's not an ST board.
+        /// </remarks>
+        public string BoardName { get; }
 
         /// <summary>
         /// Creates a new <see cref="StmJtagDevice"/>. If a JTAG device ID is provided it will try to connect to that device.
         /// </summary>
-        /// <param name="deviceId">ID of the device to connect to.</param>
         public StmJtagDevice(string jtagId = null)
         {
             if (string.IsNullOrEmpty(jtagId))
@@ -48,118 +56,46 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // no JTAG id supplied, list available
                 var jtagDevices = ListDevices();
 
-                if(jtagDevices.Count > 0)
+                if (jtagDevices.Count > 0)
                 {
                     // take the 1st one
-                    jtagId = jtagDevices[0];
+                    JtagId = jtagDevices[0];
                 }
                 else
                 {
                     // no JTAG devices found
-                    return;
+                    throw new CantConnectToJtagDeviceException();
                 }
             }
             else
             {
-                // JTAG id supplied, try to connect to device to check availability
-                var cliOuput = RunStLinkCli($"-c SN={jtagId} HOTPLUG");
-
-                if (!cliOuput.Contains("Connected via SWD."))
-                {
-                    throw new CantConnectToJtagDeviceException();
-                }
+                // JTAG id was supplied
+                JtagId = jtagId;
             }
 
-            // store JTAG device ID
-            DeviceId = jtagId;
-        }
+            // try to connect to JTAG ID device to check availability
+            // connect to device with RESET
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} HOTPLUG");
 
-        /// <summary>
-        /// Flash the HEX supplied to the connected device.
-        /// </summary>
-        /// <param name="files"></param>
-        public ExitCodes FlashHexFiles(IEnumerable<string> files)
-        {
-            // check file existence
-            foreach (string f in files)
+            if (cliOutput.Contains("Error"))
             {
-                if (!File.Exists(f))
-                {
-                    return ExitCodes.E5003;
-                }
+                Console.WriteLine("");
+
+                ShowCLIOutput(cliOutput);
+
+                throw new CantConnectToJtagDeviceException();
             }
 
-            // try to connect to device with RESET
-            var cliOuput = RunStLinkCli($"-c SN={DeviceId} UR");
-
-            if (!cliOuput.Contains("Connected via SWD."))
+            // parse the output to fill in the details
+            var match = Regex.Match(cliOutput, $"(Board       :)(?<board>.*)(.*?[\r\n]*)*(Device ID   :)(?<deviceid>.*)(.*?[\r\n]*)*(Device name :)(?<devicename>.*)(.*?[\r\n]*)*(Device CPU  :)(?<devicecpu>.*)");
+            if (match.Success)
             {
-                return ExitCodes.E5002;
+                // grab details
+                BoardName = match.Groups["board"].ToString().Trim();
+                DeviceId = match.Groups["deviceid"].ToString().Trim();
+                DeviceName = match.Groups["devicename"].ToString().Trim();
+                DeviceCPU = match.Groups["devicecpu"].ToString().Trim();
             }
-
-            // erase flash
-            if (DoMassErase)
-            {
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.Write("Mass erase device...");
-                }
-
-                cliOuput = RunStLinkCli($"-c SN={DeviceId} UR -ME");
-
-                if (!cliOuput.Contains("Flash memory erased."))
-                {
-                    return ExitCodes.E5005;
-                }
-
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.WriteLine(" OK");
-                }
-                else
-                {
-                    Console.WriteLine("");
-                }
-
-                // toggle mass erase so it's only performed before the first file is flashed
-                DoMassErase = false;
-            }
-
-            if (Verbosity == VerbosityLevel.Normal)
-            {
-                Console.Write("Flashing device...");
-            }
-            else if (Verbosity >= VerbosityLevel.Detailed)
-            {
-                Console.WriteLine("Flashing device...");
-            }
-
-            // program HEX file(s)
-            foreach (string hexFile in files)
-            {
-                if (Verbosity >= VerbosityLevel.Detailed)
-                {
-                    Console.WriteLine($"{Path.GetFileName(hexFile)}");
-                }
-
-                cliOuput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P {hexFile}");
-
-                if (!cliOuput.Contains("Programming Complete."))
-                {
-                    return ExitCodes.E5006;
-                }
-            }
-
-            if (Verbosity == VerbosityLevel.Normal)
-            {
-                Console.WriteLine(" OK");
-            }
-            else if (Verbosity >= VerbosityLevel.Detailed)
-            {
-                Console.WriteLine("Flashing completed...");
-            }
-
-            return ExitCodes.OK;
         }
 
         /// <summary>
@@ -167,153 +103,106 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="files"></param>
         /// <param name="addresses"></param>
-        public ExitCodes FlashBinFiles(IEnumerable<string> files, IEnumerable<string> addresses)
+        public ExitCodes FlashBinFiles(IList<string> files, IList<string> addresses)
         {
-            // check file existence
-            foreach (string f in files)
+            return ExecuteFlashBinFiles(
+                files,
+                addresses,
+                $"port=SWD sn={JtagId}");
+        }
+
+
+        /// <summary>
+        /// Flash the HEX supplied to the connected device.
+        /// </summary>
+        /// <param name="files"></param>
+        public ExitCodes FlashHexFiles(IList<string> files)
+        {
+            return ExecuteFlashHexFiles(
+                files,
+                $"port=SWD sn={JtagId}");
+        }
+
+        /// <summary>
+        /// Perform mass erase on the connected device.
+        /// </summary>
+        public ExitCodes MassErase()
+        {
+            return ExecuteMassErase($"port=SWD sn={JtagId}");
+        }
+
+        /// <summary>
+        /// Reset MCU of connected JTAG device.
+        /// </summary>
+        public ExitCodes ResetMcu()
+        {
+            if (Verbosity >= VerbosityLevel.Normal)
             {
-                if (!File.Exists(f))
-                {
-                    return ExitCodes.E5003;
-                }
-            }
-
-            // check address(es)
-
-            // need to match files count
-            if(files.Count() != addresses.Count())
-            {
-                return ExitCodes.E5009;
-            }
-
-            foreach (string address in addresses)
-            {
-                if (string.IsNullOrEmpty(address))
-                {
-                    return ExitCodes.E5007;
-                }
-                else
-                {
-                    // format too
-                    if (!address.StartsWith("0x"))
-                    {
-                        return ExitCodes.E5008;
-                    }
-
-                    // try parse
-                    // need to remove the leading 0x and to specify that hexadecimal values are allowed
-                    int dummyAddress;
-                    if (!int.TryParse(address.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out dummyAddress))
-                    {
-                        return ExitCodes.E5008;
-                    }
-                }
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("Reset MCU on device...");
             }
 
             // try to connect to device with RESET
-            var cliOuput = RunStLinkCli($"-c SN={DeviceId} UR");
+            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} mode=UR -rst");
 
-            if (!cliOuput.Contains("Connected via SWD."))
+            if (cliOutput.Contains("Error"))
             {
+                Console.WriteLine("");
+
+                ShowCLIOutput(cliOutput);
+
                 return ExitCodes.E5002;
             }
 
-            // erase flash
-            if (DoMassErase)
+            if (!cliOutput.Contains("MCU Reset"))
             {
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.Write("Mass erase device...");
-                }
-
-                cliOuput = RunStLinkCli($"-c SN={DeviceId} UR -ME");
-
-                if (!cliOuput.Contains("Flash memory erased."))
-                {
-                    Console.WriteLine("");
-                    return ExitCodes.E5005;
-                }
-
-                if (Verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.WriteLine(" OK");
-                }
-                else
-                {
-                    Console.WriteLine("");
-                }
-
-                // toggle mass erase so it's only performed before the first file is flashed
-                DoMassErase = false;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ERROR");
+                Console.ForegroundColor = ConsoleColor.White;
+                return ExitCodes.E5010;
             }
 
-            if (Verbosity == VerbosityLevel.Normal)
+            if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.Write("Flashing device...");
-            }
-            else if (Verbosity >= VerbosityLevel.Detailed)
-            {
-                Console.WriteLine("Flashing device...");
-            }
-
-            // program BIN file(s)
-            int index = 0;
-            foreach (string binFile in files)
-            {
-                if (Verbosity >= VerbosityLevel.Detailed)
-                {
-                    Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
-                }
-
-                cliOuput = RunStLinkCli($"-c SN={DeviceId} UR -Q -P {binFile} {addresses.ElementAt(index++)}");
-
-                if (!cliOuput.Contains("Programming Complete."))
-                {
-                    return ExitCodes.E5006;
-                }
-            }
-
-            if (Verbosity == VerbosityLevel.Normal)
-            {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(" OK");
             }
-            else if (Verbosity >= VerbosityLevel.Detailed)
+            else
             {
-                Console.WriteLine("Flashing completed...");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("");
             }
+
+            Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
 
         /// <summary>
-        /// Search connected STM JTAG devices.
+        /// List connected STM32 JTAG devices.
         /// </summary>
         /// <returns>A collection of connected STM JTAG devices.</returns>
         public static List<string> ListDevices()
         {
-            var cliOuput = RunStLinkCli("-List");
+            var cliOutput = ExecuteListDevices();
 
-            // (successful) output from the above is
+            // (successful) output from the above for JTAG devices is
             //
-            //---Available ST - LINK Probes List ---
+            //-------- Connected ST-LINK Probes List --------
             //
-            // ST - LINK Probe 0:
-            //     SN: 066CFF535752877167012515
-            //     FW: V2J29M18
-            //
-            // ST - LINK Probe 1:
-            //     SN: 066CDD535752877167010000
-            //     FW: V2J29M18
-            //
-            //----------------------------------
+            //ST-Link Probe 0 :
+            //   ST-LINK SN  : 066CFF535752877167012515
+            //   ST-LINK FW  : V2J37M27
+            //-----------------------------------------------
+
 
             // set pattern to serial number
-            string regexPattern = @"(?<=SN:\s)(?<serial>.{24})";
+            const string regexPattern = @"(?<=ST-LINK SN  :\s)(?<serial>.{24})";
 
             var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
-            var jtagMatches = myRegex1.Matches(cliOuput);
+            var jtagMatches = myRegex1.Matches(cliOutput);
 
-            if(jtagMatches.Count == 0)
+            if (jtagMatches.Count == 0)
             {
                 // no JTAG found
                 return new List<string>();
@@ -321,71 +210,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             return jtagMatches.Cast<Match>().Select(i => i.Value).ToList();
         }
-    
-        /// <summary>
-        /// Reset MCU of connected JTAG device.
-        /// </summary>
-        public ExitCodes ResetMcu()
+
+        /// <inheritdoc/>
+        public override string ToString()
         {
-            // try to connect to device with RESET
-            var cliOuput = RunStLinkCli($"-c SN={DeviceId} UR");
+            StringBuilder deviceInfo = new();
 
-            if (!cliOuput.Contains("Connected via SWD."))
+            if (!string.IsNullOrEmpty(DeviceName))
             {
-                return ExitCodes.E5002;
+                deviceInfo.AppendLine($"Device: { DeviceName }");
             }
 
-            if (Verbosity >= VerbosityLevel.Normal)
+            if (!string.IsNullOrEmpty(BoardName))
             {
-                Console.Write("Reset MCU on device...");
+                deviceInfo.AppendLine($"Board: { BoardName }");
             }
 
-            cliOuput = RunStLinkCli("-Rst");
+            deviceInfo.AppendLine($"CPU: { DeviceCPU }");
+            deviceInfo.AppendLine($"Device ID: { DeviceId }");
 
-            if (!cliOuput.Contains("MCU Reset."))
-            {
-                Console.WriteLine("");
-                return ExitCodes.E5010;
-            }
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                Console.WriteLine(" OK");
-            }
-            else
-            {
-                Console.WriteLine("");
-            }
-
-            return ExitCodes.OK;
-        }
-
-        private static string RunStLinkCli(string arguments)
-        {
-            try
-            {
-                Process stLinkCli = new Process();
-                stLinkCli.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "stlink", "ST-LINK_CLI.exe"), arguments)
-                {
-                    WorkingDirectory = Path.Combine(Program.ExecutingPath, "stlink"),
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true
-                };
-
-
-                // start ST Link CLI and...
-                stLinkCli.Start();
-
-                // ... wait for exit
-                stLinkCli.WaitForExit();
-
-                // collect output messages
-                return stLinkCli.StandardOutput.ReadToEnd();
-            }
-            catch(Exception ex)
-            {
-                throw new StLinkCliExecutionException(ex.Message);
-            }
+            return deviceInfo.ToString();
         }
     }
 }

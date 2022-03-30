@@ -3,11 +3,12 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
-    public enum ExitCodes : int
+    public enum ExitCodes
     {
         /// <summary>
         /// Execution terminated without any error
@@ -34,8 +35,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Error flashing DFU dvice
         /// </summary>
-        [Display(Name = "Error flashing DFU dvice.")]
+        [Display(Name = "Error flashing DFU device.")]
         E1003 = 1003,
+
+        /// <summary>
+        /// Firmware package doesn't have DFU package
+        /// </summary>
+        [Display(Name = "Firmware package doesn't have a DFU package.")]
+        E1004 = 1004,
+
+        /// <summary>
+        /// Can't connect to specified DFU device.
+        /// </summary>
+        [Display(Name = "Can't connect to specified DFU device. Make sure it's connected and that the ID is correct.")]
+        E1005 = 1005,
+
+        /// <summary>
+        /// Failed to start execution on the connected device.
+        /// </summary>
+        [Display(Name = "Failed to start execition on the connected device.")]
+        E1006 = 1006,
 
         ////////////////////////
         // ESP32 tools Errors //
@@ -77,14 +96,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Failed to open specified COM port.")]
         E4005 = 4005,
 
-        ////////////////////
-        // ST Link Errors //
-        ////////////////////
+        //////////////////////////
+        // ST Programmer Errors //
+        //////////////////////////
 
         /// <summary>
-        /// Error executing ST Link CLI command.
+        /// Error executing STM32 Programmer CLI command.
         /// </summary>
-        [Display(Name = "Error executing ST Link CLI command.")]
+        [Display(Name = "Error executing STM32 Programmer CLI command.")]
         E5000 = 5000,
 
         /// <summary>
@@ -230,6 +249,36 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Can't program deployment BIN file without specifying a valid deployment address.")]
         E9009 = 9009,
+
+        /// <summary>
+        /// Couldn't find any device connected
+        /// </summary>
+        [Display(Name = "Couldn't find any device connected.")]
+        E9010 = 9010,
+
+        /// <summary>
+        /// Couldn't find CLR image file. Check the path.
+        /// </summary>
+        [Display(Name = "Couldn't find CLR image file. Check the path.")]
+        E9011 = 9011,
+
+        /// <summary>
+        /// CLR image file has wrong format. It has to be a binary file.
+        /// </summary>
+        [Display(Name = "CLR image file has wrong format.It has to be a binary file.")]
+        E9012 = 9012,
+
+        /// <summary>
+        /// Unsupported platform.
+        /// </summary>
+        [Display(Name = "Unsupported platform. Valid options are: esp32, stm32, cc13x2")]
+        E9013 = 9013,
+
+        /// <summary>
+        /// Error clearing cache location.
+        /// </summary>
+        [Display(Name = "Error occured when clearing the firmware cache location.")]
+        E9014 = 9014,
 
     }
 }

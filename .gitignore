@@ -331,3 +331,9 @@ ASALocalRun/
 
 #SoundCloud
 *.sonarqube/
+
+#VSCode
+.vscode/
+
+# Mac OS elements
+.DS_Store

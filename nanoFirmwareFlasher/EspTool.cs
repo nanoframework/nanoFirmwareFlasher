@@ -9,26 +9,29 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Ports;
-using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// Class the handles all the calls to the esptool.exe.
     /// </summary>
-    internal class EspTool
+    internal partial class EspTool
     {
+        private string _esptoolMessage;
+
         /// <summary>
         /// The serial port over which all the communication goes
         /// </summary>
         private readonly string _serialPort = null;
 
         /// <summary>
-        /// The baud rate for the serial port; 921600 baud is the default
+        /// The baud rate for the serial port. The default comming from <see cref="Options.BaudRate"/>.
         /// </summary>
-        private readonly int _baudRate = 0;
+        private int _baudRate = 0;
 
         /// <summary>
         /// The flash mode for the esptool.
@@ -48,14 +51,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly int _flashFrequency = 0;
 
         /// <summary>
+        /// Partition table size, when specified in the options.
+        /// </summary>
+        private readonly PartitionTableSize? _partitionTableSize = null;
+
+        /// <summary>
         /// The size of the flash in bytes; 4 MB = 0x40000 bytes
         /// </summary>
         private int _flashSize = -1;
 
-        /// <summary>
-        /// true if the stub program is already active and we can use the --before no_reset_no_sync parameter 
-        /// </summary>
-        private bool _isStubActive = false;
+        private bool connectPatternFound;
+
+        private DateTime connectTimeStamp;
+
+        private bool connectPromptShown;
 
         /// <summary>
         /// This property is <see langword="true"/> if the specified COM port is valid.
@@ -66,81 +75,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Option to output progress messages.
         /// Default is <see langword="true"/>.
         /// </summary>
-        public VerbosityLevel Verbosity { get; internal set; } = VerbosityLevel.Normal;
+        public VerbosityLevel Verbosity { get; set; }
 
         /// <summary>
-        /// Structure for holding the information about the connected ESP32 together
+        /// Flag to report if the target couldn't be reset after flashing it.
         /// </summary>
-        internal struct DeviceInfo
-        {
-            /// <summary>
-            /// Version of the esptool.py
-            /// </summary>
-            internal Version ToolVersion { get; private set; }
+        public bool CouldntResetTarget;
 
-            /// <summary>
-            /// Name of the ESP32 chip
-            /// </summary>
-            internal string ChipName { get; private set; }
-
-            /// <summary>
-            /// ESP32 chip features
-            /// </summary>
-            internal string Features { get; private set; }
-
-            /// <summary>
-            /// MAC address of the ESP32 chip
-            /// </summary>
-            internal PhysicalAddress MacAddress { get; private set; }
-
-            /// <summary>
-            /// Flash manufacturer ID.
-            /// </summary>
-            /// <remarks>
-            /// See http://code.coreboot.org/p/flashrom/source/tree/HEAD/trunk/flashchips.h for more details.
-            /// </remarks>
-            internal byte FlashManufacturerId { get; private set; }
-
-            /// <summary>
-            /// Flash device type ID.
-            /// </summary>
-            /// <remarks>
-            /// See http://code.coreboot.org/p/flashrom/source/tree/HEAD/trunk/flashchips.h for more details.
-            /// </remarks>
-            internal short FlashDeviceModelId { get; private set; }
-
-            /// <summary>
-            /// The size of the flash in bytes; 4 MB = 0x40000 bytes
-            /// </summary>
-            internal int FlashSize { get; private set; }
-
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            /// <param name="toolVersion">Version of the esptool.py</param>
-            /// <param name="features">ESP32 chip features</param>
-            /// <param name="macAddress">MAC address of the ESP32 chip</param>
-            /// <param name="flashManufacturerId">Flash manufacturer ID</param>
-            /// <param name="flashDeviceModelId">Flash device type ID</param>
-            /// <param name="flashSize">The size of the flash in bytes</param>
-            internal DeviceInfo(
-                Version toolVersion, 
-                string chipName, 
-                string features, 
-                PhysicalAddress macAddress, 
-                byte flashManufacturerId, 
-                short flashDeviceModelId, 
-                int flashSize)
-            {
-                ToolVersion = toolVersion;
-                ChipName = chipName;
-                Features = features;
-                MacAddress = macAddress;
-                FlashManufacturerId = flashManufacturerId;
-                FlashDeviceModelId = flashDeviceModelId;
-                FlashSize = flashSize;
-            }
-        }
+        // ESP32 chip type to connect to.
+        // Default is 'auto'. It's replaced with the actual chip type after detection to improve operations.
+        internal string _chipType = "auto";
 
         /// <summary>
         /// Constructor
@@ -149,28 +93,56 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="baudRate">The baud rate for the serial port.</param>
         /// <param name="flashMode">The flash mode for the esptool</param>
         /// <param name="flashFrequency">The flash frequency for the esptool</param>
+        /// <param name="partitionTableSize">Partition table size to use</param>
         internal EspTool(
-            string serialPort, 
+            string serialPort,
             int baudRate,
-            string flashMode, 
-            int flashFrequency)
+            string flashMode,
+            int flashFrequency,
+            PartitionTableSize? partitionTableSize,
+            VerbosityLevel verbosity)
         {
-            // open/close the port to see if it is available
-            using (SerialPort test = new SerialPort(serialPort, baudRate))
+            Verbosity = verbosity;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                // open/close the COM port to check if it is available
+                var test = new SerialPort(serialPort, baudRate);
+
                 try
                 {
                     test.Open();
                     test.Close();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    if (Verbosity >= VerbosityLevel.Detailed)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+
+                        Console.WriteLine("");
+                        Console.WriteLine("******************** EXCEPTION ******************");
+                        Console.WriteLine($"Exception occurred while trying to open <{serialPort}>:");
+                        Console.WriteLine($"{ex.Message}");
+                        Console.WriteLine("*************************************************");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
                     // presume any exception here is caused by the serial not existing or not possible to open
                     throw new EspToolExecutionException();
                 }
             }
+            else
+            {
+                if (!File.Exists(serialPort))
+                {
+                    throw new EspToolExecutionException();
+                }
+            }
 
-            if(Verbosity >= VerbosityLevel.Detailed)
+            if (Verbosity >= VerbosityLevel.Detailed)
             {
                 Console.WriteLine($"Using {serialPort} @ {baudRate} baud to connect to ESP32.");
             }
@@ -180,67 +152,209 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _baudRate = baudRate;
             _flashMode = flashMode;
             _flashFrequency = flashFrequency;
+            _partitionTableSize = partitionTableSize;
         }
 
         /// <summary>
-        /// Tests the connection to the ESP32 chip.
+        /// Tries reading ESP32 device details.
         /// </summary>
-        /// <returns>The filled info structure with all the information about the connected ESP32 chip or null if an error occured</returns>
-        internal DeviceInfo TestChip()
+        /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occured</returns>
+        internal Esp32DeviceInfo GetDeviceDetails(
+            string targetName,
+            bool requireFlashSize = true)
         {
-            // execute read_mac command and parse the result
-            if (!RunEspTool("read_mac", true, false, null, out string messages))
-            {
-                throw new EspToolExecutionException(messages);
-            }
+            string messages;
 
-            Match match = Regex.Match(messages, "(esptool.py v)(?<version>[0-9.]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)");
-            if (!match.Success)
+            if (Verbosity >= VerbosityLevel.Normal)
             {
-                throw new EspToolExecutionException(messages);
-            }
-
-            // that gives us the version of the esptool.py, the chip name and the MAC address
-            string version = match.Groups["version"].ToString().Trim();
-            string name = match.Groups["name"].ToString().Trim();
-            string features = match.Groups["features"].ToString().Trim();
-            string mac = match.Groups["mac"].ToString().Trim();
-
-            if (Verbosity >= VerbosityLevel.Diagnostic)
-            {
-                Console.WriteLine($"Executed esptool.py version {version}");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"Reading details from chip...");
             }
 
             // execute flash_id command and parse the result
-            if (!RunEspTool("flash_id", false, false, null, out messages))
+            if (!RunEspTool(
+                "flash_id",
+                false,
+                true,
+                false,
+                null,
+                out messages))
             {
                 throw new EspToolExecutionException(messages);
             }
 
-            match = Regex.Match(messages, $"(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
+            // check if we got flash size (in case we need it)
+            if (requireFlashSize
+                && messages.Contains("Detected flash size: Unknown"))
+            {
+                // try again now without the stub
+                if (!RunEspTool(
+                    "flash_id",
+                    true,
+                    true,
+                    false,
+                    null,
+                    out messages))
+                {
+                    throw new EspToolExecutionException(messages);
+                }
+            }
+
+            var match = Regex.Match(messages, $"(Detecting chip type... )(?<type>[ESP32\\-ICOCH]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(Crystal is )(?<crystal>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
             if (!match.Success)
             {
                 throw new EspToolExecutionException(messages);
             }
 
-            // that gives us the flash manufacturer, flash device type ID and flash size
+            // grab details
+            string chipType = match.Groups["type"].ToString().Trim();
+            string name = match.Groups["name"].ToString().Trim();
+            string features = match.Groups["features"].ToString().Trim();
+            string mac = match.Groups["mac"].ToString().Trim();
+            string crystal = match.Groups["crystal"].ToString().Trim();
             string manufacturer = match.Groups["manufacturer"].ToString().Trim();
             string device = match.Groups["device"].ToString().Trim();
             string size = match.Groups["size"].ToString().Trim();
 
             // collect and return all information
-            // convert the flash size into bytes
+            // try to convert the flash size into bytes
             string unit = size.Substring(size.Length - 2).ToUpperInvariant();
-            _flashSize = int.Parse(size.Remove(size.Length - 2)) * (unit == "MB" ? 0x100000 : unit == "KB" ? 0x400 : 1);
 
-            return new DeviceInfo(
-                new Version(version),
+            if (int.TryParse(size.Remove(size.Length - 2), out _flashSize))
+            {
+                _flashSize *= unit switch
+                {
+                    "MB" => 0x100000,
+                    "KB" => 0x400,
+                    _ => 1,
+                };
+            }
+            else
+            {
+                throw new EspToolExecutionException("Can't read flash size from device");
+            }
+
+            // update chip type
+            // lower case, no hifen
+            _chipType = chipType.ToLower().Replace("-", "");
+
+            // try to find out if PSRAM is present
+            PSRamAvailability psramIsAvailable = PSRamAvailability.Undetermined;
+
+            if (name.Contains("PICO"))
+            {
+                // PICO's don't have PSRAM, so don't even bother
+                psramIsAvailable = PSRamAvailability.No;
+            }
+            else if (name.Contains("ESP32-S2")
+                     && targetName == "FEATHER_S2")
+            {
+                // FEATHER_S2's have PSRAM, so don't even bother
+                psramIsAvailable = PSRamAvailability.Yes;
+            }
+            else
+            {
+                // if a target name was provided, don't bother to check PSRAM
+                if (targetName == null)
+                {
+                    psramIsAvailable = FindPSRamAvailable();
+                }
+            }
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("OK");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
+            return new Esp32DeviceInfo(
+                chipType,
                 name,
                 features,
-                PhysicalAddress.Parse(mac.Replace(':', '-').ToUpperInvariant()),
+                crystal,
+                mac.ToUpperInvariant(),
                 byte.Parse(manufacturer, NumberStyles.AllowHexSpecifier),
                 short.Parse(device, NumberStyles.HexNumber),
-                _flashSize);
+                _flashSize,
+                psramIsAvailable);
+        }
+
+        /// <summary>
+        /// Perform detection of PSRAM availability on connected device.
+        /// </summary>
+        /// <returns>Information about availability of PSRAM, if that was possible to determine.</returns>
+        private PSRamAvailability FindPSRamAvailable()
+        {
+            PSRamAvailability pSRamAvailability = PSRamAvailability.Undetermined;
+
+            // don't want to output anything from esptool
+            // backup current verbosity setting
+            var bkpVerbosity = Verbosity;
+            Verbosity = VerbosityLevel.Quiet;
+
+            // compose bootloader partition
+            var bootloaderPartition = new Dictionary<int, string>
+            {
+				// bootloader goes to 0x1000
+				{ 0x1000, Path.Combine(Program.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
+
+				// nanoCLR goes to 0x10000
+				{ 0x10000, Path.Combine(Program.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
+
+                // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
+				{ 0x8000, Path.Combine(Program.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(_flashSize).ToLowerInvariant()}.bin") }
+            };
+
+            // need to use standard baud rate here because of boards put in download mode
+            if (WriteFlash(bootloaderPartition, true) == ExitCodes.OK)
+            {
+                // check if the
+                if (_esptoolMessage.Contains("esptool.py can not exit the download mode over USB"))
+                {
+                    // this board was put on download mode manually, can't run the test app...
+
+                    return PSRamAvailability.Undetermined;
+                }
+
+                try
+                {
+                    // open COM port and grab output
+                    // force baud rate to 115200 (standard baud rate for boootloader)
+                    SerialPort espDevice = new SerialPort(_serialPort, 115200);
+                    espDevice.Open();
+
+                    if (espDevice.IsOpen)
+                    {
+                        // wait 2 seconds... 
+                        Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                        // ... read output from bootloader
+                        var bootloaderOutput = espDevice.ReadExisting();
+
+                        espDevice.Close();
+
+                        // find magic string
+                        if (bootloaderOutput.Contains("PSRAM initialized"))
+                        {
+                            pSRamAvailability = PSRamAvailability.Yes;
+                        }
+                        else
+                        {
+                            pSRamAvailability = PSRamAvailability.No;
+                        }
+                    }
+                }
+                catch
+                {
+                    // don't care about any exceptions 
+                }
+            }
+
+            // restore verbosity setting
+            Verbosity = bkpVerbosity;
+
+            return pSRamAvailability;
         }
 
         /// <summary>
@@ -249,17 +363,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="backupFilename">Backup file including full path</param>
         /// <param name="flashSize">Flash size in bytes</param>
         /// <returns>true if successful</returns>
-        internal ExitCodes BackupFlash(
-            string backupFilename,
+        internal void BackupFlash(string backupFilename,
             int flashSize)
         {
             // execute read_flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
-            if (!RunEspTool($"read_flash 0 0x{flashSize:X} \"{backupFilename}\"", false, false, (char)8, out string messages))
+            if (!RunEspTool(
+                $"read_flash 0 0x{flashSize:X} \"{backupFilename}\"",
+                true,
+                false,
+                false,
+                (char)8,
+                out string messages))
             {
                 throw new ReadEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
+            var match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new ReadEsp32FlashException(messages);
@@ -269,8 +388,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 Console.WriteLine(match.Groups["message"].ToString().Trim());
             }
-
-            return ExitCodes.OK;
         }
 
         /// <summary>
@@ -280,20 +397,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal ExitCodes EraseFlash()
         {
             // execute erase_flash command and parse the result
-            if (!RunEspTool("erase_flash", false, false, null, out string messages))
+            if (!RunEspTool(
+                "erase_flash",
+                false,
+                true,
+                false,
+                null,
+                out string messages))
             {
                 throw new EraseEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, "(?<message>Chip erase completed successfully.*)(.*?\n)*");
+            var match = Regex.Match(messages, "(?<message>Chip erase completed successfully.*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new EraseEsp32FlashException(messages);
-            }
-
-            if (Verbosity >= VerbosityLevel.Detailed)
-            {
-                Console.WriteLine(match.Groups["message"].ToString().Trim());
             }
 
             return ExitCodes.OK;
@@ -309,12 +427,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // esptool takes care of validating this so no need to perform any sanity check before executing the command
 
             // execute erase_flash command and parse the result
-            if (!RunEspTool($"erase_region 0x{startAddress:X} 0x{length:X}", false, false, null, out string messages))
+            if (!RunEspTool(
+                $"erase_region 0x{startAddress:X} 0x{length:X}",
+                false,
+                false,
+                false,
+                null,
+                out string messages))
             {
                 throw new EraseEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, "(?<message>Erase completed successfully.*)(.*?\n)*");
+            var match = Regex.Match(messages, "(?<message>Erase completed successfully.*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new EraseEsp32FlashException(messages);
@@ -333,15 +457,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="partsToWrite">dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</param>
         /// <returns>true if successful</returns>
-        internal ExitCodes WriteFlash(Dictionary<int, string> partsToWrite)
+        internal ExitCodes WriteFlash(
+            Dictionary<int, string> partsToWrite,
+            bool useStandardBaudrate = false)
         {
             // put the parts to flash together and prepare the regex for parsing the output
-            StringBuilder partsArguments = new StringBuilder();
-            StringBuilder regexPattern = new StringBuilder();
+            var partsArguments = new StringBuilder();
+            var regexPattern = new StringBuilder();
             int counter = 1;
-            List<string> regexGroupNames = new List<string>();
+            var regexGroupNames = new List<string>();
 
-            foreach (KeyValuePair<int, string> part in partsToWrite)
+            foreach (var part in partsToWrite)
             {
                 // start address followed by filename
                 partsArguments.Append($"0x{part.Key:X} \"{part.Value}\" ");
@@ -352,23 +478,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // if flash size was detected already use it for the --flash_size parameter; otherwise use the default "detect"
-            string flashSize = "detect";
-            if (_flashSize >= 0x100000)
+            string flashSize = _flashSize switch
             {
-                flashSize = $"{_flashSize / 0x100000}MB";
-            }
-            else if (_flashSize > 0)
-            {
-                flashSize = $"{_flashSize / 0x400}KB";
-            }
+                >= 0x100000 => $"{_flashSize / 0x100000}MB",
+                > 0 => $"{_flashSize / 0x400}KB",
+                _ => "detect",
+            };
 
             // execute write_flash command and parse the result; progress message can be found be searching for linefeed
-            if (!RunEspTool($"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}", false, true, '\r', out string messages))
+            if (!RunEspTool(
+                $"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}",
+                false,
+                useStandardBaudrate,
+                true,
+                '\r',
+                out string messages))
             {
                 throw new WriteEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, regexPattern.ToString());
+            var match = Regex.Match(messages, regexPattern.ToString());
             if (!match.Success)
             {
                 throw new WriteEsp32FlashException(messages);
@@ -382,6 +511,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
+            // check if there is any mention of not being able to run the app
+            CouldntResetTarget = messages.Contains("To run the app, reset the chip manually");
+
             return ExitCodes.OK;
         }
 
@@ -390,24 +522,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="commandWithArguments">the esptool command (e.g. write_flash) incl. all arguments (if needed)</param>
         /// <param name="noStub">if true --no-stub will be added; the chip_id, read_mac and flash_id commands can be quicker executes without uploading the stub program to the chip</param>
+        /// <param name="useStandardBaudRate">If <see langword="true"/> the tool will use the standard baud rate to connect to the chip.</param>
         /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
         /// <param name="progressTestChar">If not null: After each of this char a progress message will be printed out</param>
         /// <param name="messages">StandardOutput and StandardError messages that the esptool prints out</param>
         /// <returns>true if the esptool exit code was 0; false otherwise</returns>
         private bool RunEspTool(
-            string commandWithArguments, 
-            bool noStub, 
-            bool hardResetAfterCommand, 
-            char? progressTestChar, 
+            string commandWithArguments,
+            bool noStub,
+            bool useStandardBaudRate,
+            bool hardResetAfterCommand,
+            char? progressTestChar,
             out string messages)
         {
+            // reset message
+            _esptoolMessage = string.Empty;
+
             // create the process start info
             // if we can directly talk to the ROM bootloader without a stub program use the --no-stub option
             // --nostub requires to not change the baudrate (ROM doesn't support changing baud rate. Keeping initial baud rate 115200)
             string noStubParameter = null;
             string baudRateParameter = null;
             string beforeParameter = null;
-            string afterParameter = hardResetAfterCommand ? "hard_reset" : "no_reset";
+            string afterParameter = hardResetAfterCommand ? "hard_reset" : "no_reset_stub";
 
             if (noStub)
             {
@@ -416,72 +553,137 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else
             {
-                // using the stub that supports changing the baudrate
-                baudRateParameter = $"--baud {_baudRate}";
+                if (!useStandardBaudRate)
+                {
+                    // using the stub that supports changing the baudrate
+                    baudRateParameter = $"--baud {_baudRate}";
+                }
             }
 
             // prepare the process start of the esptool
-            Process espTool = new Process();
-            string parameter = $"--port {_serialPort} {baudRateParameter} --chip esp32 {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
-            espTool.StartInfo = new ProcessStartInfo(Path.Combine(Program.ExecutingPath, "esptool", "esptool.exe"), parameter)
+            string appName;
+            string appDir;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                WorkingDirectory = Path.Combine(Program.ExecutingPath, "esptool"),
+                appName = "esptool.exe";
+                appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolWin");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                appName = "esptool";
+                appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolMac");
+            }
+            else
+            {
+                appName = "esptool";
+                appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolLinux");
+            }
+
+            Process espTool = new Process();
+            string parameter = $"--port {_serialPort} {baudRateParameter} --chip {_chipType} {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
+            espTool.StartInfo = new ProcessStartInfo(Path.Combine(appDir, appName), parameter)
+            {
+                WorkingDirectory = appDir,
                 UseShellExecute = false,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true
             };
 
-            // start esptool and wait for exit
-            if (espTool.Start())
+
+            if (Verbosity == VerbosityLevel.Diagnostic)
             {
-                // if no progress output needed wait unlimited time until esptool exit
-                if (Verbosity < VerbosityLevel.Detailed &&
-                    !progressTestChar.HasValue)
-                {
-                    espTool.WaitForExit();
-                }
+                Console.ForegroundColor = ConsoleColor.White;
+
+                Console.WriteLine("");
+                Console.WriteLine("Executing esptool with the following parameters:");
+                Console.WriteLine($"'{parameter}'");
+                Console.WriteLine("");
             }
-            else
+
+            // start esptool and wait for exit
+            if (!espTool.Start())
             {
                 throw new EspToolExecutionException("Error starting esptool!");
             }
 
-            StringBuilder messageBuilder = new StringBuilder();
+            var messageBuilder = new StringBuilder();
+
+            // reset these
+            connectPromptShown = false;
+            connectPatternFound = false;
+            connectTimeStamp = DateTime.UtcNow;
 
             // showing progress is a little bit tricky
-            if (progressTestChar.HasValue && Verbosity >= VerbosityLevel.Detailed)
+            if (Verbosity > VerbosityLevel.Quiet)
             {
-                // loop until esptool exit
-                while (!espTool.HasExited)
+                if (progressTestChar.HasValue)
                 {
-                    // loop until there is no next char to read from standard output
-                    while (true)
+                    // need to look for progress test char
+
+                    // loop until esptool exit
+                    while (!espTool.HasExited)
                     {
-                        int next = espTool.StandardOutput.Read();
-                        if (next != -1)
+                        // loop until there is no next char to read from standard output
+                        while (true)
                         {
-                            // append the char to the message buffer
-                            char nextChar = (char)next;
-                            messageBuilder.Append((char)next);
-                            // try to find a progress message
-                            string progress = FindProgress(messageBuilder, progressTestChar.Value);
-                            if (progress != null)
+                            int next = espTool.StandardOutput.Read();
+                            if (next != -1)
                             {
-                                // print progress and set the cursor to the beginning of the line (\r)
-                                Console.Write(progress);
-                                Console.Write("\r");
+                                // append the char to the message buffer
+                                messageBuilder.Append((char)next);
+
+                                // try to find a progress message
+                                string progress = FindProgress(messageBuilder, progressTestChar.Value);
+                                if (progress != null && Verbosity > VerbosityLevel.Quiet)
+                                {
+                                    // print progress and set the cursor to the beginning of the line (\r)
+                                    Console.Write(progress);
+                                    Console.Write("\r");
+                                }
+
+                                ProcessConnectPattern(messageBuilder);
+                            }
+                            else
+                            {
+                                break;
                             }
                         }
-                        else
+                    }
+
+                    // collect the last messages
+                    messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
+                    messageBuilder.Append(espTool.StandardError.ReadToEnd());
+                }
+                else
+                {
+                    // when not looking for progress char, look for connect pattern
+
+                    // loop until esptool exit
+                    while (!espTool.HasExited)
+                    {
+                        // loop until there is no next char to read from standard output
+                        while (true)
                         {
-                            break;
+                            int next = espTool.StandardOutput.Read();
+                            if (next != -1)
+                            {
+                                // append the char to the message buffer
+                                messageBuilder.Append((char)next);
+
+                                ProcessConnectPattern(messageBuilder);
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
                     }
-                }
 
-                // collect the last messages
-                messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
-                messageBuilder.Append(espTool.StandardError.ReadToEnd());
+                    // collect the last messages
+                    messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
+                    messageBuilder.Append(espTool.StandardError.ReadToEnd());
+                }
             }
             else
             {
@@ -492,11 +694,72 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             messages = messageBuilder.ToString();
 
-            // if the stub program was used then we don't need to transfer ist again
-            _isStubActive = !noStub;
+            // save output messages
+            _esptoolMessage = messages;
 
-            // true if exit code was 0 (success)
-            return espTool.ExitCode == 0;
+            if (espTool.ExitCode == 0)
+            {
+                // exit code was 0 (success), all good
+                return true;
+            }
+            else
+            {
+                // need to look for specific error messages to do a safe guess if execution is as expected
+                if (messages.Contains("esptool.py can not exit the download mode over USB") ||
+                   messages.Contains("Staying in bootloader."))
+                {
+                    // we are probably good with this as we can't do much about it...
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        private void ProcessConnectPattern(StringBuilder messageBuilder)
+        {
+            // try to find a connect pattern
+            connectPatternFound = FindConnectPattern(messageBuilder);
+
+            var timeToConnect = DateTime.UtcNow.Subtract(connectTimeStamp).TotalSeconds;
+
+            // if esptool is struggling to connect for more than 5 seconds
+
+            // prompt user
+            if (!connectPromptShown &&
+                connectPatternFound &&
+                timeToConnect > 5)
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+
+                Console.WriteLine("*** Hold down the BOOT/FLASH button in ESP32 board ***");
+
+                Console.ForegroundColor = ConsoleColor.White;
+
+                // set flag
+                connectPromptShown = true;
+            }
+        }
+
+        private bool FindConnectPattern(StringBuilder messageBuilder)
+        {
+            if (messageBuilder.Length > 2)
+            {
+                var previousChar = messageBuilder[messageBuilder.Length - 2];
+                var newChar = messageBuilder[messageBuilder.Length - 1];
+
+                // don't look for double dot (..) sequence so it doesn't mistake it with an ellipsis (...)
+                return ((previousChar == '.'
+                         && newChar == '_') ||
+                        (previousChar == '_'
+                         && newChar == '_') ||
+                        (previousChar == '_'
+                         && newChar == '.'));
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -506,12 +769,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="progressTestChar">search char for the progress message delimiter (backspace or linefeed)</param>
         /// <returns></returns>
         private string FindProgress(
-            StringBuilder messageBuilder, 
+            StringBuilder messageBuilder,
             char progressTestChar)
         {
             // search for the given char (backspace or linefeed)
             // only if we have 100 chars at minimum and only if the last char is the test char
-            if (messageBuilder.Length > 100 && messageBuilder[messageBuilder.Length - 1] == progressTestChar && messageBuilder[messageBuilder.Length - 2] != progressTestChar)
+            if (messageBuilder.Length > 100 &&
+                messageBuilder[messageBuilder.Length - 1] == progressTestChar &&
+                messageBuilder[messageBuilder.Length - 2] != progressTestChar)
             {
                 // trim the test char and convert \r\n into \r
                 string progress = messageBuilder.ToString().Trim(progressTestChar).Replace("\r\n", "\r");
@@ -523,7 +788,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return progress.Substring(delimiter + 1).PadRight(110);
                 }
             }
- 
+
             // no progress message found
             return null;
         }

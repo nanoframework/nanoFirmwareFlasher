@@ -17,32 +17,54 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal class Esp32Firmware : FirmwarePackage
     {
         /// <summary>
+        /// Address of the CLR partition.
+        /// </summary>
+        public const int CLRAddress = 0x10000;
+
+        /// <summary>
         /// ESP32 nanoCLR is available for 2MB, 4MB, 8MB and 16MB flash sizes
         /// </summary>
-        internal List<int> SupportedFlashSizes => new List<int> { 0x200000, 0x400000, 0x800000, 0x1000000 };
+        private List<int> SupportedFlashSizes => new() { 0x200000, 0x400000, 0x800000, 0x1000000 };
+
+        internal string BootloaderPath;
 
         internal Dictionary<int, string> FlashPartitions;
 
+        internal PartitionTableSize? _partitionTableSize;
 
         /// <summary>
-        /// Address of the deployment partition.
+        /// Default address of the deployment partition.
         /// </summary>
-        internal int DeploymentPartionAddress =>  0x110000;
+        internal int DeploymentPartitionAddress => 0x1B0000;
 
-        public Esp32Firmware(string targetName, string fwVersion, bool stable)
-            :base(targetName, fwVersion, stable)
+        public Esp32Firmware(
+            string targetName,
+            string fwVersion,
+            bool stable,
+            PartitionTableSize? partitionTableSize)
+            : base(
+                 targetName,
+                 fwVersion,
+                 stable)
         {
+            _partitionTableSize = partitionTableSize;
         }
 
         internal async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(int flashSize)
         {
-            string humanReadable = flashSize >= 0x10000 ? $"{ flashSize / 0x100000 }MB" : $"{ flashSize / 0x400 }kB";
+            if (_partitionTableSize is not null)
+            {
+                // if specified, partition table size overrides flash size.
+                flashSize = (int)_partitionTableSize * 0x100000;
+            }
+
+            // check if the option to override the partition table was set
 
             if (!SupportedFlashSizes.Contains(flashSize))
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
-                    Console.WriteLine($"There is no firmware available for ESP32 with {humanReadable} flash size!{Environment.NewLine}Only the following flash sizes are supported: {string.Join(", ", SupportedFlashSizes.Select(size => size >= 0x10000 ? $"{ size / 0x100000 }MB" : $"{ size / 0x400 }kB."))}");
+                    Console.WriteLine($"There is no firmware available for ESP32 with {Esp32DeviceInfo.GetFlashSizeAsString(flashSize)} flash size!{Environment.NewLine}Only the following flash sizes are supported: {string.Join(", ", SupportedFlashSizes.Select(size => size >= 0x10000 ? $"{ size / 0x100000 }MB" : $"{ size / 0x400 }kB."))}");
                 }
 
                 return ExitCodes.E4001;
@@ -53,17 +75,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (executionResult == ExitCodes.OK)
             {
+                BootloaderPath = "bootloader.bin";
+
                 // get ESP32 partitions
-                FlashPartitions = new Dictionary<int, string>()
+                FlashPartitions = new Dictionary<int, string>
                 {
 				    // bootloader goes to 0x1000
-				    { 0x1000, Path.Combine(LocationPath, "bootloader.bin") },
+				    { 0x1000, Path.Combine(LocationPath, BootloaderPath) },
 
 				    // nanoCLR goes to 0x10000
-				    { 0x10000, Path.Combine(LocationPath, "nanoCLR.bin") },
+				    { CLRAddress, Path.Combine(LocationPath, "nanoCLR.bin") },
 
 				    // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
-				    { 0x8000, Path.Combine(LocationPath, $"partitions_{humanReadable.ToLowerInvariant()}.bin") }
+				    { 0x8000, Path.Combine(LocationPath, $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
                 };
             }
 

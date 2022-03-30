@@ -1,10 +1,28 @@
 trigger:
   branches:
-    include: ["master", "develop", "release*", "refs/tags/*" ]
+    include: 
+      - main
+      - develop
+      - release-*
   paths:
-    exclude: [ "doc", "*.md", ".gitignore", "README.md" ]
+    exclude: 
+      - README.md
+      - README.zh-cn.md
+      - CHANGELOG.md
+      - CODE_OF_CONDUCT.md
+      - LICENSE.md
+      - NuGet.Config
+      - .github_changelog_generator
+      - .gitignore
+      - assets/*
+      - config/*
+  tags:
+    include:
+      - refs/tags/v*
 
-# no pr config, we want to trigger builds for all PRs on all branches
+# PR always trigger build
+pr:
+  autoCancel: true
 
 # add nf-tools repo to resources (for Azure Pipelines templates)
 resources:
@@ -19,35 +37,62 @@ jobs:
 ##############################
 - job: Check_Build_Options
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
 
   steps:
   
   - checkout: self
 
-  # get commint message
+  # get commit message
   - powershell: |
 
-      if($env:StartReleaseCandidate -like "true")
-      {
-        # this is a release prep so NO build
-        echo "##vso[task.setvariable variable=SKIP_BUILD;isOutput=true]true"
-        
-        Write-Host "Release preparation, skipping build."
-      }
+      # default to false
+      $update = $false
 
+      if($env:System_PullRequest_PullRequestId -ne $null)
+      {
+          # PR build, nothing interesting in commit message
+          Write-Host "Build from PR"
+      }
+      else
+      {
+          if($env:StartReleaseCandidate -like "true")
+          {
+              # this is a release prep so NO build
+              echo "##vso[task.setvariable variable=SKIP_BUILD;isOutput=true]true"
+              
+              Write-Host "Release preparation, skipping build."
+          }
+          else
+          {
+              # build NOT from PR
+              Write-Host "Build NOT from PR, commit ID: $env:Build_SourceVersion"
+          
+              # get PR associated with commit
+              $prUrl = "https://api.github.com/repos/$env:Build_Repository_Name/commits/$env:Build_SourceVersion/pulls"
+              $commit = Invoke-RestMethod -Uri $prUrl -ContentType "application/json" -Headers @{"Accept"="application/vnd.github.groot-preview+json"} -Method GET
+      
+              if($commit -ne $null)
+              {
+                  # there is a PR, check labels
+                  $updateDependents = $commit.labels | where {$_.Name -eq 'CI: Update Dependents'}
+                  if($updateDependents -ne $null)
+                  {
+                      $update = $true
+                  }
+              }
+          }
+      }
+  
+      # set variable to foward to jobs
+      echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS]$update"
+  
     name: BuildOptions
     displayName: Evaluate build options
 
-  - task: DotNetCoreCLI@2  
-    inputs:
-      command: custom
-      custom: tool
-      arguments: install -g nbgv
-    condition: or( eq( variables['StartReleaseCandidate'], true ), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Install NBGV tool
-
   - task: PowerShell@2
+    condition: eq( variables['StartReleaseCandidate'], true)
+    displayName: NBGV prepare release
     inputs:
       targetType: 'inline'
       script: |
@@ -89,7 +134,7 @@ jobs:
 
         Write-Host "Prepare PR..."
         # start PR for release
-        $prRequestBody = @{title="Release $branch";body="";head="$branch";base="master"} | ConvertTo-Json
+        $prRequestBody = @{title="Release $branch";body="";head="$branch";base="main"} | ConvertTo-Json
         $githubApiEndpoint = "https://api.github.com/repos/$env:BUILD_REPOSITORY_NAME/pulls"
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -115,13 +160,11 @@ jobs:
         }
       workingDirectory: $(Agent.TempDirectory)
       ignoreLASTEXITCODE: true
-    condition: eq( variables['StartReleaseCandidate'], true )
-    displayName: NBGV prepare release
 
 ###########################################################
 # build tool
 - job: Build_tool
-  condition: ne( dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true )
+  condition: ne(dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true)
   dependsOn:
   - Check_Build_Options
 
@@ -129,10 +172,11 @@ jobs:
     vmImage: 'windows-2019'
 
   variables:
-    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    DOTNET_NOLOGO: true
     buildPlatform: 'x64'
     buildConfiguration: 'Release'
     solution: 'nanoFirmwareFlasher.sln'
+    run_update_dependents: dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']
 
   steps:
 
@@ -145,19 +189,23 @@ jobs:
       git config --global user.name "nfbot"
     displayName: Setup git identity
 
-  - task: NuGetToolInstaller@0
-    displayName: 'Install specifc version of NuGet'
-    inputs:
-      versionSpec: '5.4.0'
+  - template: azure-pipelines-templates/install-nuget.yml@templates
 
   - task: UseDotNet@2
-    displayName: Install .NET Core SDK
+    displayName: Install .NET SDK
+    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
     inputs:
       packageType: sdk
-      version: 3.1.101
+      version: 6.x
+
+  # only required when updating dependents
+  - script: nbgv cloud -a -c
+    condition: eq(variables['UPDATE_DEPENDENTS'], 'true')
+    displayName: Set Could Version
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
+    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
     inputs:
       command: restore
       verbosityRestore: minimal
@@ -165,14 +213,20 @@ jobs:
       feedsToUse: config
       nugetConfigPath: NuGet.Config
 
-  - script: dotnet build -r win-x64 -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
+  - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
     displayName: Build NuGet package
+    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
 
   - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
     displayName: Build .NET Core Tool NuGet package
+    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
 
   - task: PowerShell@2
-    condition: succeeded()
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     displayName: Get NuGet build number
     inputs:
         targetType: 'inline'
@@ -191,7 +245,12 @@ jobs:
 
   # update could build number (only possible if this is not a PR from a fork)
   - task: PowerShell@2
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
+    condition: >-
+      and(
+        succeeded(),
+        ne(variables['system.pullrequest.isfork'], true),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     displayName: Update cloud build number
     inputs:
         targetType: 'inline'
@@ -218,9 +277,14 @@ jobs:
       }
 
     displayName: set release draft var
+    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
 
   - task: CopyFiles@1
-    condition: succeeded()
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     displayName: Collecting deployable artifacts
     inputs:
       sourceFolder: $(Agent.BuildDirectory)
@@ -231,7 +295,12 @@ jobs:
 
   - task: DotNetCoreCLI@2
     displayName: Install SignTool tool
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     inputs:
       command: custom
       custom: tool
@@ -250,79 +319,123 @@ jobs:
       --descriptionUrl "https://github.com/$env:Build_Repository_Name"
     displayName: Sign packages
     continueOnError: true
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
 
-  # publish artifacts (only possible if this is not a PR originated on a fork)
+  # publish artifacts
   - task: PublishBuildArtifacts@1
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     displayName: Publish deployables artifacts
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName: deployables
       ArtifactType: Container
 
-  # push NuGet packages to AzureArtifacts feed (always happens except on PR builds)
+  # push NuGet class lib package to NuGet (happens on all builds except PRs)
   - task: NuGetCommand@2
-    condition: succeeded()
-    displayName: Push NuGet packages to AzureArtifacts
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
+        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
+    displayName: Push nanoff NuGet package to NuGet
     continueOnError: true
     inputs:
       command: push
-      nuGetFeedType: external
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'AzureArtifacts-nanoFirmwareFlasher'
-
-  # push NuGet class lib package to NuGet (happens on tag builds for any branch)
-  - task: NuGetCommand@2
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
-    displayName: Push NuGet packages to NuGet
-    continueOnError: true
-    inputs:
-      command: push
+      feedsToUse: select
       nuGetFeedType: external
       allowPackageConflicts: true
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)\nanoff.$(NBGV_NuGetPackageVersion).nupkg'
       publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
 
-  # create or update GitHub release ON tags from release or master branches
-  - task: GitHubReleasePublish@1
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
-    displayName: Create/Update GitHub PREVIEW release 
+  # push NuGet class lib package to NuGet (happens on all builds except PRs)
+  - task: NuGetCommand@2
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
+        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )    
+    displayName: Push library NuGet package to NuGet
+    continueOnError: true
     inputs:
-      githubEndpoint: 'nanoFramework'
-      githubOwner: 'nanoframework'
-      githubRepositoryName: 'nanoFirmwareFlasher '
-      githubTag: v$(MY_NUGET_VERSION)
-      githubReleaseTitle: 'nano firmware flasher v$(MY_NUGET_VERSION)'
-      githubReleaseNotes: 'add description here'
-      githubTargetCommitsh: $(Build.SourceVersion)
-      githubReleaseDraft: false
-      githubReleasePrerelease: true
-      githubReuseDraftOnly: false
-      githubReuseRelease: true
-      githubEditRelease: true
-      githubDeleteEmptyTag: true
-      githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+      command: push
+      feedsToUse: select
+      nuGetFeedType: external
+      allowPackageConflicts: true
+      packagesToPush: '$(Build.ArtifactStagingDirectory)\nanoFramework.Tools.FirmwareFlasher.$(NBGV_NuGetPackageVersion).nupkg'
+      publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
 
-  # create or update GitHub release ON tags from release or master branches
-  - task: GitHubReleasePublish@1
-    condition: and( succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), not(contains(variables['Build.SourceBranch'], 'preview') ) )
+  # create or update GitHub release
+  - task: GithubRelease@1
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
+        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
+    displayName: Create/Update GitHub PREVIEW release
+    inputs:
+      gitHubConnection: 'github.com_nano-$(System.TeamProject)'
+      tagSource: userSpecifiedTag
+      tag: v$(MY_NUGET_VERSION)
+      title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
+      releaseNotesSource: inline
+      releaseNotesInline: 'add description here'
+      assets: ''
+      isPreRelease: true
+      addChangeLog: false
+
+  # create or update GitHub release
+  - task: GithubRelease@1
+    condition: >-
+      and(
+        succeeded(),
+        startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
+        not(contains(variables['Build.SourceBranch'], 'preview')),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     displayName: Create/Update GitHub stable release
     inputs:
-      githubEndpoint: 'nanoFramework'
-      githubOwner: 'nanoframework'
-      githubRepositoryName: 'nanoFirmwareFlasher '
-      githubTag: v$(MY_NUGET_VERSION)
-      githubReleaseTitle: 'nano firmware flasher v$(MY_NUGET_VERSION)'
-      githubReleaseNotes: 'add description here'
-      githubTargetCommitsh: $(Build.SourceVersion)
-      githubReleaseDraft: false
-      githubReleasePrerelease: false
-      githubReuseDraftOnly: false
-      githubReuseRelease: true
-      githubEditRelease: false
-      githubDeleteEmptyTag: true
-      githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/$(nugetPackageName).$(MY_NUGET_VERSION).nupkg'
+      gitHubConnection: 'github.com_nano-$(System.TeamProject)'
+      tagSource: userSpecifiedTag
+      tag: v$(MY_NUGET_VERSION)
+      title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
+      releaseNotesSource: inline
+      releaseNotesInline: 'add description here'
+      assets: '' 
+      isPreRelease: false
+      addChangeLog: false
+      action: edit
+
+  # update dependencies
+  - task: PowerShell@2
+    condition: >-
+      and(
+        or(
+          eq(variables['UPDATE_DEPENDENTS'], 'true'),
+          eq(variables['RUN_UPDATE_DEPENDENTS'], 'true')
+        ),
+        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+      )
+    displayName: Update dependent tools
+    inputs:
+      targetType: filePath
+      filePath: azure-pipelines/update-dependencies.ps1
+    env:
+      MY_GITHUB_TOKEN: $(GitHubToken)
 
 ##################################
 # report build failure to Discord

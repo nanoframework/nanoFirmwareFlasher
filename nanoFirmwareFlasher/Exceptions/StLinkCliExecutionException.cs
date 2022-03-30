@@ -9,13 +9,13 @@ using System.Runtime.Serialization;
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// Error executing ST Link CLI command.
+    /// Error executing STM32 Programmer CLI command.
     /// </summary>
     [Serializable]
     internal class StLinkCliExecutionException : Exception
     {
         /// <summary>
-        /// Error message from ST Link CLI.
+        /// Error message from STM32 Programmer CLI.
         /// </summary>
         public string ExecutionError;
 
