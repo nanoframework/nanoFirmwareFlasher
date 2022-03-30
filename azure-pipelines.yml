@@ -1,24 +1,28 @@
+# Copyright (c) .NET Foundation and Contributors
+# See LICENSE file in the project root for full license information.
+
 trigger:
   branches:
-    include: 
+    include:
       - main
       - develop
       - release-*
   paths:
-    exclude: 
-      - README.md
-      - README.zh-cn.md
+    exclude:
+      - .github_changelog_generator
+      - .gitignore
       - CHANGELOG.md
       - CODE_OF_CONDUCT.md
       - LICENSE.md
+      - README.md
       - NuGet.Config
-      - .github_changelog_generator
-      - .gitignore
       - assets/*
       - config/*
+      - .github/*
+
   tags:
-    include:
-      - refs/tags/v*
+    include: 
+      - v*
 
 # PR always trigger build
 pr:
@@ -111,8 +115,8 @@ jobs:
         git config --global user.email nanoframework@outlook.com
         git config --global core.autocrlf true
         
-        Write-Host "Checkout develop branch..."
-        git checkout --quiet develop  > $null
+        Write-Host "Checkout main branch..."
+        git checkout --quiet main  > $null
 
         # prepare release and capture output
         Write-Host "Prepare release with NBGV..."
@@ -376,27 +380,6 @@ jobs:
       allowPackageConflicts: true
       packagesToPush: '$(Build.ArtifactStagingDirectory)\nanoFramework.Tools.FirmwareFlasher.$(NBGV_NuGetPackageVersion).nupkg'
       publishFeedCredentials: 'NuGet-nanoFirmwareFlasher'
-
-  # create or update GitHub release
-  - task: GithubRelease@1
-    condition: >-
-      and(
-        succeeded(),
-        eq(variables['System.PullRequest.PullRequestId'], ''),
-        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
-        eq(variables['UPDATE_DEPENDENTS'], 'false')
-      )
-    displayName: Create/Update GitHub PREVIEW release
-    inputs:
-      gitHubConnection: 'github.com_nano-$(System.TeamProject)'
-      tagSource: userSpecifiedTag
-      tag: v$(MY_NUGET_VERSION)
-      title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
-      releaseNotesSource: inline
-      releaseNotesInline: 'add description here'
-      assets: ''
-      isPreRelease: true
-      addChangeLog: false
 
   # create or update GitHub release
   - task: GithubRelease@1
