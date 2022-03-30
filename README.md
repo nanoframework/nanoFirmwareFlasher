@@ -228,10 +228,10 @@ nanoff --installdfudrivers
 
 ### Update the firmware of a specific TI CC13x2 target
 
-To update the firmware of the TI_CC1352R1_LAUNCHXL target to the latest preview version.
+To update the firmware of the TI_CC1352R1_LAUNCHXL target to the latest version.
 
 ```console
-nanoff --update --target TI_CC1352R1_LAUNCHXL --preview
+nanoff --update --target TI_CC1352R1_LAUNCHXL
 ```
 
 ### Install the XDS110 USB drivers required by TI LaunchPad targets
