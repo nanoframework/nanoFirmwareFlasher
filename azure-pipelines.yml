@@ -392,8 +392,6 @@ jobs:
       tagSource: userSpecifiedTag
       tag: v$(MY_NUGET_VERSION)
       title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
-      releaseNotesSource: inline
-      releaseNotesInline: 'add description here'
       assets: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       isPreRelease: false
       addChangeLog: true
