@@ -20,10 +20,6 @@ trigger:
       - config/*
       - .github/*
 
-  tags:
-    include: 
-      - v*
-
 # PR always trigger build
 pr:
   autoCancel: true
@@ -386,7 +382,7 @@ jobs:
     condition: >-
       and(
         succeeded(),
-        startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
+        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
         not(contains(variables['Build.SourceBranch'], 'preview')),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
@@ -400,8 +396,9 @@ jobs:
       releaseNotesInline: 'add description here'
       assets: '' 
       isPreRelease: false
-      addChangeLog: false
-      action: edit
+      addChangeLog: true
+      action: create
+      isDraft: true
 
   # update dependencies
   - task: PowerShell@2
