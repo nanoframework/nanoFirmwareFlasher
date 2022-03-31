@@ -394,7 +394,7 @@ jobs:
       title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       releaseNotesSource: inline
       releaseNotesInline: 'add description here'
-      assets: '' 
+      assets: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       isPreRelease: false
       addChangeLog: true
       action: create
