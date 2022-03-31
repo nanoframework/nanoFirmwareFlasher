@@ -159,7 +159,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             var fwVersion = string.IsNullOrEmpty(_fwVersion) ? "latest" : _fwVersion;
 
             // compose query
-            string requestUri = $"{repoName}/?query=name:{_targetName} version:^{fwVersion}$";
+            string requestUri = $"{repoName}/?query=name:^{_targetName}$ version:^{fwVersion}$";
 
             string downloadUrl = string.Empty;
 
@@ -233,6 +233,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     string responseBody = await response.Content.ReadAsStringAsync();
 
                     bool targetNotFound = false;
+
                     bool packageOutdated = false;
                     List<CloudsmithPackageInfo> packageInfo = null;
 
@@ -246,39 +247,69 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // parse response
                         packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
 
-                        // if no specific version was requested, use latest available
-                        if (string.IsNullOrEmpty(_fwVersion))
+                        // sanity check
+                        if (packageInfo.Count() != 1)
                         {
-                            _fwVersion = packageInfo.ElementAt(0).Version;
-                            // grab download URL
-                            downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
+                            Console.WriteLine("");
+
+                            if (Verbosity >= VerbosityLevel.Normal)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+
+                                Console.WriteLine($"Several hits returned, expecting only one!");
+                                Console.Write("Please report this issue.");
+
+                                return ExitCodes.E9005;
+                            }
                         }
                         else
                         {
-                            //get the download Url from the Cloudsmith Package info
-                            // addition check if the cloudsmith json return empty json
-                            if (packageInfo is null || packageInfo.Count == 0)
+                            // if no specific version was requested, use latest available
+                            if (string.IsNullOrEmpty(_fwVersion))
                             {
-                                return ExitCodes.E9005;
+                                _fwVersion = packageInfo.ElementAt(0).Version;
+                                // grab download URL
+                                downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
                             }
                             else
                             {
-                                downloadUrl = packageInfo.Where(w => w.Version == _fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
+                                //get the download Url from the Cloudsmith Package info
+                                // addition check if the cloudsmith json return empty json
+                                if (packageInfo is null || packageInfo.Count == 0)
+                                {
+                                    return ExitCodes.E9005;
+                                }
+                                else
+                                {
+                                    downloadUrl = packageInfo.Where(w => w.Version == _fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
+                                }
                             }
-                        }
 
-                        // sanity check for target name matching requested
-                        if (packageInfo.ElementAt(0).TargetName != _targetName)
-                        {
-                            targetNotFound = true;
-                        }
-                        else
-                        {
-                            // check package published date
-                            if (packageInfo.ElementAt(0).PackageDate < DateTime.UtcNow.AddMonths(-2))
+                            // sanity check for target name matching requested
+                            if (packageInfo.ElementAt(0).TargetName != _targetName)
                             {
-                                // if older than 2 months warn user
-                                packageOutdated = true;
+                                targetNotFound = true;
+
+                                Console.WriteLine("");
+
+                                if (Verbosity >= VerbosityLevel.Normal)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+
+                                    Console.WriteLine($"There's a mismatch in the target name. Requested '{_targetName}' but got '{packageInfo.ElementAt(0).TargetName}'!");
+                                    Console.Write("Please report this issue.");
+
+                                    return ExitCodes.E9005;
+                                }
+                            }
+                            else
+                            {
+                                // check package published date
+                                if (packageInfo.ElementAt(0).PackageDate < DateTime.UtcNow.AddMonths(-2))
+                                {
+                                    // if older than 2 months warn user
+                                    packageOutdated = true;
+                                }
                             }
                         }
                     }
