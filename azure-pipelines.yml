@@ -217,6 +217,24 @@ jobs:
     displayName: Build NuGet package
     condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
 
+##################################################
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet test'
+    inputs:
+      command: test
+      projects: |
+        ./nanoFirmwareFlasher.Tests/nanoFirmwareFlasher.Tests.csproj
+      arguments: '--configuration $(BuildConfiguration) --collect "XPlat Code coverage"'
+
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publish code coverage'
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+
+##################################################
+
   - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
     displayName: Build .NET Core Tool NuGet package
     condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
