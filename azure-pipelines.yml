@@ -37,7 +37,7 @@ jobs:
 ##############################
 - job: Check_Build_Options
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
 
   steps:
   
@@ -169,7 +169,7 @@ jobs:
   - Check_Build_Options
 
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-2022'
 
   variables:
     DOTNET_NOLOGO: true
@@ -201,7 +201,7 @@ jobs:
   # only required when updating dependents
   - script: nbgv cloud -a -c
     condition: eq(variables['UPDATE_DEPENDENTS'], 'true')
-    displayName: Set Could Version
+    displayName: Set nbgv Cloud Version
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
