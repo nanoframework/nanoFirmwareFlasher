@@ -201,7 +201,7 @@ jobs:
   # only required when updating dependents
   - script: nbgv cloud -a -c
     condition: eq(variables['UPDATE_DEPENDENTS'], 'true')
-    displayName: Set nbgv Cloud Version
+    displayName: Set Pipeline Version
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
