@@ -11,6 +11,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -148,18 +149,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Download the firmware zip, extract this zip file, and get the firmware parts
         /// </summary>
         /// <returns>a dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</returns>
-        protected async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync()
+        protected async Task<ExitCodes> DownloadAndExtractAsync()
         {
             string fwFileName = null;
-
-            // reference targets
-            var repoName = _preview ? _refTargetsDevRepo : _refTargetsStableRepo;
-
-            // get the firmware version if it is defined
-            var fwVersion = string.IsNullOrEmpty(_fwVersion) ? "latest" : _fwVersion;
-
-            // compose query
-            string requestUri = $"{repoName}/?query=name:^{_targetName}$ version:^{fwVersion}$";
 
             string downloadUrl = string.Empty;
 
@@ -219,156 +211,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!skipDownload)
             {
-                // try to perform request
-                try
+                // try to get download URL
+                DownloadUrlResult downloadResult = await GetDownloadUrlAsync(
+                    _targetName,
+                    _fwVersion,
+                    _preview,
+                    Verbosity);
+
+                if (downloadResult.Outcome != ExitCodes.OK)
                 {
-                    if (Verbosity >= VerbosityLevel.Normal)
-                    {
-                        Console.ForegroundColor = ConsoleColor.White;
-                        Console.Write($"Trying to find {_targetName} in {(_preview ? "development" : "stable")} repository...");
-                    }
-
-                    HttpResponseMessage response = await _cloudsmithClient.GetAsync(requestUri);
-
-                    string responseBody = await response.Content.ReadAsStringAsync();
-
-                    bool targetNotFound = false;
-
-                    bool packageOutdated = false;
-                    List<CloudsmithPackageInfo> packageInfo = null;
-
-                    // check for empty array 
-                    if (responseBody == "[]")
-                    {
-                        targetNotFound = true;
-                    }
-                    else
-                    {
-                        // parse response
-                        packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
-
-                        // sanity check
-                        if (packageInfo.Count() != 1)
-                        {
-                            Console.WriteLine("");
-
-                            if (Verbosity >= VerbosityLevel.Normal)
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-
-                                Console.WriteLine($"Several hits returned, expecting only one!");
-                                Console.Write("Please report this issue.");
-
-                                return ExitCodes.E9005;
-                            }
-                        }
-                        else
-                        {
-                            // if no specific version was requested, use latest available
-                            if (string.IsNullOrEmpty(_fwVersion))
-                            {
-                                _fwVersion = packageInfo.ElementAt(0).Version;
-                                // grab download URL
-                                downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
-                            }
-                            else
-                            {
-                                //get the download Url from the Cloudsmith Package info
-                                // addition check if the cloudsmith json return empty json
-                                if (packageInfo is null || packageInfo.Count == 0)
-                                {
-                                    return ExitCodes.E9005;
-                                }
-                                else
-                                {
-                                    downloadUrl = packageInfo.Where(w => w.Version == _fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
-                                }
-                            }
-
-                            // sanity check for target name matching requested
-                            if (packageInfo.ElementAt(0).TargetName != _targetName)
-                            {
-                                targetNotFound = true;
-
-                                Console.WriteLine("");
-
-                                if (Verbosity >= VerbosityLevel.Normal)
-                                {
-                                    Console.ForegroundColor = ConsoleColor.Red;
-
-                                    Console.WriteLine($"There's a mismatch in the target name. Requested '{_targetName}' but got '{packageInfo.ElementAt(0).TargetName}'!");
-                                    Console.Write("Please report this issue.");
-
-                                    return ExitCodes.E9005;
-                                }
-                            }
-                            else
-                            {
-                                // check package published date
-                                if (packageInfo.ElementAt(0).PackageDate < DateTime.UtcNow.AddMonths(-2))
-                                {
-                                    // if older than 2 months warn user
-                                    packageOutdated = true;
-                                }
-                            }
-                        }
-                    }
-
-                    if (targetNotFound)
-                    {
-                        // can't find this target
-
-                        Console.WriteLine("");
-
-                        if (Verbosity >= VerbosityLevel.Normal)
-                        {
-                            // output helpful message
-                            Console.ForegroundColor = ConsoleColor.Red;
-
-                            Console.WriteLine("");
-                            Console.WriteLine("*************************** ERROR **************************");
-                            Console.WriteLine("Couldn't find this target in our Cloudsmith repositories!");
-                            Console.WriteLine("To list the available targets use this option --listtargets.");
-                            Console.WriteLine("************************************************************");
-                            Console.WriteLine("");
-
-                            Console.ForegroundColor = ConsoleColor.White;
-                        }
-
-                        return ExitCodes.E9005;
-                    }
-
-                    if (Verbosity >= VerbosityLevel.Normal)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine($"OK");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-
-                    if (packageOutdated)
-                    {
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Console.WriteLine();
-
-                        Console.WriteLine("******************************* WARNING ******************************");
-                        Console.WriteLine($"** This firmware package was released at {packageInfo.ElementAt(0).PackageDate.ToShortDateString()}                 **");
-                        Console.WriteLine("** The target it's probably outdated.                               **");
-                        Console.WriteLine("** Please check the current target names here: https://git.io/JyfuI **");
-                        Console.WriteLine("**********************************************************************");
-
-                        Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-
-                    // set exposed property
-                    Version = _fwVersion;
-
-                    stepSuccessful = true;
+                    return downloadResult.Outcome;
                 }
-                catch
-                {
-                    // exception with download, assuming it's something with network connection or Cloudsmith API
-                }
+
+                downloadUrl = downloadResult.Url;
+                Version = downloadResult.Version;
+
+                stepSuccessful = !string.IsNullOrEmpty(downloadUrl);
             }
 
             // cleanup any fw file in the folder
@@ -535,6 +393,195 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return ExitCodes.OK;
         }
 
+        private static async Task<DownloadUrlResult> GetDownloadUrlAsync(
+            string targetName,
+            string fwVersion,
+            bool isPreview,
+            VerbosityLevel verbosity)
+        {
+            // reference targets
+            var repoName = isPreview ? _refTargetsDevRepo : _refTargetsStableRepo;
+
+            // get the firmware version if it is defined
+            var fwVersionParam = string.IsNullOrEmpty(fwVersion) ? "latest" : fwVersion;
+
+            string downloadUrl = string.Empty;
+            string version = string.Empty;
+
+            try
+            {
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write($"Trying to find {targetName} in {(isPreview ? "development" : "stable")} repository...");
+                }
+
+                HttpResponseMessage response = await _cloudsmithClient.GetAsync($"{repoName}/?query=name:^{targetName}$ version:^{fwVersionParam}$");
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                bool targetNotFound = false;
+
+                bool packageOutdated = false;
+                List<CloudsmithPackageInfo> packageInfo = null;
+
+                // check for empty array 
+                if (responseBody == "[]")
+                {
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("Not found");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    //  try now with community targets
+                    repoName = _communityTargetsRepo;
+
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Write($"Trying to find {targetName} in community targets repository...");
+                    }
+
+                    response = await _cloudsmithClient.GetAsync($"{repoName}/?query=name:^{targetName}$ version:^{fwVersionParam}$");
+
+                    responseBody = await response.Content.ReadAsStringAsync();
+                }
+
+                if (responseBody == "[]")
+                {
+                    targetNotFound = true;
+                }
+                else
+                {
+                    // parse response
+                    packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
+
+                    // sanity check
+                    if (packageInfo.Count() != 1)
+                    {
+                        Console.WriteLine("");
+
+                        if (verbosity >= VerbosityLevel.Normal)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+
+                            Console.WriteLine($"Several hits returned, expecting only one!");
+                            Console.Write("Please report this issue.");
+
+                            return new DownloadUrlResult(string.Empty, string.Empty, ExitCodes.E9005);
+                        }
+                    }
+                    else
+                    {
+                        // if no specific version was requested, use latest available
+                        if (string.IsNullOrEmpty(fwVersion))
+                        {
+                            fwVersion = packageInfo.ElementAt(0).Version;
+                            // grab download URL
+                            downloadUrl = packageInfo.ElementAt(0).DownloadUrl;
+                        }
+                        else
+                        {
+                            //get the download Url from the Cloudsmith Package info
+                            // addition check if the cloudsmith json return empty json
+                            if (packageInfo is null || packageInfo.Count == 0)
+                            {
+                                return new DownloadUrlResult(string.Empty, string.Empty, ExitCodes.E9005);
+                            }
+                            else
+                            {
+                                downloadUrl = packageInfo.Where(w => w.Version == fwVersion).Select(s => s.DownloadUrl).FirstOrDefault();
+                            }
+                        }
+
+                        // sanity check for target name matching requested
+                        if (packageInfo.ElementAt(0).TargetName != targetName)
+                        {
+                            targetNotFound = true;
+
+                            Console.WriteLine("");
+
+                            if (verbosity >= VerbosityLevel.Normal)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+
+                                Console.WriteLine($"There's a mismatch in the target name. Requested '{targetName}' but got '{packageInfo.ElementAt(0).TargetName}'!");
+                                Console.Write("Please report this issue.");
+
+                                return new DownloadUrlResult(string.Empty, string.Empty, ExitCodes.E9005);
+                            }
+                        }
+                        else
+                        {
+                            // check package published date
+                            if (packageInfo.ElementAt(0).PackageDate < DateTime.UtcNow.AddMonths(-2))
+                            {
+                                // if older than 2 months warn user
+                                packageOutdated = true;
+                            }
+                        }
+                    }
+                }
+
+                if (targetNotFound)
+                {
+                    // can't find this target
+
+                    Console.WriteLine("");
+
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        // output helpful message
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.WriteLine("");
+                        Console.WriteLine("*************************** ERROR **************************");
+                        Console.WriteLine("Couldn't find this target in our Cloudsmith repositories!");
+                        Console.WriteLine("To list the available targets use this option --listtargets.");
+                        Console.WriteLine("************************************************************");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    return new DownloadUrlResult(string.Empty, string.Empty, ExitCodes.E9005);
+                }
+
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"OK");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                if (packageOutdated)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine();
+
+                    Console.WriteLine("******************************* WARNING ******************************");
+                    Console.WriteLine($"** This firmware package was released at {packageInfo.ElementAt(0).PackageDate.ToShortDateString()}                 **");
+                    Console.WriteLine("** The target it's probably outdated.                               **");
+                    Console.WriteLine("** Please check the current target names here: https://git.io/JyfuI **");
+                    Console.WriteLine("**********************************************************************");
+
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                // set exposed property
+                version = fwVersion;
+            }
+            catch
+            {
+                // exception with download, assuming it's something with network connection or Cloudsmith API
+            }
+
+            return new DownloadUrlResult(downloadUrl, version, ExitCodes.OK);
+        }
+
 
         #region IDisposable Support
 
@@ -575,5 +622,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         #endregion
+
+        internal record struct DownloadUrlResult(string Url, string Version, ExitCodes Outcome)
+        {
+        }
     }
+
 }
