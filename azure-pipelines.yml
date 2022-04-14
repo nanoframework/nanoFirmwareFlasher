@@ -19,7 +19,10 @@ trigger:
       - assets/*
       - config/*
       - .github/*
-
+  tags:
+    include:
+    - refs/tags/v*
+    
 # PR always trigger build
 pr:
   autoCancel: true
@@ -383,7 +386,7 @@ jobs:
       and(
         succeeded(),
         not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
-        not(contains(variables['Build.SourceBranch'], 'preview')),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
     displayName: Create/Update GitHub stable release
