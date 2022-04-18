@@ -61,7 +61,16 @@ Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-linux-am
 # cleanup files
 Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin\LICENSE" -Resolve) -Force
 Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin\README.md" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin\esp_rfc2217_server.exe" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin\espefuse.exe" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin\espsecure.exe" -Resolve) -Force
 Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac\LICENSE" -Resolve) -Force
 Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac\README.md" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac\esp_rfc2217_server" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac\espefuse" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac\espsecure" -Resolve) -Force
 Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux\LICENSE" -Resolve) -Force
 Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux\README.md" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux\esp_rfc2217_server" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux\espefuse" -Resolve) -Force
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux\espsecure" -Resolve) -Force
