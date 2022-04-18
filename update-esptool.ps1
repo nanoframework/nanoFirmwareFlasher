@@ -48,14 +48,14 @@ Expand-Archive $outputLinux -DestinationPath $env:TEMP  -Force > $null
 
 # clean destination folders
 Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve) -Include *.* -Force -Recurse
-Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac\LICENSE" -Resolve) -Include *.* -Force -Recurse
-Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux\LICENSE" -Resolve) -Include *.* -Force -Recurse
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac" -Resolve) -Include *.* -Force -Recurse
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux" -Resolve) -Include *.* -Force -Recurse
 
 # copy files to the correct locations
 "Copying files to tools folders..." | Write-Host -ForegroundColor White -NoNewline
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-win64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve)
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-macos\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac" -Resolve)
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-linux-amd64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux" -Resolve)
+Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-win64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve) -Force
+Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-macos\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac" -Resolve) -Force
+Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-linux-amd64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux" -Resolve) -Force
 "OK" | Write-Host -ForegroundColor Green
 
 # cleanup files
