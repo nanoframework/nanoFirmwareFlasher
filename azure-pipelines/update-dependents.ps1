@@ -19,7 +19,6 @@ $repoName = 'nf-VSCodeExtension'
 # clone repo and checkout main branch
 Write-Debug "Init and featch $repoName repo"
 
-
 git clone --recurse-submodules --depth 1 https://github.com/nanoframework/$repoName repo 
 Set-Location repo | Out-Null
 git config --global gc.auto 0
@@ -115,5 +114,5 @@ if ($repoStatus -ne "")
 }
 else
 {
-    Write-Host "Nothing udpate at nanoFramework Deployer."
+    Write-Host "Nothing udpate at nanoFramework.Tools.FirmwareFlasher."
 }

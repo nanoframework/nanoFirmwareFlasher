@@ -180,7 +180,7 @@ jobs:
     buildConfiguration: 'Release'
     solution: 'nanoFirmwareFlasher.sln'
     run_update_dependents: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
-    isTag: $[not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))]
+    isTag: $[startsWith(variables['Build.SourceBranch'], 'refs/tags/v')]
 
   steps:
 
@@ -439,7 +439,7 @@ jobs:
           { "label" : "Type: documentation", "displayName" : "Documentation", "state" : "closed" }
         ]
 
-  # update dependencies
+  # update dependents
   - task: PowerShell@2
     condition: >-
       or(
@@ -463,7 +463,7 @@ jobs:
   condition: or( failed('Check_Build_Options'), failed('Build_tool') )
 
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
 
   steps:
 
