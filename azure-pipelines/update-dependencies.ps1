@@ -21,7 +21,7 @@ Set-Location "$env:Agent_TempDirectory" | Out-Null
 
 $repoName = 'nf-VSCodeExtension'
 
-# clone repo and checkout develop branch
+# clone repo and checkout main branch
 Write-Debug "Init and featch $repoName repo"
 
 
@@ -32,8 +32,8 @@ git config --global user.name nfbot
 git config --global user.email nanoframework@outlook.com
 git config --global core.autocrlf true
 
-Write-Host "Checkout develop branch..."
-git checkout --quiet develop | Out-Null
+Write-Host "Checkout main branch..."
+git checkout --quiet main | Out-Null
 
 ####################
 # VS Code extension
@@ -42,7 +42,7 @@ Write-Host "Updating nanoFramework.Tools.FirmwareFlasher version in VS Code exte
 
 Set-Location nanoFirmwareFlasher | Out-Null
 
-git checkout tags/v$packageTargetVersion
+git checkout --quiet tags/v$packageTargetVersion
 
 #####################
 
@@ -88,10 +88,10 @@ if ($repoStatus -ne "")
     git -c http.extraheader="AUTHORIZATION: $auth" push --set-upstream origin $newBranchName > $null
 
     # start PR
-    # we are hardcoding to 'develop' branch to have a fixed one
+    # we are hardcoding to 'main' branch to have a fixed one
     # this is very important for tags (which don't have branch information)
     # considering that the base branch can be changed at the PR there is no big deal about this 
-    $prRequestBody = @{title="$prTitle";body="$commitMessage";head="$newBranchName";base="develop"} | ConvertTo-Json
+    $prRequestBody = @{title="$prTitle";body="$commitMessage";head="$newBranchName";base="main"} | ConvertTo-Json
     $githubApiEndpoint = "https://api.github.com/repos/nanoframework/$repoName/pulls"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
