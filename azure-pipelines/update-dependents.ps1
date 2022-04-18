@@ -2,18 +2,13 @@
 
 # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
 # 'encoded token' is the Base64 of the string "nfbot:personal-token"
-$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:MY_GITHUB_TOKEN"))))"
-
-# because it can take sometime for the package to become available on the NuGet providers
-# need to hang in here for 1 minute (1 * 60)
-"Waiting 1 minute to let package process flow in Azure Artifacts feed..." | Write-Host
-Start-Sleep -Seconds 60 
+$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:GH_TOKEN"))))"
 
 # init/reset these
 $commitMessage = ""
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
-$packageTargetVersion = $env:NBGV_NuGetPackageVersion
+$packageTargetVersion = gh release view --json tagName --jq .tagName
 
 # working directory is agent temp directory
 Write-Debug "Changing working directory to $env:Agent_TempDirectory"
@@ -42,7 +37,9 @@ Write-Host "Updating nanoFramework.Tools.FirmwareFlasher version in VS Code exte
 
 Set-Location nanoFirmwareFlasher | Out-Null
 
-git checkout --quiet tags/v$packageTargetVersion
+git checkout --quiet tags/$packageTargetVersion
+
+Set-Location .. | Out-Null
 
 #####################
 
