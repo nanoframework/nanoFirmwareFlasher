@@ -397,9 +397,18 @@ jobs:
       title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       assets: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       isPreRelease: false
-      addChangeLog: true
       action: create
-      isDraft: true
+      isDraft: false
+      addChangeLog: true
+      changeLogType: issueBased
+      changeLogLabels: |
+        [
+          { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
+          { "label" : "Type: enhancement", "displayName" : "Enhancements and new features", "state" : "closed" },
+          { "label" : "Breaking-Change", "displayName" : "Breaking Changes", "state" : "closed" }
+          { "label" : "Type: dependencies", "displayName" : "Dependencies updated", "state" : "closed" },
+          { "label" : "Type: documentation", "displayName" : "Documentation", "state" : "closed" }
+        ]
 
   # update dependencies
   - task: PowerShell@2
@@ -407,9 +416,9 @@ jobs:
       and(
         or(
           eq(variables['UPDATE_DEPENDENTS'], 'true'),
-          eq(variables['RUN_UPDATE_DEPENDENTS'], 'true')
+          eq($(run_update_dependents), 'true')
         ),
-        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+        not(startsWith($(Build.SourceBranch), 'refs/tags/v'))
       )
     displayName: Update dependent tools
     inputs:
