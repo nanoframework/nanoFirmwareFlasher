@@ -25,7 +25,7 @@ $repoName = 'nf-VSCodeExtension'
 Write-Debug "Init and featch $repoName repo"
 
 
-git clone --depth 1 https://github.com/nanoframework/$repoName repo
+git clone --recurse-submodules --depth 1 https://github.com/nanoframework/$repoName repo 
 Set-Location repo | Out-Null
 git config --global gc.auto 0
 git config --global user.name nfbot
