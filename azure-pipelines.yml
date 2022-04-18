@@ -416,9 +416,9 @@ jobs:
       and(
         or(
           eq(variables['UPDATE_DEPENDENTS'], 'true'),
-          eq($(run_update_dependents), 'true')
+          eq(variables['run_update_dependents'], 'true')
         ),
-        not(startsWith($(Build.SourceBranch), 'refs/tags/v'))
+        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
       )
     displayName: Update dependent tools
     inputs:
