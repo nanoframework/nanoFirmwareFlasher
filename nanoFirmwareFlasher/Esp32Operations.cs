@@ -125,10 +125,37 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         var revisionSuffix = "REV0";
                         var psRamSegment = "";
+                        var otherSegment = "";
 
                         if (esp32Device.ChipName.Contains("revision 3"))
                         {
                             revisionSuffix = "REV3";
+                        }
+
+                        if (esp32Device.Crystal.StartsWith("26"))
+                        {
+                            // this one requires the 26MHz version
+                            // and we only have a PSRAM version for this
+
+                            // check that 
+                            if (esp32Device.PSRamAvailable != PSRamAvailability.Yes)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+
+                                Console.WriteLine("");
+                                Console.WriteLine("The connected ESP32 device has a 26MHz crystal and no PSRAM.");
+                                Console.WriteLine("We currently don't have a firmware image for that combination. Please report this to the project team.");
+                                Console.WriteLine("");
+
+                                Console.ForegroundColor = ConsoleColor.White;
+
+                                return ExitCodes.E9000;
+                            }
+
+                            // OK to force rev0 even if that's higher
+                            revisionSuffix = "REV0";
+
+                            otherSegment = "_XTAL26";
                         }
 
                         if (esp32Device.PSRamAvailable == PSRamAvailability.Yes)
@@ -137,7 +164,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         // compose target name
-                        targetName = $"ESP32{psRamSegment}_{revisionSuffix}";
+                        targetName = $"ESP32{psRamSegment}{otherSegment}_{revisionSuffix}";
                     }
                 }
                 else if (esp32Device.ChipType == "ESP32-S2")
