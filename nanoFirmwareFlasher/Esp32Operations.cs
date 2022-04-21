@@ -132,35 +132,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             revisionSuffix = "REV3";
                         }
 
-                        if (esp32Device.Crystal.StartsWith("26"))
-                        {
-                            // this one requires the 26MHz version
-                            // and we only have a PSRAM version for this
-
-                            // check that 
-                            if (esp32Device.PSRamAvailable != PSRamAvailability.Yes)
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-
-                                Console.WriteLine("");
-                                Console.WriteLine("The connected ESP32 device has a 26MHz crystal and no PSRAM.");
-                                Console.WriteLine("We currently don't have a firmware image for that combination. Please report this to the project team.");
-                                Console.WriteLine("");
-
-                                Console.ForegroundColor = ConsoleColor.White;
-
-                                return ExitCodes.E9000;
-                            }
-
-                            // OK to force rev0 even if that's higher
-                            revisionSuffix = "REV0";
-
-                            otherSegment = "_XTAL26";
-                        }
-
                         if (esp32Device.PSRamAvailable == PSRamAvailability.Yes)
                         {
                             psRamSegment = "_PSRAM";
+                        }
+
+                        if (esp32Device.Crystal.StartsWith("26"))
+                        {
+                            // this one requires the 26MHz version
+                            otherSegment = "_XTAL26";
+
+                            // and we only have a version with PSRAM support, so force that
+                            psRamSegment = "_PSRAM";
+
+                            // also need to force rev0 even if that's higher
+                            revisionSuffix = "REV0";
                         }
 
                         // compose target name
