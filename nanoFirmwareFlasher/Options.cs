@@ -231,6 +231,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool Deploy { get; set; }
 
         [Option(
+            "preview",
+            Required = false,
+            Default = false,
+            HelpText = "[Deprecated!] Downloads the preview firmware package from the repository.")]
+        public bool Preview { get; set; }
+
+        [Option(
             "image",
             Required = false,
             Default = null,
