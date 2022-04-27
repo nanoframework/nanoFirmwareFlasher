@@ -234,7 +234,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "preview",
             Required = false,
             Default = false,
-            HelpText = "[Deprecated!] Downloads the preview firmware package from the repository.")]
+            HelpText = "Download a firmware package from the preview repository that includes major changes or experimental features.")]
         public bool Preview { get; set; }
 
         [Option(

@@ -311,7 +311,7 @@ List packages available for STM32 targets:
 nanoff --listboards --platform stm32
 ```
 
-If you just use `--listtargets` switch, you'll get the list of all the stable packages for all targets.
+If you use the `--listtargets` switch in conjunction with `--preview`, you'll get the list of packages that maybe used for experimental or major feature changes.
 
 ## Clear cache location
 
