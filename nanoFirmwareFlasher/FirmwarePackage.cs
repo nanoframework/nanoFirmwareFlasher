@@ -28,7 +28,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private const string _communityTargetsRepo = "nanoframework-images-community-targets";
 
         private readonly string _targetName;
-        private string _fwVersion;
         private readonly bool _preview;
 
         private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
@@ -76,7 +75,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool preview)
         {
             _targetName = targetName;
-            _fwVersion = fwVersion;
+            Version = fwVersion;
             _preview = preview;
         }
 
@@ -214,7 +213,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // try to get download URL
                 DownloadUrlResult downloadResult = await GetDownloadUrlAsync(
                     _targetName,
-                    _fwVersion,
+                    Version,
                     _preview,
                     Verbosity);
 
@@ -224,6 +223,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 downloadUrl = downloadResult.Url;
+                
+                // update with version from package about to be downloaded
                 Version = downloadResult.Version;
 
                 stepSuccessful = !string.IsNullOrEmpty(downloadUrl);
@@ -247,7 +248,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // reset flag
                 stepSuccessful = false;
 
-                fwFileName = $"{_targetName}-{_fwVersion}.zip";
+                fwFileName = $"{_targetName}-{Version}.zip";
 
                 // check if we already have the file
                 if (!File.Exists(
@@ -308,13 +309,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (fwFiles.Any())
                 {
-                    if (string.IsNullOrEmpty(_fwVersion))
+                    if (string.IsNullOrEmpty(Version))
                     {// take the 1st one
                         fwFileName = fwFiles.First().FullName;
                     }
                     else
                     {
-                        string targetFileName = $"{_targetName}-{_fwVersion}.zip";
+                        string targetFileName = $"{_targetName}-{Version}.zip";
                         fwFileName = fwFiles.Where(w => w.Name == targetFileName).Select(s => s.FullName).FirstOrDefault();
                     }
 
