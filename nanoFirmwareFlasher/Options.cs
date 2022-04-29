@@ -234,7 +234,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "preview",
             Required = false,
             Default = false,
-            HelpText = "Preview version. Will download the firmware package from the preview repository.")]
+            HelpText = "Download a firmware package from the preview repository that includes major changes or experimental features.")]
         public bool Preview { get; set; }
 
         [Option(
@@ -306,14 +306,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public static IEnumerable<Example> Examples =>
             new List<Example>
             {
-                new("- Update ESP32 WROVER Kit device with latest available firmware (stable version)", new Options { TargetName = "ESP_WROVER_KIT", Update = true }),
-                new("- Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware (preview version), using JTAG interface", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, Preview = true, JtagUpdate = true}),
+                new("- Update ESP32 WROVER Kit device with latest available firmware", new Options { TargetName = "ESP_WROVER_KIT", Update = true }),
+                new("- Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware, using JTAG interface", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, JtagUpdate = true}),
                 new("- Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { TargetName = "ESP32_PSRAM_REV0", Update = true, SerialPort = "COM31" }),
                 new("- Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP_WROVER_KIT" , DeploymentImage = "<location of file>.bin"}),
-                new("- Update specific STM32 device (NETDUINO3_WIFI) with latest available firmware (preview version), device is connected through DFU with Id 3380386D3134", new Options { TargetName = "NETDUINO3_WIFI",  Update = true, Preview = true, DfuDeviceId = "3380386D3134" }),
                 new("- List all STM32 devices connected through JTAG", new Options { Platform = SupportedPlatform.esp32, ListJtagDevices = true}),
                 new("- Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
-                new("- List all available STM32 targets", new Options { ListTargets = true, Preview = true, Platform =  SupportedPlatform.stm32 }),
+                new("- List all available STM32 targets", new Options { ListTargets = true, Platform =  SupportedPlatform.stm32 }),
                 new("- List all available COM ports", new Options { ListComPorts = true }),
             };
     }

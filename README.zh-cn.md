@@ -184,7 +184,7 @@ nanoff --target ST_STM32F769I_DISCOVERY --deploy --image "E:\GitHub\nf-Samples\s
 本例使用了Visual Studio在构建任何nanoFramework c#应用程序时生成的二进制格式文件。 因为它是一个二进制文件，所以您还必须指定部署区域的flash地址(这里是0x08000000，注意十六进制格式)。  
 
 ```控制台
-nanoff --update --target ST_STM32F769I_DISCOVERY --preview --jtag --binfile "c:\dev\my awesome app\bin\debug\my_awesome_app.bin" --address 0x08000000
+nanoff --update --target ST_STM32F769I_DISCOVERY --jtag --binfile "c:\dev\my awesome app\bin\debug\my_awesome_app.bin" --address 0x08000000
 ```
 
 ### 列出JTAG连接中可用的所有STM32设备  
@@ -264,12 +264,12 @@ nanoff -v q
 ## 目标列表
 
 翻译结果
-您可以列出支持的目标及其版本，用于稳定版本或预览。 `--platform` 允许您过滤平台。 `--preview` 过滤查询以仅显示预览版本。 
+您可以列出支持的目标及其版本，用于稳定版本或预览。 `--platform` 允许您过滤平台。 
 
 在预览版本中列出可用于ESP32目标的软件包。  
 
 ```控制台
-nanoff --listboards --platform esp32 --preview
+nanoff --listboards --platform esp32
 ```
 
 列出可用于STM32目标的包(稳定版本)。  
