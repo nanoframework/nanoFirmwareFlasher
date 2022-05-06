@@ -576,7 +576,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else
             {
-                appName = "esptool";
+                appName = "./esptool";
                 appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolLinux");
             }
 
