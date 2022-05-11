@@ -576,8 +576,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else
             {
-                appName = "./esptool";
+                appName = "esptool";
                 appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolLinux");
+                Process espToolExex = new Process();
+                // Making sure the esptool is executable
+                espToolExex.StartInfo = new ProcessStartInfo("chmod +x", Path.Combine(appDir, appName))
+                {
+                    WorkingDirectory = appDir,
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true
+                };
+                if (!espToolExex.Start())
+                {
+                    throw new EspToolExecutionException("Error changing permissions for esptool!");
+                }
+
+                while (!espToolExex.HasExited)
+                {
+                    Thread.Sleep(10);
+                }
             }
 
             Process espTool = new Process();
@@ -605,7 +623,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!espTool.Start())
             {
                 throw new EspToolExecutionException("Error starting esptool!");
-            }
+            }           
 
             var messageBuilder = new StringBuilder();
 
