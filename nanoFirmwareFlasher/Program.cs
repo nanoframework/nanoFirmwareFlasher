@@ -96,29 +96,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static void CheckVersion()
         {
-            Version latestVersion;
-            Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0]);
-
-            using (var client = new HttpClient())
+            try
             {
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
+                Version latestVersion;
+                Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0]);
 
-                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("nanoff", currentVersion.ToString()));
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
 
-                HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/nanoframework/nanoFirmwareFlasher/releases/latest").Result;
+                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("nanoff", currentVersion.ToString()));
 
-                dynamic responseContent = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
-                string tagName = responseContent.tag_name.ToString();
+                    HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/nanoframework/nanoFirmwareFlasher/releases/latest").Result;
 
-                latestVersion = Version.Parse(tagName.Substring(1));
+                    dynamic responseContent = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
+                    string tagName = responseContent.tag_name.ToString();
+
+                    latestVersion = Version.Parse(tagName.Substring(1));
+                }
+
+                if (latestVersion > currentVersion)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("** There is a new version available, update is recommended **");
+                    Console.WriteLine("** You should consider updating via the 'dotnet tool update -g nanoff' command **");
+                    Console.WriteLine("** If you have it installed on a specific path please check the instructions here: https://git.io/JiU0C **");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
             }
-
-            if (latestVersion > currentVersion)
+            catch (Exception)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("** There is a new version available, update is recommended **");
-                Console.WriteLine("** You should consider updating via the 'dotnet tool update -g nanoff' command **");
-                Console.WriteLine("** If you have it installed on a specific path please check the instructions here: https://git.io/JiU0C **");
+                Console.WriteLine("** Can't check the version! **");
+                Console.WriteLine("** Continuing anyway. **");
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
