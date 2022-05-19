@@ -157,7 +157,7 @@ nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\
 nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
 ```
 
-## STMP32用法示例
+## STM32用法示例
 
 ### 更新指定STM32目标的固件
 
