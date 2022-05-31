@@ -15,6 +15,7 @@ trigger:
       - CODE_OF_CONDUCT.md
       - LICENSE.md
       - README.md
+      - README.zh-cn.md
       - NuGet.Config
       - assets/*
       - config/*
