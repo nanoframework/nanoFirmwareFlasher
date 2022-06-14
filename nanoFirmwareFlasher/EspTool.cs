@@ -580,7 +580,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 appDir = Path.Combine(Program.ExecutingPath, "esptool", "esptoolLinux");
                 Process espToolExex = new Process();
                 // Making sure the esptool is executable
-                espToolExex.StartInfo = new ProcessStartInfo("chmod +x", Path.Combine(appDir, appName))
+                espToolExex.StartInfo = new ProcessStartInfo("chmod", $"+x {Path.Combine(appDir, appName)}")
                 {
                     WorkingDirectory = appDir,
                     UseShellExecute = false,
