@@ -163,6 +163,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
         #endregion
 
 
+        #region Segger J-Link options
+
+        [Option(
+            "listjlink",
+            Required = false,
+            Default = false,
+            HelpText = "List connected USB J-Link devices.")]
+        public bool ListJLinkDevices { get; set; }
+
+        [Option(
+            "jlinkid",
+            Required = false,
+            Default = null,
+            HelpText = "ID of the J-Link device to update. If not specified the first connected J-Link device will be used.")]
+        public string JLinkDeviceId { get; set; }
+
+        #endregion
+
+
         #region common options
 
         [Option(
@@ -176,7 +195,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "platform",
             Required = false,
             Default = null,
-            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2.")]
+            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2, gg11.")]
         public SupportedPlatform? Platform { get; set; }
 
         /// <summary>
@@ -308,9 +327,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 new("- Update ESP32 WROVER Kit device with latest available firmware", new Options { TargetName = "ESP_WROVER_KIT", Update = true }),
                 new("- Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware, using JTAG interface", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, JtagUpdate = true}),
-                new("- Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { TargetName = "ESP32_PSRAM_REV0", Update = true, SerialPort = "COM31" }),
-                new("- Update ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP_WROVER_KIT" , DeploymentImage = "<location of file>.bin"}),
-                new("- List all STM32 devices connected through JTAG", new Options { Platform = SupportedPlatform.esp32, ListJtagDevices = true}),
+                new("- Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { Platform = SupportedPlatform.esp32, Update = true, SerialPort = "COM31" }),
+                new("- Update specific ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP_WROVER_KIT" , DeploymentImage = "<location of file>.bin"}),
+                new("- Update specific Silabs device (Giant Gecko EVK) with latest available firmware", new Options { TargetName = "SL_STK3701A", Update = true }),
+                new("- List all STM32 devices connected through JTAG", new Options { Platform = SupportedPlatform.stm32, ListJtagDevices = true}),
                 new("- Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
                 new("- List all available STM32 targets", new Options { ListTargets = true, Platform =  SupportedPlatform.stm32 }),
                 new("- List all available COM ports", new Options { ListComPorts = true }),
@@ -338,6 +358,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         esp32 = 0,
         stm32 = 1,
-        ti_simplelink = 2
+        ti_simplelink = 2,
+        gg11
     }
 }
