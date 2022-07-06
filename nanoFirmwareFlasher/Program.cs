@@ -4,19 +4,19 @@
 //
 
 using CommandLine;
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using nanoFramework.Tools.FirmwareFlasher.Extensions;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using CommandLine.Text;
-using System.IO;
+using nanoFramework.Tools.FirmwareFlasher.Extensions;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.IO.Ports;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Newtonsoft.Json;
-using System.IO.Ports;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
