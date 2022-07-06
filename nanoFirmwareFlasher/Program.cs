@@ -66,14 +66,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     new HeadingInfo(_headerInfo),
                     _copyrightInfo)
                         .AddPreOptionsLine("")
-                        .AddPreOptionsLine("ERROR: No command was provided.")
                         .AddPreOptionsLine("")
-                        .AddPreOptionsLine("Follow some examples on how to use nanoff. For more detailed explanations please check:")
+                        .AddPreOptionsLine("INFO: No command was provided.")
+                        .AddPreOptionsLine("")
+                        .AddPreOptionsLine("For the full list of commands and options use --help.")
+                        .AddPreOptionsLine("")
+                        .AddPreOptionsLine("Follows some examples on how to use nanoff. For more detailed explanations please check:")
                         .AddPreOptionsLine("https://github.com/nanoframework/nanoFirmwareFlasher#usage")
                         .AddPreOptionsLine("")
                         .AddPreOptionsLine(HelpText.RenderUsageText(result))
-                        .AddPreOptionsLine("")
-                        .AddOptions(result);
+                        .AddPreOptionsLine("");
 
                 Console.WriteLine(helpText.ToString());
 
