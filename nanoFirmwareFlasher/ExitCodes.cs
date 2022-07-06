@@ -149,9 +149,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         E5007 = 5007,
 
         /// <summary>
-        /// Can't program BIN file without specifying an address
+        /// Invalid address specified. Hexadecimal (0x0000F000) format required.
         /// </summary>
-        [Display(Name = "Can't program BIN file without specifying an address.")]
+        [Display(Name = "Invalid address specified. Hexadecimal (0x0000F000) format required.")]
         E5008 = 5008,
 
         /// <summary>
@@ -191,6 +191,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Unsupported device.")]
         E7000 = 7000,
+
+        ///////////////////
+        // J-Link Errors //
+        ///////////////////
+
+        /// <summary>
+        /// Error executing J-Link CLI command.
+        /// </summary>
+        [Display(Name = "Error executing J-Link CLI command.")]
+        E8000 = 8000,
+
+        /// <summary>
+        /// No JTAG device found
+        /// </summary>
+        [Display(Name = "No J-Link device found. Make sure it's connected.")]
+        E8001 = 8001,
 
         ////////////////////////////////
         // Application general Errors //

@@ -4,19 +4,19 @@
 //
 
 using CommandLine;
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using nanoFramework.Tools.FirmwareFlasher.Extensions;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using CommandLine.Text;
-using System.IO;
+using nanoFramework.Tools.FirmwareFlasher.Extensions;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.IO.Ports;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Newtonsoft.Json;
-using System.IO.Ports;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -66,7 +66,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     new HeadingInfo(_headerInfo),
                     _copyrightInfo)
                         .AddPreOptionsLine("")
-                        .AddPreOptionsLine("No command was provided.")
+                        .AddPreOptionsLine("ERROR: No command was provided.")
                         .AddPreOptionsLine("")
                         .AddPreOptionsLine("Follow some examples on how to use nanoff. For more detailed explanations please check:")
                         .AddPreOptionsLine("https://github.com/nanoframework/nanoFirmwareFlasher#usage")
@@ -320,12 +320,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // candidates for STM32
                     o.Platform = SupportedPlatform.stm32;
                 }
-                else if (
-                   o.TargetName.StartsWith("TI")
-                )
+                else if (o.TargetName.StartsWith("TI"))
                 {
                     // candidates for TI CC13x2
                     o.Platform = SupportedPlatform.ti_simplelink;
+                }
+                else if (o.TargetName.StartsWith("SL"))
+                {
+                    // candidates for Silabs GG11
+                    o.Platform = SupportedPlatform.gg11;
                 }
                 else
                 {
@@ -367,6 +370,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     !string.IsNullOrEmpty(o.Esp32ClrFile))
                 {
                     o.Platform = SupportedPlatform.esp32;
+                }
+                // GG11 related
+                else if (o.ListJLinkDevices)
+                {
+                    o.Platform = SupportedPlatform.gg11;
                 }
                 // drivers install
                 else if (o.TIInstallXdsDrivers)
@@ -443,7 +451,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     Console.WriteLine("");
                     Console.WriteLine($"Connected to:");
-                    Console.WriteLine($"{ esp32Device }");
+                    Console.WriteLine($"{esp32Device}");
 
                     Console.ForegroundColor = ConsoleColor.White;
 
@@ -733,7 +741,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (_verbosityLevel >= VerbosityLevel.Normal)
                         {
-                            Console.WriteLine($"Connected to JTAG device with ID { dfuDevice.DfuId }");
+                            Console.WriteLine($"Connected to JTAG device with ID {dfuDevice.DfuId}");
                         }
 
                         // set verbosity
@@ -793,7 +801,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (_verbosityLevel >= VerbosityLevel.Normal)
                         {
-                            Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
+                            Console.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
                         }
 
                         // set verbosity
@@ -972,7 +980,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
-
             #region TI CC13x2 platform options
 
             if (o.Platform == SupportedPlatform.ti_simplelink)
@@ -1071,6 +1078,196 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
+            #region Silabs Giant Gecko S1 platform options
+
+            if (o.Platform == SupportedPlatform.gg11)
+            {
+                if (o.ListJLinkDevices)
+                {
+                    try
+                    {
+                        var connecteDevices = JLinkDevice.ListDevices();
+
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+
+                        if (connecteDevices.Count == 0)
+                        {
+                            Console.WriteLine("No J-Link devices found");
+                        }
+                        else
+                        {
+                            Console.WriteLine("-- Connected USB J-Link devices --");
+
+                            foreach (string deviceId in connecteDevices)
+                            {
+                                Console.WriteLine(deviceId);
+                            }
+
+                            Console.WriteLine("----------------------------------");
+                        }
+
+                        // done here, this command has no further processing
+                        _exitCode = ExitCodes.OK;
+                    }
+                    catch (Exception ex)
+                    {
+                        // exception with 
+                        _exitCode = ExitCodes.E8000;
+                        _extraMessage = ex.Message;
+                    }
+
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    return;
+                }
+
+                var connectedJLinkDevices = JLinkDevice.ListDevices();
+
+                if (o.BinFile.Any()
+                    && connectedJLinkDevices.Count != 0)
+                {
+                    try
+                    {
+                        var jlinkDevice = new JLinkDevice(o.JLinkDeviceId);
+
+                        if (!jlinkDevice.DevicePresent)
+                        {
+                            // no J-Link device found
+
+                            // done here, this command has no further processing
+                            _exitCode = ExitCodes.E5001;
+
+                            return;
+                        }
+
+                        if (_verbosityLevel >= VerbosityLevel.Normal)
+                        {
+                            Console.WriteLine($"Connected to J-Link device with ID {jlinkDevice.ProbeId}");
+                        }
+
+                        // set verbosity
+                        jlinkDevice.Verbosity = _verbosityLevel;
+
+                        // get mass erase option
+                        jlinkDevice.DoMassErase = o.MassErase;
+
+                        if (o.BinFile.Any())
+                        {
+                            _exitCode = jlinkDevice.FlashBinFiles(o.BinFile, o.FlashAddress);
+
+                            // done here
+                            return;
+                        }
+                    }
+                    catch (CantConnectToJLinkDeviceException)
+                    {
+                        // done here, this command has no further processing
+                        _exitCode = ExitCodes.E5002;
+                    }
+                }
+                else if (!string.IsNullOrEmpty(o.TargetName))
+                {
+                    // update operation requested?
+                    if (o.Update)
+                    {
+                        // this to update the device with fw from CloudSmith
+
+                        // need to take care of flash address
+                        string appFlashAddress = null;
+
+                        if (o.FlashAddress.Any())
+                        {
+                            // take the first address, it should be the only one valid
+                            appFlashAddress = o.FlashAddress.ElementAt(0);
+                        }
+
+                        _exitCode = await JLinkOperations.UpdateFirmwareAsync(
+                            o.TargetName,
+                            o.FwVersion,
+                            o.Preview,
+                            true,
+                            o.DeploymentImage,
+                            appFlashAddress,
+                            o.JLinkDeviceId,
+                            !o.FitCheck,
+                            _verbosityLevel);
+
+                        operationPerformed = true;
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
+                        }
+                    }
+
+                    // it's OK to deploy after update
+                    if (o.Deploy)
+                    {
+                        // this to flash a deployment image without updating the firmware
+
+                        // need to take care of flash address
+                        string appFlashAddress;
+
+                        if (o.FlashAddress.Any())
+                        {
+                            // take the first address, it should be the only one valid
+                            appFlashAddress = o.FlashAddress.ElementAt(0);
+                        }
+                        else
+                        {
+                            _exitCode = ExitCodes.E9009;
+                            return;
+                        }
+
+                        _exitCode = await JLinkOperations.UpdateFirmwareAsync(
+                                        o.TargetName,
+                                        null,
+                                        false,
+                                        false,
+                                        o.DeploymentImage,
+                                        appFlashAddress,
+                                        o.JLinkDeviceId,
+                                        !o.FitCheck,
+                                        _verbosityLevel);
+
+                        operationPerformed = true;
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return;
+                        }
+                    }
+                }
+                else if (o.MassErase)
+                {
+                    try
+                    {
+                        _exitCode = JLinkOperations.MassErase(
+                            o.JLinkDeviceId,
+                            _verbosityLevel);
+                    }
+                    catch (CantConnectToJLinkDeviceException)
+                    {
+                        // exception with 
+                        _exitCode = ExitCodes.E8001;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        // exception with 
+                        _exitCode = ExitCodes.E8000;
+                        _extraMessage = ex.Message;
+                    }
+
+                    // done here
+                    return;
+                }
+            }
+
+            #endregion
+
             // done nothing... or maybe not...
             if (!operationPerformed)
             {
@@ -1123,7 +1320,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!string.IsNullOrEmpty(exitCodeDisplayName.Name))
                 {
-                    Console.Write($": { exitCodeDisplayName.Name }");
+                    Console.Write($": {exitCodeDisplayName.Name}");
                 }
 
                 if (string.IsNullOrEmpty(extraMessage))
@@ -1132,7 +1329,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else
                 {
-                    Console.WriteLine($" ({ extraMessage })");
+                    Console.WriteLine($" ({extraMessage})");
                 }
             }
             else
