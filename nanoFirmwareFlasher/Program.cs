@@ -320,12 +320,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // candidates for STM32
                     o.Platform = SupportedPlatform.stm32;
                 }
-                else if (
-                   o.TargetName.StartsWith("TI")
-                )
+                else if (o.TargetName.StartsWith("TI"))
                 {
                     // candidates for TI CC13x2
                     o.Platform = SupportedPlatform.ti_simplelink;
+                }
+                else if (o.TargetName.StartsWith("SL"))
+                {
+                    // candidates for Silabs GG11
+                    o.Platform = SupportedPlatform.gg11;
                 }
                 else
                 {
@@ -367,6 +370,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     !string.IsNullOrEmpty(o.Esp32ClrFile))
                 {
                     o.Platform = SupportedPlatform.esp32;
+                }
+                // GG11 related
+                else if (o.ListJLinkDevices)
+                {
+                    o.Platform = SupportedPlatform.gg11;
                 }
                 // drivers install
                 else if (o.TIInstallXdsDrivers)
