@@ -226,19 +226,20 @@ jobs:
       projects: |
         ./nanoFirmwareFlasher.Tests/nanoFirmwareFlasher.Tests.csproj
       arguments: '--configuration $(BuildConfiguration) --collect "XPlat Code coverage"'
-    continueOnError: true 
       
-    # First install the tool on the machine, then run it
+  # First install the tool on the machine, then run it
   - script: |
       dotnet tool install -g dotnet-reportgenerator-globaltool
       reportgenerator -reports:$(Agent.WorkFolder)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage "-reporttypes:HtmlInline_AzurePipelines;Cobertura"
     displayName: 'Create code coverage report'
+    condition: always()
      
   - task: PublishCodeCoverageResults@1
     displayName: 'Publish code coverage results'
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(Build.SourcesDirectory)/coverlet/Cobertura.xml'
+    condition: always()
 
 ##################################################
 
