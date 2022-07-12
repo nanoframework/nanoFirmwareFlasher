@@ -226,6 +226,7 @@ jobs:
       projects: |
         ./nanoFirmwareFlasher.Tests/nanoFirmwareFlasher.Tests.csproj
       arguments: '--configuration $(BuildConfiguration) --collect "XPlat Code coverage"'
+    continueOnError: true 
       
     # First install the tool on the machine, then run it
   - script: |
