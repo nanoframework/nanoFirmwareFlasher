@@ -227,13 +227,11 @@ jobs:
         ./nanoFirmwareFlasher.Tests/nanoFirmwareFlasher.Tests.csproj
       arguments: '--configuration $(BuildConfiguration) --collect "XPlat Code coverage"'
       
-  - task: reportgenerator@4
-    displayName: 'Merge code coverage reports'
-    inputs:
-      reports: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
-      targetdir: '$(Pipeline.Workspace)/coverlet'
-      reporttypes: 'Cobertura'
-      verbosity: 'Verbose'
+    # First install the tool on the machine, then run it
+  - script: |
+      dotnet tool install -g dotnet-reportgenerator-globaltool
+      reportgenerator -reports:$(Agent.WorkFolder)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:'HtmlInline_AzurePipelines;Cobertura'
+      displayName: Create code coverage report
      
   - task: PublishCodeCoverageResults@1
     displayName: 'Publish code coverage results'
