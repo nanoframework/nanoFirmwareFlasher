@@ -103,6 +103,8 @@
 		</None>
 		<None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
 		</None>
+		<None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+		</None>
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">

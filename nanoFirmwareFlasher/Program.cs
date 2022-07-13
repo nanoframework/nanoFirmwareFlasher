@@ -1125,6 +1125,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 var connectedJLinkDevices = JLinkDevice.ListDevices();
 
+
                 if (o.BinFile.Any()
                     && connectedJLinkDevices.Count != 0)
                 {
@@ -1146,6 +1147,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         {
                             Console.WriteLine($"Connected to J-Link device with ID {jlinkDevice.ProbeId}");
                         }
+
+                        // set VCP baud rate (if needed)
+                        _ = SilinkCli.SetVcpBaudRate(o.JLinkDeviceId is null ? connectedJLinkDevices.First() : "");
 
                         // set verbosity
                         jlinkDevice.Verbosity = _verbosityLevel;
@@ -1195,6 +1199,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             _verbosityLevel);
 
                         operationPerformed = true;
+
+                        // set VCP baud rate (if needed)
+                        _ = SilinkCli.SetVcpBaudRate(o.JLinkDeviceId is null ? connectedJLinkDevices.First() : "");
 
                         if (_exitCode != ExitCodes.OK)
                         {
