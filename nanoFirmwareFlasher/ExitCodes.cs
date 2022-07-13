@@ -208,6 +208,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "No J-Link device found. Make sure it's connected.")]
         E8001 = 8001,
 
+        /// <summary>
+        /// Error executing silink command.
+        /// </summary>
+        [Display(Name = "Error executing silink CLI command.")]
+        E8002 = 8002,
+
         ////////////////////////////////
         // Application general Errors //
         ////////////////////////////////
