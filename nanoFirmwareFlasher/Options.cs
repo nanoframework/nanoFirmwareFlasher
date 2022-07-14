@@ -179,6 +179,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "ID of the J-Link device to update. If not specified the first connected J-Link device will be used.")]
         public string JLinkDeviceId { get; set; }
 
+        [Option(
+            "setvcpbr",
+            Required = false,
+            HelpText = "Set baud rate of J-Link Virtual COM Port. If a value is not specified it will use the default value for Wire Protocol.")]
+        public int? SetVcpBaudRate { get; set; }
+
         #endregion
 
 
