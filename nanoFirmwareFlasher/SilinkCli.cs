@@ -19,13 +19,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         private const int SilinkTelnetPort = 49000;
         private const int SilinkAdminPort = SilinkTelnetPort + 2;
-        private const int TargetBaudRate = 921600;
+        private const int DefaultBaudRate = 921600;
 
         /// <summary>
         /// This will set the baud rate of the VCP in a Silabs Jlink board.
         /// Before setting the value the devices is queried and the new setting is applied only if needed.
         /// </summary>
         /// <param name="probeId">Id of the JLink probe to adjust the baud rate.</param>
+        /// <param name="baudRate">Value of baud rate to set.</param>
         /// <param name="verbosity">Verbosity level for the operation. <see cref="VerbosityLevel.Quiet"/> will be used if not specified.</param>
         /// <returns></returns>
         /// <remarks>
@@ -33,6 +34,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </remarks>
         public static ExitCodes SetVcpBaudRate(
             string probeId,
+            int baudRate,
             VerbosityLevel verbosity = VerbosityLevel.Quiet)
         {
             // check that we can run on this platform
@@ -49,6 +51,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 return ExitCodes.E8002;
             }
+
+            // store baud rate value
+            int targetBaudRate = baudRate == 0 ? DefaultBaudRate : baudRate;
 
             Console.ForegroundColor = ConsoleColor.White;
 
@@ -101,12 +106,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     const string regexPattern = "(?:Stored port speed  : )(?'baudrate'\\d+)";
 
                     var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
-                    var currentBaud = myRegex1.Match(currentConfig);
+                    var currentVcomConfig = myRegex1.Match(currentConfig);
 
-                    if (currentBaud.Success)
+                    if (currentVcomConfig.Success)
                     {
                         // verify current setting
-                        if (int.TryParse(currentBaud.Groups["baudrate"].Value, out int baudRate) && baudRate == TargetBaudRate)
+                        if (int.TryParse(currentVcomConfig.Groups["baud rate"].Value, out int currentBaudRate) && currentBaudRate == targetBaudRate)
                         {
                             if (verbosity >= VerbosityLevel.Detailed)
                             {
@@ -131,7 +136,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Thread.Sleep(250);
 
                     // compose command
-                    buffer = Encoding.Default.GetBytes($"serial vcom config speed {TargetBaudRate}\r");
+                    buffer = Encoding.Default.GetBytes($"serial vcom config speed {targetBaudRate}\r");
                     silinkSocket.Send(buffer);
 
                     Thread.Sleep(250);
@@ -146,7 +151,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.WriteLine($"{opResult}");
                     }
 
-                    if (opResult.Contains($"Baudrate set to {TargetBaudRate} bps"))
+                    if (opResult.Contains($"Baudrate set to {targetBaudRate} bps"))
                     {
                         if (verbosity == VerbosityLevel.Normal)
                         {
