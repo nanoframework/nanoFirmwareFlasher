@@ -50,7 +50,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E8002;
             }
 
+            Console.ForegroundColor = ConsoleColor.White;
+
             // launch silink 
+            if (verbosity >= VerbosityLevel.Detailed)
+            {
+                Console.WriteLine("Launching silink...");
+            }
+
             var silinkCli = RunSilinkCLI(Path.Combine(probeId));
 
             var silinkSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -58,6 +65,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             try
             {
+                if (verbosity >= VerbosityLevel.Diagnostic)
+                {
+                    Console.WriteLine("Connecting to admin console...");
+                }
+
                 silinkSocket.Connect(silinkEndPoint);
 
                 Thread.Sleep(250);
@@ -66,12 +78,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 byte[] buffer = Encoding.Default.GetBytes("serial vcom\r");
                 silinkSocket.Send(buffer);
 
+                if (verbosity >= VerbosityLevel.Diagnostic)
+                {
+                    Console.WriteLine("Querying current config...");
+                }
+
                 Thread.Sleep(250);
 
                 buffer = new byte[1024];
                 int receiveCount = silinkSocket.Receive(buffer, 0, buffer.Length, 0);
 
                 var currentConfig = Encoding.Default.GetString(buffer, 0, receiveCount);
+
+                if (verbosity >= VerbosityLevel.Diagnostic)
+                {
+                    Console.WriteLine($"{currentConfig}");
+                }
 
                 if (!string.IsNullOrEmpty(currentConfig))
                 {
@@ -86,21 +108,30 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // verify current setting
                         if (int.TryParse(currentBaud.Groups["baudrate"].Value, out int baudRate) && baudRate == TargetBaudRate)
                         {
+                            if (verbosity >= VerbosityLevel.Detailed)
+                            {
+                                Console.WriteLine("VCP baud rate it's correct! Nothing to do here.");
+                            }
+
                             return ExitCodes.OK;
                         }
                     }
 
                     // need to set baud rate because it's different
 
-                    if (verbosity >= VerbosityLevel.Normal)
+                    if (verbosity == VerbosityLevel.Normal)
                     {
-                        Console.Write("Setting VCP baud rate...");
+                        Console.Write("Trying to set VCP baud rate...");
+                    }
+                    else if (verbosity > VerbosityLevel.Normal)
+                    {
+                        Console.WriteLine("Trying to set VCP baud rate...");
                     }
 
                     Thread.Sleep(250);
 
                     // compose command
-                    buffer = Encoding.Default.GetBytes("serial vcom config speed {TargetBaudRate}\r");
+                    buffer = Encoding.Default.GetBytes($"serial vcom config speed {TargetBaudRate}\r");
                     silinkSocket.Send(buffer);
 
                     Thread.Sleep(250);
@@ -110,9 +141,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     var opResult = Encoding.Default.GetString(buffer, 0, receiveCount);
 
-                    if (opResult.Contains("Baudrate set to 921600 bps"))
+                    if (verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        if (verbosity >= VerbosityLevel.Normal)
+                        Console.WriteLine($"{opResult}");
+                    }
+
+                    if (opResult.Contains($"Baudrate set to {TargetBaudRate} bps"))
+                    {
+                        if (verbosity == VerbosityLevel.Normal)
                         {
                             Console.ForegroundColor = ConsoleColor.Green;
                             Console.WriteLine(" OK");
@@ -121,12 +157,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                             Console.ForegroundColor = ConsoleColor.White;
                         }
+                        else if (verbosity > VerbosityLevel.Normal)
+                        {
+                            Console.WriteLine("Success!");
+                        }
 
                         return ExitCodes.OK;
                     }
                     else
                     {
-                        if (verbosity >= VerbosityLevel.Normal)
+                        if (verbosity == VerbosityLevel.Normal)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine("FAILED!");
@@ -136,6 +176,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                             Console.WriteLine($"{opResult.Replace("PK> ", "")}");
 
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.WriteLine("");
+                        }
+                        else if (verbosity > VerbosityLevel.Normal)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("FAILED!");
                             Console.ForegroundColor = ConsoleColor.White;
                             Console.WriteLine("");
                         }
@@ -149,7 +196,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.WriteLine("");
                 Console.ForegroundColor = ConsoleColor.Red;
 
-                Console.WriteLine($"Error occurred: {ex.Message}");
+                Console.WriteLine($"Exception occurred: {ex.Message}");
 
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("");

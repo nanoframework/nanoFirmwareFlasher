@@ -1149,7 +1149,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         // set VCP baud rate (if needed)
-                        _ = SilinkCli.SetVcpBaudRate(o.JLinkDeviceId is null ? connectedJLinkDevices.First() : "");
+                        _ = SilinkCli.SetVcpBaudRate(o.JLinkDeviceId is null ? connectedJLinkDevices.First() : "", _verbosityLevel);
 
                         // set verbosity
                         jlinkDevice.Verbosity = _verbosityLevel;
@@ -1201,7 +1201,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         operationPerformed = true;
 
                         // set VCP baud rate (if needed)
-                        _ = SilinkCli.SetVcpBaudRate(o.JLinkDeviceId is null ? connectedJLinkDevices.First() : "");
+                        _ = SilinkCli.SetVcpBaudRate(o.JLinkDeviceId is null ? connectedJLinkDevices.First() : "", _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
                         {
