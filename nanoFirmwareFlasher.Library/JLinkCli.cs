@@ -14,6 +14,9 @@ using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// Class that performs the interface with the JLink CLI.
+    /// </summary>
     public class JLinkCli
     {
         /// <summary>

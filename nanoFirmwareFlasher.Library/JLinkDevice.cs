@@ -11,6 +11,9 @@ using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// Class representing a connected J-Link device.
+    /// </summary>
     public class JLinkDevice : JLinkCli
     {
         /// <summary>

@@ -11,8 +11,22 @@ using System.Linq;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// Class with operations available in CC13x26x2 devices.
+    /// </summary>
     public class CC13x26x2Operations
     {
+        /// <summary>
+        /// Perform firmware update on a CC13x26x2 device.
+        /// </summary>
+        /// <param name="targetName">Name of the target to update.</param>
+        /// <param name="fwVersion">Firmware version to update to.</param>
+        /// <param name="preview">Set to <see langword="true"/> to use preview version to update.</param>
+        /// <param name="updateFw">Set to <see langword="true"/> to force download of firmware package.</param>
+        /// <param name="applicationPath">Path to application to update along with the firmware update.</param>
+        /// <param name="deploymentAddress">Flash address to use when deploying an aplication.</param>
+        /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             string targetName,
             string fwVersion,
@@ -125,6 +139,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return programResult;
         }
 
+        /// <summary>
+        /// Perform instalation of XDS110 drivers.
+        /// </summary>
+        /// <param name="verbosityLevel">Set verbosity level of progress and error messages.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
+        /// <exception cref="UniflashCliExecutionException">Error occurred when executing an operation with Uniflash Client.</exception>
         public static ExitCodes InstallXds110Drivers(VerbosityLevel verbosityLevel)
         {
             try
