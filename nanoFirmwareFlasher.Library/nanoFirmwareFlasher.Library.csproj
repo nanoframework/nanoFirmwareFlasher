@@ -1,0 +1,138 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
+    <PlatformTarget>anycpu</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
+    <PackageOutputPath>../</PackageOutputPath>
+    <PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
+    <Authors>nanoframework</Authors>
+    <Product>.NET nanoFramework Firmware Flasher</Product>
+    <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
+    <Company>.NET nanoFramework</Company>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
+    <NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageIcon>images\nf-logo.png</PackageIcon>
+    <PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\assets\nf-logo.png">
+      <Pack>True</Pack>
+      <PackagePath>images</PackagePath>
+    </None>
+    <None Include="..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All"/>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="6.0.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\esptool\esptoolWin</PackagePath>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+        <None Include="..\lib\esptool\esptoolMac\**" Link="esptool\esptoolMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\esptool\esptoolMac</PackagePath>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+        <None Include="..\lib\esptool\esptoolLinux\**" Link="esptool\esptoolLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\esptool\esptoolLinux</PackagePath>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\esp32bootloader</PackagePath>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\esp32s2bootloader</PackagePath>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\stlink</PackagePath>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+        <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+             <Pack>True</Pack>
+            <PackagePath>content\stlinkMac</PackagePath>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+       </None>
+        <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\stlinkLinux</PackagePath>        
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\jlinkCmds</PackagePath>     
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>		
+        <None Include="..\lib\jlink\**" Link="jlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\jlink</PackagePath>  
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+        <None Include="..\lib\jlinkMac\**" Link="jlinkMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\jlinkMac</PackagePath>  
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+        <None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\jlinkLinux</PackagePath>  
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+        <None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+            <Pack>True</Pack>
+            <PackagePath>content\silink</PackagePath>  
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
+           <Pack>True</Pack>
+           <PackagePath>content\uniflash</PackagePath>  
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </None>
+    </ItemGroup>
+
+</Project>

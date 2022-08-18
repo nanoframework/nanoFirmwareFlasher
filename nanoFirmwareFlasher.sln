@@ -3,33 +3,56 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nanoFirmwareFlasher", "nanoFirmwareFlasher\nanoFirmwareFlasher.csproj", "{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nanoFirmwareFlasher.Tool", "nanoFirmwareFlasher.Tool\nanoFirmwareFlasher.Tool.csproj", "{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9FD8C426-A16A-49DB-952D-747C3AD96C42}"
-    ProjectSection(SolutionItems) = preProject
-        NuGet.Config = NuGet.Config
-        version.json = version.json
-    EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		NuGet.Config = NuGet.Config
+		version.json = version.json
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nanoFirmwareFlasher", "nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj", "{FE33E79E-5392-4469-B2BC-D0083C608808}"
 EndProject
 Global
-    GlobalSection(SolutionConfigurationPlatforms) = preSolution
-        Debug|x64 = Debug|x64
-        Debug|x86 = Debug|x86
-        Release|x64 = Release|x64
-        Release|x86 = Release|x86
-    EndGlobalSection
-    GlobalSection(ProjectConfigurationPlatforms) = postSolution
-        {762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x64.ActiveCfg = Debug|x64
-        {762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x64.Build.0 = Debug|x64
-        {762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x86.ActiveCfg = Debug|x64
-        {762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x64.ActiveCfg = Release|x64
-        {762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x64.Build.0 = Release|x64
-        {762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x86.ActiveCfg = Release|x64
-    EndGlobalSection
-    GlobalSection(SolutionProperties) = preSolution
-        HideSolutionNode = FALSE
-    EndGlobalSection
-    GlobalSection(ExtensibilityGlobals) = postSolution
-        SolutionGuid = {56E99FF7-1E34-4FB8-8E3C-F98890E741D0}
-    EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x64.ActiveCfg = Debug|x64
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x64.Build.0 = Debug|x64
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x86.ActiveCfg = Debug|x86
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x86.Build.0 = Debug|x86
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x64.ActiveCfg = Release|x64
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x64.Build.0 = Release|x64
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x86.ActiveCfg = Release|x86
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x86.Build.0 = Release|x86
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|x64.Build.0 = Debug|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|x86.Build.0 = Debug|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Release|x64.ActiveCfg = Release|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Release|x64.Build.0 = Release|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Release|x86.ActiveCfg = Release|Any CPU
+		{FE33E79E-5392-4469-B2BC-D0083C608808}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF6C2B32-984F-41C2-B0F7-B895E45A1BB5}
+		        SolutionGuid = {56E99FF7-1E34-4FB8-8E3C-F98890E741D0}
+	EndGlobalSection
 EndGlobal

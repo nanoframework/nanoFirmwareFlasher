@@ -173,7 +173,7 @@ jobs:
   - Check_Build_Options
 
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
 
   variables:
     DOTNET_NOLOGO: true
@@ -238,14 +238,6 @@ jobs:
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
 
-  - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
-    displayName: Build .NET Core Tool NuGet package
-    condition: >-
-      and(
-        eq(variables['isTag'], 'false'),
-        eq(variables['UPDATE_DEPENDENTS'], 'false')
-      )
-
   - task: PowerShell@2
     condition: >-
       and(
@@ -274,7 +266,7 @@ jobs:
     condition: >-
       and(
         succeeded(),
-        ne(variables['system.pullrequest.isfork'], true),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['isTag'], 'false'),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
