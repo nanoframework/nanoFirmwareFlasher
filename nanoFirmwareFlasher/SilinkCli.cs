@@ -213,8 +213,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // close socket
                 silinkSocket?.Close();
 
-                // kill process tree (to include JLink) 
+                // kill process tree (to include JLink)
+#if NET6_0_OR_GREATER
                 silinkCli.Kill(true);
+#else
+                silinkCli.Kill();
+#endif
             }
 
             return ExitCodes.E8002;

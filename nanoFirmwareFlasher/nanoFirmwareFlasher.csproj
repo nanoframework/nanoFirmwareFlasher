@@ -4,7 +4,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<ToolCommandName>nanoff</ToolCommandName>
-		<PackageOutputPath>../../artifacts</PackageOutputPath>
+		<PackageOutputPath>../</PackageOutputPath>
 		<RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
 		<AssemblyName>nanoff</AssemblyName>
 		<PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
@@ -19,14 +19,14 @@
 		<Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
 		<!-- need this to allow async Main() -->
 		<LangVersion>latest</LangVersion>
-		<TargetFrameworks>netcoreapp6;net48</TargetFrameworks>
+		<TargetFrameworks>netcoreapp6;net472</TargetFrameworks>
 		<Platforms>x64;x86;anycpu</Platforms>
 		<RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(PackGlobalTool)' != true">
-		<TargetFrameworks>netcoreapp6</TargetFrameworks>
+		<TargetFrameworks>netcoreapp6;net472</TargetFrameworks>
 		<PlatformTarget>anycpu</PlatformTarget>
 	</PropertyGroup>
 
