@@ -9,8 +9,20 @@ using System.IO;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// Class with operations available in ESP32 devices.
+    /// </summary>
     public class Esp32Operations
     {
+        /// <summary>
+        /// Perform backup of current flash content of ESP32 device.
+        /// </summary>
+        /// <param name="tool"><see cref="EspTool"/> to use when performing update.</param>
+        /// <param name="device"><see cref="Esp32DeviceInfo"/> of device to update.</param>
+        /// <param name="backupPath">Path to store backup image.</param>
+        /// <param name="fileName">Name of backup file.</param>
+        /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static ExitCodes BackupFlash(
             EspTool tool,
             Esp32DeviceInfo device,
@@ -78,6 +90,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return ExitCodes.OK;
         }
 
+        /// <summary>
+        /// Perform firmware update on a ESP32 device.
+        /// </summary>
+        /// <param name="tool"><see cref="EspTool"/> to use when performing update.</param>
+        /// <param name="device"><see cref="Esp32DeviceInfo"/> of device to update.</param>
+        /// <param name="targetName">Name of the target to update.</param>
+        /// <param name="updateFw">Set to <see langword="true"/> to force download of firmware package.</param>
+        /// <param name="fwVersion">Firmware version to update to.</param>
+        /// <param name="preview">Set to <see langword="true"/> to use preview version to update.</param>
+        /// <param name="applicationPath">Path to application to update along with the firmware update.</param>
+        /// <param name="deploymentAddress">Flash address to use when deploying an aplication.</param>
+        /// <param name="clrFile">Path to CLR file to use for firmware update.</param>
+        /// <param name="fitCheck"><see langword="true"/> to perform validation of update package against connected target.</param>
+        /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
+        /// <param name="partitionTableSize">Size of partition table.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             EspTool espTool,
             Esp32DeviceInfo esp32Device,

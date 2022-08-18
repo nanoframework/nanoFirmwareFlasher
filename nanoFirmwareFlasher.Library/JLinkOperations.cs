@@ -10,8 +10,24 @@ using System.Linq;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// Class with operations available in J-Link connected devices.
+    /// </summary>
     public class JLinkOperations
     {
+        /// <summary>
+        /// Perform firmware update on a J-Link connected device.
+        /// </summary>
+        /// <param name="targetName">Name of the target to update.</param>
+        /// <param name="fwVersion">Firmware version to update to.</param>
+        /// <param name="preview">Set to <see langword="true"/> to use preview version to update.</param>
+        /// <param name="updateFw">Set to <see langword="true"/> to force download of firmware package.</param>
+        /// <param name="applicationPath">Path to application to update along with the firmware update.</param>
+        /// <param name="deploymentAddress">Flash address to use when deploying an aplication.</param>
+        /// <param name="probeId">ID of the J-Link probe to connect to.</param>
+        /// <param name="fitCheck"><see langword="true"/> to perform validation of update package against connected target.</param>
+        /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             string targetName,
             string fwVersion,
