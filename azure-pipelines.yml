@@ -20,6 +20,7 @@ trigger:
       - assets/*
       - config/*
       - .github/*
+      - Samples/*
     
 # PR always trigger build
 pr:
@@ -231,6 +232,30 @@ jobs:
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
 
+  - task: NuGetCommand@2
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
+    displayName: Restore NuGet packages for Samples
+    inputs:
+      restoreSolution: '$(Build.SourcesDirectory)/Samples/Samples.sln'
+      feedsToUse: config
+      nugetConfigPath: '$(Build.SourcesDirectory)/Samples/nuget.config'
+    
+  - task: VSBuild@1
+    displayName: Build Samples
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
+    inputs:
+      solution: '$(Build.SourcesDirectory)/Samples/Samples.sln'
+      platform: 'Any CPU'
+      configuration: '$(buildConfiguration)'
+   
   - task: PowerShell@2
     condition: >-
       and(
