@@ -1,0 +1,78 @@
+<Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- esptool executables for all platforms -->
+	<ItemGroup>
+        <Content Include="..\lib\esptool\esptoolWin\**">
+            <Pack>true</Pack>
+			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolWin</PackagePath>
+        </Content>
+        <Content Include="..\lib\esptool\esptoolMac\**">
+            <Pack>true</Pack>
+			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolMac</PackagePath>
+        </Content>
+        <Content Include="..\lib\esptool\esptoolLinux\**">
+            <Pack>true</Pack>
+			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolLinux</PackagePath>
+        </Content>
+    </ItemGroup>
+
+    <!-- ESP32 nanoFramework bootloader files -->
+    <ItemGroup>
+        <Content Include="..\lib\esp32bootloader\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\esp32bootloader</PackagePath>
+        </Content>
+        <Content Include="..\lib\esp32s2bootloader\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\esp32s2bootloader</PackagePath>
+        </Content>
+    </ItemGroup>
+
+    <!-- STLink executables for all platforms -->
+    <ItemGroup>
+        <Content Include="..\lib\stlink\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\stlink</PackagePath>
+        </Content>
+        <Content Include="..\lib\stlinkMac\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\stlinkMac</PackagePath>
+        </Content>
+        <Content Include="..\lib\stlinkLinux\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\stlinkLinux</PackagePath>        
+        </Content>
+    </ItemGroup>
+
+    <!-- J-Link executables for all platforms -->
+    <ItemGroup>
+        <Content Include="..\lib\jlinkCmds\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\jlinkCmds</PackagePath>
+        </Content>		
+        <Content Include="..\lib\jlink\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\jlink</PackagePath>  
+        </Content>
+        <Content Include="..\lib\jlinkMac\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\jlinkMac</PackagePath>  
+        </Content>
+        <Content Include="..\lib\jlinkLinux\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\jlinkLinux</PackagePath>  
+        </Content>
+        <Content Include="..\lib\silink\**">
+            <Pack>true</Pack>
+            <PackagePath>tools\$(PackageTfmSubFolder)any\silink</PackagePath>  
+        </Content>
+    </ItemGroup>
+
+    <!-- TI Uniflash tool -->
+    <ItemGroup>
+        <Content Include="..\lib\uniflash\**">
+            <Pack>true</Pack>
+           <PackagePath>tools\$(PackageTfmSubFolder)any\uniflash</PackagePath>  
+        </Content>
+    </ItemGroup>
+
+</Project>

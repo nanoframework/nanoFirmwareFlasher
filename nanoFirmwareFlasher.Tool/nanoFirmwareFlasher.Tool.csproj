@@ -61,4 +61,18 @@
 	  <ProjectReference Include="..\nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj" />
 	</ItemGroup>
 
+	<Target Name="CopyToolsContent" AfterTargets="Build">
+	    <ItemGroup>
+            <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*"/>
+        </ItemGroup>
+        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True"/>
+	</Target>
+
+	<PropertyGroup>
+		<!-- set this to 'net6.0\' to package contents in this TFM folder  -->
+		<PackageTfmSubFolder>net6.0\</PackageTfmSubFolder>
+	</PropertyGroup>
+
+    <Import Project="..\nanoFirmwareFlasher.Library\nugetcontent.targets" />
+	
 </Project>
