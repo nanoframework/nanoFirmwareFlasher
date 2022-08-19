@@ -56,6 +56,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Failed to start execition on the connected device.")]
         E1006 = 1006,
 
+        ///////////////////////
+        // nanoDevice Errors //
+        ///////////////////////
+
+        /// <summary>
+        /// Error connecting to nano device.
+        /// </summary>
+        [Display(Name = "Error connecting to nano device.")]
+        E2000 = 2000,
+
+        /// <summary>
+        /// Error connecting to nano device.
+        /// </summary>
+        [Display(Name = "Error occurred with listing nano devices.")]
+        E2001 = 2001,
+
+        /// <summary>
+        /// Error executing operation with nano device.
+        /// </summary>
+        [Display(Name = "Error executing operation with nano device.")]
+        E2002 = 2002,
+
         ////////////////////////
         // ESP32 tools Errors //
         ////////////////////////
@@ -301,6 +323,5 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Error occured when clearing the firmware cache location.")]
         E9014 = 9014,
-
     }
 }

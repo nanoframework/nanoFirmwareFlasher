@@ -140,13 +140,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Path to file with CLR image. Partitions table and bootloader file will be automatically flashed to the device.")]
         public string Esp32ClrFile { get; set; }
 
-        [Option(
-            "devicedetails",
-            Required = false,
-            Default = false,
-            HelpText = "Reads details from ESP32 device.")]
-        public bool DeviceDetails { get; set; }
-
         #endregion
 
 
@@ -187,6 +180,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         #endregion
 
+        #region nano device options
+
+        [Option(
+            "nanodevice",
+            Required = false,
+            Default = false,
+            HelpText = "Operations are to be performed to a nanoFramework device.")]
+        public bool NanoDevice { get; set; }
+
+        #endregion
 
         #region common options
 
@@ -323,6 +326,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = false,
             HelpText = "Clear the cache folder with firmware images.")]
         public bool ClearCache { get; set; }
+
+        [Option(
+            "listdevices",
+            Required = false,
+            Default = false,
+            HelpText = "List the .NET nanoFramework devices connected to the machine.")]
+        public bool ListDevices { get; set; }
+
+        [Option(
+            "devicedetails",
+            Required = false,
+            Default = false,
+            HelpText = "Reads details from connected device.")]
+        public bool DeviceDetails { get; set; }
 
         #endregion
 

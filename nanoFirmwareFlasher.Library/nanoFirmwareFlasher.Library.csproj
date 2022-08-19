@@ -31,9 +31,9 @@
 
     <Target Name="CopyToolsContent" AfterTargets="Build">
         <ItemGroup>
-            <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*"/>
+            <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True"/>
+        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" />
 	</Target>
 
   <ItemGroup>
@@ -56,6 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />

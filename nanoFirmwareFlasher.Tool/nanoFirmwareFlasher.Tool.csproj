@@ -39,6 +39,7 @@
 	<ItemGroup>
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.1" />
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All" />
 	</ItemGroup>
 
@@ -63,9 +64,9 @@
 
 	<Target Name="CopyToolsContent" AfterTargets="Build">
 	    <ItemGroup>
-            <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*"/>
+            <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True"/>
+        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" />
 	</Target>
 
 	<PropertyGroup>
