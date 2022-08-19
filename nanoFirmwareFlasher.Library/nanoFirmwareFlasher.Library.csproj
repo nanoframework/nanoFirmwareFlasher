@@ -29,6 +29,13 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
+    <Target Name="CopyToolsContent" AfterTargets="Build">
+        <ItemGroup>
+            <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*"/>
+        </ItemGroup>
+        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True"/>
+	</Target>
+
   <ItemGroup>
     <None Include="..\README.md">
       <Pack>True</Pack>
@@ -42,7 +49,10 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-
+    <Content Include="nanoFramework.Tools.FirmwareFlasher.targets">
+        <Pack>true</Pack>
+        <PackagePath>build</PackagePath>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -53,73 +63,62 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- set this to 'empty' to package contents in 'any' folder  -->
+    <PackageTfmSubFolder></PackageTfmSubFolder>
+  </PropertyGroup>
+
+    <Import Project="nugetcontent.targets" />
+    
+    <!-- ************************************************************************************************************************* -->
+    <!-- WARNING: when changing or adding any include path for an external tool, make sure to add/update in 'nugetcontent.targets' -->
+    <!-- ************************************************************************************************************************* -->
+
+    <!-- esptool executables for all platforms -->
     <ItemGroup>
-        <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\esptool\esptoolWin</PackagePath>  
+        <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
-        <None Include="..\lib\esptool\esptoolMac\**" Link="esptool\esptoolMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\esptool\esptoolMac</PackagePath>
+        <None Include="..\lib\esptool\esptoolMac\**" Link="esptool\esptoolMac\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
-        <None Include="..\lib\esptool\esptoolLinux\**" Link="esptool\esptoolLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\esptool\esptoolLinux</PackagePath>
+        <None Include="..\lib\esptool\esptoolLinux\**" Link="esptool\esptoolLinux\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
     </ItemGroup>
 
+    <!-- ESP32 nanoFramework bootloader files -->
     <ItemGroup>
-        <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\esp32bootloader</PackagePath>
+        <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)">
+        </None>
+        <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
     </ItemGroup>
+
+    <!-- STLink executables for all platforms -->
     <ItemGroup>
-        <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\esp32s2bootloader</PackagePath>
+        <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)">
+        </None>
+        <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
+        </None>
+        <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
     </ItemGroup>
+
+    <!-- J-Link executables for all platforms -->
     <ItemGroup>
-        <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\stlink</PackagePath>
-        </None>
-        <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-             <Pack>True</Pack>
-            <PackagePath>content\stlinkMac</PackagePath>
-       </None>
-        <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\stlinkLinux</PackagePath>        
-        </None>
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\jlinkCmds</PackagePath>     
+        <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)">
         </None>		
-        <None Include="..\lib\jlink\**" Link="jlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\jlink</PackagePath>  
+        <None Include="..\lib\jlink\**" Link="jlink\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
-        <None Include="..\lib\jlinkMac\**" Link="jlinkMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\jlinkMac</PackagePath>  
+        <None Include="..\lib\jlinkMac\**" Link="jlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
-        <None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\jlinkLinux</PackagePath>  
+        <None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
-        <None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-            <Pack>True</Pack>
-            <PackagePath>content\silink</PackagePath>  
+        <None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
     </ItemGroup>
+
+    <!-- TI Uniflash tool -->
     <ItemGroup>
-        <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
-           <Pack>True</Pack>
-           <PackagePath>content\uniflash</PackagePath>  
+        <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
     </ItemGroup>
 
