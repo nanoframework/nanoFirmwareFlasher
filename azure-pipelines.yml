@@ -166,7 +166,11 @@ jobs:
 ###########################################################
 # build tool
 - job: Build_tool
-  condition: ne(dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true)
+  condition: >-
+    and(
+      succeeded(),
+      ne(dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true)
+    )
   dependsOn:
   - Check_Build_Options
 
@@ -236,26 +240,28 @@ jobs:
     condition: >-
       and(
         succeeded(),
-        eq(variables['UPDATE_DEPENDENTS'], 'false')
+        eq(variables['UPDATE_DEPENDENTS'], 'false'),
+        ne(variables['System.PullRequest.PullRequestId'], '')
       )
     displayName: Restore NuGet packages for Samples
     inputs:
       restoreSolution: '$(Build.SourcesDirectory)/Samples/Samples.sln'
       feedsToUse: config
       nugetConfigPath: '$(Build.SourcesDirectory)/Samples/nuget.config'
-    
+
   - task: VSBuild@1
     displayName: Build Samples
     condition: >-
       and(
         succeeded(),
-        eq(variables['UPDATE_DEPENDENTS'], 'false')
+        eq(variables['UPDATE_DEPENDENTS'], 'false'),
+        ne(variables['System.PullRequest.PullRequestId'], '')
       )
     inputs:
       solution: '$(Build.SourcesDirectory)/Samples/Samples.sln'
       platform: 'Any CPU'
       configuration: '$(buildConfiguration)'
-   
+
   - task: PowerShell@2
     condition: >-
       and(
