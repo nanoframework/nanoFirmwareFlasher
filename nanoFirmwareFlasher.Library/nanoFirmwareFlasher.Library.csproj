@@ -42,11 +42,12 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All"/>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.IO.Ports" Version="6.0.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
@@ -55,18 +56,15 @@
     <ItemGroup>
         <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
-            <PackagePath>content\esptool\esptoolWin</PackagePath>
-            <PackageCopyToOutput>true</PackageCopyToOutput>
+            <PackagePath>content\esptool\esptoolWin</PackagePath>  
         </None>
         <None Include="..\lib\esptool\esptoolMac\**" Link="esptool\esptoolMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\esptool\esptoolMac</PackagePath>
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
         <None Include="..\lib\esptool\esptoolLinux\**" Link="esptool\esptoolLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\esptool\esptoolLinux</PackagePath>
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
     </ItemGroup>
 
@@ -74,65 +72,54 @@
         <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\esp32bootloader</PackagePath>
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
     </ItemGroup>
     <ItemGroup>
         <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\esp32s2bootloader</PackagePath>
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
     </ItemGroup>
     <ItemGroup>
         <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\stlink</PackagePath>
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
         <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
              <Pack>True</Pack>
             <PackagePath>content\stlinkMac</PackagePath>
-            <PackageCopyToOutput>true</PackageCopyToOutput>
        </None>
         <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\stlinkLinux</PackagePath>        
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
     </ItemGroup>
     <ItemGroup>
         <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\jlinkCmds</PackagePath>     
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>		
         <None Include="..\lib\jlink\**" Link="jlink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\jlink</PackagePath>  
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
         <None Include="..\lib\jlinkMac\**" Link="jlinkMac\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\jlinkMac</PackagePath>  
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
         <None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\jlinkLinux</PackagePath>  
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
         <None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
             <Pack>True</Pack>
             <PackagePath>content\silink</PackagePath>  
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
     </ItemGroup>
     <ItemGroup>
         <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always">
            <Pack>True</Pack>
            <PackagePath>content\uniflash</PackagePath>  
-            <PackageCopyToOutput>true</PackageCopyToOutput>
         </None>
     </ItemGroup>
 
