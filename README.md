@@ -7,7 +7,7 @@ Document Language: [English](README.md) | [中文简体](README.zh-cn.md)
 
 # Welcome to the .NET **nanoFramework** firmware flasher tool repository
 
-This repo contains the nano firmware flasher tool.
+This repo contains the **nano** **f**irmware **f**lasher tool.
 It's a [.NET Core Tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools) that allows flashing a .NET **nanoFramework** target with a firmware image (nanoBooter and nanoCLR), the application deployment (all assemblies required to run a .NET application) and restore previously saved deployment images.
 Is part of .NET **nanoFramework** toolbox, along with other various tools that are required in .NET **nanoFramework** development, usage or repository management.
 
@@ -21,6 +21,8 @@ It makes use of several 3rd party tools:
    You can find the Uniflash tool and licensing information [here](http://www.ti.com/tool/download/UNIFLASH).
 - SEGGER J-Link
    You can find the J-Link, licensing information and documentation [here](https://www.segger.com/downloads/jlink/).
+
+We are also distributing this tool as a .NET library so it can be integrated in 3rd party applications. Please check the [README](Samples\README.md) in the Samples folder for more details along with sample applications.
 
 ## Install .NET **nanoFramework** Firmware Flasher
 

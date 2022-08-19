@@ -20,6 +20,8 @@
 - Texas Instruments Uniflash
   您可以找到Uniflash工具和许可信息 [这里](http://www.ti.com/tool/download/UNIFLASH).
 
+我们还将此工具作为 .NET 库分发，以便它可以集成到第三方应用程序中。请查看“示例”文件夹中的 [README](Samples\README.md) 以获取更多详细信息以及示例应用程序。
+
 ## 安装.NET **nanoFramework** Firmware Flasher  
 
 使用以下.NET Core CLI命令一次性安装.NET **nanoFramework** Firmware flash工具:  
