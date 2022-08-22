@@ -30,7 +30,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private static AssemblyInformationalVersionAttribute _informationalVersionAttribute;
         private static string _headerInfo;
         private static CopyrightInfo _copyrightInfo;
-        private static NanoDeviceOperations _nanoDebuggerOperations;
+        private static NanoDeviceOperations _nanoDeviceOperations;
 
         internal static string ExecutingPath;
 
@@ -97,7 +97,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // force clean-up
-            _nanoDebuggerOperations?.Dispose();
+            _nanoDeviceOperations?.Dispose();
 
             return (int)_exitCode;
         }
@@ -304,11 +304,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.ListDevices)
             {
-                _nanoDebuggerOperations = new NanoDeviceOperations();
+                _nanoDeviceOperations = new NanoDeviceOperations();
 
                 try
                 {
-                    var connectedDevices = _nanoDebuggerOperations.ListDevices();
+                    var connectedDevices = _nanoDeviceOperations.ListDevices();
 
                     if (connectedDevices.Count() == 0)
                     {
@@ -350,13 +350,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return;
                 }
 
-                _nanoDebuggerOperations = new NanoDeviceOperations();
+                _nanoDeviceOperations = new NanoDeviceOperations();
 
                 if (o.DeviceDetails)
                 {
                     try
                     {
-                        _exitCode = _nanoDebuggerOperations.GetDeviceDetails(o.SerialPort);
+                        _exitCode = _nanoDeviceOperations.GetDeviceDetails(o.SerialPort);
 
                         // done here
                         return;
@@ -373,7 +373,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     try
                     {
-                        _exitCode = await _nanoDebuggerOperations.UpdateDeviceClrAsync(
+                        _exitCode = await _nanoDeviceOperations.UpdateDeviceClrAsync(
                             o.SerialPort,
                             _verbosityLevel);
 
@@ -402,7 +402,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     try
                     {
-                        _exitCode = _nanoDebuggerOperations.DeployApplication(
+                        _exitCode = _nanoDeviceOperations.DeployApplication(
                             o.SerialPort,
                             o.DeploymentImage,
                             _verbosityLevel);
