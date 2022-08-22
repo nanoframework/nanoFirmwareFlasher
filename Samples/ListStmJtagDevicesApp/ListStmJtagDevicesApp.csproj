@@ -52,7 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="nanoFramework.Tools.FirmwareFlasher">
-      <Version>2.2.1</Version>
+      <Version>2.2.2</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
