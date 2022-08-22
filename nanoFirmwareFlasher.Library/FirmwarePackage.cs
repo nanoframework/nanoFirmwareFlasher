@@ -3,6 +3,8 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using nanoFramework.Tools.Debugger;
+using nanoFramework.Tools.FirmwareFlasher;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -31,7 +33,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly bool _preview;
 
         private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
-
+        
         /// <summary>
         /// Path with the base location for firmware packages.
         /// </summary>
@@ -58,11 +60,56 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         public VerbosityLevel Verbosity { get; internal set; }
 
+        /// <summary>
+        /// Path to nanoBooter file. Hex format.
+        /// </summary>
+        /// <remarks>For the binary file please use the <see cref="NanoBooterFileBinary"/> property.</remarks>
+        public string NanoBooterFile { get; internal set; }
+
+        /// <summary>
+        /// Path to nanoBooter file. Binary format.
+        /// </summary>
+        /// <remarks>For the HEX format file please use the <see cref="NanoBooterFile"/> property.</remarks>
+        public string NanoBooterFileBinary => NanoBooterFile.Replace(".hex", ".bin");
+
+        /// <summary>
+        /// Path to nanoCLR file. Hex format.
+        /// </summary>
+        /// <remarks>For the binary file please use the <see cref="NanoClrFileBinary"/> property.</remarks>
+        public string NanoClrFile { get; internal set; }
+
+        /// <summary>
+        /// Path to nanoCLR file. Binary format.
+        /// </summary>
+        /// <remarks>For the HEX format file please use the <see cref="NanoClrFile"/> property.</remarks>
+        public string NanoClrFileBinary => NanoClrFile.Replace(".hex", ".bin");
+
+        /// <summary>
+        /// The address of nanoCLR in flash.
+        /// </summary>
+        public uint ClrStartAddress { get; internal set; }
+
+        /// <summary>
+        /// The address of nanoBooter in flash.
+        /// </summary>
+        public object BooterStartAddress { get; internal set; }
+
         static FirmwarePackage()
         {
             _cloudsmithClient = new HttpClient();
             _cloudsmithClient.BaseAddress = new Uri("https://api.cloudsmith.io/v1/packages/net-nanoframework/");
             _cloudsmithClient.DefaultRequestHeaders.Add("Accept", "*/*");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nanoDevice"></param>
+        protected FirmwarePackage(NanoDeviceBase nanoDevice)
+        {
+            _targetName = nanoDevice.TargetName;
+            Version = "";
+            _preview = false;
         }
 
         /// <summary>
@@ -148,7 +195,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Download the firmware zip, extract this zip file, and get the firmware parts
         /// </summary>
         /// <returns>a dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</returns>
-        protected async Task<ExitCodes> DownloadAndExtractAsync()
+        internal async Task<ExitCodes> DownloadAndExtractAsync()
         {
             string fwFileName = null;
 
@@ -223,7 +270,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 downloadUrl = downloadResult.Url;
-                
+
                 // update with version from package about to be downloaded
                 Version = downloadResult.Version;
 
@@ -379,6 +426,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                      .Where(f => f.Extension == ".zip" && f.LastWriteTime < DateTime.Now.AddMonths(-1))
                      .ToList()
                      .ForEach(f => f.Delete());
+
+            PostProcessDownloadAndExtract();
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
@@ -626,6 +675,117 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal record struct DownloadUrlResult(string Url, string Version, ExitCodes Outcome)
         {
+        }
+
+        private void FindBooterStartAddress()
+        {
+            uint address;
+
+            // find out what's the CLR block start
+
+            // do this by reading the HEX format file...
+            var textLines = File.ReadAllLines(NanoBooterFile);
+
+            // ... and decoding the start address
+            var addressRecord = textLines.FirstOrDefault();
+
+            // 1st line is an Extended Segment Address Records (HEX86)
+            // format ":02000004FFFFFC"
+
+            // perform sanity checks
+            if (addressRecord == null ||
+                addressRecord.Length != 15 ||
+                addressRecord.Substring(0, 9) != ":02000004")
+            {
+                // wrong format
+                throw new FormatException("Wrong data in nanoBooter file");
+            }
+
+            // looking good, grab the upper 16bits
+            address = (uint)int.Parse(addressRecord.Substring(9, 4), System.Globalization.NumberStyles.HexNumber);
+            address <<= 16;
+
+            // now the 2nd line to get the lower 16 bits of the address
+            addressRecord = textLines.Skip(1).FirstOrDefault();
+
+            // 2nd line is a Data Record
+            // format ":10246200464C5549442050524F46494C4500464C33"
+
+            // perform sanity checks
+            if (addressRecord == null ||
+                addressRecord.Substring(0, 1) != ":" ||
+                addressRecord.Length < 7)
+            {
+                // wrong format
+                throw new FormatException("Wrong data in nanoBooter file");
+            }
+
+            // looking good, grab the lower 16bits
+            address += (uint)int.Parse(addressRecord.Substring(3, 4), System.Globalization.NumberStyles.HexNumber);
+
+            BooterStartAddress = address;
+        }
+
+        private void FindClrStartAddress()
+        {
+            uint address;
+
+            // find out what's the CLR block start
+
+            // do this by reading the HEX format file...
+            var textLines = File.ReadAllLines(NanoClrFile);
+
+            // ... and decoding the start address
+            var addressRecord = textLines.FirstOrDefault();
+
+            // 1st line is an Extended Segment Address Records (HEX86)
+            // format ":02000004FFFFFC"
+
+            // perform sanity checks
+            if (addressRecord == null ||
+                addressRecord.Length != 15 ||
+                addressRecord.Substring(0, 9) != ":02000004")
+            {
+                // wrong format
+                throw new FormatException("Wrong data in nanoClr file");
+            }
+
+            // looking good, grab the upper 16bits
+            address = (uint)int.Parse(addressRecord.Substring(9, 4), System.Globalization.NumberStyles.HexNumber);
+            address <<= 16;
+
+            // now the 2nd line to get the lower 16 bits of the address
+            addressRecord = textLines.Skip(1).FirstOrDefault();
+
+            // 2nd line is a Data Record
+            // format ":10246200464C5549442050524F46494C4500464C33"
+
+            // perform sanity checks
+            if (addressRecord == null ||
+                addressRecord.Substring(0, 1) != ":" ||
+                addressRecord.Length < 7)
+            {
+                // wrong format
+                throw new FormatException("Wrong data in nanoClr file");
+            }
+
+            // looking good, grab the lower 16bits
+            address += (uint)int.Parse(addressRecord.Substring(3, 4), System.Globalization.NumberStyles.HexNumber);
+
+            ClrStartAddress = address;
+        }
+
+        internal void PostProcessDownloadAndExtract()
+        {
+            NanoBooterFile = Directory.EnumerateFiles(LocationPath, "nanoBooter.hex").FirstOrDefault();
+            NanoClrFile = Directory.EnumerateFiles(LocationPath, "nanoCLR.hex").FirstOrDefault();
+
+            if (NanoBooterFile != null)
+            {
+                FindBooterStartAddress();
+            }
+
+            FindClrStartAddress();
         }
     }
 

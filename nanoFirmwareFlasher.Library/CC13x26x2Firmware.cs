@@ -13,8 +13,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// </summary>
     internal class CC13x26x2Firmware : FirmwarePackage
     {
-        public string nanoCLRFile { get; private set; }
-
         public CC13x26x2Firmware(
             string targetName,
             string fwVersion,
@@ -26,17 +24,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
         }
 
-        internal new async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync()
+        internal new System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync()
         {
             // perform download and extract
-            var executionResult = await base.DownloadAndExtractAsync();
-
-            if (executionResult == ExitCodes.OK)
-            {
-                nanoCLRFile = Directory.EnumerateFiles(LocationPath, "nanoCLR.hex").FirstOrDefault();
-            }
-
-            return executionResult;
+           return base.DownloadAndExtractAsync();
         }
     }
 }

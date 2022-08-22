@@ -193,7 +193,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     && operationResult == ExitCodes.OK)
                 {
                     // start execution on MCU from with bootloader address
-                    dfuDevice.StartExecution($"{firmware.GetdBooterStartAddress():X8}");
+                    dfuDevice.StartExecution($"{firmware.BooterStartAddress:X8}");
                 }
 
                 return operationResult;

@@ -68,7 +68,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (updateFw)
             {
-                filesToFlash.Add(firmware.nanoCLRFile);
+                filesToFlash.Add(firmware.NanoClrFile);
             }
 
             // need to include application file?

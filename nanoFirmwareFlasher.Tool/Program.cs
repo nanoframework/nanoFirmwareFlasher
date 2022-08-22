@@ -5,6 +5,7 @@
 
 using CommandLine;
 using CommandLine.Text;
+using nanoFramework.Tools.Debugger;
 using nanoFramework.Tools.FirmwareFlasher.Extensions;
 using Newtonsoft.Json;
 using System;
@@ -16,6 +17,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -28,6 +30,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private static AssemblyInformationalVersionAttribute _informationalVersionAttribute;
         private static string _headerInfo;
         private static CopyrightInfo _copyrightInfo;
+        private static NanoDeviceOperations _nanoDebuggerOperations;
 
         internal static string ExecutingPath;
 
@@ -92,6 +95,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 OutputError(_exitCode, _verbosityLevel > VerbosityLevel.Normal, _extraMessage);
             }
+
+            // force clean-up
+            _nanoDebuggerOperations?.Dispose();
 
             return (int)_exitCode;
         }
@@ -294,11 +300,144 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
+            #region nano device management
+
+            if (o.ListDevices)
+            {
+                _nanoDebuggerOperations = new NanoDeviceOperations();
+
+                try
+                {
+                    var connectedDevices = _nanoDebuggerOperations.ListDevices();
+
+                    if (connectedDevices.Count() == 0)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("No devices found");
+                    }
+                    else
+                    {
+                        Console.WriteLine("-- Connected .NET nanoFramework devices --");
+
+                        foreach (var nanoDevice in connectedDevices)
+                        {
+                            Console.WriteLine($"{nanoDevice.Description}");
+                        }
+
+                        Console.WriteLine("------------------------------------------");
+                    }
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                catch (Exception ex)
+                {
+                    _exitCode = ExitCodes.E2001;
+                    _extraMessage = ex.Message;
+                }
+
+                // done here, this command has no further processing
+                _exitCode = ExitCodes.OK;
+
+                return;
+            }
+
+            if (o.NanoDevice)
+            {
+                // COM port is mandatory for nano device operations
+                if (string.IsNullOrEmpty(o.SerialPort))
+                {
+                    _exitCode = ExitCodes.E6001;
+                    return;
+                }
+
+                _nanoDebuggerOperations = new NanoDeviceOperations();
+
+                if (o.DeviceDetails)
+                {
+                    try
+                    {
+                        _exitCode = _nanoDebuggerOperations.GetDeviceDetails(o.SerialPort);
+
+                        // done here
+                        return;
+                    }
+                    catch (CantConnectToNanoDeviceException ex)
+                    {
+                        _exitCode = ExitCodes.E2000;
+                        _extraMessage = ex.Message;
+
+                        return;
+                    }
+                }
+                else if (o.Update)
+                {
+                    try
+                    {
+                        _exitCode = await _nanoDebuggerOperations.UpdateDeviceClrAsync(
+                            o.SerialPort,
+                            _verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            return;
+                        }
+                    }
+                    catch (CantConnectToNanoDeviceException ex)
+                    {
+                        _exitCode = ExitCodes.E2001;
+                        _extraMessage = ex.Message;
+
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        _exitCode = ExitCodes.E2002;
+                        _extraMessage = ex.Message;
+
+                        return;
+                    }
+                }
+
+                if (o.Deploy)
+                {
+                    try
+                    {
+                        _exitCode = _nanoDebuggerOperations.DeployApplication(
+                            o.SerialPort,
+                            o.DeploymentImage,
+                            _verbosityLevel);
+
+                        if (_exitCode != ExitCodes.OK)
+                        {
+                            return;
+                        }
+                    }
+                    catch (CantConnectToNanoDeviceException ex)
+                    {
+                        _exitCode = ExitCodes.E2001;
+                        _extraMessage = ex.Message;
+
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        _exitCode = ExitCodes.E2002;
+                        _extraMessage = ex.Message;
+
+                        return;
+                    }
+                }
+
+                return;
+            }
+
+            #endregion
+
             #region target processing
 
             // if a target name was specified, try to be smart and set the platform accordingly (in case it wasn't specified)
             if (o.Platform == null
-                && !string.IsNullOrEmpty(o.TargetName))
+            && !string.IsNullOrEmpty(o.TargetName))
             {
                 // easiest one: ESP32
                 if (o.TargetName.StartsWith("ESP")

@@ -177,11 +177,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             Console.WriteLine("FAILED!");
 
                             Console.WriteLine("");
-                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.ForegroundColor = ConsoleColor.White;
 
                             Console.WriteLine($"{opResult.Replace("PK> ", "")}");
 
-                            Console.ForegroundColor = ConsoleColor.White;
                             Console.WriteLine("");
                         }
                         else if (verbosity > VerbosityLevel.Normal)
