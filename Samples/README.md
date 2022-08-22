@@ -96,13 +96,56 @@ A couple of lines of code it's all it takes:
 ```csharp
 var nanoDeviceOperations = new NanoDeviceOperations();
 
-nanoDeviceOperations.GetDeviceDetails("COM22");
+NanoDeviceBase nanoDevice = null;
+nanoDeviceOperations.GetDeviceDetails(
+    "COM22",
+    ref nanoDevice);
 ```
 
 Here's a sample output from the above code:
 
 ```text
+HAL build info: nanoCLR running @ ORGPAL_PALTHREE built with ChibiOS v2021.11.2.11
+  Target:   ORGPAL_PALTHREE
+  Platform: STM32F7
 
+Firmware build Info:
+  Date:        Aug 18 2022
+  Type:        MinSizeRel build with ChibiOS v2021.11.2.11
+  CLR Version: 1.8.0.495
+  Compiler:    GNU ARM GCC v10.3.1
+
+OEM Product codes (vendor, model, SKU): 0, 0, 0
+
+Serial Numbers (module, system):
+  00000000000000000000000000000000
+  0000000000000000
+
+Target capabilities:
+  Has nanoBooter: YES
+  nanoBooter: v1.8.0.495
+  IFU capable: NO
+  Has proprietary bootloader: NO
+
+AppDomains:
+
+Assemblies:
+  FileAccess, 1.0.0.0
+  System.IO.Streams, 1.1.9.9530
+  System.IO.FileSystem, 1.1.2.59752
+  mscorlib, 1.12.0.4
+
+Native Assemblies:
+  mscorlib v100.5.0.17, checksum 0x004CF1CE
+  nanoFramework.Runtime.Native v100.0.9.0, checksum 0x109F6F22
+  nanoFramework.Hardware.Stm32 v100.0.4.4, checksum 0x0874B6FE
+  nanoFramework.Networking.Sntp v100.0.4.4, checksum 0xE2D9BDED
+  nanoFramework.ResourceManager v100.0.0.1, checksum 0xDCD7DF4D
+  nanoFramework.System.Collections v100.0.1.0, checksum 0x2DC2B090
+  nanoFramework.System.Text v100.0.0.1, checksum 0x8E6EB73D
+  nanoFramework.Runtime.Events v100.0.8.0, checksum 0x0EAB00C9
+  EventSink v1.0.0.0, checksum 0xF32F4C3E
+  System.IO.FileSystem v1.0.0.0, checksum 0x3AB74021
 ```
 
 ### Update the CLR of a connected nano device
