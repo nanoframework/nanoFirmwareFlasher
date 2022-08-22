@@ -356,7 +356,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     try
                     {
-                        _exitCode = _nanoDeviceOperations.GetDeviceDetails(o.SerialPort);
+                        NanoDeviceBase nanoDevice = null;
+                        _exitCode = _nanoDeviceOperations.GetDeviceDetails(
+                            o.SerialPort,
+                            ref nanoDevice);
 
                         // done here
                         return;
