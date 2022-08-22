@@ -87,3 +87,35 @@ await Esp32Operations.UpdateFirmwareAsync(
 ```
 
 The operation returns an exit code reporting success or failure of the update operation.
+
+### Show nano device details
+
+This console application gets (and optionally prints) details about a .NET nanoFramework device connected to the PC.
+A couple of lines of code it's all it takes:
+
+```csharp
+var nanoDeviceOperations = new NanoDeviceOperations();
+
+nanoDeviceOperations.GetDeviceDetails("COM22");
+```
+
+Here's a sample output from the above code:
+
+```text
+
+```
+
+### Update the CLR of a connected nano device
+
+This console application updates the CLR of a .NET nanoFramework device connected to the PC.
+A couple of lines of code is all it takes.
+
+>Note 1: this operation requires that the target device has been already programmed .NET nanoFramework firmware. It's meant to perform updates using the serial COM port that's used for Visual Studio debugging without requiring any JTAG or other specific hardware connection.
+>Note 2: because the nano device capabilities can be queried there's no need to specify the target name or any other details, making the operation rather smooth and simple to execute.
+
+```csharp
+var nanoDeviceOperations = new NanoDeviceOperations();
+UpdateDeviceClrAsync(
+    "COM55",
+    VerbosityLevel.Nornal);
+```
