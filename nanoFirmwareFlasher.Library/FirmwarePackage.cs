@@ -33,7 +33,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly bool _preview;
 
         private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
-        
+
         /// <summary>
         /// Path with the base location for firmware packages.
         /// </summary>
@@ -681,7 +681,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             uint address;
 
-            // find out what's the CLR block start
+            if (string.IsNullOrEmpty(NanoClrFile))
+            {
+                // nothing to do here
+                return;
+            }
+
+            // find out what's the booter block start
 
             // do this by reading the HEX format file...
             var textLines = File.ReadAllLines(NanoBooterFile);
@@ -729,6 +735,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private void FindClrStartAddress()
         {
             uint address;
+
+            if (string.IsNullOrEmpty(NanoClrFile))
+            {
+                // nothing to do here
+                return;
+            }
 
             // find out what's the CLR block start
 
