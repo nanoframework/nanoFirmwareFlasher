@@ -48,7 +48,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Gets device details of the requested .NET nanoFramework device.
         /// </summary>
         /// <param name="serialPort">Serial port name where the device is connected to.</param>
-        /// <returns>The <see cref="NanoDeviceBase"/> object for the requested device. <see langword="null"/> if there is no .NET nanoFramework device in the specified <paramref name="serialPort"/>.</returns>
+        /// <param name="nanoDevice"><see cref="NanoDeviceBase"/> object for the requested device.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         /// <exception cref="CantConnectToNanoDeviceException">
         /// <para>
         /// Couldn't connect to specified nano device.
@@ -60,10 +61,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Couldn't retrieve device details from the nano device.
         /// </para>
         /// </exception>
-        public ExitCodes GetDeviceDetails(string serialPort)
+        public ExitCodes GetDeviceDetails(string serialPort,
+            ref NanoDeviceBase nanoDevice)
         {
-            NanoDeviceBase nanoDevice = null;
-
             if (ReadDetailsFromDevice(serialPort, ref nanoDevice))
             {
                 // check that we are in CLR
@@ -113,6 +113,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // report issue 
                 throw new CantConnectToNanoDeviceException("Couldn't connect to specified nano device.");
+            }
+
+            if (nanoDevice is null)
+            {
+                throw new ArgumentNullException(nameof(nanoDevice));
             }
 
             return ExitCodes.E2000;
@@ -527,8 +532,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             GC.SuppressFinalize(this);
         }
 
-        private bool ReadDetailsFromDevice(string serialPort, ref NanoDeviceBase nanoDevice)
+        private bool ReadDetailsFromDevice(string serialPort,
+            ref NanoDeviceBase nanoDevice)
         {
+            if (serialPort is null)
+            {
+                throw new ArgumentNullException(nameof(serialPort));
+            }
+
             while (!_serialDebuggerPort.IsDevicesEnumerationComplete)
             {
                 Thread.Sleep(100);
