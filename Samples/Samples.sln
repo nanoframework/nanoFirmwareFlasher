@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListJLinkDevicesApp", "List
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateEsp32Device", "UpdateEsp32Device\UpdateEsp32Device.csproj", "{9E9B3E88-5360-48B5-84CA-2E541940BB04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDeviceDetails", "GetDeviceDetails\GetDeviceDetails.csproj", "{8AB7782B-4DB8-40A4-A846-86DE40AA3913}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateNanoDeviceClr", "UpdateNanoDeviceClr\UpdateNanoDeviceClr.csproj", "{CACA196F-7922-40D9-9971-EB18B1ECDEA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{9E9B3E88-5360-48B5-84CA-2E541940BB04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E9B3E88-5360-48B5-84CA-2E541940BB04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E9B3E88-5360-48B5-84CA-2E541940BB04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AB7782B-4DB8-40A4-A846-86DE40AA3913}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AB7782B-4DB8-40A4-A846-86DE40AA3913}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AB7782B-4DB8-40A4-A846-86DE40AA3913}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AB7782B-4DB8-40A4-A846-86DE40AA3913}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

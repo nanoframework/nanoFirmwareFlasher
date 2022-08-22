@@ -4,14 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5891EBB1-65BE-4268-A0FC-3BB5A0BEC239}</ProjectGuid>
+    <ProjectGuid>{8AB7782B-4DB8-40A4-A846-86DE40AA3913}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ListJtagDevicesApp</RootNamespace>
-    <AssemblyName>ListJtagDevicesApp</AssemblyName>
+    <RootNamespace>GetDeviceDetails</RootNamespace>
+    <AssemblyName>GetDeviceDetails</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -53,18 +55,6 @@
   <ItemGroup>
     <PackageReference Include="nanoFramework.Tools.FirmwareFlasher">
       <Version>2.2.1</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.ComponentModel.Annotations">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.IO.Ports">
-      <Version>6.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Net.Http">
-      <Version>4.3.4</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
