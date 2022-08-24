@@ -66,7 +66,7 @@
 	    <ItemGroup>
             <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" />
+        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" Condition="$(TargetDir) != ''"/>
 	</Target>
 
 	<PropertyGroup>

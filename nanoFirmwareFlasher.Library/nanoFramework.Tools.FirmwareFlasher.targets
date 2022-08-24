@@ -3,6 +3,6 @@
     <ItemGroup>
       <LibSourceFiles Include="$(PkgnanoFramework_Tools_FirmwareFlasher)\tools\any\**\*.*"/>
     </ItemGroup>
-    <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" />
+    <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" Condition="$(TargetDir) != ''"/>
   </Target>
 </Project>
