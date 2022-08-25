@@ -136,15 +136,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (updateInterface == Interface.Dfu)
             {
                 // DFU update
-                dfuDeviceId = dfuDeviceId == null ? connectedStDfuDevices[0].serial : dfuDeviceId;
-                dfuDevice = new StmDfuDevice(dfuDeviceId);
 
-                if (!dfuDevice.DevicePresent)
+                try
                 {
-                    // no DFU device found
+                    dfuDeviceId = dfuDeviceId == null ? connectedStDfuDevices[0].serial : dfuDeviceId;
+                    dfuDevice = new StmDfuDevice(dfuDeviceId);
 
-                    // done here, this command has no further processing
-                    return ExitCodes.E1000;
+                    if (!dfuDevice.DevicePresent)
+                    {
+                        // no DFU device found
+
+                        // done here, this command has no further processing
+                        return ExitCodes.E1000;
+                    }
+                }
+                catch (CantConnectToJtagDeviceException)
+                {
+                    return ExitCodes.E5002;
+                }
+                catch (Exception)
+                {
+                    return ExitCodes.E5000;
                 }
 
                 if (fitCheck)
@@ -162,9 +174,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
 
-                    Console.WriteLine($"Connected to DFU device with ID { dfuDevice.DfuId }");
+                    Console.WriteLine($"Connected to DFU device with ID {dfuDevice.DfuId}");
                     Console.WriteLine("");
-                    Console.WriteLine($"{ dfuDevice }");
+                    Console.WriteLine($"{dfuDevice}");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
 
@@ -201,23 +213,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else
             {
                 // JTAG device
-                jtagDevice = new StmJtagDevice(jtagId);
 
-                if (!jtagDevice.DevicePresent)
+                try
                 {
-                    // no JTAG device found
+                    jtagDevice = new StmJtagDevice(jtagId);
 
-                    // done here, this command has no further processing
-                    return ExitCodes.E5001;
+                    if (!jtagDevice.DevicePresent)
+                    {
+                        // no JTAG device found
+
+                        // done here, this command has no further processing
+                        return ExitCodes.E5001;
+                    }
+                }
+                catch (CantConnectToJtagDeviceException)
+                {
+                    return ExitCodes.E5002;
+                }
+                catch (Exception)
+                {
+                    return ExitCodes.E5000;
                 }
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     Console.WriteLine("");
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
+                    Console.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
                     Console.WriteLine("");
-                    Console.WriteLine($"{ jtagDevice }");
+                    Console.WriteLine($"{jtagDevice}");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
 
@@ -316,7 +340,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
+                Console.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
             }
 
             // set verbosity
@@ -343,7 +367,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Connected to JTAG device with ID { jtagDevice.JtagId }");
+                Console.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
             }
 
             // set verbosity
