@@ -182,6 +182,7 @@ jobs:
     buildPlatform: 'x64'
     buildConfiguration: 'Release'
     solution: 'nanoFirmwareFlasher.sln'
+    NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
     run_update_dependents: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
 
   steps:
@@ -214,6 +215,15 @@ jobs:
         eq(variables['UPDATE_DEPENDENTS'], 'true')
     displayName: Set Could Version
 
+  - task: Cache@2
+    displayName: Cache NuGet packages
+    inputs:
+      key: 'nuget | "$(Agent.OS)" | **/packages.lock.json, !bin/**'
+      restoreKeys: |
+          nuget | "$(Agent.OS)"
+          nuget
+      path: $(NUGET_PACKAGES)
+
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
     condition: >-
@@ -223,6 +233,7 @@ jobs:
       )
     inputs:
       command: restore
+      restoreArguments: '--locked-mode'
       verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln
       feedsToUse: config
