@@ -466,6 +466,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             var regexPattern = new StringBuilder();
             int counter = 1;
             var regexGroupNames = new List<string>();
+            string flashFreqParam;
 
             foreach (var part in partsToWrite)
             {
@@ -485,9 +486,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 _ => "detect",
             };
 
+            // process flash frequency
+            if (_flashFrequency == -1)
+            {
+                // no flash frequency was requested on the CLI options
+                // defaulting to 'keep' to make this work with image files with checksum
+                flashFreqParam = "keep";
+            }
+            else
+            {
+                // compose option for flash freq para
+                flashFreqParam = $"{_flashFrequency}m";
+            }
+
             // execute write_flash command and parse the result; progress message can be found be searching for linefeed
             if (!RunEspTool(
-                $"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}",
+                $"write_flash --flash_mode {_flashMode} --flash_freq {flashFreqParam} --flash_size {flashSize} {partsArguments.ToString().Trim()}",
                 false,
                 useStandardBaudrate,
                 true,
@@ -623,7 +637,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!espTool.Start())
             {
                 throw new EspToolExecutionException("Error starting esptool!");
-            }           
+            }
 
             var messageBuilder = new StringBuilder();
 

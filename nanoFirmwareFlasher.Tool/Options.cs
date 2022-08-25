@@ -108,14 +108,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Option(
             "flashmode",
             Required = false,
-            Default = "dio",
+            Default = "keep",
             HelpText = "Flash mode to use.")]
         public string Esp32FlashMode { get; set; }
 
         [Option(
             "flashfreq",
             Required = false,
-            Default = 40,
+            Default = -1,
             HelpText = "Flash frequency to use [MHz].")]
         public int Esp32FlashFrequency { get; set; }
 
