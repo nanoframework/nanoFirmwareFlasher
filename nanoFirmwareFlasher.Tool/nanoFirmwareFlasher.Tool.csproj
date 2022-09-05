@@ -19,14 +19,13 @@
 		<Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
 		<!-- need this to allow async Main() -->
 		<LangVersion>latest</LangVersion>
-		<TargetFrameworks>netcoreapp6</TargetFrameworks>
+		<TargetFrameworks>netcoreapp6;net472</TargetFrameworks>
 		<PackAsTool>true</PackAsTool>
 		<PlatformTarget>x64</PlatformTarget>
 		<Platforms>x64;x86;anycpu</Platforms>
 		<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-		<RestoreLockedMode>true</RestoreLockedMode>
 	</PropertyGroup>
 
 	<PropertyGroup>
