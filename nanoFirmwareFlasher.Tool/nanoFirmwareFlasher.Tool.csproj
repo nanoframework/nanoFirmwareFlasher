@@ -22,7 +22,7 @@
 		<TargetFrameworks>netcoreapp6;net472</TargetFrameworks>
 		<PackAsTool>true</PackAsTool>
 		<PlatformTarget>anycpu</PlatformTarget>
-		<Platforms>x64;x86;anycpu</Platforms>
+		<Platforms>AnyCPU;x64</Platforms>
 		<RuntimeIdentifiers>any</RuntimeIdentifiers>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
