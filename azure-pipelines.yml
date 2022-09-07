@@ -182,7 +182,6 @@ jobs:
     buildPlatform: 'x64'
     buildConfiguration: 'Release'
     solution: 'nanoFirmwareFlasher.sln'
-    NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
     run_update_dependents: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
 
   steps:
@@ -222,7 +221,7 @@ jobs:
       restoreKeys: |
           nuget | "$(Agent.OS)"
           nuget
-      path: $(NUGET_PACKAGES)
+      path: $(UserProfile).nuget/packages
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
