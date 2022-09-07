@@ -221,7 +221,7 @@ jobs:
       restoreKeys: |
           nuget | "$(Agent.OS)"
           nuget
-      path: $(UserProfile).nuget/packages
+      path: $(UserProfile)/.nuget/packages
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
