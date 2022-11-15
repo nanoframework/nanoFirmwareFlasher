@@ -126,7 +126,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
-                esp32Device.ChipType != "ESP32-S2")
+                esp32Device.ChipType != "ESP32-S2" &&
+                esp32Device.ChipType != "ESP32-C3")
             {
                 // connected to a device not supported
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -175,6 +176,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             revisionSuffix = "REV0";
                         }
 
+                        if (esp32Device.ChipName.Contains("ESP32_C3"))
+                        {
+                            if (esp32Device.ChipName.Contains("revision 2"))
+                            {
+                                revisionSuffix = "REV2";
+                            }
+                            else
+                            {
+                                // all the others (rev3 and rev4) will take rev3
+                                revisionSuffix = "REV3";
+                            }
+                        }
+
                         // compose target name
                         targetName = $"ESP32{psRamSegment}{otherSegment}_{revisionSuffix}";
                     }
@@ -194,6 +208,36 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     return ExitCodes.E9000;
                 }
+                else if (esp32Device.ChipType == "ESP32-C3")
+                {
+                    string revisionSuffix;
+
+                    if (esp32Device.ChipName.Contains("revision 2"))
+                    {
+                        revisionSuffix = "REV2";
+                    }
+                    else if (esp32Device.ChipName.Contains("revision 3") || esp32Device.ChipName.Contains("revision 4"))
+                    {
+                        // all the others (rev3 and rev4) will take rev3
+                        revisionSuffix = "REV3";
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.WriteLine("");
+                        Console.WriteLine($"Unsupported ESP32_C3 revision.");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+
+                        return ExitCodes.E9000;
+                    }
+
+                    // compose target name
+                    targetName = $"ESP32_C3_{revisionSuffix}";
+                }
+
 
                 Console.ForegroundColor = ConsoleColor.Blue;
 
@@ -265,7 +309,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // need to download update package?
             if (updateFw)
             {
-                operationResult = await firmware.DownloadAndExtractAsync(esp32Device.FlashSize);
+                operationResult = await firmware.DownloadAndExtractAsync(esp32Device);
 
                 if (operationResult != ExitCodes.OK)
                 {
