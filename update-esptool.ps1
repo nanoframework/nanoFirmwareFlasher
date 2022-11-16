@@ -1,13 +1,24 @@
 # Copyright (c) .NET Foundation and Contributors
 # See LICENSE file in the project root for full license information.
 
-# this PS1 downloads the latest version of the esptool from their github repo, unpacks it
+# this PS1 downloads the latest (or a specific) version of the esptool from their github repo and unpacks it in the appropriate folder for distribution with nanoff
 
-# get details about latest version
-$lastRelease = $(gh release list --limit 1 --repo espressif/esptool)
+[CmdletBinding(SupportsShouldProcess = $true)]
+param (
+    [Parameter(HelpMessage = "esptool version requested")][string]$RequestedVersion
+)
 
-# grab version
-$version = $lastRelease.Split()[3]
+# get latest version if none was requested
+if ([string]::IsNullOrEmpty($reqVersion)) {
+    # get details about latest version
+    $lastRelease = $(gh release list --limit 1 --repo espressif/esptool)
+
+    # grab version
+    $version = $lastRelease.Split()[3]
+}
+else {
+    $version = $reqVersion
+}
 
 # make sure security doesn't block our request
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11"
@@ -17,7 +28,7 @@ $version = $lastRelease.Split()[3]
 $urlWin = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-win64.zip"
 $outputWin = "$env:TEMP\esptool-$version-win64.zip"
 
-"Downloading esptool for Windows..." | Write-Host -ForegroundColor White -NoNewline
+"Downloading esptool $version for Windows..." | Write-Host -ForegroundColor White -NoNewline
 (New-Object Net.WebClient).DownloadFile($urlWin, $outputWin)
 "OK" | Write-Host -ForegroundColor Green
 
@@ -26,7 +37,7 @@ $outputWin = "$env:TEMP\esptool-$version-win64.zip"
 $urlMac = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-macos.zip"
 $outputMac = "$env:TEMP\esptool-$version-macos.zip"
 
-"Downloading esptool for MAC..." | Write-Host -ForegroundColor White -NoNewline
+"Downloading esptool $version for MAC..." | Write-Host -ForegroundColor White -NoNewline
 (New-Object Net.WebClient).DownloadFile($urlMac, $outputMac)
 "OK" | Write-Host -ForegroundColor Green
 
@@ -35,7 +46,7 @@ $outputMac = "$env:TEMP\esptool-$version-macos.zip"
 $urlLinux = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-linux-amd64.zip"
 $outputLinux = "$env:TEMP\esptool-$version-linux-amd64.zip"
 
-"Downloading esptool for Linux..." | Write-Host -ForegroundColor White -NoNewline
+"Downloading esptool for $version Linux..." | Write-Host -ForegroundColor White -NoNewline
 (New-Object Net.WebClient).DownloadFile($urlLinux, $outputLinux)
 "OK" | Write-Host -ForegroundColor Green
 
