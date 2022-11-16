@@ -11,12 +11,12 @@ trigger:
     exclude:
       - .github_changelog_generator
       - .gitignore
-      - CHANGELOG.md
-      - CODE_OF_CONDUCT.md
       - LICENSE.md
       - README.md
       - README.zh-cn.md
       - NuGet.Config
+      - update-esptool.ps1
+      - update-jlink.ps1
       - assets/*
       - config/*
       - .github/*
