@@ -50,8 +50,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _partitionTableSize = partitionTableSize;
         }
 
-        internal async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(int flashSize)
+        internal async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(Esp32DeviceInfo deviceInfo)
         {
+            int flashSize = deviceInfo.FlashSize;
+
             if (_partitionTableSize is not null)
             {
                 // if specified, partition table size overrides flash size.
@@ -64,7 +66,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
-                    Console.WriteLine($"There is no firmware available for ESP32 with {Esp32DeviceInfo.GetFlashSizeAsString(flashSize)} flash size!{Environment.NewLine}Only the following flash sizes are supported: {string.Join(", ", SupportedFlashSizes.Select(size => size >= 0x10000 ? $"{ size / 0x100000 }MB" : $"{ size / 0x400 }kB."))}");
+                    Console.WriteLine($"There is no firmware available for ESP32 with {Esp32DeviceInfo.GetFlashSizeAsString(flashSize)} flash size!{Environment.NewLine}Only the following flash sizes are supported: {string.Join(", ", SupportedFlashSizes.Select(size => size >= 0x10000 ? $"{size / 0x100000}MB" : $"{size / 0x400}kB."))}");
                 }
 
                 return ExitCodes.E4001;
@@ -80,8 +82,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // get ESP32 partitions
                 FlashPartitions = new Dictionary<int, string>
                 {
-				    // bootloader goes to 0x1000
-				    { 0x1000, Path.Combine(LocationPath, BootloaderPath) },
+				    // bootloader goes to 0x1000, except for ESP32_C3 which goes to 0x0
+				    { deviceInfo.ChipType == "ESP32-C3" ? 0x0 : 0x1000, Path.Combine(LocationPath, BootloaderPath) },
 
 				    // nanoCLR goes to 0x10000
 				    { CLRAddress, Path.Combine(LocationPath, "nanoCLR.bin") },

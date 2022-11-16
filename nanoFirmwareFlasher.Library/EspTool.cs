@@ -252,10 +252,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // FEATHER_S2's have PSRAM, so don't even bother
                 psramIsAvailable = PSRamAvailability.Yes;
             }
+            else if (name.Contains("ESP32-C3"))
+            {
+                // all ESP32-C3 SDK config have support for PSRAM, so don't even bother
+                psramIsAvailable = PSRamAvailability.Undetermined;
+            }
             else
             {
-                // if a target name was provided, don't bother to check PSRAM
-                if (targetName == null)
+                // if a target name wasn't provided, check for PSRAM
+                // except for ESP32_C3
+                if (targetName == null && !name.Contains("ESP32-C3"))
                 {
                     psramIsAvailable = FindPSRamAvailable();
                 }
