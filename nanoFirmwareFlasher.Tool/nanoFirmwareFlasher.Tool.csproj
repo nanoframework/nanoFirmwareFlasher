@@ -45,10 +45,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommandLineParser" Version="2.8.0" />
+		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.1" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All" />
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.5.119" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -74,7 +74,7 @@
 	    <ItemGroup>
             <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" Condition="$(TargetDir) != ''"/>
+        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" Condition="$(TargetDir) != ''" />
 	</Target>
 
 	<PropertyGroup>
