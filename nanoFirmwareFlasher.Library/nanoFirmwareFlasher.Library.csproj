@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>library</OutputType>
@@ -61,7 +61,7 @@
   <ItemGroup>
     <PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.5.119" PrivateAssets="All" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.IO.Ports" Version="6.0.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
