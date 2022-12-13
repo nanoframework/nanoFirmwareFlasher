@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoFirmwareFlasher?repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
+[![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoFirmwareFlasher?repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
 
 ![nanoFramework logo](https://raw.githubusercontent.com/nanoframework/Home/main/resources/logo/nanoFramework-repo-logo.png)
 
@@ -19,6 +19,8 @@
    您可以找到源代码、许可信息和文档  [这里](https://www.st.com/en/development-tools/stm32cubeprog.html).
 - Texas Instruments Uniflash
   您可以找到Uniflash工具和许可信息 [这里](http://www.ti.com/tool/download/UNIFLASH).
+
+我们还将此工具作为 .NET 库分发，以便它可以集成到第三方应用程序中。请查看“示例”文件夹中的 [README](Samples\README.md) 以获取更多详细信息以及示例应用程序。
 
 ## 安装.NET **nanoFramework** Firmware Flasher  
 
@@ -157,7 +159,7 @@ nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\
 nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
 ```
 
-## STMP32用法示例
+## STM32用法示例
 
 ### 更新指定STM32目标的固件
 
@@ -184,7 +186,7 @@ nanoff --target ST_STM32F769I_DISCOVERY --deploy --image "E:\GitHub\nf-Samples\s
 本例使用了Visual Studio在构建任何nanoFramework c#应用程序时生成的二进制格式文件。 因为它是一个二进制文件，所以您还必须指定部署区域的flash地址(这里是0x08000000，注意十六进制格式)。  
 
 ```控制台
-nanoff --update --target ST_STM32F769I_DISCOVERY --preview --jtag --binfile "c:\dev\my awesome app\bin\debug\my_awesome_app.bin" --address 0x08000000
+nanoff --update --target ST_STM32F769I_DISCOVERY --jtag --binfile "c:\dev\my awesome app\bin\debug\my_awesome_app.bin" --address 0x08000000
 ```
 
 ### 列出JTAG连接中可用的所有STM32设备  
@@ -264,12 +266,12 @@ nanoff -v q
 ## 目标列表
 
 翻译结果
-您可以列出支持的目标及其版本，用于稳定版本或预览。 `--platform` 允许您过滤平台。 `--preview` 过滤查询以仅显示预览版本。 
+您可以列出支持的目标及其版本，用于稳定版本或预览。 `--platform` 允许您过滤平台。 
 
 在预览版本中列出可用于ESP32目标的软件包。  
 
 ```控制台
-nanoff --listboards --platform esp32 --preview
+nanoff --listboards --platform esp32
 ```
 
 列出可用于STM32目标的包(稳定版本)。  

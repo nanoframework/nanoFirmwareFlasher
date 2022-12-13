@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<ToolCommandName>nanoff</ToolCommandName>
+		<PackageOutputPath>../</PackageOutputPath>
+		<RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
+		<AssemblyName>nanoff</AssemblyName>
+		<PackageId>nanoff</PackageId>
+		<Authors>nanoframework</Authors>
+		<Product>.NET nanoFramework Firmware Flasher</Product>
+		<Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
+		<Company>.NET nanoFramework</Company>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
+		<PackageIconUrl></PackageIconUrl>
+		<Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
+		<!-- need this to allow async Main() -->
+		<LangVersion>latest</LangVersion>
+		<PackAsTool>true</PackAsTool>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<Platforms>AnyCPU;x64</Platforms>
+		<RuntimeIdentifiers>any</RuntimeIdentifiers>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+		<RestoreLockedMode>true</RestoreLockedMode>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$(VSCodeExtensionBuild) == '' or $(VSCodeExtensionBuild) == 'False'">
+		<TargetFrameworks>net6.0</TargetFrameworks>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(VSCodeExtensionBuild) == 'True'">
+		<TargetFrameworks>net472</TargetFrameworks>
+	</PropertyGroup>
+		
+	<PropertyGroup>
+		<!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
+		<NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<PackageIcon>images\nf-logo.png</PackageIcon>
+		<PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommandLineParser" Version="2.9.1" />
+		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.3" />
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.5.119" PrivateAssets="All" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\assets\nf-logo.png">
+			<Pack>True</Pack>
+			<PackagePath>images</PackagePath>
+		</None>
+		<None Include="..\LICENSE.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj" />
+	</ItemGroup>
+
+	<Target Name="CopyToolsContent" AfterTargets="Build">
+	    <ItemGroup>
+            <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" Condition="$(TargetDir) != ''" />
+	</Target>
+
+	<PropertyGroup>
+		<!-- set this to 'net6.0\' to package contents in this TFM folder  -->
+		<PackageTfmSubFolder>net6.0\</PackageTfmSubFolder>
+	</PropertyGroup>
+
+    <Import Project="..\nanoFirmwareFlasher.Library\nugetcontent.targets" />
+	
+</Project>

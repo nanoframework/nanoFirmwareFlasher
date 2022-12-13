@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32811.315
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListStmJtagDevicesApp", "ListStmJtagDevicesApp\ListStmJtagDevicesApp.csproj", "{5891EBB1-65BE-4268-A0FC-3BB5A0BEC239}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3E20A937-0D53-4A58-A651-1C876E8409CA}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListJLinkDevicesApp", "ListJLinkDevicesApp\ListJLinkDevicesApp.csproj", "{503A17DD-5BBE-4DAB-8DF1-3F2275EE1A83}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateEsp32Device", "UpdateEsp32Device\UpdateEsp32Device.csproj", "{9E9B3E88-5360-48B5-84CA-2E541940BB04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDeviceDetails", "GetDeviceDetails\GetDeviceDetails.csproj", "{8AB7782B-4DB8-40A4-A846-86DE40AA3913}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateNanoDeviceClr", "UpdateNanoDeviceClr\UpdateNanoDeviceClr.csproj", "{CACA196F-7922-40D9-9971-EB18B1ECDEA4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5891EBB1-65BE-4268-A0FC-3BB5A0BEC239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5891EBB1-65BE-4268-A0FC-3BB5A0BEC239}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5891EBB1-65BE-4268-A0FC-3BB5A0BEC239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5891EBB1-65BE-4268-A0FC-3BB5A0BEC239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{503A17DD-5BBE-4DAB-8DF1-3F2275EE1A83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{503A17DD-5BBE-4DAB-8DF1-3F2275EE1A83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{503A17DD-5BBE-4DAB-8DF1-3F2275EE1A83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{503A17DD-5BBE-4DAB-8DF1-3F2275EE1A83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E9B3E88-5360-48B5-84CA-2E541940BB04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E9B3E88-5360-48B5-84CA-2E541940BB04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E9B3E88-5360-48B5-84CA-2E541940BB04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E9B3E88-5360-48B5-84CA-2E541940BB04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AB7782B-4DB8-40A4-A846-86DE40AA3913}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AB7782B-4DB8-40A4-A846-86DE40AA3913}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AB7782B-4DB8-40A4-A846-86DE40AA3913}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AB7782B-4DB8-40A4-A846-86DE40AA3913}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2F89BF65-FA77-43AF-87DC-0AC425F2904B}
+	EndGlobalSection
+EndGlobal
