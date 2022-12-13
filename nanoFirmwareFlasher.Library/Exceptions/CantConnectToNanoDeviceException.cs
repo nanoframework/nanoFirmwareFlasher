@@ -42,7 +42,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Cannot connect to device exception.
         /// </summary>
         /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="context">Streamed context.</param>
         protected CantConnectToNanoDeviceException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
