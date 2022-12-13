@@ -38,7 +38,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// STM32 Programmer CLI Exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display</param>
         public StLinkCliExecutionException(string message, Exception innerException) : base(message, innerException)
         {
