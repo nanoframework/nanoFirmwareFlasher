@@ -225,7 +225,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         E8000 = 8000,
 
         /// <summary>
-        /// No JTAG device found
+        /// No J-Link device found
         /// </summary>
         [Display(Name = "No J-Link device found. Make sure it's connected.")]
         E8001 = 8001,
@@ -235,6 +235,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Error executing silink CLI command.")]
         E8002 = 8002,
+
+        /// <summary>
+        /// Path of BIN file contains spaces or diacritic characters.
+        /// </summary>
+        [Display(Name = "Path of BIN file contains spaces or diacritic characters.")]
+        E8003 = 8003,
 
         ////////////////////////////////
         // Application general Errors //

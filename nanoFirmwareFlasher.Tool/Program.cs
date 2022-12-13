@@ -1282,7 +1282,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             // no J-Link device found
 
                             // done here, this command has no further processing
-                            _exitCode = ExitCodes.E5001;
+                            _exitCode = ExitCodes.E8001;
 
                             return;
                         }
@@ -1318,7 +1318,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     catch (CantConnectToJLinkDeviceException)
                     {
                         // done here, this command has no further processing
-                        _exitCode = ExitCodes.E5002;
+                        _exitCode = ExitCodes.E8002;
                     }
                 }
                 else if (!string.IsNullOrEmpty(o.TargetName))
