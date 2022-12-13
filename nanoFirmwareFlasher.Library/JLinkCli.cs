@@ -35,11 +35,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private const string FlashFileCommandTemplate = $@"
 USB
 speed auto
-Reset
 Halt
-LoadFile {FilePathToken},{FlashAddressToken}
-Sleep 1000
+LoadFile {FilePathToken} {FlashAddressToken}
 Reset
+Go
 Exit
 ";
 
@@ -276,9 +275,14 @@ Exit
             // show CLI output, if verbosity is diagnostic
             if (Verbosity == VerbosityLevel.Diagnostic)
             {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+
+                Console.WriteLine();
                 Console.WriteLine(">>>>>>>>");
                 Console.WriteLine($"{cliOutput}");
                 Console.WriteLine(">>>>>>>>");
+
+                Console.ForegroundColor = ConsoleColor.White;
             }
         }
 
@@ -314,18 +318,19 @@ Exit
                     RedirectStandardError = true,
                     RedirectStandardOutput = true
                 };
+
                 if (!jlinkExe_.Start())
                 {
-                    throw new EspToolExecutionException("Error changing permissions for J-Link executable!");
+                    throw new InvalidOperationException("Error changing permissions for J-Link executable!");
                 }
 
-                while (!jlinkExe_.HasExited)
+                if (!jlinkExe_.WaitForExit(250))
                 {
-                    Thread.Sleep(10);
+                    throw new InvalidOperationException("Error changing permissions for J-Link executable!");
                 }
             }
 
-            Process jlinkCli = new Process();
+            Process jlinkCli = new();
             string parameter = $" -nogui 1 -device default -si swd -CommandFile {cmdFilesDir}";
 
             jlinkCli.StartInfo = new ProcessStartInfo(Path.Combine(appDir, appName), parameter)
@@ -340,8 +345,8 @@ Exit
             // start J-Link Programmer CLI and...
             jlinkCli.Start();
 
-            // ... wait for exit (1 min max!)
-            jlinkCli.WaitForExit((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+            // ... wait for exit (30secs max!)
+            jlinkCli.WaitForExit((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
 
             return jlinkCli.StandardOutput.ReadToEnd();
         }
