@@ -14,18 +14,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
     [Serializable]
     public class NanoDeviceOperationFailedException : Exception
     {
+        /// <summary>
+        /// NanoFramework Device Operation Exception.
+        /// </summary>
         public NanoDeviceOperationFailedException()
         {
         }
 
+        /// <summary>
+        /// NanoFramework Device Operation Exception.
+        /// </summary>
+        /// <param name="message">Message to display</param>
         public NanoDeviceOperationFailedException(string message) : base(message)
         {
         }
 
+        /// <summary>
+        /// NanoFramework Device Operation Exception.
+        /// </summary>
+        /// <param name="message">Message to display</param>
+        /// <param name="innerException">The exception to display</param>
         public NanoDeviceOperationFailedException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
+        /// <summary>
+        /// NanoFramework Device Operation Exception.
+        /// </summary>
+        /// <param name="info">Serialized information</param>
+        /// <param name="context">Streamed context</param>
         protected NanoDeviceOperationFailedException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

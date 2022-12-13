@@ -93,8 +93,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Perform firmware update on a ESP32 device.
         /// </summary>
-        /// <param name="tool"><see cref="EspTool"/> to use when performing update.</param>
-        /// <param name="device"><see cref="Esp32DeviceInfo"/> of device to update.</param>
+        /// <param name="espTool"><see cref="EspTool"/> to use when performing update.</param>
+        /// <param name="esp32Device"><see cref="Esp32DeviceInfo"/> of device to update.</param>
         /// <param name="targetName">Name of the target to update.</param>
         /// <param name="updateFw">Set to <see langword="true"/> to force download of firmware package.</param>
         /// <param name="fwVersion">Firmware version to update to.</param>

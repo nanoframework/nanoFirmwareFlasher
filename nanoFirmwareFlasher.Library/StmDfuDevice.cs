@@ -11,6 +11,9 @@ using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// STM32 DFU Device
+    /// </summary>
     public class StmDfuDevice : StmDeviceBase
     {
         // Device ID of the connected DFU device.

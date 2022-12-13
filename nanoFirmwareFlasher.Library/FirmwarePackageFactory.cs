@@ -36,8 +36,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
     //    }
 
     //}
+
+    /// <summary>
+    /// Firmware Package Factory
+    /// </summary>
     public class FirmwarePackageFactory
     {
+        /// <summary>
+        /// Gets the firmware package for the device.
+        /// </summary>
+        /// <param name="nanoDevice"></param>
+        /// <returns>The Firmware package</returns>
+        /// <exception cref="ArgumentNullException">The argument was null</exception>
+        /// <exception cref="NotSupportedException">The command is not supported</exception>
         public static FirmwarePackage GetFirmwarePackage(NanoDeviceBase nanoDevice)
         {
             if (nanoDevice is null)

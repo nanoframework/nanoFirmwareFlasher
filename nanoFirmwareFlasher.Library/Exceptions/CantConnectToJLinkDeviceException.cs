@@ -14,18 +14,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
     [Serializable]
     public class CantConnectToJLinkDeviceException : Exception
     {
+        /// <summary>
+        /// Cannot connect to the JLINK device exception.
+        /// </summary>
         public CantConnectToJLinkDeviceException()
         {
         }
 
+        /// <summary>
+        /// Cannot connect to the JLINK device exception.
+        /// </summary>
+        /// <param name="message">Message to display</param>
         public CantConnectToJLinkDeviceException(string message) : base(message)
         {
         }
 
+        /// <summary>
+        /// Cannot connect to the JLINK device exception.
+        /// </summary>
+        /// <param name="message">Message to display</param>
+        /// <param name="innerException">The exception to display</param>
         public CantConnectToJLinkDeviceException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
+        /// <summary>
+        /// Cannot connect to the JLINK device exception.
+        /// </summary>
+        /// <param name="info">Serialized information</param>
+        /// <param name="context">Streamed context</param>
         protected CantConnectToJLinkDeviceException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

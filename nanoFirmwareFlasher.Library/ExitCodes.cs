@@ -8,6 +8,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// Exit Codes
+    /// </summary>
     public enum ExitCodes
     {
         /// <summary>

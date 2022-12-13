@@ -58,6 +58,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public string Version { get; internal set; }
 
+        /// <summary>
+        /// The verbosity level.
+        /// </summary>
         public VerbosityLevel Verbosity { get; internal set; }
 
         /// <summary>
@@ -96,8 +99,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         static FirmwarePackage()
         {
-            _cloudsmithClient = new HttpClient();
-            _cloudsmithClient.BaseAddress = new Uri("https://api.cloudsmith.io/v1/packages/net-nanoframework/");
+            _cloudsmithClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://api.cloudsmith.io/v1/packages/net-nanoframework/")
+            };
             _cloudsmithClient.DefaultRequestHeaders.Add("Accept", "*/*");
         }
 
@@ -116,6 +121,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Constructor
         /// </summary>
         /// <param name="targetName">Target name as designated in the repositories.</param>
+        /// <param name="fwVersion">The firmware version</param>
+        /// <param name="preview">Whether to target preview versions</param>
         protected FirmwarePackage(
             string targetName,
             string fwVersion,
@@ -637,6 +644,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private bool _disposedValue = false; // To detect redundant calls
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing">Deletes temporary files</param>
         protected void Dispose(bool disposing)
         {
             if (!_disposedValue)
