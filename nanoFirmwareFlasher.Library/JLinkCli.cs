@@ -178,7 +178,23 @@ Exit
 
                     Console.ForegroundColor = ConsoleColor.White;
 
-                    return ExitCodes.E5004;
+                    return ExitCodes.E8003;
+                }
+
+                if (binFile.Contains(' '))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("************************* WARNING **************************");
+                    Console.WriteLine("Binary file path contains spaces!");
+                    Console.WriteLine("J-Link can't handle those, please use a path without spaces.");
+                    Console.WriteLine("************************************************************");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E8003;
                 }
             }
 
@@ -196,12 +212,12 @@ Exit
                 DoMassErase = false;
             }
 
-            if (Verbosity == VerbosityLevel.Normal)
+            if (Verbosity < VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Flashing device...");
             }
-            else if (Verbosity >= VerbosityLevel.Detailed)
+            else
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Flashing device...");
@@ -211,7 +227,7 @@ Exit
             int index = 0;
             foreach (string binFile in files)
             {
-                if (Verbosity >= VerbosityLevel.Detailed)
+                if (Verbosity > VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
@@ -239,12 +255,12 @@ Exit
                 }
             }
 
-            if (Verbosity == VerbosityLevel.Normal)
+            if (Verbosity < VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(" OK");
             }
-            else if (Verbosity >= VerbosityLevel.Detailed)
+            else
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Flashing completed...");
