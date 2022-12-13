@@ -15,7 +15,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     public class CantConnectToJLinkDeviceException : Exception
     {
         /// <summary>
-        /// Cannot connect to the JLINK device exception.
+        /// Cannot connect to the J-Link device exception.
         /// </summary>
         public CantConnectToJLinkDeviceException()
         {
