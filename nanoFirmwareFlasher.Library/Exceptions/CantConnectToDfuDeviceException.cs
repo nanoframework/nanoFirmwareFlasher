@@ -33,7 +33,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// DFU device connection exception.
         /// </summary>
         /// <param name="message">Message to display.</param>
-        /// <param name="innerException">The exception to display</param>
+        /// <param name="innerException">The exception to display.</param>
         public CantConnectToDfuDeviceException(string message, Exception innerException) : base(message, innerException)
         {
         }
