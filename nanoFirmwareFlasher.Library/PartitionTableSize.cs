@@ -6,7 +6,7 @@
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// The partition table size
+    /// The partition table size.
     /// </summary>
     public enum PartitionTableSize
     {
