@@ -4,7 +4,6 @@
 //
 
 using System.IO;
-using System.Reflection;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
