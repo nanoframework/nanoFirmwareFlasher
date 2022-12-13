@@ -32,7 +32,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Cannot connect to device exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display</param>
         public CantConnectToNanoDeviceException(string message, Exception innerException) : base(message, innerException)
         {
