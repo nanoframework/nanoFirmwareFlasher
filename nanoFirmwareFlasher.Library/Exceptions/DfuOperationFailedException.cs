@@ -32,7 +32,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// DFU operation failed exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display</param>
         public DfuOperationFailedException(string message, Exception innerException) : base(message, innerException)
         {
