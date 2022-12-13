@@ -42,7 +42,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// DFU file does not exist exception.
         /// </summary>
         /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="context">Streamed context.</param>
         protected DfuFileDoesNotExistException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
