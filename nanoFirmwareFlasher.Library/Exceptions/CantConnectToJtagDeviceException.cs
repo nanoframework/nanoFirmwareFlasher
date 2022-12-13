@@ -24,7 +24,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Cannot connect to JTAG device exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         public CantConnectToJtagDeviceException(string message) : base(message)
         {
         }
