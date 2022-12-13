@@ -22,7 +22,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// ESP32 tool erase exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         public EraseEsp32FlashException(string message) : base(message)
         {
             ExecutionError = message;
