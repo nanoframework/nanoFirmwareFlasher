@@ -41,7 +41,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// ESP32 tool flash exception.
         /// </summary>
         /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="context">Streamed context.</param>
         protected ReadEsp32FlashException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
