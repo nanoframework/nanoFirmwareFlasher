@@ -49,7 +49,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// ESP32 tool execution exception.
         /// </summary>
         /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="context">Streamed context.</param>
         protected EspToolExecutionException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
