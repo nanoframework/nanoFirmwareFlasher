@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// STM32 Programmer CLI Exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         public StLinkCliExecutionException(string message) : base(message)
         {
             ExecutionError = message;
