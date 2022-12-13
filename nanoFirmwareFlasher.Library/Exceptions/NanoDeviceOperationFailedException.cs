@@ -32,7 +32,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// NanoFramework Device Operation Exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display</param>
         public NanoDeviceOperationFailedException(string message, Exception innerException) : base(message, innerException)
         {
