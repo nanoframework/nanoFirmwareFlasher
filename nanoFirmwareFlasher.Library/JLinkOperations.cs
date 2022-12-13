@@ -159,7 +159,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Mass erase device.
         /// </summary>
         /// <param name="probeId">The probe ID.</param>
-        /// <param name="verbosity">The verbosity level</param>
+        /// <param name="verbosity">The verbosity level.</param>
         /// <returns></returns>
         public static ExitCodes MassErase(
             string probeId,
