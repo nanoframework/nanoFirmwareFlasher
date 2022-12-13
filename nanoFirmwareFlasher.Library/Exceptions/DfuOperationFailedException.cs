@@ -42,7 +42,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// DFU operation failed exception.
         /// </summary>
         /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="context">Streamed context.</param>
         protected DfuOperationFailedException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
