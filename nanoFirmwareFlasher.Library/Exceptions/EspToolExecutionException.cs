@@ -30,7 +30,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// ESP32 tool execution exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         public EspToolExecutionException(string message) : base(message)
         {
             ExecutionError = message;
