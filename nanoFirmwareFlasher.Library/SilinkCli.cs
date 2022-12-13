@@ -16,7 +16,7 @@ using System.Threading;
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// SI Link CLI
+    /// SI Link CLI.
     /// </summary>
     public class SilinkCli
     {
