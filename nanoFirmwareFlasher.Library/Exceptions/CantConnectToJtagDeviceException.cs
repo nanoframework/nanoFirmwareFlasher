@@ -42,7 +42,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Cannot connect to JTAG device exception.
         /// </summary>
         /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="context">Streamed context.</param>
         protected CantConnectToJtagDeviceException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
