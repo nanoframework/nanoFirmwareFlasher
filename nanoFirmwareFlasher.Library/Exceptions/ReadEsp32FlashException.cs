@@ -32,7 +32,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// ESP32 tool flash exception.
         /// </summary>
         /// <param name="message">Message to display.</param>
-        /// <param name="innerException">The exception to display</param>
+        /// <param name="innerException">The exception to display.</param>
         public ReadEsp32FlashException(string message, Exception innerException) : base(message, innerException)
         {
         }
