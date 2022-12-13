@@ -40,7 +40,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// ESP32 tool erase exception.
         /// </summary>
-        /// <param name="info">Serialized information</param>
+        /// <param name="info">Serialized information.</param>
         /// <param name="context">Streamed context</param>
         protected EraseEsp32FlashException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
