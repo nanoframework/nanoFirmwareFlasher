@@ -6,24 +6,24 @@
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// Supported Platform
+    /// Supported Platform.
     /// </summary>
     public enum SupportedPlatform
     {
         /// <summary>
-        /// ESP32
+        /// ESP32.
         /// </summary>
         esp32 = 0,
         /// <summary>
-        /// STM32
+        /// STM32.
         /// </summary>
         stm32 = 1,
         /// <summary>
-        /// TI Simplelink
+        /// TI Simplelink.
         /// </summary>
         ti_simplelink = 2,
         /// <summary>
-        /// Silabs GG11
+        /// Silabs GG11.
         /// </summary>
         gg11
     }

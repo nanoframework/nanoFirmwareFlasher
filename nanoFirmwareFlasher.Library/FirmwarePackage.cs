@@ -644,10 +644,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private bool _disposedValue = false; // To detect redundant calls
 
-        /// <summary>
         /// <inherit/>
-        /// </summary>
-        /// <param name="disposing">Deletes temporary files</param>
         protected void Dispose(bool disposing)
         {
             if (!_disposedValue)

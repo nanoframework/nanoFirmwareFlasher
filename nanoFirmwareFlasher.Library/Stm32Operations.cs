@@ -18,20 +18,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
     public class Stm32Operations
     {
         /// <summary>
-        /// Updates the device firmware
+        /// Updates the device firmware.
         /// </summary>
-        /// <param name="targetName">The name of the target</param>
-        /// <param name="fwVersion">The firmware version to send</param>
-        /// <param name="preview">Whether preview packages should be used</param>
-        /// <param name="updateFw">Update firmware to latest version</param>
-        /// <param name="applicationPath">Path to the directory where the files are located</param>
-        /// <param name="deploymentAddress">The start memory address</param>
-        /// <param name="dfuDeviceId">The DFU device ID</param>
-        /// <param name="jtagId">The JTAG ID</param>
-        /// <param name="fitCheck">Checks whether the firmware will fit</param>
-        /// <param name="updateInterface">The connection interface</param>
-        /// <param name="verbosity">The verbosity level to use</param>
-        /// <returns></returns>
+        /// <param name="targetName">The name of the target.</param>
+        /// <param name="fwVersion">The firmware version to send.</param>
+        /// <param name="preview">Whether preview packages should be used.</param>
+        /// <param name="updateFw">Update firmware to latest version.</param>
+        /// <param name="applicationPath">Path to the directory where the files are located.</param>
+        /// <param name="deploymentAddress">The start memory address.</param>
+        /// <param name="dfuDeviceId">The DFU device ID.</param>
+        /// <param name="jtagId">The JTAG ID.</param>
+        /// <param name="fitCheck">Checks whether the firmware will fit.</param>
+        /// <param name="updateInterface">The connection interface.</param>
+        /// <param name="verbosity">The verbosity level to use.</param>
+        /// <returns>The outcome.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             string targetName,
             string fwVersion,
@@ -344,9 +344,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Resets the device.
         /// </summary>
-        /// <param name="jtagId">the JTAG ID</param>
-        /// <param name="verbosity">The verbosity level</param>
-        /// <returns>The outcome</returns>
+        /// <param name="jtagId">the JTAG ID.</param>
+        /// <param name="verbosity">The verbosity level.</param>
+        /// <returns>The outcome.</returns>
         public static ExitCodes ResetMcu(
             string jtagId,
             VerbosityLevel verbosity)
@@ -377,9 +377,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Erases the device flash memory.
         /// </summary>
-        /// <param name="jtagId">The ID of the JTAG interface</param>
-        /// <param name="verbosity">The verbosity level</param>
-        /// <returns></returns>
+        /// <param name="jtagId">The ID of the JTAG interface.</param>
+        /// <param name="verbosity">The verbosity level.</param>
+        /// <returns>The outcome.</returns>
         public static ExitCodes MassErase(
             string jtagId,
             VerbosityLevel verbosity)
@@ -408,10 +408,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
-        /// Installs DFU driver
+        /// Installs DFU driver.
         /// </summary>
-        /// <param name="verbosityLevel">The verbosity level to display</param>
-        /// <returns>The installation result</returns>
+        /// <param name="verbosityLevel">The verbosity level to display.</param>
+        /// <returns>The installation result.</returns>
         /// <exception cref="Exception">The installation failed. Use verbose output to see why.</exception>
         public static ExitCodes InstallDfuDrivers(VerbosityLevel verbosityLevel)
         {
@@ -527,10 +527,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
-        /// Installs the JTAG drivers
+        /// Installs the JTAG drivers.
         /// </summary>
-        /// <param name="verbosityLevel">Message verbosity level</param>
-        /// <returns>Installation result</returns>
+        /// <param name="verbosityLevel">Message verbosity level.</param>
+        /// <returns>Installation result.</returns>
         /// <exception cref="Exception">The installation failed. Use verbose output to see why.</exception>
         public static ExitCodes InstallJtagDrivers(VerbosityLevel verbosityLevel)
         {
@@ -615,15 +615,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
     public enum Interface
     {
         /// <summary>
-        /// None
+        /// None.
         /// </summary>
         None = 0,
         /// <summary>
-        /// JTAG
+        /// JTAG.
         /// </summary>
         Jtag,
         /// <summary>
-        /// DFU
+        /// DFU.
         /// </summary>
         Dfu
     }

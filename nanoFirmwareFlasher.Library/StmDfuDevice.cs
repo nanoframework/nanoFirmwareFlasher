@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// STM32 DFU Device
+    /// STM32 DFU Device.
     /// </summary>
     public class StmDfuDevice : StmDeviceBase
     {
