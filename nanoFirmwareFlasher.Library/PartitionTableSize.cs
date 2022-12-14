@@ -11,19 +11,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
     public enum PartitionTableSize
     {
         /// <summary>
-        /// Two
+        /// Two.
         /// </summary>
         _2 = 2,
         /// <summary>
-        /// Four
+        /// Four.
         /// </summary>
         _4 = 4,
         /// <summary>
-        /// Eight
+        /// Eight.
         /// </summary>
         _8 = 8,
         /// <summary>
-        /// Sixteen
+        /// Sixteen.
         /// </summary>
         _16 = 16
     }
