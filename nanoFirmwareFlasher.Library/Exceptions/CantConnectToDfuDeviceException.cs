@@ -24,7 +24,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// DFU device connection exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         public CantConnectToDfuDeviceException(string message) : base(message)
         {
         }
@@ -41,8 +41,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// DFU device connection exception.
         /// </summary>
-        /// <param name="info">Serialized information</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="info">Serialized information.</param>
+        /// <param name="context">Streamed context.</param>
         protected CantConnectToDfuDeviceException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

@@ -47,8 +47,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// STM32 Programmer CLI Exception.
         /// </summary>
-        /// <param name="info">Serialized information</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="info">Serialized information.</param>
+        /// <param name="context">Streamed context.</param>
         protected StLinkCliExecutionException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

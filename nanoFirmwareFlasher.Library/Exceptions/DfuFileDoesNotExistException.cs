@@ -24,7 +24,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// DFU file does not exist exception.
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message">Message to display.</param>
         public DfuFileDoesNotExistException(string message) : base(message)
         {
         }
@@ -32,8 +32,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// DFU file does not exist exception.
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="innerException"></param>
+        /// <param name="message">Message to display.</param>
+        /// <param name="innerException">The exception to display.</param>
         public DfuFileDoesNotExistException(string message, Exception innerException) : base(message, innerException)
         {
         }

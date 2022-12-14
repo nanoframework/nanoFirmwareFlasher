@@ -22,7 +22,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Write the ESPP32 flash exception. 
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         public WriteEsp32FlashException(string message) : base(message)
         {
             ExecutionError = message;
@@ -31,8 +31,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Write the ESPP32 flash exception. 
         /// </summary>
-        /// <param name="message">Message to display</param>
-        /// <param name="innerException">The exception to display</param>
+        /// <param name="message">Message to display.</param>
+        /// <param name="innerException">The exception to display.</param>
         public WriteEsp32FlashException(string message, Exception innerException) : base(message, innerException)
         {
         }
@@ -40,8 +40,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Write the ESPP32 flash exception. 
         /// </summary>
-        /// <param name="info">Serialized information</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="info">Serialized information.</param>
+        /// <param name="context">Streamed context.</param>
         protected WriteEsp32FlashException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

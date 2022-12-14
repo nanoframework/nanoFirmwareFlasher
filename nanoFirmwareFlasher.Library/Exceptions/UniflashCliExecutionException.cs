@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// UniFlash CLI Execution Exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
+        /// <param name="message">Message to display.</param>
         public UniflashCliExecutionException(string message) : base(message)
         {
             ExecutionError = message;
@@ -38,8 +38,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// UniFlash CLI Execution Exception.
         /// </summary>
-        /// <param name="message">Message to display</param>
-        /// <param name="innerException">The exception to display</param>
+        /// <param name="message">Message to display.</param>
+        /// <param name="innerException">The exception to display.</param>
         public UniflashCliExecutionException(string message, Exception innerException) : base(message, innerException)
         {
         }
@@ -47,8 +47,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// UniFlash CLI Execution Exception.
         /// </summary>
-        /// <param name="info">Serialized information</param>
-        /// <param name="context">Streamed context</param>
+        /// <param name="info">Serialized information.</param>
+        /// <param name="context">Streamed context.</param>
         protected UniflashCliExecutionException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
