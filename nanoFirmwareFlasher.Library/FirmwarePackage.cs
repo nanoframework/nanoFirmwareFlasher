@@ -121,8 +121,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Constructor
         /// </summary>
         /// <param name="targetName">Target name as designated in the repositories.</param>
-        /// <param name="fwVersion">The firmware version</param>
-        /// <param name="preview">Whether to target preview versions</param>
+        /// <param name="fwVersion">The firmware version.</param>
+        /// <param name="preview">Whether to use preview versions.</param>
         protected FirmwarePackage(
             string targetName,
             string fwVersion,
@@ -645,7 +645,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private bool _disposedValue = false; // To detect redundant calls
 
         /// <summary>
-        /// Dispose
+        /// <inherit/>
         /// </summary>
         /// <param name="disposing">Deletes temporary files</param>
         protected void Dispose(bool disposing)

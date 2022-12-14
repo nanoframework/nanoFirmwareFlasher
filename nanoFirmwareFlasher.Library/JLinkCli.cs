@@ -271,9 +271,9 @@ Exit
         }
 
         /// <summary>
-        /// Show the CLI output
+        /// Show the CLI output.
         /// </summary>
-        /// <param name="cliOutput">The message to show</param>
+        /// <param name="cliOutput">The message to show.</param>
         public void ShowCLIOutput(string cliOutput)
         {
             // show CLI output, if verbosity is diagnostic
