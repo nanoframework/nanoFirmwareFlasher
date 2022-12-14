@@ -1,11 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>library</OutputType>
-    <TargetFrameworks>net6.0;net472</TargetFrameworks>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>latest</LangVersion>
-    <RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
     <PackageOutputPath>../</PackageOutputPath>
     <PackageId>nanoFramework.Tools.FirmwareFlasher</PackageId>
     <Authors>nanoframework</Authors>
@@ -23,20 +18,37 @@
     <PackageIcon>images\nf-logo.png</PackageIcon>
     <PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- TODO: should target net standard! -->
+    <OutputType>library</OutputType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
     <Platforms>AnyCPU;x64</Platforms>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-		<RestoreLockedMode>true</RestoreLockedMode>
   </PropertyGroup>
 
-    <Target Name="CopyToolsContent" AfterTargets="Build">
-        <ItemGroup>
-            <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
-        </ItemGroup>
-        <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" Condition="$(TargetDir) != ''" />
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true' or '$(ContinuousIntegrationBuild)' == 'true'">
+    <!-- Restore the exact packages as listed in the lock file -->
+    <RestoreLockedMode>true</RestoreLockedMode>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <!-- Generate the lock file -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <Target Name="CopyToolsContent" AfterTargets="Build">
+    <ItemGroup>
+        <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" Condition="$(TargetDir) != ''" />
 	</Target>
 
   <ItemGroup>
@@ -72,7 +84,7 @@
     <PackageTfmSubFolder></PackageTfmSubFolder>
   </PropertyGroup>
 
-    <Import Project="nugetcontent.targets" />
+  <Import Project="nugetcontent.targets" />
     
     <!-- ************************************************************************************************************************* -->
     <!-- WARNING: when changing or adding any include path for an external tool, make sure to add/update in 'nugetcontent.targets' -->
@@ -80,50 +92,36 @@
 
     <!-- esptool executables for all platforms -->
     <ItemGroup>
-        <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\esptool\esptoolMac\**" Link="esptool\esptoolMac\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\esptool\esptoolLinux\**" Link="esptool\esptoolLinux\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
+      <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\esptool\esptoolMac\**" Link="esptool\esptoolMac\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\esptool\esptoolLinux\**" Link="esptool\esptoolLinux\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
     <!-- ESP32 nanoFramework bootloader files -->
     <ItemGroup>
-        <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
+      <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
     <!-- STLink executables for all platforms -->
     <ItemGroup>
-        <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
+      <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
     <!-- J-Link executables for all platforms -->
     <ItemGroup>
-        <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>		
-        <None Include="..\lib\jlink\**" Link="jlink\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\jlinkMac\**" Link="jlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
+      <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\jlink\**" Link="jlink\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\jlinkMac\**" Link="jlinkMac\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
     <!-- TI Uniflash tool -->
     <ItemGroup>
-        <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
+        <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
 </Project>

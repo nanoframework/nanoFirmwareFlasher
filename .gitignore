@@ -335,5 +335,8 @@ ASALocalRun/
 #VSCode
 .vscode/
 
+# Fody - auto-generated XML schema
+FodyWeavers.xsd
+
 # Mac OS elements
 .DS_Store
