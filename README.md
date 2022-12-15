@@ -387,7 +387,7 @@ nanoff --clearcache
 
 ## Exit codes
 
-The exit codes can be checked in [this source file](https://github.com/nanoframework/nanoFirmwareFlasher/blob/develop/nanoFirmwareFlasher/ExitCodes.cs).
+The exit codes can be checked in [this source file](https://github.com/nanoframework/nanoFirmwareFlasher/blob/main/nanoFirmwareFlasher/ExitCodes.cs).
 
 ## Feedback and documentation
 
