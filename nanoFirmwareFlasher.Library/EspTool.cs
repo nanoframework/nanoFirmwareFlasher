@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly string _serialPort = null;
 
         /// <summary>
-        /// The baud rate for the serial port. The default comming from <see cref="System.IO.Ports.SerialPort.BaudRate"/>.
+        /// The baud rate for the serial port. The default comming from <see cref="Options.BaudRate"/>.
         /// </summary>
         private int _baudRate = 0;
 
