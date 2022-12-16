@@ -252,6 +252,20 @@ Exit
 
                     return ExitCodes.E5006;
                 }
+
+                if (Verbosity >= VerbosityLevel.Normal
+                    && cliOutput.Contains("Skipped. Contents already match"))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("********************* WARNING **********************");
+                    Console.WriteLine("Skipped flashing. Contents already match the update.");
+                    Console.WriteLine("****************************************************");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
             }
 
             if (Verbosity < VerbosityLevel.Normal)
