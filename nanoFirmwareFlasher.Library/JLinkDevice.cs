@@ -37,6 +37,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public string DeviceCPU { get; }
 
         /// <summary>
+        /// Firmware details of the connected J-Link probe.
+        /// </summary>
+        public string Firmare { get; } = "N.A.";
+
+        /// <summary>
+        /// Hardware details of the connected J-Link probe.
+        /// </summary>
+        public string Hardware { get; } = "N.A.";
+
+        /// <summary>
         /// Creates a new <see cref="JLinkDevice"/>.
         /// </summary>
         /// <remarks>
@@ -79,12 +89,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // parse the output to fill in the details
-            var match = Regex.Match(cliOutput, $"(Device \")(?<deviceid>\\w*)(\" selected.)");
+            var match = Regex.Match(cliOutput, @"(Device "")(?<deviceid>\w*)("" selected\.)|(Firmware: )(?<firmware>.*)", RegexOptions.Multiline);
             if (match.Success)
             {
                 // grab details
                 DeviceId = match.Groups["deviceid"].ToString().Trim();
+
+                if (match.Groups["firmware"] != null)
+                {
+                    Firmare = match.Groups["firmware"].ToString().Trim();
+                }
             }
+
+            match = Regex.Match(cliOutput, @"(Hardware version: )(?<hardware>.*)", RegexOptions.Multiline);
+            if (match.Success && match.Groups["hardware"] != null)
+            {
+                Hardware = match.Groups["hardware"].ToString().Trim();
+            }
+
             match = Regex.Match(cliOutput, $"(Found )(?<devicecpu>.*)(,)");
             if (match.Success)
             {
