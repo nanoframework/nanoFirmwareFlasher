@@ -120,7 +120,7 @@ Exit
             // check file existence
             if (files.Any(f => !File.Exists(f)))
             {
-                return ExitCodes.E5003;
+                return ExitCodes.E5004;
             }
 
             // perform check on address(es)
