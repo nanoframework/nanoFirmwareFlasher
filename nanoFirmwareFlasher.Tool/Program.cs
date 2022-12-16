@@ -1295,6 +1295,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             Console.WriteLine($"Connected to J-Link device with ID {jlinkDevice.ProbeId}");
                         }
 
+                        if (_verbosityLevel == VerbosityLevel.Diagnostic)
+                        {
+                            Console.WriteLine($"Firmware: {jlinkDevice.Firmare}");
+                            Console.WriteLine($"Hardware: {jlinkDevice.Hardware}");
+                        }
+
                         // set VCP baud rate (if requested)
                         if (o.SetVcpBaudRate.HasValue)
                         {
