@@ -54,12 +54,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // check for empty argument collection
             if (!args.Any())
             {
-#if !VS_CODE_EXTENSION_BUILD
-                // perform version check
-                CheckVersion();
-                Console.WriteLine();
-#endif
-
                 // no argument provided, show help text and usage examples
 
                 // because of short-comings in CommandLine parsing 
@@ -84,9 +78,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 Console.WriteLine(helpText.ToString());
 
+#if !VS_CODE_EXTENSION_BUILD
+                // perform version check
+                CheckVersion();
+                Console.WriteLine();
+#endif
+
                 return (int)ExitCodes.OK;
             }
 
+#if !VS_CODE_EXTENSION_BUILD
+            // perform version check
+            CheckVersion();
+            Console.WriteLine();
+#endif
             var parsedArguments = Parser.Default.ParseArguments<Options>(args);
 
             await parsedArguments
