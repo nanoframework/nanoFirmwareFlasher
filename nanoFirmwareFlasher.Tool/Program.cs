@@ -87,11 +87,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return (int)ExitCodes.OK;
             }
 
-#if !VS_CODE_EXTENSION_BUILD
-            // perform version check
-            CheckVersion();
-            Console.WriteLine();
-#endif
             var parsedArguments = Parser.Default.ParseArguments<Options>(args);
 
             await parsedArguments
@@ -204,9 +199,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Console.WriteLine(_copyrightInfo);
             Console.WriteLine();
 
+
+#if !VS_CODE_EXTENSION_BUILD
             // perform version check
             CheckVersion();
             Console.WriteLine();
+#endif
 
             Console.ForegroundColor = ConsoleColor.White;
 
