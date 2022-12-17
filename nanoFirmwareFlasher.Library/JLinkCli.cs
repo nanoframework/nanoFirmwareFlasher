@@ -100,6 +100,8 @@ Exit
                 Console.WriteLine("");
             }
 
+            ShowCLIOutput(cliOutput);
+
             Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
@@ -266,6 +268,8 @@ Exit
 
                     Console.ForegroundColor = ConsoleColor.White;
                 }
+
+                ShowCLIOutput(cliOutput);
             }
 
             if (Verbosity < VerbosityLevel.Normal)
@@ -292,9 +296,12 @@ Exit
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
                 Console.WriteLine();
+                Console.WriteLine();
                 Console.WriteLine(">>>>>>>>");
-                Console.WriteLine($"{cliOutput}");
+                Console.WriteLine(cliOutput);
                 Console.WriteLine(">>>>>>>>");
+                Console.WriteLine();
+                Console.WriteLine();
 
                 Console.ForegroundColor = ConsoleColor.White;
             }
