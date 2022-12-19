@@ -1,0 +1,4 @@
+speed auto
+USB
+erase 0x0000000 0x001FF000
+Exit

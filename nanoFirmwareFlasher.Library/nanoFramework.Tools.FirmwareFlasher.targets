@@ -1,0 +1,8 @@
+<Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="CopyToolsContent" AfterTargets="Build" Condition="'$(TF_BUILD)' == ''">
+    <ItemGroup>
+      <LibSourceFiles Include="$(PkgnanoFramework_Tools_FirmwareFlasher)\tools\any\**\*.*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(LibSourceFiles)" DestinationFiles="$(TargetDir)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" Condition="$(TargetDir) != ''"/>
+  </Target>
+</Project>

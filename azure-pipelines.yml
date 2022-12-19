@@ -11,15 +11,17 @@ trigger:
     exclude:
       - .github_changelog_generator
       - .gitignore
-      - CHANGELOG.md
-      - CODE_OF_CONDUCT.md
       - LICENSE.md
       - README.md
+      - README.zh-cn.md
       - NuGet.Config
+      - update-esptool.ps1
+      - update-jlink.ps1
       - assets/*
       - config/*
       - .github/*
-
+      - Samples/*
+    
 # PR always trigger build
 pr:
   autoCancel: true
@@ -85,7 +87,7 @@ jobs:
       }
   
       # set variable to foward to jobs
-      echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS]$update"
+      echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS;isOutput=true]$update"
   
     name: BuildOptions
     displayName: Evaluate build options
@@ -164,7 +166,11 @@ jobs:
 ###########################################################
 # build tool
 - job: Build_tool
-  condition: ne(dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true)
+  condition: >-
+    and(
+      succeeded(),
+      ne(dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true)
+    )
   dependsOn:
   - Check_Build_Options
 
@@ -176,7 +182,7 @@ jobs:
     buildPlatform: 'x64'
     buildConfiguration: 'Release'
     solution: 'nanoFirmwareFlasher.sln'
-    run_update_dependents: dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']
+    run_update_dependents: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
 
   steps:
 
@@ -193,21 +199,41 @@ jobs:
 
   - task: UseDotNet@2
     displayName: Install .NET SDK
-    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     inputs:
       packageType: sdk
       version: 6.x
+      performMultiLevelLookup: true
 
   # only required when updating dependents
   - script: nbgv cloud -a -c
-    condition: eq(variables['UPDATE_DEPENDENTS'], 'true')
-    displayName: Set Pipeline Version
+    condition: >-
+        eq(variables['UPDATE_DEPENDENTS'], 'true')
+    displayName: Set Cloud Version
+
+  - task: Cache@2
+    displayName: Cache NuGet packages
+    inputs:
+      key: 'nuget | "$(Agent.OS)" | **/packages.lock.json, !bin/**'
+      restoreKeys: |
+          nuget | "$(Agent.OS)"
+          nuget
+      path: $(UserProfile)/.nuget/packages
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
-    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     inputs:
       command: restore
+      restoreArguments: '--locked-mode'
       verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln
       feedsToUse: config
@@ -215,7 +241,12 @@ jobs:
 
   - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
     displayName: Build NuGet package
-    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
+
 
 ##################################################
 
@@ -243,9 +274,31 @@ jobs:
 
 ##################################################
 
-  - script: dotnet pack --runtime win-x64 -c $(BuildConfiguration) -p:PublicRelease=true -p:PackGlobalTool=true --no-restore
-    displayName: Build .NET Core Tool NuGet package
-    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
+  - task: NuGetCommand@2
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false'),
+        ne(variables['System.PullRequest.PullRequestId'], '')
+      )
+    displayName: Restore NuGet packages for Samples
+    inputs:
+      restoreSolution: '$(Build.SourcesDirectory)/Samples/Samples.sln'
+      feedsToUse: config
+      nugetConfigPath: '$(Build.SourcesDirectory)/Samples/nuget.config'
+
+  - task: VSBuild@1
+    displayName: Build Samples
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false'),
+        ne(variables['System.PullRequest.PullRequestId'], '')
+      )
+    inputs:
+      solution: '$(Build.SourcesDirectory)/Samples/Samples.sln'
+      platform: 'Any CPU'
+      configuration: '$(buildConfiguration)'
 
   - task: PowerShell@2
     condition: >-
@@ -269,12 +322,12 @@ jobs:
 
             Write-Host "$("##vso[task.setvariable variable=MY_NUGET_VERSION]")$MyNuGetVersion"
 
-  # update could build number (only possible if this is not a PR from a fork)
+  # update cloud build number (only possible if this is not a PR from a fork)
   - task: PowerShell@2
     condition: >-
       and(
         succeeded(),
-        ne(variables['system.pullrequest.isfork'], true),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
     displayName: Update cloud build number
@@ -303,7 +356,11 @@ jobs:
       }
 
     displayName: set release draft var
-    condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
 
   - task: CopyFiles@1
     condition: >-
@@ -351,7 +408,6 @@ jobs:
         eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
-
   # publish artifacts
   - task: PublishBuildArtifacts@1
     condition: >-
@@ -371,7 +427,6 @@ jobs:
       and(
         succeeded(),
         eq(variables['System.PullRequest.PullRequestId'], ''),
-        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
     displayName: Push nanoff NuGet package to NuGet
@@ -390,7 +445,6 @@ jobs:
       and(
         succeeded(),
         eq(variables['System.PullRequest.PullRequestId'], ''),
-        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )    
     displayName: Push library NuGet package to NuGet
@@ -408,8 +462,7 @@ jobs:
     condition: >-
       and(
         succeeded(),
-        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
-        not(contains(variables['Build.SourceBranch'], 'preview')),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
     displayName: Create/Update GitHub stable release
@@ -420,26 +473,31 @@ jobs:
       title: 'nano firmware flasher v$(MY_NUGET_VERSION)'
       assets: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       isPreRelease: false
-      addChangeLog: true
       action: create
-      isDraft: true
+      isDraft: false
+      addChangeLog: true
+      changeLogLabels: |
+        [
+          { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
+          { "label" : "Type: enhancement", "displayName" : "Enhancements and new features", "state" : "closed" },
+          { "label" : "Breaking-Change", "displayName" : "Breaking Changes", "state" : "closed" }
+          { "label" : "Type: dependencies", "displayName" : "Dependencies updated", "state" : "closed" },
+          { "label" : "Type: documentation", "displayName" : "Documentation", "state" : "closed" }
+        ]
 
-  # update dependencies
+  # update dependents
   - task: PowerShell@2
     condition: >-
-      and(
-        or(
-          eq(variables['UPDATE_DEPENDENTS'], 'true'),
-          eq(variables['RUN_UPDATE_DEPENDENTS'], 'true')
-        ),
-        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+      or(
+        eq(variables['UPDATE_DEPENDENTS'], 'true'),
+        eq(variables['run_update_dependents'], 'true')
       )
     displayName: Update dependent tools
     inputs:
       targetType: filePath
-      filePath: azure-pipelines/update-dependencies.ps1
+      filePath: azure-pipelines/update-dependents.ps1
     env:
-      MY_GITHUB_TOKEN: $(GitHubToken)
+      GH_TOKEN: $(GitHubToken)
 
 ##################################
 # report build failure to Discord
@@ -447,10 +505,14 @@ jobs:
   dependsOn:
   - Check_Build_Options
   - Build_tool
-  condition: or( failed('Check_Build_Options'), failed('Build_tool') )
+  condition: >-
+    or(
+      failed('Check_Build_Options'),
+      failed('Build_tool')
+    )
 
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
 
   steps:
 
