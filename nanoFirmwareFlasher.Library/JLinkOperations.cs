@@ -130,6 +130,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
+            if (verbosity == VerbosityLevel.Diagnostic)
+            {
+                Console.WriteLine($"Firmware: {jlinkDevice.Firmare}");
+                Console.WriteLine($"Hardware: {jlinkDevice.Hardware}");
+            }
+
             if (fitCheck)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -173,6 +179,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (verbosity >= VerbosityLevel.Normal)
             {
                 Console.WriteLine($"Connected to J-Link device with ID {jlinkDevice.ProbeId}");
+            }
+
+            if (verbosity == VerbosityLevel.Diagnostic)
+            {
+                Console.WriteLine($"Firmware: {jlinkDevice.Firmare}");
+                Console.WriteLine($"Hardware: {jlinkDevice.Hardware}");
             }
 
             // set verbosity

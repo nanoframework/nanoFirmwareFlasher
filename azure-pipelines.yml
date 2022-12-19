@@ -213,7 +213,7 @@ jobs:
   - script: nbgv cloud -a -c
     condition: >-
         eq(variables['UPDATE_DEPENDENTS'], 'true')
-    displayName: Set Could Version
+    displayName: Set Cloud Version
 
   - task: Cache@2
     displayName: Cache NuGet packages
@@ -295,7 +295,7 @@ jobs:
 
             Write-Host "$("##vso[task.setvariable variable=MY_NUGET_VERSION]")$MyNuGetVersion"
 
-  # update could build number (only possible if this is not a PR from a fork)
+  # update cloud build number (only possible if this is not a PR from a fork)
   - task: PowerShell@2
     condition: >-
       and(
