@@ -248,25 +248,25 @@ Exit
                 // OK to delete the JLink command file
                 File.Delete(jlinkCmdFilePath);
 
-                if (cliOutput.Contains("Programming failed."))
-                {
-                    ShowCLIOutput(cliOutput);
-
-                    return ExitCodes.E5006;
-                }
-
                 if (Verbosity >= VerbosityLevel.Normal
                     && cliOutput.Contains("Skipped. Contents already match"))
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
 
                     Console.WriteLine("");
-                    Console.WriteLine("********************* WARNING **********************");
-                    Console.WriteLine("Skipped flashing. Contents already match the update.");
-                    Console.WriteLine("****************************************************");
+                    Console.WriteLine("******************* WARNING *********************");
+                    Console.WriteLine("Skip flashing. Contents already match the update.");
+                    Console.WriteLine("*************************************************");
                     Console.WriteLine("");
 
                     Console.ForegroundColor = ConsoleColor.White;
+                }
+                else if (!(cliOutput.Contains("Flash download: Program & Verify")
+                           && cliOutput.Contains("O.K.")))
+                {
+                    ShowCLIOutput(cliOutput);
+
+                    return ExitCodes.E5006;
                 }
 
                 ShowCLIOutput(cliOutput);
