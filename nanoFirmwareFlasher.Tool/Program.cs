@@ -54,12 +54,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // check for empty argument collection
             if (!args.Any())
             {
-#if !VS_CODE_EXTENSION_BUILD
-                // perform version check
-                CheckVersion();
-                Console.WriteLine();
-#endif
-
                 // no argument provided, show help text and usage examples
 
                 // because of short-comings in CommandLine parsing 
@@ -83,6 +77,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         .AddPreOptionsLine("");
 
                 Console.WriteLine(helpText.ToString());
+
+#if !VS_CODE_EXTENSION_BUILD
+                // perform version check
+                CheckVersion();
+                Console.WriteLine();
+#endif
 
                 return (int)ExitCodes.OK;
             }
@@ -199,9 +199,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Console.WriteLine(_copyrightInfo);
             Console.WriteLine();
 
+
+#if !VS_CODE_EXTENSION_BUILD
             // perform version check
             CheckVersion();
             Console.WriteLine();
+#endif
 
             Console.ForegroundColor = ConsoleColor.White;
 
@@ -1290,6 +1293,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         if (_verbosityLevel >= VerbosityLevel.Normal)
                         {
                             Console.WriteLine($"Connected to J-Link device with ID {jlinkDevice.ProbeId}");
+                        }
+
+                        if (_verbosityLevel == VerbosityLevel.Diagnostic)
+                        {
+                            Console.WriteLine($"Firmware: {jlinkDevice.Firmare}");
+                            Console.WriteLine($"Hardware: {jlinkDevice.Hardware}");
                         }
 
                         // set VCP baud rate (if requested)

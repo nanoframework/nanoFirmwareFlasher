@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -265,13 +266,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // program HEX file(s)
             foreach (string hexFile in files)
             {
+                // make sure path is absolute
+                var hexFilePath = Utilities.MakePathAbsolute(
+                    Environment.CurrentDirectory,
+                    hexFile);
+
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} -w \"{hexFile}\"");
+                var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} -w \"{hexFilePath}\"");
 
                 if (!cliOutput.Contains("File download complete"))
                 {
@@ -373,13 +379,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
             int index = 0;
             foreach (string binFile in files)
             {
+                // make sure path is absolute
+                var binFilePath = Utilities.MakePathAbsolute(
+                    Environment.CurrentDirectory,
+                    binFile);
+
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
+                    Console.WriteLine($"{Path.GetFileName(binFilePath)} @ {addresses.ElementAt(index)}");
                 }
 
-                var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} mode=UR -w \"{binFile}\" {addresses.ElementAt(index++)}");
+                var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} mode=UR -w \"{binFilePath}\" {addresses.ElementAt(index++)}");
 
                 if (!cliOutput.Contains("Programming Complete."))
                 {

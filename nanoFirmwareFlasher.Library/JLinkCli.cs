@@ -100,6 +100,8 @@ Exit
                 Console.WriteLine("");
             }
 
+            ShowCLIOutput(cliOutput);
+
             Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
@@ -120,7 +122,7 @@ Exit
             // check file existence
             if (files.Any(f => !File.Exists(f)))
             {
-                return ExitCodes.E5003;
+                return ExitCodes.E5004;
             }
 
             // perform check on address(es)
@@ -226,14 +228,19 @@ Exit
             int index = 0;
             foreach (string binFile in files)
             {
+                // make sure path is absolute
+                var binFilePath = Utilities.MakePathAbsolute(
+                    Environment.CurrentDirectory,
+                    binFile);
+
                 if (Verbosity > VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
+                    Console.WriteLine($"{Path.GetFileName(binFilePath)} @ {addresses.ElementAt(index)}");
                 }
 
                 // compose JLink command file
-                var jlinkCmdContent = FlashFileCommandTemplate.Replace(FilePathToken, binFile).Replace(FlashAddressToken, addresses.ElementAt(index++));
+                var jlinkCmdContent = FlashFileCommandTemplate.Replace(FilePathToken, binFilePath).Replace(FlashAddressToken, addresses.ElementAt(index++));
                 var jlinkCmdFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jlink");
 
                 // create file
@@ -246,12 +253,28 @@ Exit
                 // OK to delete the JLink command file
                 File.Delete(jlinkCmdFilePath);
 
-                if (cliOutput.Contains("Programming failed."))
+                if (Verbosity >= VerbosityLevel.Normal
+                    && cliOutput.Contains("Skipped. Contents already match"))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("******************* WARNING *********************");
+                    Console.WriteLine("Skip flashing. Contents already match the update.");
+                    Console.WriteLine("*************************************************");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                else if (!(cliOutput.Contains("Flash download: Program & Verify")
+                           && cliOutput.Contains("O.K.")))
                 {
                     ShowCLIOutput(cliOutput);
 
                     return ExitCodes.E5006;
                 }
+
+                ShowCLIOutput(cliOutput);
             }
 
             if (Verbosity < VerbosityLevel.Normal)
@@ -282,9 +305,12 @@ Exit
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
                 Console.WriteLine();
+                Console.WriteLine();
                 Console.WriteLine(">>>>>>>>");
-                Console.WriteLine($"{cliOutput}");
+                Console.WriteLine(cliOutput);
                 Console.WriteLine(">>>>>>>>");
+                Console.WriteLine();
+                Console.WriteLine();
 
                 Console.ForegroundColor = ConsoleColor.White;
             }

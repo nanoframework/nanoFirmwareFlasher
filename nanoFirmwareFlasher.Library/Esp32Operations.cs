@@ -303,6 +303,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return ExitCodes.E9012;
                 }
 
+                // make sure path is absolute
+                clrFile = Utilities.MakePathAbsolute(
+                    Environment.CurrentDirectory,
+                    clrFile);
+
                 firmware.Verbosity = VerbosityLevel.Quiet;
             }
 
