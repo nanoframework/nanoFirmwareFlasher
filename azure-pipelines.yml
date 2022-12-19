@@ -197,18 +197,6 @@ jobs:
 
   - template: azure-pipelines-templates/install-nuget.yml@templates
 
-  - task: UseDotNet@2
-    displayName: Install .NET SDK
-    condition: >-
-      and(
-        succeeded(),
-        eq(variables['UPDATE_DEPENDENTS'], 'false')
-      )
-    inputs:
-      packageType: sdk
-      version: 6.x
-      performMultiLevelLookup: true
-
   # only required when updating dependents
   - script: nbgv cloud -a -c
     condition: >-
