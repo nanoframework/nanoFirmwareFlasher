@@ -195,8 +195,6 @@ jobs:
       git config --global user.name "nfbot"
     displayName: Setup git identity
 
-  - template: azure-pipelines-templates/install-nuget.yml@templates
-
   # only required when updating dependents
   - script: nbgv cloud -a -c
     condition: >-
