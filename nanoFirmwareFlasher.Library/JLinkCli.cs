@@ -100,6 +100,8 @@ Exit
                 Console.WriteLine("");
             }
 
+            ShowCLIOutput(cliOutput);
+
             Console.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
@@ -120,7 +122,7 @@ Exit
             // check file existence
             if (files.Any(f => !File.Exists(f)))
             {
-                return ExitCodes.E5003;
+                return ExitCodes.E5004;
             }
 
             // perform check on address(es)
@@ -252,6 +254,22 @@ Exit
 
                     return ExitCodes.E5006;
                 }
+
+                if (Verbosity >= VerbosityLevel.Normal
+                    && cliOutput.Contains("Skipped. Contents already match"))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("********************* WARNING **********************");
+                    Console.WriteLine("Skipped flashing. Contents already match the update.");
+                    Console.WriteLine("****************************************************");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                ShowCLIOutput(cliOutput);
             }
 
             if (Verbosity < VerbosityLevel.Normal)
@@ -278,9 +296,12 @@ Exit
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
                 Console.WriteLine();
+                Console.WriteLine();
                 Console.WriteLine(">>>>>>>>");
-                Console.WriteLine($"{cliOutput}");
+                Console.WriteLine(cliOutput);
                 Console.WriteLine(">>>>>>>>");
+                Console.WriteLine();
+                Console.WriteLine();
 
                 Console.ForegroundColor = ConsoleColor.White;
             }
