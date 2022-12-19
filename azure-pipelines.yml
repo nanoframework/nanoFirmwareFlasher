@@ -251,7 +251,7 @@ jobs:
 ##################################################
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet test'
+    displayName: 'Run Solution Tests'
     inputs:
       command: test
       projects: |
