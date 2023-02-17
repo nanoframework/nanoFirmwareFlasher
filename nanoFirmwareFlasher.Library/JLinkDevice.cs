@@ -164,5 +164,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 addresses,
                 ProbeId);
         }
+
+        /// <summary>
+        /// Flash the HEX supplied to the connected device.
+        /// </summary>
+        /// <param name="files"></param>
+        public ExitCodes FlashHexFiles(IList<string> files)
+        {
+            return ExecuteFlashHexFiles(
+                files,
+                ProbeId);
+        }
     }
 }
