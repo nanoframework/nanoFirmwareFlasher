@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -89,20 +90,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // parse the output to fill in the details
-            var match = Regex.Match(cliOutput, @"(Device "")(?<deviceid>\w*)("" selected\.)|(Firmware: )(?<firmware>.*)", RegexOptions.Multiline);
+            var match = Regex.Match(cliOutput, "(Firmware: )(?<firmware>.*)$", RegexOptions.Multiline);
             if (match.Success)
             {
-                // grab details
-                DeviceId = match.Groups["deviceid"].ToString().Trim();
-
-                if (match.Groups["firmware"] != null)
+                if (match.Groups["firmware"].Captures.Count > 0)
                 {
                     Firmare = match.Groups["firmware"].ToString().Trim();
                 }
             }
 
+            match = Regex.Match(cliOutput, @"(Device "")(?<deviceid>.*)("" selected.)", RegexOptions.Multiline);
+            if (match.Success)
+            {
+                // grab details
+                DeviceId = match.Groups["deviceid"].ToString().Trim();
+            }
+
             match = Regex.Match(cliOutput, @"(Hardware version: )(?<hardware>.*)", RegexOptions.Multiline);
-            if (match.Success && match.Groups["hardware"] != null)
+            if (match.Success && match.Groups["hardware"].Captures.Count > 0)
             {
                 Hardware = match.Groups["hardware"].ToString().Trim();
             }
@@ -174,6 +179,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return ExecuteFlashHexFiles(
                 files,
                 ProbeId);
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            StringBuilder deviceInfo = new();
+
+            deviceInfo.AppendLine($"JLink firmware: {Firmare}");
+            deviceInfo.AppendLine($"JLink hardware: {Hardware}");
+            deviceInfo.AppendLine($"CPU: {DeviceCPU}");
+            deviceInfo.AppendLine($"Device ID: {DeviceId}");
+
+            return deviceInfo.ToString();
         }
     }
 }
