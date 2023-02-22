@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -180,41 +179,33 @@ Exit
                 }
             }
 
+            List<string> shadowFiles = new List<string>();
+
             // J-Link can't handle diacritc chars
             // developer note: reported to Segger (Case: 60276735) and can be removed if this is fixed/improved
             foreach (string binFile in files)
             {
-                if (!binFile.IsNormalized(NormalizationForm.FormD))
+                if (!binFile.IsNormalized(NormalizationForm.FormD)
+                    || binFile.Contains(' '))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    var tempFile = Path.Combine(
+                        Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine),
+                        Path.GetFileName(binFile));
 
-                    Console.WriteLine("");
-                    Console.WriteLine("********************************* WARNING *********************************");
-                    Console.WriteLine("Diacritic chars found in the path to a binary file!");
-                    Console.WriteLine("J-Link can't handle those, please use a path with plain simple ASCII chars.");
-                    Console.WriteLine("***************************************************************************");
-                    Console.WriteLine("");
+                    // copy file to shadow file
+                    File.Copy(
+                        binFile,
+                        tempFile,
+                        true);
 
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    return ExitCodes.E8003;
+                    shadowFiles.Add(tempFile);
+                }
+                else
+                {
+                    // copy file to shadow list
+                    shadowFiles.Add(binFile);
                 }
 
-                if (binFile.Contains(' '))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-
-                    Console.WriteLine("");
-                    Console.WriteLine("************************* WARNING **************************");
-                    Console.WriteLine("Binary file path contains spaces!");
-                    Console.WriteLine("J-Link can't handle those, please use a path without spaces.");
-                    Console.WriteLine("************************************************************");
-                    Console.WriteLine("");
-
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    return ExitCodes.E8003;
-                }
             }
 
             // erase flash
@@ -244,7 +235,7 @@ Exit
 
             // program BIN file(s)
             int index = 0;
-            foreach (string binFile in files)
+            foreach (string binFile in shadowFiles)
             {
                 // make sure path is absolute
                 var binFilePath = Utilities.MakePathAbsolute(
