@@ -141,8 +141,8 @@
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
-        "resolved": "13.0.2",
-        "contentHash": "R2pZ3B0UjeyHShm9vG+Tu0EBb2lC8b0dFzV9gVn50ofHXh9Smjk6kTn7A/FdAsC8B5cKib1OnGYOXxRBz5XQDg=="
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
       },
       "Polly": {
         "type": "Transitive",
@@ -1043,9 +1043,9 @@
       "nanoFramework.Tools.FirmwareFlasher": {
         "type": "Project",
         "dependencies": {
-          "Newtonsoft.Json": "[13.0.2, )",
+          "Newtonsoft.Json": "[13.0.3, )",
           "System.ComponentModel.Annotations": "[5.0.0, )",
-          "System.IO.Ports": "[6.0.0, )",
+          "System.IO.Ports": "[7.0.0, )",
           "System.Net.Http": "[4.3.4, )",
           "nanoFramework.Tools.Debugger.Net": "[2.4.11, )"
         }
