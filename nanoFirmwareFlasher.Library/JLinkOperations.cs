@@ -103,13 +103,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             var connectedSilabsJLinkDevices = JLinkDevice.ListDevices();
 
-            if (connectedSilabsJLinkDevices.Any())
+            if (!connectedSilabsJLinkDevices.Any())
             {
                 // no device was found
                 return ExitCodes.E9010;
             }
 
-            // JTAG device
+            // Jlink device
             jlinkDevice = new JLinkDevice(probeId);
 
             if (!jlinkDevice.DevicePresent)
@@ -151,6 +151,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // set verbosity
             jlinkDevice.Verbosity = verbosity;
+
+            // write HEX files to flash
+            if (filesToFlash.Any(f => f.EndsWith(".hex")))
+            {
+                operationResult = jlinkDevice.FlashHexFiles(filesToFlash);
+            }
 
             if (operationResult == ExitCodes.OK && isApplicationBinFile)
             {
