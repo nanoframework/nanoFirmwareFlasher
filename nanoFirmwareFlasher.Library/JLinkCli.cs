@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -30,13 +29,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private const string FlashAddressToken = "{FLASH_ADDRESS}";
 
         /// <summary>
+        /// Token to replace with address to flash.
+        /// </summary>
+        private const string LoadFileListToken = "{LOAD_FILE_LIST}";
+
+        /// <summary>
         /// Template for JLink command file to flash a file.
         /// </summary>
-        private const string FlashFileCommandTemplate = $@"
+        private const string FlashSingleFileCommandTemplate = $@"
 USB
 speed auto
 Halt
 LoadFile {FilePathToken} {FlashAddressToken}
+Reset
+Go
+Exit
+";
+
+        /// <summary>
+        /// Template for JLink command file to flash multiple files.
+        /// </summary>
+        private const string FlashMultipleFilesCommandTemplate = $@"
+USB
+speed auto
+Halt
+{LoadFileListToken}
 Reset
 Go
 Exit
@@ -162,41 +179,33 @@ Exit
                 }
             }
 
+            List<string> shadowFiles = new List<string>();
+
             // J-Link can't handle diacritc chars
             // developer note: reported to Segger (Case: 60276735) and can be removed if this is fixed/improved
             foreach (string binFile in files)
             {
-                if (!binFile.IsNormalized(NormalizationForm.FormD))
+                if (!binFile.IsNormalized(NormalizationForm.FormD)
+                    || binFile.Contains(' '))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    var tempFile = Path.Combine(
+                        Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine),
+                        Path.GetFileName(binFile));
 
-                    Console.WriteLine("");
-                    Console.WriteLine("********************************* WARNING *********************************");
-                    Console.WriteLine("Diacritic chars found in the path to a binary file!");
-                    Console.WriteLine("J-Link can't handle those, please use a path with plain simple ASCII chars.");
-                    Console.WriteLine("***************************************************************************");
-                    Console.WriteLine("");
+                    // copy file to shadow file
+                    File.Copy(
+                        binFile,
+                        tempFile,
+                        true);
 
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    return ExitCodes.E8003;
+                    shadowFiles.Add(tempFile);
+                }
+                else
+                {
+                    // copy file to shadow list
+                    shadowFiles.Add(binFile);
                 }
 
-                if (binFile.Contains(' '))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-
-                    Console.WriteLine("");
-                    Console.WriteLine("************************* WARNING **************************");
-                    Console.WriteLine("Binary file path contains spaces!");
-                    Console.WriteLine("J-Link can't handle those, please use a path without spaces.");
-                    Console.WriteLine("************************************************************");
-                    Console.WriteLine("");
-
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    return ExitCodes.E8003;
-                }
             }
 
             // erase flash
@@ -226,7 +235,7 @@ Exit
 
             // program BIN file(s)
             int index = 0;
-            foreach (string binFile in files)
+            foreach (string binFile in shadowFiles)
             {
                 // make sure path is absolute
                 var binFilePath = Utilities.MakePathAbsolute(
@@ -240,7 +249,7 @@ Exit
                 }
 
                 // compose JLink command file
-                var jlinkCmdContent = FlashFileCommandTemplate.Replace(FilePathToken, binFilePath).Replace(FlashAddressToken, addresses.ElementAt(index++));
+                var jlinkCmdContent = FlashSingleFileCommandTemplate.Replace(FilePathToken, binFilePath).Replace(FlashAddressToken, addresses.ElementAt(index++));
                 var jlinkCmdFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jlink");
 
                 // create file
@@ -276,6 +285,152 @@ Exit
 
                 ShowCLIOutput(cliOutput);
             }
+
+            if (Verbosity < VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(" OK");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Flashing completed...");
+            }
+
+            Console.ForegroundColor = ConsoleColor.White;
+
+            return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// Executes an operation that flashes a collection of Intel HEX format files to a connected J-Link device.
+        /// </summary>
+        /// <param name="files">List of files to flash to the device.</param>
+        /// <param name="probeId">ID of the J-Link device to execute the operation into. Leave <see langword="null"/> to use the default address.</param>
+        /// <returns></returns>
+        public ExitCodes ExecuteFlashHexFiles(
+            IList<string> files,
+            string probeId)
+        {
+            // check file existence
+            if (files.Any(f => !File.Exists(f)))
+            {
+                return ExitCodes.E5004;
+            }
+
+            List<string> shadowFiles = new List<string>();
+
+            // J-Link can't handle diacritc chars
+            // developer note: reported to Segger (Case: 60276735) and can be removed if this is fixed/improved
+            foreach (string hexFile in files)
+            {
+                if (!hexFile.IsNormalized(NormalizationForm.FormD) ||
+                    hexFile.Contains(' '))
+                {
+                    var tempFile = Path.Combine(
+                        Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine),
+                        Path.GetFileName(hexFile));
+
+                    // copy file to shadow file
+                    File.Copy(
+                        hexFile,
+                        tempFile,
+                        true);
+
+                    shadowFiles.Add(tempFile);
+                }
+                else
+                {
+                    // copy file to shadow list
+                    shadowFiles.Add(hexFile);
+                }
+            }
+
+            // erase flash
+            if (DoMassErase)
+            {
+                var eraseResult = ExecuteMassErase(probeId);
+
+                if (eraseResult != ExitCodes.OK)
+                {
+                    return eraseResult;
+                }
+
+                // toggle mass erase so it's only performed before the first file is flashed
+                DoMassErase = false;
+            }
+
+            if (Verbosity < VerbosityLevel.Normal)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("Flashing device...");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("Flashing device...");
+            }
+
+            // program HEX file(s)
+            StringBuilder listOfFiles = new StringBuilder();
+
+            foreach (string hexFile in shadowFiles)
+            {
+                // make sure path is absolute
+                var hexFilePath = Utilities.MakePathAbsolute(
+                    Environment.CurrentDirectory,
+                    hexFile);
+
+                if (Verbosity > VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine($"{Path.GetFileName(hexFilePath)}");
+                }
+
+                listOfFiles.AppendLine($"LoadFile {hexFilePath}");
+            }
+
+            // compose JLink command file
+            var jlinkCmdContent = FlashMultipleFilesCommandTemplate.Replace(
+                LoadFileListToken,
+                listOfFiles.ToString());
+
+            var jlinkCmdFilePath = Path.Combine(
+                Path.GetTempPath(),
+                $"{Guid.NewGuid()}.jlink");
+
+            // create file
+            var jlinkCmdFile = File.CreateText(jlinkCmdFilePath);
+            jlinkCmdFile.Write(jlinkCmdContent);
+            jlinkCmdFile.Close();
+
+            var cliOutput = RunJLinkCLI(jlinkCmdFilePath);
+
+            // OK to delete the JLink command file
+            File.Delete(jlinkCmdFilePath);
+
+            if (Verbosity >= VerbosityLevel.Normal
+                && cliOutput.Contains("Skipped. Contents already match"))
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+
+                Console.WriteLine("");
+                Console.WriteLine("******************* WARNING *********************");
+                Console.WriteLine("Skip flashing. Contents already match the update.");
+                Console.WriteLine("*************************************************");
+                Console.WriteLine("");
+
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            else if (!(cliOutput.Contains("Flash download: Program & Verify")
+                        && cliOutput.Contains("O.K.")))
+            {
+                ShowCLIOutput(cliOutput);
+
+                return ExitCodes.E5006;
+            }
+
+            ShowCLIOutput(cliOutput);
 
             if (Verbosity < VerbosityLevel.Normal)
             {
