@@ -677,65 +677,91 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
         }
 
+        private uint FindStartAddressInHexFile(string hexFilePath)
+        {
+            uint address = 0;
+
+            // find out what's the block start
+
+            // do this by reading the HEX format file...
+            var textLines = File.ReadAllLines(hexFilePath);
+
+            // ... and decoding the start address
+            var addressRecord = textLines.FirstOrDefault();
+            string startAddress = string.Empty;
+
+            // 1st line can be either:
+            // 1) an Extended Segment Address Records (HEX86)
+            // format ":02000004FFFFFC"
+            // 2) a plain Data Record (HEX86)
+            // format ":10246200464C5549442050524F46494C4500464C33"
+
+            // perform sanity checks and...
+            // ... check for Extended Segment Address Record
+            if (addressRecord != null &&
+                addressRecord.Length == 15 &&
+                addressRecord.Substring(0, 9) == ":02000004")
+            {
+                startAddress = addressRecord.Substring(9, 4);
+
+                // looking good, grab the upper 16bits
+                address = (uint)int.Parse(startAddress, System.Globalization.NumberStyles.HexNumber);
+                address <<= 16;
+
+                // now the 2nd line to get the lower 16 bits of the address
+                addressRecord = textLines.Skip(1).FirstOrDefault();
+
+                // 2nd line is a Data Record
+                // format ":10246200464C5549442050524F46494C4500464C33"
+
+                // perform sanity checks
+                if (addressRecord == null ||
+                    addressRecord.Substring(0, 1) != ":" ||
+                    addressRecord.Length < 7)
+                {
+                    // wrong format
+                    throw new FormatException("Wrong data in nanoBooter file");
+                }
+
+                // looking good, grab the lower 16bits
+                address += (uint)int.Parse(addressRecord.Substring(3, 4), System.Globalization.NumberStyles.HexNumber);
+            }
+            // try now with Data Record format
+            else if (addressRecord != null &&
+                    addressRecord.Length == 43 &&
+                    addressRecord.Substring(0, 3) == ":10")
+            {
+                startAddress = addressRecord.Substring(3, 4);
+
+                // looking good, grab the address
+                address = (uint)int.Parse(startAddress, System.Globalization.NumberStyles.HexNumber);
+            }
+
+            // do we have a valid one?
+            if (string.IsNullOrEmpty(startAddress))
+            {
+                // wrong format
+                throw new FormatException("Wrong data in nanoBooter file");
+            }
+
+            // all good
+            return address;
+        }
+
         private void FindBooterStartAddress()
         {
-            uint address;
-
-            if (string.IsNullOrEmpty(NanoClrFile))
+            if (string.IsNullOrEmpty(NanoBooterFile))
             {
                 // nothing to do here
                 return;
             }
 
             // find out what's the booter block start
-
-            // do this by reading the HEX format file...
-            var textLines = File.ReadAllLines(NanoBooterFile);
-
-            // ... and decoding the start address
-            var addressRecord = textLines.FirstOrDefault();
-
-            // 1st line is an Extended Segment Address Records (HEX86)
-            // format ":02000004FFFFFC"
-
-            // perform sanity checks
-            if (addressRecord == null ||
-                addressRecord.Length != 15 ||
-                addressRecord.Substring(0, 9) != ":02000004")
-            {
-                // wrong format
-                throw new FormatException("Wrong data in nanoBooter file");
-            }
-
-            // looking good, grab the upper 16bits
-            address = (uint)int.Parse(addressRecord.Substring(9, 4), System.Globalization.NumberStyles.HexNumber);
-            address <<= 16;
-
-            // now the 2nd line to get the lower 16 bits of the address
-            addressRecord = textLines.Skip(1).FirstOrDefault();
-
-            // 2nd line is a Data Record
-            // format ":10246200464C5549442050524F46494C4500464C33"
-
-            // perform sanity checks
-            if (addressRecord == null ||
-                addressRecord.Substring(0, 1) != ":" ||
-                addressRecord.Length < 7)
-            {
-                // wrong format
-                throw new FormatException("Wrong data in nanoBooter file");
-            }
-
-            // looking good, grab the lower 16bits
-            address += (uint)int.Parse(addressRecord.Substring(3, 4), System.Globalization.NumberStyles.HexNumber);
-
-            BooterStartAddress = address;
+            BooterStartAddress = FindStartAddressInHexFile(NanoBooterFile);
         }
 
         private void FindClrStartAddress()
         {
-            uint address;
-
             if (string.IsNullOrEmpty(NanoClrFile))
             {
                 // nothing to do here
@@ -743,48 +769,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // find out what's the CLR block start
-
-            // do this by reading the HEX format file...
-            var textLines = File.ReadAllLines(NanoClrFile);
-
-            // ... and decoding the start address
-            var addressRecord = textLines.FirstOrDefault();
-
-            // 1st line is an Extended Segment Address Records (HEX86)
-            // format ":02000004FFFFFC"
-
-            // perform sanity checks
-            if (addressRecord == null ||
-                addressRecord.Length != 15 ||
-                addressRecord.Substring(0, 9) != ":02000004")
-            {
-                // wrong format
-                throw new FormatException("Wrong data in nanoClr file");
-            }
-
-            // looking good, grab the upper 16bits
-            address = (uint)int.Parse(addressRecord.Substring(9, 4), System.Globalization.NumberStyles.HexNumber);
-            address <<= 16;
-
-            // now the 2nd line to get the lower 16 bits of the address
-            addressRecord = textLines.Skip(1).FirstOrDefault();
-
-            // 2nd line is a Data Record
-            // format ":10246200464C5549442050524F46494C4500464C33"
-
-            // perform sanity checks
-            if (addressRecord == null ||
-                addressRecord.Substring(0, 1) != ":" ||
-                addressRecord.Length < 7)
-            {
-                // wrong format
-                throw new FormatException("Wrong data in nanoClr file");
-            }
-
-            // looking good, grab the lower 16bits
-            address += (uint)int.Parse(addressRecord.Substring(3, 4), System.Globalization.NumberStyles.HexNumber);
-
-            ClrStartAddress = address;
+            ClrStartAddress = FindStartAddressInHexFile(NanoClrFile);
         }
 
         internal void PostProcessDownloadAndExtract()
