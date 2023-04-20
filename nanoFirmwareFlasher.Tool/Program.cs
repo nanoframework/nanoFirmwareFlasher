@@ -449,8 +449,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // easiest one: ESP32
                 if (o.TargetName.StartsWith("ESP")
-                    || o.TargetName.StartsWith("M5")
-                    || o.TargetName.StartsWith("Pyb")
+                    || o.TargetName.StartsWith("M5")                    
                     || o.TargetName.StartsWith("FEATHER")
                     || o.TargetName.StartsWith("ESPKALUGA"))
                 {
@@ -464,6 +463,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     || o.TargetName.StartsWith("IngenuityMicro")
                     || o.TargetName.StartsWith("WeAct")
                     || o.TargetName.StartsWith("ORGPAL")
+                    || o.TargetName.StartsWith("Pyb")
                 )
                 {
                     // candidates for STM32
@@ -509,17 +509,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
                     o.Platform = SupportedPlatform.stm32;
-                }
-                // ESP32 related
-                else if (
-                    !string.IsNullOrEmpty(o.SerialPort) ||
-                    (o.BaudRate != 921600) ||
-                    (o.Esp32FlashMode != "dio") ||
-                    (o.Esp32FlashFrequency != 40) ||
-                    !string.IsNullOrEmpty(o.Esp32ClrFile))
-                {
-                    o.Platform = SupportedPlatform.esp32;
-                }
+                }                
                 // GG11 related
                 else if (o.ListJLinkDevices)
                 {
@@ -535,6 +525,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     || o.InstallJtagDrivers)
                 {
                     o.Platform = SupportedPlatform.stm32;
+                }
+                // ESP32 related
+                else if (
+                    !string.IsNullOrEmpty(o.SerialPort) ||
+                    (o.BaudRate != 921600) ||
+                    (o.Esp32FlashMode != "dio") ||
+                    (o.Esp32FlashFrequency != 40) ||
+                    !string.IsNullOrEmpty(o.Esp32ClrFile))
+                {
+                    o.Platform = SupportedPlatform.esp32;
                 }
             }
 
