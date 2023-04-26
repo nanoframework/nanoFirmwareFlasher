@@ -4,9 +4,9 @@
     ".NETFramework,Version=v4.7.2": {
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.4.16, )",
-        "resolved": "2.4.16",
-        "contentHash": "9cZLoW/YqBlmfDtoU06Sg9vh1Us0v3YLaTPtTH1iQnIMPAzDE23o1GxwpNozdlz9M/TXd90XP07aAH1E4Yu/yA==",
+        "requested": "[2.4.19, )",
+        "resolved": "2.4.19",
+        "contentHash": "Ge9hx8lJWxOJOYV80+zr6YX8EQWykXOGonfiKBMXPqzXvFsQP8biENciLSy03GkdcGVmsprsspFYZYxqOObPTg==",
         "dependencies": {
           "Microsoft.Extensions.Options.DataAnnotations": "6.0.0",
           "Polly": "7.2.3",
@@ -186,9 +186,9 @@
     "net6.0": {
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.4.16, )",
-        "resolved": "2.4.16",
-        "contentHash": "9cZLoW/YqBlmfDtoU06Sg9vh1Us0v3YLaTPtTH1iQnIMPAzDE23o1GxwpNozdlz9M/TXd90XP07aAH1E4Yu/yA==",
+        "requested": "[2.4.19, )",
+        "resolved": "2.4.19",
+        "contentHash": "Ge9hx8lJWxOJOYV80+zr6YX8EQWykXOGonfiKBMXPqzXvFsQP8biENciLSy03GkdcGVmsprsspFYZYxqOObPTg==",
         "dependencies": {
           "Microsoft.Extensions.Options.DataAnnotations": "6.0.0",
           "Polly": "7.2.3",
