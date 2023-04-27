@@ -133,13 +133,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Partition table size to use. Valid sizes are: 2, 4, 8 and 16.")]
         public PartitionTableSize? Esp32PartitionTableSize { get; set; }
 
-        [Option(
-            "clrfile",
-            Required = false,
-            Default = null,
-            HelpText = "Path to file with CLR image. Partitions table and bootloader file will be automatically flashed to the device.")]
-        public string Esp32ClrFile { get; set; }
-
         #endregion
 
 
@@ -192,6 +185,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         #endregion
 
         #region common options
+
+        [Option(
+            "clrfile",
+            Required = false,
+            Default = null,
+            HelpText = "Path to file with CLR image.")]
+        public string ClrFile { get; set; }
 
         [Option(
             "target",

@@ -383,6 +383,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         _exitCode = await _nanoDeviceOperations.UpdateDeviceClrAsync(
                             o.SerialPort,
+                            o.FwVersion,
+                            o.ClrFile,
                             _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
@@ -531,8 +533,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     !string.IsNullOrEmpty(o.SerialPort) ||
                     (o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
-                    (o.Esp32FlashFrequency != 40) ||
-                    !string.IsNullOrEmpty(o.Esp32ClrFile))
+                    (o.Esp32FlashFrequency != 40))
                 {
                     o.Platform = SupportedPlatform.esp32;
                 }
@@ -679,7 +680,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.Preview,
                             o.DeploymentImage,
                             null,
-                            o.Esp32ClrFile,
+                            o.ClrFile,
                             !o.FitCheck,
                             _verbosityLevel,
                             o.Esp32PartitionTableSize);
