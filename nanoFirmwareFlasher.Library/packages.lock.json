@@ -4,9 +4,9 @@
     ".NETFramework,Version=v4.7.2": {
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.4.23, )",
-        "resolved": "2.4.23",
-        "contentHash": "C3f6TGGXB2Kfedf476hvFKt8B/uuCOzYptceHvcXq/4W0OK0o2L8XLLLO+Ng+YdNzr8+lu5atPAIyLyqMnjRzA==",
+        "requested": "[2.4.25, )",
+        "resolved": "2.4.25",
+        "contentHash": "NOHcdxd09Pxn5ifiinSeDhrXkh/R1+hjp9OQ8pkNAaFTbJsNlGR4+M293r11tAVlpQwoeq5AYpFDOgyJIglC4Q==",
         "dependencies": {
           "Polly": "7.2.3",
           "PropertyChanged.Fody": "2.6.1",
@@ -108,9 +108,9 @@
     "net6.0": {
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.4.23, )",
-        "resolved": "2.4.23",
-        "contentHash": "C3f6TGGXB2Kfedf476hvFKt8B/uuCOzYptceHvcXq/4W0OK0o2L8XLLLO+Ng+YdNzr8+lu5atPAIyLyqMnjRzA==",
+        "requested": "[2.4.25, )",
+        "resolved": "2.4.25",
+        "contentHash": "NOHcdxd09Pxn5ifiinSeDhrXkh/R1+hjp9OQ8pkNAaFTbJsNlGR4+M293r11tAVlpQwoeq5AYpFDOgyJIglC4Q==",
         "dependencies": {
           "Polly": "7.2.3",
           "PropertyChanged.Fody": "2.6.1",
