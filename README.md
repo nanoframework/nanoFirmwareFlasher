@@ -343,6 +343,14 @@ To get the details of a nano device connected to a serial port.
 nanoff --nanodevice --devicedetails --serialport COM9
 ```
 
+### List connected nano devices
+
+To get a list of connected nano devices. If more details are required pass verbose option above normal.
+
+```console
+nanoff --listdevices | -v d
+```
+
 ## Common options
 
 ### Pre-check if target fits connected device
