@@ -300,13 +300,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool FitCheck { get; set; }
 
         [Option(
-            "listboards",
-            Required = false,
-            Default = false,
-            HelpText = "List the available boards and versions available on CloudSmith.")]
-        public bool ListBoards { get; set; }
-
-        [Option(
             "listtargets",
             Required = false,
             Default = false,
