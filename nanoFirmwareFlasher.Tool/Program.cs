@@ -451,7 +451,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // easiest one: ESP32
                 if (o.TargetName.StartsWith("ESP")
-                    || o.TargetName.StartsWith("M5")                    
+                    || o.TargetName.StartsWith("M5")
                     || o.TargetName.StartsWith("FEATHER")
                     || o.TargetName.StartsWith("ESPKALUGA"))
                 {
@@ -511,7 +511,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
                     o.Platform = SupportedPlatform.stm32;
-                }                
+                }
                 // GG11 related
                 else if (o.ListJLinkDevices)
                 {
