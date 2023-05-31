@@ -25,7 +25,6 @@
 		<RuntimeIdentifiers>any</RuntimeIdentifiers>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-		<RestoreLockedMode>true</RestoreLockedMode>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(VSCodeExtensionBuild) == '' or $(VSCodeExtensionBuild) == 'False'">
@@ -47,7 +46,6 @@
 	<ItemGroup>
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.25" />
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.5.119" PrivateAssets="All" />
 	</ItemGroup>
 
