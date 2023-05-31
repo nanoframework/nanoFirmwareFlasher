@@ -260,27 +260,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region list targets
 
-            // First check if we are asked for the list of boards
-            if (o.ListTargets ||
-                o.ListBoards)
+            // First check if we are asked for the list of available targets
+            if (o.ListTargets)
             {
-                if (o.ListBoards && _verbosityLevel > VerbosityLevel.Quiet)
-                {
-                    // warn about deprecated option
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-
-                    Console.WriteLine("");
-                    Console.WriteLine("");
-                    Console.WriteLine("********************************** WARNING **********************************");
-                    Console.WriteLine("The --listboards option is deprecated and will be removed in a future version");
-                    Console.WriteLine("Please use --listtargets option instead");
-                    Console.WriteLine("*****************************************************************************");
-                    Console.WriteLine("");
-                    Console.WriteLine("");
-
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-
                 // get list from REFERENCE targets
                 var targets = FirmwarePackage.GetTargetList(
                     false,

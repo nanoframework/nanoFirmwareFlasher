@@ -413,16 +413,16 @@ You can list the supported targets, and their version using the `--platform` par
 List packages available for ESP32 targets:
 
 ```console
-nanoff --listboards --platform esp32
+nanoff --listtargets --platform esp32
 ```
 
 List packages available for STM32 targets:
 
 ```console
-nanoff --listboards --platform stm32
+nanoff --listtargets --platform stm32
 ```
 
-If you use the `--listtargets` switch in conjunction with `--preview`, you'll get the list of packages that maybe used for experimental or major feature changes.
+If you use the `--listtargets` switch in conjunction with `--preview`, you'll get the list of available firmware packages that are available with experimental or major feature changes.
 
 ## Clear cache location
 
