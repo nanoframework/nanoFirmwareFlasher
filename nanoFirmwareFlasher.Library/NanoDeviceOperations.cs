@@ -661,13 +661,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         return ExitCodes.E2002;
                     }
                 }
+                else
+                {
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("OK");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    else
+                    {
+                        Console.WriteLine("");
+                    }
+                }
 
                 // needed for slow devices
                 Thread.Sleep(200);
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.Write($"Erasing deployment block storage...");
+                    Console.Write($"Deploying managed application...");
                 }
 
                 if (!nanoDevice.DeployBinaryFile(
@@ -682,6 +696,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.WriteLine("FAILED!");
 
                         return ExitCodes.E2002;
+                    }
+                }
+                else
+                {
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("OK");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    else
+                    {
+                        Console.WriteLine("");
                     }
                 }
 
