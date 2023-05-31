@@ -313,7 +313,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 try
                 {
-                    var connectedDevices = _nanoDeviceOperations.ListDevices();
+                    var connectedDevices = _nanoDeviceOperations.ListDevices(_verbosityLevel > VerbosityLevel.Normal);
 
                     if (connectedDevices.Count() == 0)
                     {
@@ -327,6 +327,38 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         foreach (var nanoDevice in connectedDevices)
                         {
                             Console.WriteLine($"{nanoDevice.Description}");
+
+                            if (_verbosityLevel >= VerbosityLevel.Normal)
+                            {
+                                // check that we are in CLR
+                                if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
+                                {
+                                    // we have to have a valid device info
+                                    if (nanoDevice.DeviceInfo.Valid)
+                                    {
+                                        Console.WriteLine($"  Target:      {nanoDevice.DeviceInfo.TargetName?.ToString()}");
+                                        Console.WriteLine($"  Platform:    {nanoDevice.DeviceInfo.Platform?.ToString()}");
+                                        Console.WriteLine($"  Date:        {nanoDevice.DebugEngine.Capabilities.SoftwareVersion.BuildDate ?? "unknown"}");
+                                        Console.WriteLine($"  Type:        {nanoDevice.DebugEngine.Capabilities.SolutionReleaseInfo.VendorInfo ?? "unknown"}");
+                                        Console.WriteLine($"  CLR Version: {nanoDevice.DeviceInfo.SolutionBuildVersion}");
+                                    }
+                                }
+                                else
+                                {
+                                    // we are in booter, can only get TargetInfo
+                                    // we have to have a valid device info
+                                    if (nanoDevice.DebugEngine.TargetInfo != null)
+                                    {
+                                        Console.WriteLine($"  Target:         {nanoDevice.DebugEngine.TargetInfo.TargetName}");
+                                        Console.WriteLine($"  Platform:       {nanoDevice.DebugEngine.TargetInfo.PlatformName}");
+                                        Console.WriteLine($"  Type:           {nanoDevice.DebugEngine.TargetInfo.PlatformInfo}");
+                                        Console.WriteLine($"  CLR Version:    {nanoDevice.DebugEngine.TargetInfo.CLRVersion}");
+                                        Console.WriteLine($"  Booter Version: {nanoDevice.DebugEngine.TargetInfo.CLRVersion}");
+                                    }
+                                }
+
+                                Console.WriteLine("");
+                            }
                         }
 
                         Console.WriteLine("------------------------------------------");

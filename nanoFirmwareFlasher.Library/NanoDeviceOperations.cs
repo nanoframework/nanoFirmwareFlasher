@@ -35,12 +35,54 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// List connected .NET nanoFramework devices.
         /// </summary>
+        /// <param name="getDeviceDetails">Set to <see langword="true"/> to get details from devices.</param>
         /// <returns>An observable collection of <see cref="NanoDeviceBase"/>. devices</returns>
-        public ObservableCollection<NanoDeviceBase> ListDevices()
+        public ObservableCollection<NanoDeviceBase> ListDevices(bool getDeviceDetails)
         {
+            // start device watchers
+            _serialDebuggerPort.StartDeviceWatchers();
+
             while (!_serialDebuggerPort.IsDevicesEnumerationComplete)
             {
                 Thread.Sleep(100);
+            }
+
+            if (getDeviceDetails)
+            {
+                // get device details
+                foreach (var device in _serialDebuggerPort.NanoFrameworkDevices)
+                {
+                    _ = device.DebugEngine.Connect(
+                        false,
+                        true);
+
+                    // check that we are in CLR
+                    if (device.DebugEngine.IsConnectedTonanoCLR)
+                    {
+                        try
+                        {
+                            // get device info
+                            _ = device.GetDeviceInfo(true);
+                        }
+                        catch
+                        {
+                            // no need to report this, just move on
+                        }
+                    }
+                    else
+                    {
+                        // we are in booter, can only get TargetInfo
+                        try
+                        {
+                            // get device info
+                            _ = device.DebugEngine?.TargetInfo;
+                        }
+                        catch
+                        {
+                            // no need to report this, just move on
+                        }
+                    }
+                }
             }
 
             return _serialDebuggerPort.NanoFrameworkDevices;
