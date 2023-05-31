@@ -625,62 +625,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.Write($"Erasing deployment block storage...");
-                }
-
-                var retryCount = 0;
-
-            retryErase:
-
-                var eraseResult = nanoDevice.Erase(
-                        EraseOptions.Deployment,
-                        null,
-                        null);
-
-                if (!eraseResult)
-                {
-                    if (retryCount < 3)
-                    {
-                        // Give it a bit of time
-                        Thread.Sleep(400);
-
-                        retryCount++;
-
-                        goto retryErase;
-                    }
-                    else
-                    {
-                        Console.WriteLine("");
-
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Too many retries erasing nano device.");
-                        Console.WriteLine("");
-
-                        Console.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E2002;
-                    }
-                }
-                else
-                {
-                    if (verbosity >= VerbosityLevel.Normal)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("OK");
-
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    else
-                    {
-                        Console.WriteLine("");
-                    }
-                }
-
-                // needed for slow devices
-                Thread.Sleep(200);
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
                     Console.Write($"Deploying managed application...");
                 }
 
