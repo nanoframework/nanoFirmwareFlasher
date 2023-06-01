@@ -629,7 +629,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!espTool.Start())
             {
                 throw new EspToolExecutionException("Error starting esptool!");
-            }           
+            }
 
             var messageBuilder = new StringBuilder();
 

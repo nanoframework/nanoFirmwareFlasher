@@ -27,18 +27,62 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public NanoDeviceOperations()
         {
-            _serialDebuggerPort = PortBase.CreateInstanceForSerial();
+            // create serial port instance
+            // WITHOUT starting device watchers
+            _serialDebuggerPort = PortBase.CreateInstanceForSerial(false);
         }
 
         /// <summary>
         /// List connected .NET nanoFramework devices.
         /// </summary>
+        /// <param name="getDeviceDetails">Set to <see langword="true"/> to get details from devices.</param>
         /// <returns>An observable collection of <see cref="NanoDeviceBase"/>. devices</returns>
-        public ObservableCollection<NanoDeviceBase> ListDevices()
+        public ObservableCollection<NanoDeviceBase> ListDevices(bool getDeviceDetails)
         {
+            // start device watchers
+            _serialDebuggerPort.StartDeviceWatchers();
+
             while (!_serialDebuggerPort.IsDevicesEnumerationComplete)
             {
                 Thread.Sleep(100);
+            }
+
+            if (getDeviceDetails)
+            {
+                // get device details
+                foreach (var device in _serialDebuggerPort.NanoFrameworkDevices)
+                {
+                    _ = device.DebugEngine.Connect(
+                        false,
+                        true);
+
+                    // check that we are in CLR
+                    if (device.DebugEngine.IsConnectedTonanoCLR)
+                    {
+                        try
+                        {
+                            // get device info
+                            _ = device.GetDeviceInfo(true);
+                        }
+                        catch
+                        {
+                            // no need to report this, just move on
+                        }
+                    }
+                    else
+                    {
+                        // we are in booter, can only get TargetInfo
+                        try
+                        {
+                            // get device info
+                            _ = device.DebugEngine?.TargetInfo;
+                        }
+                        catch
+                        {
+                            // no need to report this, just move on
+                        }
+                    }
+                }
             }
 
             return _serialDebuggerPort.NanoFrameworkDevices;
@@ -61,10 +105,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Couldn't retrieve device details from the nano device.
         /// </para>
         /// </exception>
-        public ExitCodes GetDeviceDetails(string serialPort,
+        public ExitCodes GetDeviceDetails(
+            string serialPort,
             ref NanoDeviceBase nanoDevice)
         {
-            if (ReadDetailsFromDevice(serialPort, ref nanoDevice))
+            if (ReadDetailsFromDevice(
+                serialPort,
+                ref nanoDevice))
             {
                 // check that we are in CLR
                 if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
@@ -127,6 +174,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Update CLR on specified nano device.
         /// </summary>
         /// <param name="serialPort">Serial port name where the device is connected to.</param>
+        /// <param name="fwVersion">Firmware version to update to.</param>
+        /// <param name="clrFile">Path to CLR file to use for firmware update.</param>
         /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         /// <exception cref="CantConnectToNanoDeviceException">
@@ -142,6 +191,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </exception>
         public async Task<ExitCodes> UpdateDeviceClrAsync(
             string serialPort,
+            string fwVersion,
+            string clrFile,
             VerbosityLevel verbosity = VerbosityLevel.Quiet)
         {
             if (serialPort is null)
@@ -155,8 +206,34 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.Write($"Getting details from nano device...");
             }
 
+            bool updateCLRfile = !string.IsNullOrEmpty(clrFile);
+
+            // if this is updating with a local CLR file, download the package silently
+            if (updateCLRfile)
+            {
+                // check file
+                if (!File.Exists(clrFile))
+                {
+                    return ExitCodes.E9011;
+                }
+
+                // has to be a binary file
+                if (Path.GetExtension(clrFile) != ".bin")
+                {
+                    return ExitCodes.E9012;
+                }
+
+                // make sure path is absolute
+                clrFile = Utilities.MakePathAbsolute(
+                    Environment.CurrentDirectory,
+                    clrFile);
+            }
+
             NanoDeviceBase nanoDevice = null;
-            ReadDetailsFromDevice(serialPort, ref nanoDevice);
+
+            _ = ReadDetailsFromDevice(
+                serialPort,
+                ref nanoDevice);
 
             // sanity checks
             if (nanoDevice == null
@@ -191,11 +268,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
-            // get firmware package
-            var fwPackage = FirmwarePackageFactory.GetFirmwarePackage(nanoDevice);
-            var downloadResult = await fwPackage.DownloadAndExtractAsync();
-
-            if (downloadResult == ExitCodes.OK)
+            // local file will be flashed straight away
+            if (updateCLRfile)
             {
                 if (nanoDevice.DebugEngine.Connect(
                     1000,
@@ -213,42 +287,98 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
                     }
 
-                    // update conditions:
-                    // 1. Running CLR _and_ the new version is higher
-                    // 2. Running nanoBooter and there is no version information on the CLR (presumably because there is no CLR installed)
-                    if (Version.Parse(fwPackage.Version) > nanoDevice.CLRVersion)
-                    {
-                        bool attemptToLaunchBooter = false;
+                    bool attemptToLaunchBooter = false;
 
-                        if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
+                    if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
+                    {
+                        // any update has to be handled by nanoBooter, so let's have it running
+                        try
                         {
-                            // any update has to be handled by nanoBooter, so let's have it running
-                            try
+                            if (verbosity > VerbosityLevel.Normal)
                             {
-                                if (verbosity > VerbosityLevel.Normal)
+                                Console.WriteLine("");
+
+                                Console.ForegroundColor = ConsoleColor.Cyan;
+                                Console.Write("Launching nanoBooter...");
+                                Console.WriteLine("");
+
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+
+                            attemptToLaunchBooter = nanoDevice.ConnectToNanoBooter();
+
+                            if (!attemptToLaunchBooter)
+                            {
+                                // check for version where the software reboot to nanoBooter was made available
+                                if (currentClrVersion != null &&
+                                    nanoDevice.DeviceInfo.SolutionBuildVersion < new Version("1.6.0.54"))
                                 {
                                     Console.WriteLine("");
 
-                                    Console.ForegroundColor = ConsoleColor.Cyan;
-                                    Console.Write("Launching nanoBooter...");
-                                    Console.WriteLine("");
+                                    throw new NanoDeviceOperationFailedException("The device is running a version that doesn't support rebooting by software. Please update your device using 'nanoff' tool.");
+                                }
+                            }
 
+                            if (verbosity > VerbosityLevel.Normal)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine("OK");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                        }
+                        catch
+                        {
+                            // this reboot step can go wrong and there's no big deal with that
+                        }
+                    }
+                    else
+                    {
+                        attemptToLaunchBooter = true;
+                    }
+
+                    if (attemptToLaunchBooter &&
+                        nanoDevice.Ping() == Debugger.WireProtocol.ConnectionSource.nanoBooter)
+                    {
+                        // get address for CLR block expected by device
+                        var clrAddress = nanoDevice.GetCLRStartAddress();
+
+                        await Task.Yield();
+
+                        if (verbosity >= VerbosityLevel.Normal)
+                        {
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.Write($"Starting CLR update with local file...");
+                        }
+
+                        try
+                        {
+                            await Task.Yield();
+
+                            if (nanoDevice.DeployBinaryFile(
+                                clrFile,
+                                (uint)clrAddress,
+                                null))
+                            {
+                                await Task.Yield();
+
+                                if (verbosity >= VerbosityLevel.Normal)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.WriteLine("OK");
                                     Console.ForegroundColor = ConsoleColor.White;
                                 }
+                            }
 
-                                attemptToLaunchBooter = nanoDevice.ConnectToNanoBooter();
-
-                                if (!attemptToLaunchBooter)
+                            if (attemptToLaunchBooter)
+                            {
+                                // try to reboot target 
+                                if (verbosity > VerbosityLevel.Normal)
                                 {
-                                    // check for version where the software reboot to nanoBooter was made available
-                                    if (currentClrVersion != null &&
-                                        nanoDevice.DeviceInfo.SolutionBuildVersion < new Version("1.6.0.54"))
-                                    {
-                                        Console.WriteLine("");
-
-                                        throw new NanoDeviceOperationFailedException("The device is running a version that doesn't support rebooting by software. Please update your device using 'nanoff' tool.");
-                                    }
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                    Console.Write("Rebooting...");
                                 }
+
+                                nanoDevice.DebugEngine.RebootDevice(RebootOptions.NormalReboot);
 
                                 if (verbosity > VerbosityLevel.Normal)
                                 {
@@ -256,111 +386,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                     Console.WriteLine("OK");
                                     Console.ForegroundColor = ConsoleColor.White;
                                 }
-                            }
-                            catch
-                            {
-                                // this reboot step can go wrong and there's no big deal with that
+
+                                return ExitCodes.OK;
                             }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            attemptToLaunchBooter = true;
-                        }
-
-                        if (attemptToLaunchBooter &&
-                            nanoDevice.Ping() == Debugger.WireProtocol.ConnectionSource.nanoBooter)
-                        {
-                            // get address for CLR block expected by device
-                            var clrAddress = nanoDevice.GetCLRStartAddress();
-
-                            // compare with address on the fw packages
-                            if (clrAddress !=
-                                fwPackage.ClrStartAddress)
-                            {
-                                // CLR addresses don't match, can't proceed with update
-                                throw new NanoDeviceOperationFailedException("Can't update device. CLR addresses are different. Please update nanoBooter manually.");
-                            }
-
-                            await Task.Yield();
-
-                            if (verbosity >= VerbosityLevel.Normal)
-                            {
-                                Console.ForegroundColor = ConsoleColor.White;
-                                Console.Write($"Starting update to CLR v{fwPackage.Version}...");
-                            }
-
-                            try
-                            {
-                                await Task.Yield();
-
-                                if (nanoDevice.DeployBinaryFile(
-                                    fwPackage.NanoClrFileBinary,
-                                    fwPackage.ClrStartAddress,
-                                    null))
-                                {
-                                    await Task.Yield();
-
-                                    if (verbosity >= VerbosityLevel.Normal)
-                                    {
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.WriteLine("OK");
-                                        Console.ForegroundColor = ConsoleColor.White;
-                                    }
-                                }
-
-                                if (attemptToLaunchBooter)
-                                {
-                                    // try to reboot target 
-                                    if (verbosity > VerbosityLevel.Normal)
-                                    {
-                                        Console.ForegroundColor = ConsoleColor.White;
-                                        Console.Write("Rebooting...");
-                                    }
-
-                                    nanoDevice.DebugEngine.RebootDevice(RebootOptions.NormalReboot);
-
-                                    if (verbosity > VerbosityLevel.Normal)
-                                    {
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.WriteLine("OK");
-                                        Console.ForegroundColor = ConsoleColor.White;
-                                    }
-
-                                    return ExitCodes.OK;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new NanoDeviceOperationFailedException($"Exception occurred when performing update ({ex.Message}).");
-                            }
-                        }
-                        else
-                        {
-                            if (attemptToLaunchBooter)
-                            {
-                                // only report this as an error if the launch was successful
-                                throw new NanoDeviceOperationFailedException("Failed to launch nanoBooter. Quitting update.");
-                            }
+                            throw new NanoDeviceOperationFailedException($"Exception occurred when performing update ({ex.Message}).");
                         }
                     }
                     else
                     {
-                        if (nanoDevice.DebugEngine.IsConnectedTonanoCLR
-                            && (fwPackage.Version == nanoDevice.DeviceInfo.ClrBuildVersion.ToString()))
+                        if (attemptToLaunchBooter)
                         {
-                            if (verbosity >= VerbosityLevel.Normal)
-                            {
-                                Console.WriteLine("");
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-
-                                Console.WriteLine("Nothing to update as device is already running the requested version.");
-                                Console.WriteLine("");
-
-                                Console.ForegroundColor = ConsoleColor.White;
-                            }
-
-                            // done here
-                            return ExitCodes.OK;
+                            // only report this as an error if the launch was successful
+                            throw new NanoDeviceOperationFailedException("Failed to launch nanoBooter. Quitting update.");
                         }
                     }
                 }
@@ -368,9 +408,196 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     throw new NanoDeviceOperationFailedException("Can't connect to device. Quitting update.");
                 }
-            }
 
-            return downloadResult;
+                // done here
+                return ExitCodes.OK;
+            }
+            else
+            {
+                // get firmware package
+                var fwPackage = FirmwarePackageFactory.GetFirmwarePackage(
+                    nanoDevice,
+                    fwVersion);
+
+                var downloadResult = await fwPackage.DownloadAndExtractAsync();
+
+                if (downloadResult == ExitCodes.OK)
+                {
+                    if (nanoDevice.DebugEngine.Connect(
+                        1000,
+                        true,
+                        true))
+                    {
+                        Version currentClrVersion = null;
+
+                        // try to store CLR version
+                        if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
+                        {
+                            if (nanoDevice.DeviceInfo.Valid)
+                            {
+                                currentClrVersion = nanoDevice.DeviceInfo.SolutionBuildVersion;
+                            }
+                        }
+
+                        // update conditions:
+                        // 1. Running CLR _and_ the new version is higher
+                        // 2. Running nanoBooter and there is no version information on the CLR (presumably because there is no CLR installed)
+                        if (Version.Parse(fwPackage.Version) > nanoDevice.CLRVersion)
+                        {
+                            bool attemptToLaunchBooter = false;
+
+                            if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
+                            {
+                                // any update has to be handled by nanoBooter, so let's have it running
+                                try
+                                {
+                                    if (verbosity > VerbosityLevel.Normal)
+                                    {
+                                        Console.WriteLine("");
+
+                                        Console.ForegroundColor = ConsoleColor.Cyan;
+                                        Console.Write("Launching nanoBooter...");
+                                        Console.WriteLine("");
+
+                                        Console.ForegroundColor = ConsoleColor.White;
+                                    }
+
+                                    attemptToLaunchBooter = nanoDevice.ConnectToNanoBooter();
+
+                                    if (!attemptToLaunchBooter)
+                                    {
+                                        // check for version where the software reboot to nanoBooter was made available
+                                        if (currentClrVersion != null &&
+                                            nanoDevice.DeviceInfo.SolutionBuildVersion < new Version("1.6.0.54"))
+                                        {
+                                            Console.WriteLine("");
+
+                                            throw new NanoDeviceOperationFailedException("The device is running a version that doesn't support rebooting by software. Please update your device using 'nanoff' tool.");
+                                        }
+                                    }
+
+                                    if (verbosity > VerbosityLevel.Normal)
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.Green;
+                                        Console.WriteLine("OK");
+                                        Console.ForegroundColor = ConsoleColor.White;
+                                    }
+                                }
+                                catch
+                                {
+                                    // this reboot step can go wrong and there's no big deal with that
+                                }
+                            }
+                            else
+                            {
+                                attemptToLaunchBooter = true;
+                            }
+
+                            if (attemptToLaunchBooter &&
+                                nanoDevice.Ping() == Debugger.WireProtocol.ConnectionSource.nanoBooter)
+                            {
+                                // get address for CLR block expected by device
+                                var clrAddress = nanoDevice.GetCLRStartAddress();
+
+                                // compare with address on the fw packages
+                                if (clrAddress !=
+                                    fwPackage.ClrStartAddress)
+                                {
+                                    // CLR addresses don't match, can't proceed with update
+                                    throw new NanoDeviceOperationFailedException("Can't update device. CLR addresses are different. Please update nanoBooter manually.");
+                                }
+
+                                await Task.Yield();
+
+                                if (verbosity >= VerbosityLevel.Normal)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                    Console.Write($"Starting update to CLR v{fwPackage.Version}...");
+                                }
+
+                                try
+                                {
+                                    await Task.Yield();
+
+                                    if (nanoDevice.DeployBinaryFile(
+                                        fwPackage.NanoClrFileBinary,
+                                        fwPackage.ClrStartAddress,
+                                        null))
+                                    {
+                                        await Task.Yield();
+
+                                        if (verbosity >= VerbosityLevel.Normal)
+                                        {
+                                            Console.ForegroundColor = ConsoleColor.Green;
+                                            Console.WriteLine("OK");
+                                            Console.ForegroundColor = ConsoleColor.White;
+                                        }
+                                    }
+
+                                    if (attemptToLaunchBooter)
+                                    {
+                                        // try to reboot target 
+                                        if (verbosity > VerbosityLevel.Normal)
+                                        {
+                                            Console.ForegroundColor = ConsoleColor.White;
+                                            Console.Write("Rebooting...");
+                                        }
+
+                                        nanoDevice.DebugEngine.RebootDevice(RebootOptions.NormalReboot);
+
+                                        if (verbosity > VerbosityLevel.Normal)
+                                        {
+                                            Console.ForegroundColor = ConsoleColor.Green;
+                                            Console.WriteLine("OK");
+                                            Console.ForegroundColor = ConsoleColor.White;
+                                        }
+
+                                        return ExitCodes.OK;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new NanoDeviceOperationFailedException($"Exception occurred when performing update ({ex.Message}).");
+                                }
+                            }
+                            else
+                            {
+                                if (attemptToLaunchBooter)
+                                {
+                                    // only report this as an error if the launch was successful
+                                    throw new NanoDeviceOperationFailedException("Failed to launch nanoBooter. Quitting update.");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (nanoDevice.DebugEngine.IsConnectedTonanoCLR
+                                && (fwPackage.Version == nanoDevice.DeviceInfo.ClrBuildVersion.ToString()))
+                            {
+                                if (verbosity >= VerbosityLevel.Normal)
+                                {
+                                    Console.WriteLine("");
+                                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                                    Console.WriteLine("Nothing to update as device is already running the requested version.");
+                                    Console.WriteLine("");
+
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+
+                                // done here
+                                return ExitCodes.OK;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new NanoDeviceOperationFailedException("Can't connect to device. Quitting update.");
+                    }
+                }
+
+                return downloadResult;
+            }
         }
 
         /// <summary>
@@ -407,7 +634,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             NanoDeviceBase nanoDevice = null;
-            ReadDetailsFromDevice(serialPort, ref nanoDevice);
+
+            _ = ReadDetailsFromDevice(
+                serialPort,
+                ref nanoDevice);
 
             // sanity checks
             if (nanoDevice == null
@@ -437,49 +667,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.Write($"Erasing deployment block storage...");
-                }
-
-                var retryCount = 0;
-
-            retryErase:
-
-                var eraseResult = nanoDevice.Erase(
-                        EraseOptions.Deployment,
-                        null,
-                        null);
-
-                if (!eraseResult)
-                {
-                    if (retryCount < 3)
-                    {
-                        // Give it a bit of time
-                        Thread.Sleep(400);
-
-                        retryCount++;
-
-                        goto retryErase;
-                    }
-                    else
-                    {
-                        Console.WriteLine("");
-
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Too many retries erasing nano device.");
-                        Console.WriteLine("");
-
-                        Console.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E2002;
-                    }
-                }
-
-                // needed for slow devices
-                Thread.Sleep(200);
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.Write($"Erasing deployment block storage...");
+                    Console.Write($"Deploying managed application...");
                 }
 
                 if (!nanoDevice.DeployBinaryFile(
@@ -494,6 +682,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.WriteLine("FAILED!");
 
                         return ExitCodes.E2002;
+                    }
+                }
+                else
+                {
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("OK");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    else
+                    {
+                        Console.WriteLine("");
                     }
                 }
 
@@ -532,7 +734,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             GC.SuppressFinalize(this);
         }
 
-        private bool ReadDetailsFromDevice(string serialPort,
+        private bool ReadDetailsFromDevice(
+            string serialPort,
             ref NanoDeviceBase nanoDevice)
         {
             if (serialPort is null)
@@ -540,17 +743,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new ArgumentNullException(nameof(serialPort));
             }
 
-            while (!_serialDebuggerPort.IsDevicesEnumerationComplete)
+            // connect to specified serial port
+            try
             {
-                Thread.Sleep(100);
+                _serialDebuggerPort.AddDevice(serialPort);
             }
-
-            if (!_serialDebuggerPort.NanoFrameworkDevices.Any())
+#if DEBUG
+            catch (Exception ex)
             {
+                Console.WriteLine($"Failed to add device: {ex.Message}");
+
                 return false;
             }
+#else
+            catch
+            {
+                return false;
 
-            nanoDevice = _serialDebuggerPort.NanoFrameworkDevices.Where(m => m.ConnectionId == serialPort).FirstOrDefault();
+            }
+#endif
+
+            // get nano device (there should be only one)
+            nanoDevice = _serialDebuggerPort.NanoFrameworkDevices.FirstOrDefault();
 
             if (nanoDevice != null)
             {

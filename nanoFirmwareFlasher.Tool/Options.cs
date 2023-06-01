@@ -133,13 +133,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Partition table size to use. Valid sizes are: 2, 4, 8 and 16.")]
         public PartitionTableSize? Esp32PartitionTableSize { get; set; }
 
-        [Option(
-            "clrfile",
-            Required = false,
-            Default = null,
-            HelpText = "Path to file with CLR image. Partitions table and bootloader file will be automatically flashed to the device.")]
-        public string Esp32ClrFile { get; set; }
-
         #endregion
 
 
@@ -194,6 +187,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         #region common options
 
         [Option(
+            "clrfile",
+            Required = false,
+            Default = null,
+            HelpText = "Path to file with CLR image.")]
+        public string ClrFile { get; set; }
+
+        [Option(
             "target",
             Required = false,
             Default = null,
@@ -219,7 +219,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             'v',
             "verbosity",
             Required = false,
-            Default = "d",
+            Default = "n",
             HelpText = "Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]. Not supported in every command; see specific command page to determine if this option is available.")]
         public string Verbosity { get; set; }
 
@@ -298,13 +298,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = false,
             HelpText = "Skip execution of sanity check if the requested target fits the connected device. This is a best effort validation and it's NOT guaranted to be fail safe.")]
         public bool FitCheck { get; set; }
-
-        [Option(
-            "listboards",
-            Required = false,
-            Default = false,
-            HelpText = "List the available boards and versions available on CloudSmith.")]
-        public bool ListBoards { get; set; }
 
         [Option(
             "listtargets",

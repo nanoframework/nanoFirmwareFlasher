@@ -27,7 +27,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal new System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync()
         {
             // perform download and extract
-           return base.DownloadAndExtractAsync();
+            return base.DownloadAndExtractAsync();
         }
     }
 }
