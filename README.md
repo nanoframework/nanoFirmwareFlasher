@@ -371,10 +371,33 @@ nanoff -v q
 
 ## List connected nano devices
 
-To get a list of connected nano devices. If more details are required pass verbose option above normal.
+To get a list of connected nano devices. If more details are required add `verbose` option with setting above normal.
 
 ```console
-nanoff --listdevices | -v d
+nanoff --listdevices [ -v d ]
+```
+
+Output example:
+
+```text
+-- Connected .NET nanoFramework devices --
+SKY_EEVB_Debug @ COM7
+
+------------------------------------------
+```
+
+Output example with verbose details:
+
+```text
+-- Connected .NET nanoFramework devices --
+SKY_EEVB_Debug @ COM7
+  Target:      SKY_EEVB_Debug
+  Platform:    GGECKO_S1
+  Date:        May 31 2023
+  Type:        MinSizeRel build with Azure RTOS v6.2.0
+  CLR Version: 1.8.1.124
+
+------------------------------------------
 ```
 
 ## Finding the device COM port on Windows
