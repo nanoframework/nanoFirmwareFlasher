@@ -110,7 +110,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>The flash size.</returns>
         public static string GetFlashSizeAsString(int flashSize)
         {
-            return flashSize >= 0x10000 ? $"{ flashSize / 0x100000 }MB" : $"{ flashSize / 0x400 }kB";
+            return flashSize >= 0x10000 ? $"{flashSize / 0x100000}MB" : $"{flashSize / 0x400}kB";
         }
 
         /// <inheritdoc/>
@@ -130,8 +130,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 deviceInfo.AppendLine();
             }
 
-            deviceInfo.AppendLine($"Features { Features }");
-            deviceInfo.AppendLine($"Flash size { GetFlashSizeAsString() } { GetFlashDeviceId() } from { GetFlashManufacturer() } (manufacturer 0x{ FlashManufacturerId } device 0x{ FlashDeviceId })");
+            deviceInfo.AppendLine($"Features {Features}");
+            deviceInfo.AppendLine($"Flash size {GetFlashSizeAsString()} {GetFlashDeviceId()} from {GetFlashManufacturer()} (manufacturer 0x{FlashManufacturerId} device 0x{FlashDeviceId})");
 
             switch (PSRamAvailable)
             {
@@ -148,8 +148,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     break;
             }
 
-            deviceInfo.AppendLine($"Crystal { Crystal }");
-            deviceInfo.AppendLine($"MAC { MacAddress }");
+            deviceInfo.AppendLine($"Crystal {Crystal}");
+            deviceInfo.AppendLine($"MAC {MacAddress}");
 
             return deviceInfo.ToString();
         }

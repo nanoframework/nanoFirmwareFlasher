@@ -243,10 +243,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!string.IsNullOrEmpty(DeviceName))
             {
-                deviceInfo.AppendLine($"Device: { DeviceName }");
+                deviceInfo.AppendLine($"Device: {DeviceName}");
             }
 
-            deviceInfo.AppendLine($"CPU: { DeviceCPU }");
+            deviceInfo.AppendLine($"CPU: {DeviceCPU}");
 
             return deviceInfo.ToString();
         }
