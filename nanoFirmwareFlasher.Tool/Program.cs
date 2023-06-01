@@ -260,27 +260,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region list targets
 
-            // First check if we are asked for the list of boards
-            if (o.ListTargets ||
-                o.ListBoards)
+            // First check if we are asked for the list of available targets
+            if (o.ListTargets)
             {
-                if (o.ListBoards && _verbosityLevel > VerbosityLevel.Quiet)
-                {
-                    // warn about deprecated option
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-
-                    Console.WriteLine("");
-                    Console.WriteLine("");
-                    Console.WriteLine("********************************** WARNING **********************************");
-                    Console.WriteLine("The --listboards option is deprecated and will be removed in a future version");
-                    Console.WriteLine("Please use --listtargets option instead");
-                    Console.WriteLine("*****************************************************************************");
-                    Console.WriteLine("");
-                    Console.WriteLine("");
-
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-
                 // get list from REFERENCE targets
                 var targets = FirmwarePackage.GetTargetList(
                     false,
@@ -313,7 +295,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 try
                 {
-                    var connectedDevices = _nanoDeviceOperations.ListDevices();
+                    var connectedDevices = _nanoDeviceOperations.ListDevices(_verbosityLevel > VerbosityLevel.Normal);
 
                     if (connectedDevices.Count() == 0)
                     {
@@ -327,6 +309,38 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         foreach (var nanoDevice in connectedDevices)
                         {
                             Console.WriteLine($"{nanoDevice.Description}");
+
+                            if (_verbosityLevel >= VerbosityLevel.Normal)
+                            {
+                                // check that we are in CLR
+                                if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
+                                {
+                                    // we have to have a valid device info
+                                    if (nanoDevice.DeviceInfo.Valid)
+                                    {
+                                        Console.WriteLine($"  Target:      {nanoDevice.DeviceInfo.TargetName?.ToString()}");
+                                        Console.WriteLine($"  Platform:    {nanoDevice.DeviceInfo.Platform?.ToString()}");
+                                        Console.WriteLine($"  Date:        {nanoDevice.DebugEngine.Capabilities.SoftwareVersion.BuildDate ?? "unknown"}");
+                                        Console.WriteLine($"  Type:        {nanoDevice.DebugEngine.Capabilities.SolutionReleaseInfo.VendorInfo ?? "unknown"}");
+                                        Console.WriteLine($"  CLR Version: {nanoDevice.DeviceInfo.SolutionBuildVersion}");
+                                    }
+                                }
+                                else
+                                {
+                                    // we are in booter, can only get TargetInfo
+                                    // we have to have a valid device info
+                                    if (nanoDevice.DebugEngine.TargetInfo != null)
+                                    {
+                                        Console.WriteLine($"  Target:         {nanoDevice.DebugEngine.TargetInfo.TargetName}");
+                                        Console.WriteLine($"  Platform:       {nanoDevice.DebugEngine.TargetInfo.PlatformName}");
+                                        Console.WriteLine($"  Type:           {nanoDevice.DebugEngine.TargetInfo.PlatformInfo}");
+                                        Console.WriteLine($"  CLR Version:    {nanoDevice.DebugEngine.TargetInfo.CLRVersion}");
+                                        Console.WriteLine($"  Booter Version: {nanoDevice.DebugEngine.TargetInfo.CLRVersion}");
+                                    }
+                                }
+
+                                Console.WriteLine("");
+                            }
                         }
 
                         Console.WriteLine("------------------------------------------");
@@ -383,6 +397,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         _exitCode = await _nanoDeviceOperations.UpdateDeviceClrAsync(
                             o.SerialPort,
+                            o.FwVersion,
+                            o.ClrFile,
                             _verbosityLevel);
 
                         if (_exitCode != ExitCodes.OK)
@@ -449,7 +465,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // easiest one: ESP32
                 if (o.TargetName.StartsWith("ESP")
-                    || o.TargetName.StartsWith("M5")                    
+                    || o.TargetName.StartsWith("M5")
                     || o.TargetName.StartsWith("FEATHER")
                     || o.TargetName.StartsWith("ESPKALUGA"))
                 {
@@ -509,7 +525,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
                     o.Platform = SupportedPlatform.stm32;
-                }                
+                }
                 // GG11 related
                 else if (o.ListJLinkDevices)
                 {
@@ -531,8 +547,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     !string.IsNullOrEmpty(o.SerialPort) ||
                     (o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
-                    (o.Esp32FlashFrequency != 40) ||
-                    !string.IsNullOrEmpty(o.Esp32ClrFile))
+                    (o.Esp32FlashFrequency != 40))
                 {
                     o.Platform = SupportedPlatform.esp32;
                 }
@@ -679,7 +694,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             o.Preview,
                             o.DeploymentImage,
                             null,
-                            o.Esp32ClrFile,
+                            o.ClrFile,
                             !o.FitCheck,
                             _verbosityLevel,
                             o.Esp32PartitionTableSize);
