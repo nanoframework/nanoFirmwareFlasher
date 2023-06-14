@@ -82,13 +82,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // get ESP32 partitions
                 FlashPartitions = new Dictionary<int, string>
                 {
-				    // bootloader goes to 0x1000, except for ESP32_C3 which goes to 0x0
-				    { deviceInfo.ChipType == "ESP32-C3" ? 0x0 : 0x1000, Path.Combine(LocationPath, BootloaderPath) },
+				    // bootloader goes to 0x1000, except for ESP32_C3 and ESP32_S3, which goes to 0x0
+				    { deviceInfo.ChipType == "ESP32-C3" || deviceInfo.ChipType == "ESP32-SC3" ? 0x0 : 0x1000, Path.Combine(LocationPath, BootloaderPath) },
 
 				    // nanoCLR goes to 0x10000
 				    { CLRAddress, Path.Combine(LocationPath, "nanoCLR.bin") },
 
-				    // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
+				    // partition table goes to 0x8000; there are partition tables for 4MB, 8MB and 16MB flash sizes (and 2MB for ESP32)
 				    { 0x8000, Path.Combine(LocationPath, $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
                 };
             }

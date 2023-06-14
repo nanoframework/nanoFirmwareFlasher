@@ -127,7 +127,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
                 esp32Device.ChipType != "ESP32-S2" &&
-                esp32Device.ChipType != "ESP32-C3")
+                esp32Device.ChipType != "ESP32-C3" &&
+                esp32Device.ChipType != "ESP32-S3")
             {
                 // connected to a device not supported
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -237,6 +238,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // compose target name
                     targetName = $"ESP32_C3_{revisionSuffix}";
                 }
+                else if (esp32Device.ChipType == "ESP32-S3")
+                {
+                    string revisionSuffix;
+
+                    if (esp32Device.ChipName.Contains("revision 3") || esp32Device.ChipName.Contains("revision 4"))
+                    {
+                        // all the others (rev3 and rev4) will take rev3
+                        revisionSuffix = "_REV3";
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.WriteLine("");
+                        Console.WriteLine($"Unsupported ESP32_S3 revision.");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+
+                        return ExitCodes.E9000;
+                    }
+
+                    // compose target name
+                    targetName = $"ESP32_S3";
+                }
 
 
                 Console.ForegroundColor = ConsoleColor.Blue;
@@ -260,7 +286,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.WriteLine("");
                     Console.WriteLine("***************************************** WARNING ****************************************");
                     Console.WriteLine("Seems that the firmware image that's about to be used is for a revision 3 device, but the");
-                    Console.WriteLine($"connected device is {esp32Device.ChipName}. You should use the 'ESP32_WROOM_32' instead.");
+                    Console.WriteLine($"connected device is {esp32Device.ChipName}.");
                     Console.WriteLine("******************************************************************************************");
                     Console.WriteLine("");
                 }
