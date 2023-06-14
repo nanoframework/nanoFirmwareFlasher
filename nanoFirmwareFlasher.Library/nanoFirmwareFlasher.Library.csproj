@@ -93,6 +93,8 @@
         </None>
         <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
+        <None Include="..\lib\esp32s3bootloader\**" Link="esp32s3bootloader\%(RecursiveDir)%(Filename)%(Extension)">
+        </None>
     </ItemGroup>
 
     <!-- STLink executables for all platforms -->
