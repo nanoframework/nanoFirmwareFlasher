@@ -116,7 +116,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 catch (Exception ex)
                 {
-                    if (Verbosity >= VerbosityLevel.Detailed)
+                    if (Verbosity >= VerbosityLevel.Normal)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkRed;
 
