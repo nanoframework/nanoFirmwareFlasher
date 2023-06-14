@@ -399,7 +399,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine($"Erasing flash...");
+                    Console.Write($"Erasing flash...");
                 }
 
                 // erase flash
@@ -425,7 +425,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine($"Flashing firmware...");
+                    Console.Write($"Flashing firmware...");
                 }
 
                 // write to flash
@@ -435,8 +435,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (verbosity >= VerbosityLevel.Normal)
                     {
+                        Console.Write($"Flashing firmware...");
+
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("OK                            ");
+                        Console.WriteLine("OK".PadRight(110));
 
                         // warn user if reboot is not possible
                         if (espTool.CouldntResetTarget)

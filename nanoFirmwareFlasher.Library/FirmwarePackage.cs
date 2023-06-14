@@ -599,7 +599,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return new DownloadUrlResult(string.Empty, string.Empty, ExitCodes.E9005);
                 }
 
-                if (verbosity > VerbosityLevel.Quiet)
+                if (verbosity >= VerbosityLevel.Detailed)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"OK");
