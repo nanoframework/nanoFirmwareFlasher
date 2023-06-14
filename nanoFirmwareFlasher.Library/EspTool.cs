@@ -34,23 +34,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private int _baudRate = 0;
 
         /// <summary>
-        /// The flash mode for the esptool.
-        /// </summary>
-        /// <remarks>
-        /// See https://github.com/espressif/esptool#flash-modes for more details
-        /// </remarks>
-        private readonly string _flashMode = null;
-
-        /// <summary>
-        /// The flash frequency for the esptool.
-        /// </summary>
-        /// <remarks>
-        /// This value should be in Hz; 40 MHz = 40.000.000 Hz
-        /// See https://github.com/espressif/esptool#flash-modes for more details
-        /// </remarks>
-        private readonly int _flashFrequency = 0;
-
-        /// <summary>
         /// Partition table size, when specified in the options.
         /// </summary>
         private readonly PartitionTableSize? _partitionTableSize = null;
@@ -150,8 +133,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // set properties
             _serialPort = serialPort;
             _baudRate = baudRate;
-            _flashMode = flashMode;
-            _flashFrequency = flashFrequency;
             _partitionTableSize = partitionTableSize;
         }
 
@@ -496,7 +477,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // execute write_flash command and parse the result; progress message can be found be searching for linefeed
             if (!RunEspTool(
-                $"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}",
+                $"write_flash --flash_size {flashSize} {partsArguments.ToString().Trim()}",
                 false,
                 useStandardBaudrate,
                 true,
