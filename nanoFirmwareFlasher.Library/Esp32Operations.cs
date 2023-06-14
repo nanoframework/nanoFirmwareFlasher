@@ -436,7 +436,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (verbosity >= VerbosityLevel.Normal)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("OK");
+                        Console.WriteLine("OK                            ");
 
                         // warn user if reboot is not possible
                         if (espTool.CouldntResetTarget)
