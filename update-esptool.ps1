@@ -9,7 +9,7 @@ param (
 )
 
 # get latest version if none was requested
-if ([string]::IsNullOrEmpty($reqVersion)) {
+if ([string]::IsNullOrEmpty($RequestedVersion)) {
     # get details about latest version
     $lastRelease = $(gh release list --limit 1 --repo espressif/esptool)
 
@@ -17,7 +17,7 @@ if ([string]::IsNullOrEmpty($reqVersion)) {
     $version = $lastRelease.Split()[3]
 }
 else {
-    $version = $reqVersion
+    $version = $RequestedVersion
 }
 
 # make sure security doesn't block our request
