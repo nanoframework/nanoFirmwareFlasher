@@ -487,20 +487,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new WriteEsp32FlashException(messages);
             }
 
-            var match = Regex.Match(messages, regexPattern.ToString());
-            if (!match.Success)
-            {
-                throw new WriteEsp32FlashException(messages);
-            }
-
-            if (Verbosity >= VerbosityLevel.Detailed)
-            {
-                foreach (string groupName in regexGroupNames)
-                {
-                    Console.WriteLine(match.Groups[groupName].ToString().Trim());
-                }
-            }
-
             // check if there is any mention of not being able to run the app
             CouldntResetTarget = messages.Contains("To run the app, reset the chip manually");
 
@@ -621,6 +607,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             connectPromptShown = false;
             connectPatternFound = false;
             connectTimeStamp = DateTime.UtcNow;
+            var progressStarted = false;
 
             // showing progress is a little bit tricky
             if (Verbosity > VerbosityLevel.Quiet)
@@ -643,9 +630,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                 // try to find a progress message
                                 string progress = FindProgress(messageBuilder, progressTestChar.Value);
-                                if (progress != null && Verbosity > VerbosityLevel.Quiet)
+                                if (progress != null && Verbosity >= VerbosityLevel.Detailed)
                                 {
-                                    // print progress and set the cursor to the beginning of the line (\r)
+                                    if (!progressStarted)
+                                    {
+                                        // need to print the first line of the progress message
+                                        Console.Write("\r");
+
+                                        progressStarted = true;
+                                    }
+
+                                    // print progress... and set the cursor to the beginning of the line (\r)
                                     Console.Write(progress);
                                     Console.Write("\r");
                                 }
@@ -654,6 +649,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             }
                             else
                             {
+                                if (Verbosity >= VerbosityLevel.Detailed)
+                                {
+                                    // need to clear all progress lines
+                                    for (int i = 0; i < messageBuilder.Length; i++)
+                                    {
+                                        Console.Write("\b");
+                                    }
+                                }
+
                                 break;
                             }
                         }
@@ -788,10 +792,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // trim the test char and convert \r\n into \r
                 string progress = messageBuilder.ToString().Trim(progressTestChar).Replace("\r\n", "\r");
+
+                // trim initial message with device features
+                int startIndex = progress.LastIndexOf("MAC:");
+
                 // another test char in the message?
-                int delimiter = progress.LastIndexOf(progressTestChar);
-                if (delimiter > 0)
+                int delimiter = progress.LastIndexOf(progressTestChar, progress.Length - 1);
+                if (startIndex > 0
+                    && delimiter > 0
+                    && delimiter > startIndex)
                 {
+                    //var nextDelimiter = progress.LastIndexOf(progressTestChar, delimiter);
                     // then we found a progress message; pad the message to 110 chars because no message is longer than 110 chars
                     return progress.Substring(delimiter + 1).PadRight(110);
                 }
