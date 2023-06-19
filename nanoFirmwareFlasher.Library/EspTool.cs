@@ -286,8 +286,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // compose bootloader partition
             var bootloaderPartition = new Dictionary<int, string>
             {
-				// bootloader goes to 0x1000
-				{ 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
+                // bootloader goes to 0x1000, except for ESP32_C3 and ESP32_S3, which goes to 0x0
+				{ _chipType == "esp32c3" || _chipType == "esp32s3" ? 0x0 : 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
 
 				// nanoCLR goes to 0x10000
 				{ 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
