@@ -240,30 +240,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else if (esp32Device.ChipType == "ESP32-S3")
                 {
-                    string revisionSuffix;
-
-                    if (esp32Device.ChipName.Contains("revision 3") || esp32Device.ChipName.Contains("revision 4"))
-                    {
-                        // all the others (rev3 and rev4) will take rev3
-                        revisionSuffix = "_REV3";
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-
-                        Console.WriteLine("");
-                        Console.WriteLine($"Unsupported ESP32_S3 revision.");
-                        Console.WriteLine("");
-
-                        Console.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
-                    }
+                    // ESP32_S3 has only one revision
 
                     // compose target name
                     targetName = $"ESP32_S3";
                 }
-
 
                 Console.ForegroundColor = ConsoleColor.Blue;
 
