@@ -372,7 +372,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             if (attemptToLaunchBooter)
                             {
                                 // try to reboot target 
-                                if (verbosity > VerbosityLevel.Normal)
+                                if (verbosity >= VerbosityLevel.Normal)
                                 {
                                     Console.ForegroundColor = ConsoleColor.White;
                                     Console.Write("Rebooting...");
@@ -380,7 +380,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                 nanoDevice.DebugEngine.RebootDevice(RebootOptions.NormalReboot);
 
-                                if (verbosity > VerbosityLevel.Normal)
+                                if (verbosity >= VerbosityLevel.Normal)
                                 {
                                     Console.ForegroundColor = ConsoleColor.Green;
                                     Console.WriteLine("OK");
@@ -696,6 +696,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     else
                     {
                         Console.WriteLine("");
+                    }
+
+                    // try to reboot target 
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Write("Rebooting...");
+                    }
+
+                    // reboot device
+                    nanoDevice.DebugEngine.RebootDevice(RebootOptions.NormalReboot);
+
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("OK");
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
 
