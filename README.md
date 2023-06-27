@@ -332,7 +332,7 @@ To update the firmware of a nano device with a local firmware file (for example 
 This file has to be a binary file with a valid nanoCLR from a build. No checks or validations are performed on the file content.
 
 ```console
-nanoff --nanodevice --serialport COM9 --binfile "C:\nf-interpreter\build\nanoclr.bin"
+nanoff --nanodevice --update --serialport COM9 --clrfile "C:\nf-interpreter\build\nanoclr.bin"
 ```
 
 ### Get details from a nano device
