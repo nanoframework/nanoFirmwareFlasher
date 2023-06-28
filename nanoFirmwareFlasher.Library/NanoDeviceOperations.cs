@@ -262,7 +262,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.ForegroundColor = ConsoleColor.Cyan;
 
                 Console.WriteLine($"Connected to nano device: {nanoDevice.Description}");
-                Console.WriteLine($"{nanoDevice.DeviceInfo.ClrBuildVersion}");
                 Console.WriteLine("");
 
                 Console.ForegroundColor = ConsoleColor.White;
@@ -366,6 +365,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                     Console.ForegroundColor = ConsoleColor.Green;
                                     Console.WriteLine("OK");
                                     Console.ForegroundColor = ConsoleColor.White;
+                                }
+                            }
+                            else
+                            {
+                                if (verbosity >= VerbosityLevel.Normal)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("FAILED!");
+
+                                    return ExitCodes.E2002;
                                 }
                             }
 
