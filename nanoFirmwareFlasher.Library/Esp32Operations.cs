@@ -278,13 +278,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // version schema for ESP32-S3
                     //Previously Used Schemes | Previous Identification   | vM.X
+                    //          V000          |           n/a             | v0.0
                     //          V001          |     0 (bug in logs)       | v0.1
                     //          V002          |           n/a             | v0.2
 
                     string revisionSuffix;
 
                     // so far we are only offering a single ESP32_S3 build
-                    if (esp32Device.ChipName.Contains("revision 0.1") || esp32Device.ChipName.Contains("revision 0.2"))
+                    if (esp32Device.ChipName.Contains("revision 0.0") || esp32Device.ChipName.Contains("revision 0.1") || esp32Device.ChipName.Contains("revision 0.2"))
                     {
                         revisionSuffix = "";
                     }
