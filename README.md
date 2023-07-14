@@ -129,7 +129,7 @@ In case `nanoff` detects this situation the following warning is shown:
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
 
-:warning: To update FeatherS2 and TinyS2 the boards need to put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
+:warning: To update FeatherS2, TinyS2 and some S3 modules, the board needs to be put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
 
 ### Update the firmware of an ESP32 target
 
