@@ -161,6 +161,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 null,
                 out messages))
             {
+                if(messages.Contains("A fatal error occurred: Failed to connect to Espressif device: No serial data received."))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("Can't connect to ESP32 bootloader. Try to put the board in bootloader manually.");
+                    Console.WriteLine("For troubleshooting steps visit: https://docs.espressif.com/projects/esptool/en/latest/troubleshooting.html.");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
                 throw new EspToolExecutionException(messages);
             }
 
