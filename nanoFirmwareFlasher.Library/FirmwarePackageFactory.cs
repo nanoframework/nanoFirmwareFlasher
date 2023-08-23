@@ -8,8 +8,18 @@ using System;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// Firmware Package Factory.
+    /// </summary>
     public class FirmwarePackageFactory
     {
+        /// <summary>
+        /// Gets the firmware package for the device.
+        /// </summary>
+        /// <param name="nanoDevice">The device.</param>
+        /// <param name="fwVersion">The firmware Version.</param>
+        /// <returns>The Firmware package.</returns>
+        /// <exception cref="NotSupportedException">The command is not supported.</exception>
         public static FirmwarePackage GetFirmwarePackage(
             NanoDeviceBase nanoDevice,
             string fwVersion)

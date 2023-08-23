@@ -77,6 +77,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="flashMode">The flash mode for the esptool</param>
         /// <param name="flashFrequency">The flash frequency for the esptool</param>
         /// <param name="partitionTableSize">Partition table size to use</param>
+        /// <param name="verbosity">The verbosity level of messages</param>
         public EspTool(
             string serialPort,
             int baudRate,
@@ -458,6 +459,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Write to the flash
         /// </summary>
         /// <param name="partsToWrite">dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</param>
+        /// <param name="useStandardBaudrate">Use the standard baud rate (default is false).</param>
         /// <returns>true if successful</returns>
         internal ExitCodes WriteFlash(
             Dictionary<int, string> partsToWrite,
