@@ -127,7 +127,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
                 esp32Device.ChipType != "ESP32-S2" &&
-                esp32Device.ChipType != "ESP32-C3")
+                esp32Device.ChipType != "ESP32-C3" &&
+                esp32Device.ChipType != "ESP32-S3")
             {
                 // connected to a device not supported
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -144,19 +145,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (esp32Device.ChipType == "ESP32")
                 {
+                    // version schema for ESP32
+                    //Previously Used Schemes | Previous Identification   | vM.X
+                    //            V0          |           0               | v0.0
+                    //         ECO, V1        |           1               | v1.0
+                    //         ECO, V3        |           3               | v3.0
+
                     if (esp32Device.ChipName.Contains("PICO"))
                     {
                         targetName = "ESP32_PICO";
                     }
                     else
                     {
-                        var revisionSuffix = "REV0";
+                        var revisionSuffix = "_REV0";
                         var psRamSegment = "";
                         var otherSegment = "";
 
-                        if (esp32Device.ChipName.Contains("revision 3"))
+                        if (esp32Device.ChipName.Contains("revision v3"))
                         {
-                            revisionSuffix = "REV3";
+                            revisionSuffix = "_REV3";
                         }
 
                         if (esp32Device.PSRamAvailable == PSRamAvailability.Yes)
@@ -173,28 +180,51 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             psRamSegment = "_PSRAM";
 
                             // also need to force rev0 even if that's higher
-                            revisionSuffix = "REV0";
-                        }
-
-                        if (esp32Device.ChipName.Contains("ESP32_C3"))
-                        {
-                            if (esp32Device.ChipName.Contains("revision 2"))
-                            {
-                                revisionSuffix = "REV2";
-                            }
-                            else
-                            {
-                                // all the others (rev3 and rev4) will take rev3
-                                revisionSuffix = "REV3";
-                            }
+                            revisionSuffix = "_REV0";
                         }
 
                         // compose target name
-                        targetName = $"ESP32{psRamSegment}{otherSegment}_{revisionSuffix}";
+                        targetName = $"ESP32{psRamSegment}{otherSegment}{revisionSuffix}";
+                    }
+
+                    if (fitCheck)
+                    {
+                        if (targetName.EndsWith("REV3") &&
+                            (esp32Device.ChipName.Contains("revision v0") ||
+                            esp32Device.ChipName.Contains("revision v1") ||
+                            esp32Device.ChipName.Contains("revision v2")))
+                        {
+                            // trying to use a target that's not compatible with the connected device 
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine("");
+                            Console.WriteLine("***************************************** WARNING ****************************************");
+                            Console.WriteLine("Seems that the firmware image that's about to be used is for a revision 3 device, but the");
+                            Console.WriteLine($"connected device is {esp32Device.ChipName}.");
+                            Console.WriteLine("******************************************************************************************");
+                            Console.WriteLine("");
+                        }
+
+                        if (targetName.Contains("BLE") &&
+                            !esp32Device.Features.Contains(", BT,"))
+                        {
+                            // trying to use a traget with BT and the connected device doens't have support for it
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine("");
+                            Console.WriteLine("******************************************* WARNING *******************************************");
+                            Console.WriteLine("Seems that the firmware image that's about to be used includes Bluetooth features, but the");
+                            Console.WriteLine($"connected device does not have support for it. You should use a target without BLE in the name.");
+                            Console.WriteLine("************************************************************************************************");
+                            Console.WriteLine("");
+                        }
                     }
                 }
                 else if (esp32Device.ChipType == "ESP32-S2")
                 {
+                    // version schema for ESP32-S2
+                    //Previously Used Schemes | Previous Identification   | vM.X
+                    //           n/a          |           0               | v0.0
+                    //           ECO1         |           1               | v1.0
+
                     // can't guess with certainty for this series, better request a target name to the user
 
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -210,16 +240,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else if (esp32Device.ChipType == "ESP32-C3")
                 {
+                    // version schema for ESP32-C3
+                    //Previously Used Schemes | Previous Identification   | vM.X
+                    //     Chip Revision 2    |           2               | v0.2
+                    //     Chip Revision 3    |           3               | v0.3
+                    //     Chip Revision 4    |           4               | v0.4
+
                     string revisionSuffix;
 
-                    if (esp32Device.ChipName.Contains("revision 2"))
+                    if (esp32Device.ChipName.Contains("revision v0.2"))
                     {
-                        revisionSuffix = "REV2";
+                        // this is the "default" one we're offering
+                        revisionSuffix = "";
                     }
-                    else if (esp32Device.ChipName.Contains("revision 3") || esp32Device.ChipName.Contains("revision 4"))
+                    else if (esp32Device.ChipName.Contains("revision v0.3") || esp32Device.ChipName.Contains("revision v0.4"))
                     {
                         // all the others (rev3 and rev4) will take rev3
-                        revisionSuffix = "REV3";
+                        revisionSuffix = "_REV3";
                     }
                     else
                     {
@@ -235,9 +272,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
 
                     // compose target name
-                    targetName = $"ESP32_C3_{revisionSuffix}";
+                    targetName = $"ESP32_C3{revisionSuffix}";
                 }
+                else if (esp32Device.ChipType == "ESP32-S3")
+                {
+                    // version schema for ESP32-S3
+                    //Previously Used Schemes | Previous Identification   | vM.X
+                    //          V000          |           n/a             | v0.0
+                    //          V001          |     0 (bug in logs)       | v0.1
+                    //          V002          |           n/a             | v0.2
 
+                    string revisionSuffix;
+
+                    // so far we are only offering a single ESP32_S3 build
+                    if (esp32Device.ChipName.Contains("revision v0.0") || esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v0.2"))
+                    {
+                        revisionSuffix = "";
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.WriteLine("");
+                        Console.WriteLine($"Unsupported ESP32_S3 revision.");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+
+                        return ExitCodes.E9000;
+                    }
+
+                    // compose target name
+                    targetName = $"ESP32_S3{revisionSuffix}";
+                }
 
                 Console.ForegroundColor = ConsoleColor.Blue;
 
@@ -246,37 +313,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Console.WriteLine("");
 
                 Console.ForegroundColor = ConsoleColor.White;
-            }
-
-            if (fitCheck)
-            {
-                if (targetName.EndsWith("REV3") &&
-                    (esp32Device.ChipName.Contains("revision 0") ||
-                    esp32Device.ChipName.Contains("revision 1") ||
-                    esp32Device.ChipName.Contains("revision 2")))
-                {
-                    // trying to use a target that's not compatible with the connected device 
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("");
-                    Console.WriteLine("***************************************** WARNING ****************************************");
-                    Console.WriteLine("Seems that the firmware image that's about to be used is for a revision 3 device, but the");
-                    Console.WriteLine($"connected device is {esp32Device.ChipName}. You should use the 'ESP32_WROOM_32' instead.");
-                    Console.WriteLine("******************************************************************************************");
-                    Console.WriteLine("");
-                }
-
-                if (targetName.Contains("BLE") &&
-                    !esp32Device.Features.Contains(", BT,"))
-                {
-                    // trying to use a traget with BT and the connected device doens't have support for it
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("");
-                    Console.WriteLine("******************************************* WARNING *******************************************");
-                    Console.WriteLine("Seems that the firmware image that's about to be used includes Bluetooth features, but the");
-                    Console.WriteLine($"connected device does not have support for it. You should use a target without BLE in the name.");
-                    Console.WriteLine("************************************************************************************************");
-                    Console.WriteLine("");
-                }
             }
 
             Esp32Firmware firmware = new Esp32Firmware(
@@ -373,7 +409,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine($"Erasing flash...");
+                    Console.Write($"Erasing flash...");
                 }
 
                 // erase flash
@@ -399,7 +435,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine($"Flashing firmware...");
+                    Console.Write($"Flashing firmware...");
                 }
 
                 // write to flash
@@ -409,8 +445,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (verbosity >= VerbosityLevel.Normal)
                     {
+                        Console.Write($"Flashing firmware...");
+
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("OK");
+                        Console.WriteLine("OK".PadRight(110));
 
                         // warn user if reboot is not possible
                         if (espTool.CouldntResetTarget)
