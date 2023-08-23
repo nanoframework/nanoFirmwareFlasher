@@ -177,7 +177,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // check for empty array 
             if (responseBody == "[]")
             {
-                if (verbosity >= VerbosityLevel.Normal)
+                if (verbosity > VerbosityLevel.Quiet)
                 {
                     Console.WriteLine("");
                 }
@@ -378,7 +378,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // set property
                     Version = match[0].Value;
 
-                    if (Verbosity >= VerbosityLevel.Normal)
+                    if (Verbosity > VerbosityLevel.Detailed)
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("Using cached firmware package");
@@ -389,7 +389,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // no fw file available
 
-                    if (Verbosity >= VerbosityLevel.Normal)
+                    if (Verbosity > VerbosityLevel.Quiet)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Failure to download package and couldn't find one in the cache.");
@@ -403,7 +403,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // got here, must have a file!
 
             // unzip the firmware
-            if (Verbosity >= VerbosityLevel.Detailed)
+            if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write($"Extracting {Path.GetFileName(fwFileName)}...");
@@ -413,7 +413,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Path.Combine(LocationPath, fwFileName),
                 LocationPath);
 
-            if (Verbosity >= VerbosityLevel.Detailed)
+            if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("OK");
@@ -460,7 +460,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             try
             {
-                if (verbosity >= VerbosityLevel.Normal)
+                if (verbosity >= VerbosityLevel.Detailed)
                 {
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.Write($"Trying to find {targetName} in {(isPreview ? "development" : "stable")} repository...");
@@ -478,7 +478,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // check for empty array 
                 if (responseBody == "[]")
                 {
-                    if (verbosity >= VerbosityLevel.Normal)
+                    if (verbosity >= VerbosityLevel.Detailed)
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("Not found");
@@ -488,7 +488,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     //  try now with community targets
                     repoName = _communityTargetsRepo;
 
-                    if (verbosity >= VerbosityLevel.Normal)
+                    if (verbosity >= VerbosityLevel.Detailed)
                     {
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.Write($"Trying to find {targetName} in community targets repository...");
@@ -513,7 +513,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         Console.WriteLine("");
 
-                        if (verbosity >= VerbosityLevel.Normal)
+                        if (verbosity > VerbosityLevel.Quiet)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
 
@@ -553,7 +553,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                             Console.WriteLine("");
 
-                            if (verbosity >= VerbosityLevel.Normal)
+                            if (verbosity > VerbosityLevel.Quiet)
                             {
                                 Console.ForegroundColor = ConsoleColor.Red;
 
@@ -581,7 +581,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     Console.WriteLine("");
 
-                    if (verbosity >= VerbosityLevel.Normal)
+                    if (verbosity > VerbosityLevel.Quiet)
                     {
                         // output helpful message
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -599,7 +599,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return new DownloadUrlResult(string.Empty, string.Empty, ExitCodes.E9005);
                 }
 
-                if (verbosity >= VerbosityLevel.Normal)
+                if (verbosity >= VerbosityLevel.Detailed)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"OK");

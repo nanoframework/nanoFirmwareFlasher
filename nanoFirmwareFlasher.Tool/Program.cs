@@ -480,6 +480,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     || o.TargetName.StartsWith("WeAct")
                     || o.TargetName.StartsWith("ORGPAL")
                     || o.TargetName.StartsWith("Pyb")
+                    || o.TargetName.StartsWith("NESHTEC_NESHNODE_V")
                 )
                 {
                     // candidates for STM32
