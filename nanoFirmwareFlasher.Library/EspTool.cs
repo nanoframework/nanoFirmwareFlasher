@@ -34,23 +34,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private int _baudRate = 0;
 
         /// <summary>
-        /// The flash mode for the esptool.
-        /// </summary>
-        /// <remarks>
-        /// See https://github.com/espressif/esptool#flash-modes for more details
-        /// </remarks>
-        private readonly string _flashMode = null;
-
-        /// <summary>
-        /// The flash frequency for the esptool.
-        /// </summary>
-        /// <remarks>
-        /// This value should be in Hz; 40 MHz = 40.000.000 Hz
-        /// See https://github.com/espressif/esptool#flash-modes for more details
-        /// </remarks>
-        private readonly int _flashFrequency = 0;
-
-        /// <summary>
         /// Partition table size, when specified in the options.
         /// </summary>
         private readonly PartitionTableSize? _partitionTableSize = null;
@@ -116,7 +99,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 catch (Exception ex)
                 {
-                    if (Verbosity >= VerbosityLevel.Detailed)
+                    if (Verbosity >= VerbosityLevel.Normal)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkRed;
 
@@ -150,8 +133,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // set properties
             _serialPort = serialPort;
             _baudRate = baudRate;
-            _flashMode = flashMode;
-            _flashFrequency = flashFrequency;
             _partitionTableSize = partitionTableSize;
         }
 
@@ -180,6 +161,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 null,
                 out messages))
             {
+                if(messages.Contains("A fatal error occurred: Failed to connect to Espressif device: No serial data received."))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine("");
+                    Console.WriteLine("Can't connect to ESP32 bootloader. Try to put the board in bootloader manually.");
+                    Console.WriteLine("For troubleshooting steps visit: https://docs.espressif.com/projects/esptool/en/latest/troubleshooting.html.");
+                    Console.WriteLine("");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
                 throw new EspToolExecutionException(messages);
             }
 
@@ -252,16 +245,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // FEATHER_S2's have PSRAM, so don't even bother
                 psramIsAvailable = PSRamAvailability.Yes;
             }
-            else if (name.Contains("ESP32-C3"))
+            else if (name.Contains("ESP32-C3")
+                     || name.Contains("ESP32-S3"))
             {
-                // all ESP32-C3 SDK config have support for PSRAM, so don't even bother
+                // all ESP32-C3/S3 SDK config have support for PSRAM, so don't even bother
                 psramIsAvailable = PSRamAvailability.Undetermined;
             }
             else
             {
                 // if a target name wasn't provided, check for PSRAM
-                // except for ESP32_C3
-                if (targetName == null && !name.Contains("ESP32-C3"))
+                // except for ESP32_C3 and S3
+                if (targetName == null
+                    && !name.Contains("ESP32-C3")
+                    && !name.Contains("ESP32-S3"))
                 {
                     psramIsAvailable = FindPSRamAvailable();
                 }
@@ -302,8 +298,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // compose bootloader partition
             var bootloaderPartition = new Dictionary<int, string>
             {
-				// bootloader goes to 0x1000
-				{ 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
+                // bootloader goes to 0x1000, except for ESP32_C3 and ESP32_S3, which goes to 0x0
+				{ _chipType == "esp32c3" || _chipType == "esp32s3" ? 0x0 : 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
 
 				// nanoCLR goes to 0x10000
 				{ 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
@@ -493,7 +489,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // execute write_flash command and parse the result; progress message can be found be searching for linefeed
             if (!RunEspTool(
-                $"write_flash --flash_mode {_flashMode} --flash_freq {_flashFrequency}m --flash_size {flashSize} {partsArguments.ToString().Trim()}",
+                $"write_flash --flash_size {flashSize} {partsArguments.ToString().Trim()}",
                 false,
                 useStandardBaudrate,
                 true,
@@ -501,20 +497,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 out string messages))
             {
                 throw new WriteEsp32FlashException(messages);
-            }
-
-            var match = Regex.Match(messages, regexPattern.ToString());
-            if (!match.Success)
-            {
-                throw new WriteEsp32FlashException(messages);
-            }
-
-            if (Verbosity >= VerbosityLevel.Detailed)
-            {
-                foreach (string groupName in regexGroupNames)
-                {
-                    Console.WriteLine(match.Groups[groupName].ToString().Trim());
-                }
             }
 
             // check if there is any mention of not being able to run the app
@@ -637,6 +619,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             connectPromptShown = false;
             connectPatternFound = false;
             connectTimeStamp = DateTime.UtcNow;
+            var progressStarted = false;
 
             // showing progress is a little bit tricky
             if (Verbosity > VerbosityLevel.Quiet)
@@ -659,9 +642,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                 // try to find a progress message
                                 string progress = FindProgress(messageBuilder, progressTestChar.Value);
-                                if (progress != null && Verbosity > VerbosityLevel.Quiet)
+                                if (progress != null && Verbosity >= VerbosityLevel.Detailed)
                                 {
-                                    // print progress and set the cursor to the beginning of the line (\r)
+                                    if (!progressStarted)
+                                    {
+                                        // need to print the first line of the progress message
+                                        Console.Write("\r");
+
+                                        progressStarted = true;
+                                    }
+
+                                    // print progress... and set the cursor to the beginning of the line (\r)
                                     Console.Write(progress);
                                     Console.Write("\r");
                                 }
@@ -670,6 +661,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             }
                             else
                             {
+                                if (Verbosity >= VerbosityLevel.Detailed)
+                                {
+                                    // need to clear all progress lines
+                                    for (int i = 0; i < messageBuilder.Length; i++)
+                                    {
+                                        Console.Write("\b");
+                                    }
+                                }
+
                                 break;
                             }
                         }
@@ -804,10 +804,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // trim the test char and convert \r\n into \r
                 string progress = messageBuilder.ToString().Trim(progressTestChar).Replace("\r\n", "\r");
+
+                // trim initial message with device features
+                int startIndex = progress.LastIndexOf("MAC:");
+
                 // another test char in the message?
-                int delimiter = progress.LastIndexOf(progressTestChar);
-                if (delimiter > 0)
+                int delimiter = progress.LastIndexOf(progressTestChar, progress.Length - 1);
+                if (startIndex > 0
+                    && delimiter > 0
+                    && delimiter > startIndex)
                 {
+                    //var nextDelimiter = progress.LastIndexOf(progressTestChar, delimiter);
                     // then we found a progress message; pad the message to 110 chars because no message is longer than 110 chars
                     return progress.Substring(delimiter + 1).PadRight(110);
                 }

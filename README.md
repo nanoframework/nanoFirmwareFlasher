@@ -129,7 +129,7 @@ In case `nanoff` detects this situation the following warning is shown:
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
 
-:warning: To update FeatherS2 and TinyS2 the boards need to put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
+:warning: To update FeatherS2, TinyS2 and some S3 modules, the board needs to be put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
 
 ### Update the firmware of an ESP32 target
 
@@ -332,7 +332,7 @@ To update the firmware of a nano device with a local firmware file (for example 
 This file has to be a binary file with a valid nanoCLR from a build. No checks or validations are performed on the file content.
 
 ```console
-nanoff --nanodevice --serialport COM9 --binfile "C:\nf-interpreter\build\nanoclr.bin"
+nanoff --nanodevice --update --serialport COM9 --clrfile "C:\nf-interpreter\build\nanoclr.bin"
 ```
 
 ### Get details from a nano device
