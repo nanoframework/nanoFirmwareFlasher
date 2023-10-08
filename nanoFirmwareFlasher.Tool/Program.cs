@@ -883,9 +883,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 var connectedStDfuDevices = StmDfuDevice.ListDevices();
                 var connectedStJtagDevices = StmJtagDevice.ListDevices();
 
-                if (o.BinFile.Any() &&
-                    o.HexFile.Any() &&
-                    connectedStDfuDevices.Count != 0)
+                if (connectedStDfuDevices.Count != 0 &&
+                    (o.BinFile.Any() ||
+                     o.HexFile.Any()))
                 {
 
                     #region STM32 DFU options
@@ -940,11 +940,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     #endregion
 
                 }
-                else if (
-                    o.BinFile.Any() &&
-                    o.HexFile.Any() &&
-                    connectedStJtagDevices.Count != 0
-                     )
+                else if (connectedStJtagDevices.Count != 0 &&
+                        (o.BinFile.Any() ||
+                         o.HexFile.Any()))
                 {
                     // this has to be a JTAG connected device
 
