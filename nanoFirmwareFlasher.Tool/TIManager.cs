@@ -19,8 +19,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         public TIManager(Options options, VerbosityLevel verbosityLevel)
         {
-            if (options == null) throw new ArgumentNullException(nameof(options));
-            if (options.Platform != SupportedPlatform.esp32) throw new NotSupportedException($"{nameof(options)} - {options.Platform}");
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (options.Platform != SupportedPlatform.esp32)
+            {
+                throw new NotSupportedException($"{nameof(options)} - {options.Platform}");
+            }
 
             _options = options;
             _verbosityLevel = verbosityLevel;

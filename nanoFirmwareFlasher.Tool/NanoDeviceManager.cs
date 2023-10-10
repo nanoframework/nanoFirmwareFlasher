@@ -10,15 +10,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// <summary>
     /// Class to manage different operations specific to the nano devices.
     /// </summary>
-    public class NanoManager : IManager
+    public class NanoDeviceManager : IManager
     {
         private readonly Options _options;
         private readonly VerbosityLevel _verbosityLevel;
 
-        public NanoManager(Options options, VerbosityLevel verbosityLevel)
+        public NanoDeviceManager(Options options, VerbosityLevel verbosityLevel)
         {
-            if (options == null) throw new ArgumentNullException(nameof(options));
-            if (options.Platform != SupportedPlatform.esp32) throw new NotSupportedException($"{nameof(options)} - {options.Platform}");
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (options.Platform != SupportedPlatform.esp32)
+            {
+                throw new NotSupportedException($"{nameof(options)} - {options.Platform}");
+            }
 
             _options = options;
             _verbosityLevel = verbosityLevel;

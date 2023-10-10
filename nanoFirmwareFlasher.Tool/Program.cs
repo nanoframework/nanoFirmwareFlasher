@@ -362,7 +362,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.NanoDevice)
             {
-                var manager = new NanoManager(o, _verbosityLevel);
+                var manager = new NanoDeviceManager(o, _verbosityLevel);
 
                 try
                 {
