@@ -150,7 +150,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"Reading details from chip...");
+                Console.Write($"Reading details from chip...");
             }
 
             // execute flash_id command and parse the result

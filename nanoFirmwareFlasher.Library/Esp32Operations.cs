@@ -445,8 +445,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.Write($"Flashing firmware...");
-
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("OK".PadRight(110));
 
