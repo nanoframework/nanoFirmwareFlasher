@@ -30,7 +30,7 @@
 					<Organization>Single</Organization>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x20000000" name="SRAM" occurence="0x1" size="0x8000"/>
+							<Parameters address="0x20000000" name="SRAM" occurrence="0x1" size="0x8000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -43,15 +43,16 @@
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFFF7CC" default="0x40000"/>
+				<BootloaderVersion address="0x1FFFF7A6"/>
 				<!-- 256KB single Bank -->
 				<Configuration>
 					<Parameters address="0x08000000" name=" 256 Kbytes Embedded Flash" size="0x40000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x8</Allignement>
+					<Alignment>0x8</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x80" size="0x800"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x80" size="0x800"/>
 						</Field>
 					</Bank>
 				</Configuration>

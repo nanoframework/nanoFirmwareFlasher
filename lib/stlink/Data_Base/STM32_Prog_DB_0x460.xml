@@ -23,7 +23,6 @@
 			</Interface>
 			<!-- Bootloader Interface -->
 			<Interface name="Bootloader">
-			<Configurations>
 				<Configuration	number="0x0">
 					<ValueLine> <ReadRegister address="0x1FFF77DD" mask="0xFF" value="0xFF"/> </ValueLine>
 				</Configuration>
@@ -33,7 +32,6 @@
 				<Configuration	number="0x2">
 					<ValueLine> <ReadRegister address="0x1FFF77DD" mask="0xFF" value="0x31"/> </ValueLine>
 				</Configuration>
-				</Configurations>
 			</Interface>
 		</Configurations>
 		<!-- Peripherals -->
@@ -52,7 +50,7 @@
 					<Organization>Single</Organization>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x20000000" name="SRAM" occurence="0x1" size="0x8000"/>
+							<Parameters address="0x20000000" name="SRAM" occurrence="0x1" size="0x8000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -65,15 +63,20 @@
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFF75E0" default="0x20000"/>
+				<BootloaderVersion address="0x1FFF6FFE"/>
+				<DBGMCU_CR address="0x40015804" mask="0x007"/>
+				<DBGMCU_APB1_FZ address="0x40015808" mask="0x1800"/>
+				<RCC_APB2ENR address="0x4002103C" mask="0x08000000"/>
+				<!--<CR address="0x40002C04" mask="0x000001FF"/>-->
 				<!-- Single Bank -->
 				<Configuration>
 					<Parameters address="0x08000000" name=" 128 KB Embedded Flash" size="0x20000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x8</Allignement>
+					<Alignment>0x8</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x40" size="0x800"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x40" size="0x800"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -90,10 +93,10 @@
 					<Parameters address="0x1FFF7000" name=" 1 KBytes Data OTP" size="0x400"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="OTP">
 						<Field>
-							<Parameters address="0x1FFF7000" name="OTP" occurence="0x1" size="0x400"/>
+							<Parameters address="0x1FFF7000" name="OTP" occurrence="0x1" size="0x400"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -110,15 +113,15 @@
 					<Parameters address="0x1FFF7800" name=" 56 Bytes Data MirrorOptionBytes" size="0x38"/>
 					<Description/>
 					<Organization>Dual</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x1FFF7800" name="Bank1" occurence="0x1" size="0x34"/>
+							<Parameters address="0x1FFF7800" name="Bank1" occurrence="0x1" size="0x34"/>
 						</Field>
 					</Bank>
 					<Bank name="Bank 2">
 						<Field>
-							<Parameters address="0x1FFF7870" name="Bank2" occurence="0x1" size="0x4"/>
+							<Parameters address="0x1FFF7870" name="Bank2" occurrence="0x1" size="0x4"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -241,8 +244,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -285,8 +288,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">SRAM2 parity check enable</Val>
-										<Val value="0x1">SRAM2 parity check disable</Val>
+										<Val value="0x0">SRAM parity check enable</Val>
+										<Val value="0x1">SRAM parity check disable</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -307,8 +310,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Boot from Flash if BOOT0 = 1, otherwise Embedded SRAM1</Val>
-										<Val value="0x1">Boot from Flash if BOOT0 = 1, otherwise system memory</Val>
+										<Val value="0x0">Boot from Flash if BOOT0 = 0, otherwise Embedded SRAM1</Val>
+										<Val value="0x1">Boot from Flash if BOOT0 = 0, otherwise system memory</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -424,7 +427,7 @@
 									<Name>WRP1A_STRT</Name>
 									<Description>The address of the first page of the Bank 1 WRP first area</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x6</BitWidth>
+									<BitWidth>0x7</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -432,7 +435,7 @@
 									<Name>WRP1A_END</Name>
 									<Description>The address of the last page of the Bank 1 WRP first area</Description>
 									<BitOffset>0x10</BitOffset>
-									<BitWidth>0x6</BitWidth>
+									<BitWidth>0x7</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -445,7 +448,7 @@
 									<Name>WRP1B_STRT</Name>
 									<Description>The address of the first page of the Bank 1 WRP second area</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x6</BitWidth>
+									<BitWidth>0x7</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -453,7 +456,7 @@
 									<Name>WRP1B_END</Name>
 									<Description>The address of the last page of the Bank 1 WRP second area</Description>
 									<BitOffset>0x10</BitOffset>
-									<BitWidth>0x6</BitWidth>
+									<BitWidth>0x7</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -480,7 +483,7 @@
 									<Name>SEC_SIZE</Name>
 									<Description>Securable memory area size</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x7</BitWidth>
+									<BitWidth>0x8</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -600,8 +603,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -644,8 +647,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">SRAM2 parity check enable</Val>
-										<Val value="0x1">SRAM2 parity check disable</Val>
+										<Val value="0x0">SRAM parity check enable</Val>
+										<Val value="0x1">SRAM parity check disable</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -757,7 +760,7 @@
 									<Name>WRP1A_STRT</Name>
 									<Description>The address of the first page of the Bank 1 WRP first area</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x6</BitWidth>
+									<BitWidth>0x7</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -765,7 +768,7 @@
 									<Name>WRP1A_END</Name>
 									<Description>The address of the last page of the Bank 1 WRP first area</Description>
 									<BitOffset>0x10</BitOffset>
-									<BitWidth>0x6</BitWidth>
+									<BitWidth>0x7</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -778,7 +781,7 @@
 									<Name>WRP1B_STRT</Name>
 									<Description>The address of the first page of the Bank 1 WRP second area</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x6</BitWidth>
+									<BitWidth>0x7</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -786,7 +789,7 @@
 									<Name>WRP1B_END</Name>
 									<Description>The address of the last page of the Bank 1 WRP second area</Description>
 									<BitOffset>0x10</BitOffset>
-									<BitWidth>0x6</BitWidth>
+									<BitWidth>0x7</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>
@@ -816,7 +819,7 @@
 									<Name>SEC_SIZE</Name>
 									<Description>Securable memory area size</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x7</BitWidth>
+									<BitWidth>0x8</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x800" offset="0x08000000"/>
 								</Bit>

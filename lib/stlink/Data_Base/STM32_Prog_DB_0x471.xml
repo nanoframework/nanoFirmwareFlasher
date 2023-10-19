@@ -11,53 +11,35 @@
 		<Configurations>
 			<!-- JTAG_SWD Interface -->
 			<Interface name="JTAG_SWD">
+				<!-- 2M Single Bank-->
 				<Configuration number="0x0">
-					<flashSize> <!-- 2M --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x800"/> </flashSize>
 					<DBANK reference="0x0"> <ReadRegister address="0x40022020" mask="0x400000" value="0x0"/> </DBANK>
+					<flashSize> <ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x800"/> </flashSize>
 				</Configuration>
+				<!-- 2M Dual Bank-->
 				<Configuration number="0x1">
-					<flashSize> <!-- 2M --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x800"/> </flashSize>
 					<DBANK reference="0x1"> <ReadRegister address="0x40022020" mask="0x400000" value="0x400000"/> </DBANK>
+					<flashSize> <ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x800"/> </flashSize>
 				</Configuration>
+				<!-- 1M Single Bank-->
 				<Configuration number="0x2">
-					<flashSize> <!-- 1M --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x400"/> </flashSize>
 					<DB1M reference="0x0"> <ReadRegister address="0x40022020" mask="0x200000" value="0x0"/> </DB1M>
-					<DBANK reference="0x0"> <ReadRegister address="0x40022020" mask="0x400000" value="0x0"/> </DBANK>
+					<flashSize> <ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x400"/> </flashSize>
 				</Configuration>
+				<!-- 1M Dual Bank-->
 				<Configuration number="0x3">
-					<flashSize> <!-- 1M --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x400"/> </flashSize>
 					<DB1M reference="0x1"> <ReadRegister address="0x40022020" mask="0x200000" value="0x200000"/> </DB1M>
-					<DBANK reference="0x0"> <ReadRegister address="0x40022020" mask="0x400000" value="0x0"/> </DBANK>
+					<flashSize> <ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x400"/> </flashSize>
 				</Configuration>
+				<!-- 512K Single Bank-->
 				<Configuration number="0x4">
-					<flashSize> <!-- 1M --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x400"/> </flashSize>
-					<DB1M reference="0x1"> <ReadRegister address="0x40022020" mask="0x200000" value="0x200000"/> </DB1M>
-					<DBANK reference="0x1"> <ReadRegister address="0x40022020" mask="0x400000" value="0x400000"/> </DBANK>
+					<DB1M reference="0x0"> <ReadRegister address="0x40022020" mask="0x200000" value="0x0"/> </DB1M>
+					<flashSize><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x200"/> </flashSize>
 				</Configuration>
+				<!-- 512K Dual Bank-->
 				<Configuration number="0x5">
-					<flashSize> <!-- 1M --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x400"/> </flashSize>
-					<DB1M reference="0x0"> <ReadRegister address="0x40022020" mask="0x200000" value="0x0"/> </DB1M>
-					<DBANK reference="0x1"> <ReadRegister address="0x40022020" mask="0x400000" value="0x400000"/> </DBANK>
-				</Configuration>
-				<Configuration number="0x6">
-					<flashSize> <!-- 512K --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x200"/> </flashSize>
-					<DB1M reference="0x0"> <ReadRegister address="0x40022020" mask="0x200000" value="0x0"/> </DB1M>
-					<DBANK reference="0x0"> <ReadRegister address="0x40022020" mask="0x400000" value="0x0"/> </DBANK>
-				</Configuration>
-				<Configuration number="0x7">
-					<flashSize> <!-- 512K --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x200"/> </flashSize>
-					<DB1M reference="0x0"> <ReadRegister address="0x40022020" mask="0x200000" value="0x0"/> </DB1M>
-					<DBANK reference="0x1"> <ReadRegister address="0x40022020" mask="0x400000" value="0x400000"/> </DBANK>
-				</Configuration>
-				<Configuration number="0x8">
-					<flashSize> <!-- 512K --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x200"/> </flashSize>
 					<DB1M reference="0x1"> <ReadRegister address="0x40022020" mask="0x200000" value="0x200000"/> </DB1M>
-					<DBANK reference="0x1"> <ReadRegister address="0x40022020" mask="0x400000" value="0x400000"/> </DBANK>
-				</Configuration>
-				<Configuration number="0x9">
-					<flashSize> <!-- 512K --><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x200"/> </flashSize>
-					<DB1M reference="0x1"> <ReadRegister address="0x40022020" mask="0x200000" value="0x200000"/> </DB1M>
-					<DBANK reference="0x0"> <ReadRegister address="0x40022020" mask="0x400000" value="0x0"/> </DBANK>
+					<flashSize><ReadRegister address="0x1FFF75E0" mask="0xFFFF" value="0x200"/> </flashSize>
 				</Configuration>
 				<Configuration number="0xA">
 					<flashSize> <!-- 1M --><ReadRegister address="0x1FFF0000" mask="0xFFFFFFFF" value="0XFFFFFFFF"/> </flashSize>
@@ -92,7 +74,7 @@
 					<Organization>Single</Organization>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x20000000" name="SRAM" occurence="0x1" size="0x30000"/>
+							<Parameters address="0x20000000" name="SRAM" occurrence="0x1" size="0x30000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -105,46 +87,93 @@
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFF75E0" default="0x100000"/>
-				<Configuration config="0,2,3,6,9"> <!-- 2MB Single Bank -->
+				<BootloaderVersion address="0x1FFF6FFE"/>
+				<DBGMCU_CR address="0xE0042004" mask="0x007"/>
+				<DBGMCU_APB1_FZ address="0xE0042008" mask="0x1800"/>
+				<!-- 2MB Single Bank -->
+				<Configuration config="0">
 					<Parameters address="0x08000000" name=" 1 Mbyte Embedded Flash" size="0x100000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x8</Allignement>
+					<Alignment>0x8</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x80" size="0x2000"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x100" size="0x2000"/>
 						</Field>
 					</Bank>
 				</Configuration>
-				<Configuration config="1,4,5,7,8"> <!-- 1MB dual Bank -->
-					<Parameters address="0x08000000" name=" 1 Mbyte Embedded Flash" size="0x100000"/>
-					<Description/>
-					<Organization>Dual</Organization>
-					<Allignement>0x8</Allignement>
-					<Bank name="Bank 1">
-						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x80" size="0x1000"/>
-						</Field>
-					</Bank>
-					<Bank name="Bank 2">
-						<Field>
-							<Parameters address="0x08080000" name="sector128" occurence="0x80" size="0x1000"/>
-						</Field>
-					</Bank>
-				</Configuration>
-				<Configuration config="2"> <!-- 2MB dual Bank -->
+				<!-- 2MB dual Bank -->
+				<Configuration config="1">
 					<Parameters address="0x08000000" name=" 2 Mbyte Embedded Flash" size="0x200000"/>
 					<Description/>
 					<Organization>Dual</Organization>
-					<Allignement>0x8</Allignement>
+					<Alignment>0x8</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x100" size="0x2000"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x100" size="0x1000"/>
 						</Field>
 					</Bank>
 					<Bank name="Bank 2">
 						<Field>
-							<Parameters address="0x08100000" name="sector256" occurence="0x100" size="0x2000"/>
+							<Parameters address="0x08100000" name="sector0" occurrence="0x100" size="0x1000"/>
+						</Field>
+					</Bank>
+				</Configuration>
+				<!-- 1MB Single Bank -->
+				<Configuration config="2">
+					<Parameters address="0x08000000" name=" 1 Mbyte Embedded Flash" size="0x100000"/>
+					<Description/>
+					<Organization>Single</Organization>
+					<Alignment>0x8</Alignment>
+					<Bank name="Bank 1">
+						<Field>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x80" size="0x2000"/>
+						</Field>
+					</Bank>
+				</Configuration>
+				<!-- 1MB dual Bank -->
+				<Configuration config="3">
+					<Parameters address="0x08000000" name=" 1 Mbyte Embedded Flash" size="0x100000"/>
+					<Description/>
+					<Organization>Dual</Organization>
+					<Alignment>0x8</Alignment>
+					<Bank name="Bank 1">
+						<Field>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x80" size="0x1000"/>
+						</Field>
+					</Bank>
+					<Bank name="Bank 2">
+						<Field>
+							<Parameters address="0x08080000" name="sector65280" occurrence="0x80" size="0x1000"/>
+						</Field>
+					</Bank>
+				</Configuration>
+				<!-- 512MB Single Bank -->
+				<Configuration config="4">
+					<Parameters address="0x08000000" name=" 512 Mbyte Embedded Flash" size="0x80000"/>
+					<Description/>
+					<Organization>Single</Organization>
+					<Alignment>0x8</Alignment>
+					<Bank name="Bank 1">
+						<Field>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x40" size="0x2000"/>
+						</Field>
+					</Bank>
+				</Configuration>
+				<!-- 512MB dual Bank -->
+				<Configuration config="5">
+					<Parameters address="0x08000000" name=" 512 Mbyte Embedded Flash" size="0x80000"/>
+					<Description/>
+					<Organization>Dual</Organization>
+					<Alignment>0x8</Alignment>
+					<Bank name="Bank 1">
+						<Field>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x40" size="0x1000"/>
+						</Field>
+					</Bank>
+					<Bank name="Bank 2">
+						<Field>
+							<Parameters address="0x08040000" name="sector0" occurrence="0x40" size="0x1000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -161,10 +190,10 @@
 					<Parameters address="0x1FFF7000" name=" 1 KBytes Data OTP" size="0x400"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="OTP">
 						<Field>
-							<Parameters address="0x1FFF7000" name="OTP" occurence="0x1" size="0x400"/>
+							<Parameters address="0x1FFF7000" name="OTP" occurrence="0x1" size="0x400"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -181,15 +210,15 @@
 					<Parameters address="0x1FFF7800" name=" 64 Bytes Data MirrorOptionBytes" size="0x40"/>
 					<Description/>
 					<Organization>Dual</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x1FF00000" name="Bank1" occurence="0x1" size="0x24"/>
+							<Parameters address="0x1FF00000" name="Bank1" occurrence="0x1" size="0x24"/>
 						</Field>
 					</Bank>
 					<Bank name="Bank 2">
 						<Field>
-							<Parameters address="0x1FF01008" name="Bank2" occurence="0x1" size="0x1C"/>
+							<Parameters address="0x1FF01008" name="Bank2" occurrence="0x1" size="0x1C"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -289,8 +318,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -337,7 +366,7 @@
 										<Val value="0x1">Dual-bank boot enable</Val>
 									</Values>
 								</Bit>
-								<Bit config="2,3,4,5,6,7,8,9,10">
+								<Bit config="2,3,4,5,10">
 									<Name>DB1M</Name>
 									<Description>Dual-Bank on 1 MB Flash or 512 KB Flash memory devices</Description>
 									<BitOffset>0x15</BitOffset>
@@ -348,7 +377,7 @@
 										<Val value="0x1">1 MB or 512 Kb dual-bank Flash with contiguous addresses. When DB1M is set, a hard Fault is generated when the requested address goes over 1 MB or 512 Kb.</Val>
 									</Values>
 								</Bit>
-								<Bit>
+								<Bit config="0,1">
 									<Name>DBANK</Name>
 									<Description>This bit can only be written when PCROPA/B is disabled</Description>
 									<BitOffset>0x16</BitOffset>
@@ -428,7 +457,7 @@
 									<BitOffset>0x0</BitOffset>
 									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
-									<Equation multiplier="0x10" offset="0x08000000"/>
+									<Equation multiplier="0x11" offset="0x08000000"/>
 								</Bit>
 								<Bit config="1,4,5,7,8">
 									<Name>PCROP1_STRT</Name>
@@ -513,7 +542,7 @@
 							</AssignedBits>
 						</Field>
 						<Field>
-							<Parameters address="0x40022030" name="FLASH_WRP1BR" size="0x4"/>
+							<Parameters address="0x4002204C" name="FLASH_WRP1BR" size="0x4"/>
 							<AssignedBits>
 								<Bit config="0,2,3,6,9,10">
 									<Name>WRP1B_STRT</Name>
@@ -562,7 +591,7 @@
 									<Name>PCROP2_STRT</Name>
 									<Description>Flash Bank 2 PCROP start address</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x11</BitWidth>
+									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x16" offset="0x08100000"/>
 								</Bit>
@@ -578,7 +607,7 @@
 									<Name>PCROP2_STRT</Name>
 									<Description>Flash Bank 2 PCROP start address</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x11</BitWidth>
+									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x16" offset="0x08040000"/>
 								</Bit>
@@ -586,7 +615,7 @@
 									<Name>PCROP2_STRT</Name>
 									<Description>Flash Bank 2 PCROP start address</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x11</BitWidth>
+									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x8" offset="0x08100000"/>
 								</Bit>
@@ -602,7 +631,7 @@
 									<Name>PCROP2_STRT</Name>
 									<Description>Flash Bank 2 PCROP start address</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x11</BitWidth>
+									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x8" offset="0x08040000"/>
 								</Bit>
@@ -615,7 +644,7 @@
 									<Name>PCROP2_END</Name>
 									<Description>Flash Bank 2 PCROP End address. Deactivation of PCROP can be done by enabling PCROP_RDP and changing RDP from level 1 to level 0</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x11</BitWidth>
+									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x16" offset="0x08100000"/>
 								</Bit>
@@ -631,7 +660,7 @@
 									<Name>PCROP2_END</Name>
 									<Description>Flash Bank 2 PCROP End address. Deactivation of PCROP can be done by enabling PCROP_RDP and changing RDP from level 1 to level 0</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x11</BitWidth>
+									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x16" offset="0x08040000"/>
 								</Bit>
@@ -639,7 +668,7 @@
 									<Name>PCROP2_END</Name>
 									<Description>Flash Bank 2 PCROP End address. Deactivation of PCROP can be done by enabling PCROP_RDP and changing RDP from level 1 to level 0</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x11</BitWidth>
+									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x8" offset="0x08100000"/>
 								</Bit>
@@ -655,7 +684,7 @@
 									<Name>PCROP2_END</Name>
 									<Description>Flash Bank 2 PCROP End address. Deactivation of PCROP can be done by enabling PCROP_RDP and changing RDP from level 1 to level 0</Description>
 									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x11</BitWidth>
+									<BitWidth>0x10</BitWidth>
 									<Access>RW</Access>
 									<Equation multiplier="0x8" offset="0x08040000"/>
 								</Bit>
@@ -665,7 +694,7 @@
 					<Category>
 						<Name>Write Protection (Bank 2)</Name>
 						<Field>
-							<Parameters address="0x4002204C" name="FLASH_WRP2AR" size="0x4"/>
+							<Parameters address="0x40022030" name="FLASH_WRP2AR" size="0x4"/>
 							<AssignedBits>
 								<Bit config="0,10">
 									<Name>WRP2A_STRT</Name>
@@ -958,8 +987,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -1006,7 +1035,7 @@
 										<Val value="0x1">Dual-bank boot enable</Val>
 									</Values>
 								</Bit>
-								<Bit config="10">
+								<Bit config="2,3,4,5,10">
 									<Name>DB1M</Name>
 									<Description>Dual-Bank on 1 MB Flash or 512 KB Flash memory devices</Description>
 									<BitOffset>0x15</BitOffset>
@@ -1017,7 +1046,7 @@
 										<Val value="0x1">1 MB or 512 Kb dual-bank Flash with contiguous addresses. When DB1M is set, a hard Fault is generated when the requested address goes over 1 MB or 512 Kb.</Val>
 									</Values>
 								</Bit>
-								<Bit>
+								<Bit config="0,1">
 									<Name>DBANK</Name>
 									<Description>This bit can only be written when PCROPA/B is disabled.</Description>
 									<BitOffset>0x16</BitOffset>

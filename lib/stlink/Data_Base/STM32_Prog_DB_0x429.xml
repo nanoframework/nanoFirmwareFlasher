@@ -52,7 +52,7 @@
 					<Organization>Single</Organization>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x20000000" name="SRAM" occurence="0x1" size="0x4000"/>
+							<Parameters address="0x20000000" name="SRAM" occurrence="0x1" size="0x4000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -65,20 +65,21 @@
 				<ErasedValue>0x00</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FF8004C" default="0x20000"/>
+				<BootloaderVersion address="0x1FF00FFE"/>
 				<!-- 128KB single Bank -->
 				<Configuration>
 					<Parameters address="0x08000000" name=" 128 Kbytes Embedded Flash" size="0x20000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x200" size="0x100"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x200" size="0x100"/>
 						</Field>
 					</Bank>
 					<Bank name="EEPROM1">
 						<Field>
-							<Parameters address="0x08080000" name="sector65281" occurence="0x1" size="0x1000"/>
+							<Parameters address="0x08080000" name="sector65281" occurrence="0x1" size="0x1000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -95,10 +96,10 @@
 					<Parameters address="0x08080000" name=" 4096 bytes Data EEPROM" size="0x1000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08080000" name="EEPROM1" occurence="0x1" size="0x1000"/>
+							<Parameters address="0x08080000" name="EEPROM1" occurrence="0x1" size="0x1000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -115,10 +116,10 @@
 					<Parameters address="0x1FF80000" name=" 24 Bytes Data MirrorOptionBytes" size="0x18"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="MirrorOptionBytes">
 						<Field>
-							<Parameters address="0x1FF80000" name="MirrorOptionBytes" occurence="0x1" size="0x18"/>
+							<Parameters address="0x1FF80000" name="MirrorOptionBytes" occurrence="0x1" size="0x18"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -141,7 +142,7 @@
 									<Description>Read protection option byte. The read protection is used to protect the software code stored in Flash memory.</Description>
 									<BitOffset>0x0</BitOffset>
 									<BitWidth>0x8</BitWidth>
-									<Access>R</Access>
+									<Access>RW</Access>
 									<Values>
 										<Val value="0xAA">Level 0, no protection</Val>
 										<Val value="0xBB">or any value other than 0xAA and 0xCC: Level 1, read protection</Val>
@@ -161,7 +162,7 @@
 									<Description>Sector protection mode selection option byte.</Description>
 									<BitOffset>0x8</BitOffset>
 									<BitWidth>0x1</BitWidth>
-									<Access>R</Access>
+									<Access>RW</Access>
 									<Values>
 										<Val value="0x0">WRPx bit defines sector write protection</Val>
 										<Val value="0x1">WRPx bit defines sector read/write (PCROP) protection</Val>
@@ -180,7 +181,7 @@
 									<Description>These bits contain the supply level threshold that activates/releases the reset. They can be written to program a new BOR level value into Flash memory</Description>
 									<BitOffset>0x10</BitOffset>
 									<BitWidth>0x4</BitWidth>
-									<Access>R</Access>
+									<Access>RW</Access>
 									<Values>
 										<Val value="0x0">BOR Level OFF, reset level threshold the 1.45 V-1.55 V</Val>
 										<Val value="0x1">BOR Level OFF, reset level threshold the 1.45 V-1.55 V</Val>
@@ -203,17 +204,17 @@
 					<Category>
 						<Name>User Configuration</Name>
 						<Field>
-							<Parameters address="0x40023C1C" nname="FLASH_OBR" size="0x4"/>
+							<Parameters address="0x40023C1C" name="FLASH_OBR" size="0x4"/>
 							<AssignedBits>
 								<Bit>
 									<Name>IWDG_SW</Name>
 									<Description/>
 									<BitOffset>0x14</BitOffset>
 									<BitWidth>0x1</BitWidth>
-									<Access>R</Access>
+									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -221,7 +222,7 @@
 									<Description/>
 									<BitOffset>0x15</BitOffset>
 									<BitWidth>0x1</BitWidth>
-									<Access>R</Access>
+									<Access>RW</Access>
 									<Values>
 										<Val value="0x0">Reset generated when entering Stop mode</Val>
 										<Val value="0x1">No reset generated</Val>
@@ -232,7 +233,7 @@
 									<Description/>
 									<BitOffset>0x16</BitOffset>
 									<BitWidth>0x1</BitWidth>
-									<Access>R</Access>
+									<Access>RW</Access>
 									<Values>
 										<Val value="0x0">Reset generated when entering Standby mode</Val>
 										<Val value="0x1">No reset generated</Val>
@@ -251,7 +252,7 @@
 									<Description/>
 									<BitOffset>0x0</BitOffset>
 									<BitWidth>0x20</BitWidth>
-									<Access>R</Access>
+									<Access>RW</Access>
 									<Values ByBit="true">
 										<Val value="0x0">Write protection not active</Val>
 										<Val value="0x1">Write protection active</Val>
@@ -262,180 +263,10 @@
 									<Description/>
 									<BitOffset>0x0</BitOffset>
 									<BitWidth>0x20</BitWidth>
-									<Access>R</Access>
+									<Access>RW</Access>
 									<Values ByBit="true">
 										<Val value="0x0">read/Write protection active</Val>
 										<Val value="0x1">read/Write protection not active</Val>
-									</Values>
-								</Bit>
-							</AssignedBits>
-						</Field>
-					</Category>
-				</Bank>
-				<Bank interface="JTAG_SWD">
-					<Parameters address="0x1FF80000" name="Bank 2" size="0x88"/>
-					<Category>
-						<Name>Read Out Protection</Name>
-						<Field>
-							<Parameters address="0x1FF80000" name="RDP" size="0x4"/>
-							<AssignedBits>
-								<Bit>
-									<Name>RDP</Name>
-									<Description>Read protection option byte. The read protection is used to protect the software code stored in Flash memory.</Description>
-									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x8</BitWidth>
-									<Access>W</Access>
-									<Values>
-										<Val value="0xAA">Level 0, no protection</Val>
-										<Val value="0xBB">or any value other than 0xAA and 0xCC: Level 1, read protection</Val>
-										<Val value="0xCC">Level 2, chip protection</Val>
-									</Values>
-								</Bit>
-							</AssignedBits>
-						</Field>
-					</Category>
-					<Category>
-						<Name>PCROP Protection</Name>
-						<Field>
-							<Parameters address="0x1FF80000" name="SPRMOD" size="0x4"/>
-							<AssignedBits>
-								<Bit reference="SPRMode">
-									<Name>SPRMOD</Name>
-									<Description>Sector protection mode selection option byte.</Description>
-									<BitOffset>0x8</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>W</Access>
-									<Values>
-										<Val value="0x0">WRPx bit defines sector write protection</Val>
-										<Val value="0x1">WRPx bit defines sector write/read (PCROP) protection</Val>
-									</Values>
-								</Bit>
-							</AssignedBits>
-						</Field>
-					</Category>
-					<Category>
-						<Name>BOR Level</Name>
-						<Field>
-							<Parameters address="0x1FF80004" name="USER" size="0x4"/>
-							<AssignedBits>
-								<Bit>
-									<Name>BOR_LEV</Name>
-									<Description>These bits contain the supply level threshold that activates/releases the reset. They can be written to program a new BOR level value into Flash memory</Description>
-									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x4</BitWidth>
-									<Access>W</Access>
-									<Values>
-										<Val value="0x0">BOR Level OFF, reset level threshold the 1.45 V-1.55 V</Val>
-										<Val value="0x1">BOR Level OFF, reset level threshold the 1.45 V-1.55 V</Val>
-										<Val value="0x2">BOR Level OFF, reset level threshold the 1.45 V-1.55 V</Val>
-										<Val value="0x3">BOR Level OFF, reset level threshold the 1.45 V-1.55 V</Val>
-										<Val value="0x4">BOR Level OFF, reset level threshold the 1.45 V-1.55 V</Val>
-										<Val value="0x5">BOR Level OFF, reset level threshold the 1.45 V-1.55 V</Val>
-										<Val value="0x6">BOR Level OFF, reset level threshold for 1.45 V-1.55 V</Val>
-										<Val value="0x7">BOR Level OFF, reset level threshold for 1.45 V-1.55 V</Val>
-										<Val value="0x8">BOR Level 1, reset level threshold for 1.69 V-1.8 V</Val>
-										<Val value="0x9">BOR Level 2, reset level threshold for 1.94 V-2.1 V</Val>
-										<Val value="0xA">BOR Level 3, reset level threshold for 2.3 V-2.49 V</Val>
-										<Val value="0xB">BOR Level 4, reset level threshold for 2.54 V-2.74 V</Val>
-										<Val value="0xC">BOR Level 5, reset level threshold for 2.77 V-3.0 V</Val>
-									</Values>
-								</Bit>
-							</AssignedBits>
-						</Field>
-					</Category>
-					<Category>
-						<Name>User Configuration</Name>
-						<Field>
-							<Parameters address="0x1FF80004" name="USER" size="0x4"/>
-							<AssignedBits>
-								<Bit>
-									<Name>IWDG_SW</Name>
-									<Description/>
-									<BitOffset>0x4</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>W</Access>
-									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
-									</Values>
-								</Bit>
-								<Bit>
-									<Name>nRST_STOP</Name>
-									<Description/>
-									<BitOffset>0x5</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>W</Access>
-									<Values>
-										<Val value="0x0">Reset generated when entering Stop mode</Val>
-										<Val value="0x1">No reset generated</Val>
-									</Values>
-								</Bit>
-								<Bit>
-									<Name>nRST_STDBY</Name>
-									<Description/>
-									<BitOffset>0x6</BitOffset>
-									<BitWidth>0x1</BitWidth>
-									<Access>W</Access>
-									<Values>
-										<Val value="0x0">Reset generated when entering Standby mode</Val>
-										<Val value="0x1">No reset generated</Val>
-									</Values>
-								</Bit>
-							</AssignedBits>
-						</Field>
-					</Category>
-					<Category>
-						<Name>Write Protection</Name>
-						<Field>
-							<Parameters address="0x1FF80008" name="WRP1" size="0x8"/>
-							<AssignedBits>
-								<Bit config="0">
-									<Name>WRP0</Name>
-									<Description/>
-									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x10</BitWidth>
-									<Access>W</Access>
-									<Values ByBit="true">
-										<Val value="0x0">Write protection not active</Val>
-										<Val value="0x1">Write protection active</Val>
-									</Values>
-								</Bit>
-								<Bit config="1">
-									<Name>WRP0</Name>
-									<Description/>
-									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x10</BitWidth>
-									<Access>W</Access>
-									<Values ByBit="true">
-										<Val value="0x0">read/Write protection active</Val>
-										<Val value="0x1">read/Write protection active</Val>
-									</Values>
-								</Bit>
-							</AssignedBits>
-						</Field>
-						<Field>
-							<Parameters address="0x1FF8000C" name="WRP1" size="0x8"/>
-							<AssignedBits>
-								<Bit config="0">
-									<Name>WRP16</Name>
-									<Description/>
-									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x10</BitWidth>
-									<Access>W</Access>
-									<Values ByBit="true">
-										<Val value="0x0">Write protection not active</Val>
-										<Val value="0x1">Write protection active</Val>
-									</Values>
-								</Bit>
-								<Bit config="1">
-									<Name>WRP16</Name>
-									<Description/>
-									<BitOffset>0x0</BitOffset>
-									<BitWidth>0x10</BitWidth>
-									<Access>W</Access>
-									<Values ByBit="true">
-										<Val value="0x0">read/Write protection active</Val>
-										<Val value="0x1">read/Write protection active</Val>
 									</Values>
 								</Bit>
 							</AssignedBits>
@@ -525,8 +356,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>

@@ -6,41 +6,104 @@
 		<Type>MCU</Type>
 		<!-- cortex written in word file +mpu should it be written?? -->
 		<CPU>Cortex-M0+</CPU>
-		<Name>STM32G0B1xx/C1xx</Name>
+		<Name>STM32G0B0xx/B1xx/C1xx</Name>
 		<Series>STM32G0</Series>
 		<Description>ARM 32-bit Cortex-M0+ based device</Description>
 		<Configurations>
 			<!-- JTAG_SWD Interface -->
-			<Interface name="JTAG_SWD"/>
-			<!-- 512B Single Bank-->
+			<Interface name="JTAG_SWD">
+				<!-- 512kB Single Bank-->
 				<Configuration number="0x0"> 
 					<DualBank>
-						<ReadRegister address="0x40023C14" mask="0x20000000" value="0x20000000"/>
+						<ReadRegister address="0x40022020" mask="0x200000" value="0x0"/>
+					</DualBank>
+					<FlashSize>
+						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="200"/>
+					</FlashSize>
+				</Configuration>
+				<!-- 512kB dual Bank-->
+				<Configuration number="0x1"> 
+					<DualBank>
+						<ReadRegister address="0x40022020" mask="0x200000" value="0x200000"/>
 					</DualBank>
 					<FlashSize>
 						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="200"/>
 					</FlashSize>
 				</Configuration>
 				<!-- 256 Single Bank-->
-				<Configuration number="0x1"> 
+				<Configuration number="0x2"> 
 					<DualBank>
-						<ReadRegister address="0x40023C14" mask="0x20000000" value="0x20000000"/>
+						<ReadRegister address="0x40022020" mask="0x200000" value="0x0"/>
+					</DualBank>
+					<FlashSize>
+						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="100"/>
+					</FlashSize>
+				</Configuration>
+				<!-- 256 Dual Bank-->
+				<Configuration number="0x3"> 
+					<DualBank>
+						<ReadRegister address="0x40022020" mask="0x200000" value="0x200000"/>
 					</DualBank>
 					<FlashSize>
 						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="100"/>
 					</FlashSize>
 				</Configuration>
 				<!-- 128 Single Bank-->
-				<Configuration number="0x2"> 
-					<DualBank>
-						<ReadRegister address="0x40023C14" mask="0x20000000" value="0x20000000"/>
-					</DualBank>
+				<Configuration number="0x4"> 
 					<FlashSize>
 						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="80"/>
 					</FlashSize>
 				</Configuration>
+			</Interface>
 			<!-- Bootloader Interface -->
-			<Interface name="Bootloader"/>
+			<Interface name="Bootloader">
+				<!-- 512kB Single Bank-->
+				<Configuration number="0x0"> 
+					<DualBank>
+						<ReadRegister address="0x1FFF7800" mask="0x200000" value="0x0"/>
+					</DualBank>
+					<FlashSize>
+						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="200"/>
+					</FlashSize>
+				</Configuration>
+				<!-- 512kB dual Bank-->
+				<Configuration number="0x1"> 
+					<DualBank>
+						<ReadRegister address="0x1FFF7800" mask="0x200000" value="0x200000"/>
+					</DualBank>
+					<FlashSize>
+						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="200"/>
+					</FlashSize>
+				</Configuration>
+				<!-- 256 Single Bank-->
+				<Configuration number="0x2"> 
+					<DualBank>
+						<ReadRegister address="0x1FFF7800" mask="0x200000" value="0x0"/>
+					</DualBank>
+					<FlashSize>
+						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="100"/>
+					</FlashSize>
+				</Configuration>
+				<!-- 256 Single Bank-->
+				<Configuration number="0x3"> 
+					<DualBank>
+						<ReadRegister address="0x1FFF7800" mask="0x200000" value="0x200000"/>
+					</DualBank>
+					<FlashSize>
+						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="100"/>
+					</FlashSize>
+				</Configuration>
+				<!-- 128 Single Bank-->
+				<Configuration number="0x4"> 
+					<FlashSize>
+						<ReadRegister address="0x1FFF75E0" mask="0x0000FFFF" value="80"/>
+					</FlashSize>
+				</Configuration>
+				<!-- dummy config -->
+				<Configuration number="0x6">
+					<dummy> <ReadRegister address="0x20000000" mask="0" value="0"/> </dummy>
+				</Configuration>
+			</Interface>
 		</Configurations>
 		<!-- Peripherals -->
 		<Peripherals>
@@ -58,7 +121,7 @@
 					<Organization>Single</Organization>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x20000000" name="SRAM" occurence="0x1" size="0x20000"/>
+							<Parameters address="0x20000000" name="SRAM" occurrence="0x1" size="0x20000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -71,44 +134,75 @@
 				<ErasedValue>0xFF</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFF75E0" default="0x80000"/>
-					<!-- 512K dual Bank -->
-				<Configuration number="0x0">
-					<Parameters address="0x08000000" name=" 512 KB Embedded Flash" size="0x080000"/>
+				<BootloaderVersion address="0x1FFF9FFE"/>
+				<!-- 512K Single Bank -->
+				<Configuration config="0">
+					<Parameters address="0x08000000" name=" 512 KB Embedded Flash" size="0x80000"/>
 					<Description/>
-					<Organization>Dual</Organization>
-					<Allignement>0x8</Allignement>
+					<Organization>Single</Organization>
+					<Alignment>0x8</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x80" size="0x800"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x80" size="0x1000"/>
+						</Field>
+					</Bank>
+				</Configuration>
+				<!-- 512K dual Bank -->
+				<Configuration config="1">
+					<Parameters address="0x08000000" name=" 512 KB Embedded Flash" size="0x80000"/>
+					<Description/>
+					<Organization>Dual</Organization>
+					<Alignment>0x8</Alignment>
+					<Bank name="Bank 1">
+						<Field>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x80" size="0x800"/>
 						</Field>
 					</Bank>
 					<Bank name="Bank 2">
 						<Field>
-							<Parameters address="0x08040000" name="sector128" occurence="0x80" size="0x800"/>
+							<Parameters address="0x08040000" name="sector65280" occurrence="0x80" size="0x800"/>
 						</Field>
 					</Bank>
 				</Configuration>
-					<!-- 256K single Bank-->
-				<Configuration number="0x1"> 
-					<Parameters address="0x08000000" name=" 256 KB Embedded Flash" size="0x040000"/>
+					
+				<!-- 256K single Bank-->
+				<Configuration config="2">
+					<Parameters address="0x08000000" name=" 256 KB Embedded Flash" size="0x40000"/>
 					<Description/>
-					<Organization>Dual</Organization>
-					<Allignement>0x8</Allignement>
+					<Organization>Single</Organization>
+					<Alignment>0x8</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x80" size="0x800"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x80" size="0x1000"/>
+						</Field>
+					</Bank>
+				</Configuration>
+				<!-- 256K dual Bank -->
+				<Configuration config="3">
+					<Parameters address="0x08000000" name=" 256 KB Embedded Flash" size="0x40000"/>
+					<Description/>
+					<Organization>Dual</Organization>
+					<Alignment>0x8</Alignment>
+					<Bank name="Bank 1">
+						<Field>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x40" size="0x800"/>
+						</Field>
+					</Bank>
+					<Bank name="Bank 2">
+						<Field>
+							<Parameters address="0x08020000" name="sector65280" occurrence="0x40" size="0x800"/>
 						</Field>
 					</Bank>
 				</Configuration>
 				<!-- 128K Single Bank-->
-				<Configuration number="0x2"> 
+				<Configuration config="4"> 
 					<Parameters address="0x08000000" name=" 128 KB Embedded Flash" size="0x020000"/>
 					<Description/>
 					<Organization>Dual</Organization>
-					<Allignement>0x8</Allignement>
+					<Alignment>0x8</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x40" size="0x800"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x40" size="0x800"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -125,10 +219,10 @@
 					<Parameters address="0x1FFF7000" name=" 1 KBytes Data OTP" size="0x400"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="OTP">
 						<Field>
-							<Parameters address="0x1FFF7000" name="OTP" occurence="0x1" size="0x400"/>
+							<Parameters address="0x1FFF7000" name="OTP" occurrence="0x1" size="0x400"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -145,15 +239,15 @@
 					<Parameters address="0x1FFF7800" name=" 56 Bytes Data MirrorOptionBytes" size="0x38"/>
 					<Description/>
 					<Organization>Dual</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x1FFF7800" name="Bank1" occurence="0x1" size="0x34"/>
+							<Parameters address="0x1FFF7800" name="Bank1" occurrence="0x1" size="0x34"/>
 						</Field>
 					</Bank>
 					<Bank name="Bank 2">
 						<Field>
-							<Parameters address="0x1FFF7870" name="Bank2" occurence="0x1" size="0x4"/>
+							<Parameters address="0x1FFF7870" name="Bank2" occurrence="0x1" size="0x4"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -276,8 +370,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -313,7 +407,7 @@
 										<Val value="0x1">Software window watchdog</Val>
 									</Values>
 								</Bit>
-								<Bit>
+								<Bit config="0,1,2,3">
 									<Name>nSWAP_BANK</Name>
 									<Description/>
 									<BitOffset>0x14</BitOffset>
@@ -324,7 +418,7 @@
 										<Val value="0x1">Bank 2</Val>
 									</Values>
 								</Bit>
-								<Bit>
+								<Bit config="0,1,2,3">
 									<Name>DUAL_BANK</Name>
 									<Description/>
 									<BitOffset>0x15</BitOffset>
@@ -342,8 +436,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">SRAM2 parity check enable</Val>
-										<Val value="0x1">SRAM2 parity check disable</Val>
+										<Val value="0x0">SRAM parity check enable</Val>
+										<Val value="0x1">SRAM parity check disable</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -761,8 +855,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -798,7 +892,7 @@
 										<Val value="0x1">Software window watchdog</Val>
 									</Values>
 								</Bit>
-								<Bit>
+								<Bit config="0,1,2,3">
 									<Name>nSWAP_BANK</Name>
 									<Description/>
 									<BitOffset>0x14</BitOffset>
@@ -809,7 +903,7 @@
 										<Val value="0x1">Bank 2</Val>
 									</Values>
 								</Bit>
-								<Bit>
+								<Bit config="0,1,2,3">
 									<Name>DUAL_BANK</Name>
 									<Description/>
 									<BitOffset>0x15</BitOffset>
@@ -827,8 +921,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">SRAM2 parity check enable</Val>
-										<Val value="0x1">SRAM2 parity check disable</Val>
+										<Val value="0x0">SRAM parity check enable</Val>
+										<Val value="0x1">SRAM parity check disable</Val>
 									</Values>
 								</Bit>
 								<Bit>

@@ -30,7 +30,7 @@
 					<Organization>Single</Organization>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x20000000" name="SRAM" occurence="0x1" size="0x2800"/>
+							<Parameters address="0x20000000" name="SRAM" occurrence="0x1" size="0x2800"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -43,20 +43,21 @@
 				<ErasedValue>0x00</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FF8004C" default="0x20000"/>
+				<BootloaderVersion address="0x1FF00FFE"/>
 				<!-- 128KB single Bank -->
 				<Configuration>
 					<Parameters address="0x08000000" name=" 128 Kbytes Embedded Flash" size="0x20000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x200" size="0x100"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x200" size="0x100"/>
 						</Field>
 					</Bank>
 					<Bank name="EEPROM1">
 						<Field>
-							<Parameters address="0x08080000" name="sector65281" occurence="0x1" size="0x1000"/>
+							<Parameters address="0x08080000" name="sector65281" occurrence="0x1" size="0x1000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -73,10 +74,10 @@
 					<Parameters address="0x08080000" name=" 4096 bytes Data EEPROM" size="0x1000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08080000" name="EEPROM1" occurence="0x1" size="0x1000"/>
+							<Parameters address="0x08080000" name="EEPROM1" occurrence="0x1" size="0x1000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -93,10 +94,10 @@
 					<Parameters address="0x1FF80000" name=" 16 Bytes Data MirrorOptionBytes" size="0x10"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="MirrorOptionBytes">
 						<Field>
-							<Parameters address="0x1FF80000" name="MirrorOptionBytes" occurence="0x1" size="0x10"/>
+							<Parameters address="0x1FF80000" name="MirrorOptionBytes" occurrence="0x1" size="0x10"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -162,7 +163,7 @@
 					<Category>
 						<Name>User Configuration</Name>
 						<Field>
-							<Parameters address="0x40023C1C" nname="FLASH_OBR" size="0x4"/>
+							<Parameters address="0x40023C1C" name="FLASH_OBR" size="0x4"/>
 							<AssignedBits>
 								<Bit>
 									<Name>IWDG_SW</Name>
@@ -171,8 +172,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>R</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -284,8 +285,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>W</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -413,8 +414,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>

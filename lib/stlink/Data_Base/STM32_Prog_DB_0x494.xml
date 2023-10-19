@@ -30,7 +30,7 @@
 					<Organization>Single</Organization>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x20000000" name="SRAM" occurence="0x1" size="0x3000"/>
+							<Parameters address="0x20000000" name="SRAM" occurrence="0x1" size="0x3000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -43,15 +43,16 @@
 				<ErasedValue>0x00</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FFF75E0" default="0x50000"/>
+				<BootloaderVersion address="0x1FFF6FFE"/>
 				<!-- 320 KB Single Bank -->
 				<Configuration>
 					<Parameters address="0x08000000" name=" 320 Kbytes Embedded Flash" size="0x50000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x8</Allignement>
+					<Alignment>0x8</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0xA0" size="0x800"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0xA0" size="0x800"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -68,10 +69,10 @@
 					<Parameters address="0x1FFF7000" name=" 1 KBytes Data OTP" size="0x400"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="OTP">
 						<Field>
-							<Parameters address="0x1FFF7000" name="OTP" occurence="0x1" size="0x400"/>
+							<Parameters address="0x1FFF7000" name="OTP" occurrence="0x1" size="0x400"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -88,10 +89,10 @@
 					<Parameters address="0x1FFF7800" name=" 128 Bytes Data MirrorOptionBytes" size="0x80"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="MirrorOptionBytes">
 						<Field>
-							<Parameters address="0x1FFF7800" name="MirrorOptionBytes" occurence="0x1" size="0x80"/>
+							<Parameters address="0x1FFF7800" name="MirrorOptionBytes" occurrence="0x1" size="0x80"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -252,7 +253,7 @@
 									</Values>
 								</Bit>
 								<Bit>
-									<Name>IWGDSTDBY</Name>
+									<Name>IWDGSTDBY</Name>
 									<Description/>
 									<BitOffset>0x12</BitOffset>
 									<BitWidth>0x1</BitWidth>
@@ -540,7 +541,7 @@
 									<BitOffset>0x19</BitOffset>
 									<BitWidth>0x2</BitWidth>
 									<Access>RW</Access>
-									<Equation multiplier="0x400" offset="0x2000B000"/>
+									<Equation multiplier="0x400" offset="0x20038000"/>
 								</Bit>
 								<Bit>
 									<Name>BRSD_A</Name>
@@ -722,7 +723,7 @@
 									</Values>
 								</Bit>
 								<Bit>
-									<Name>IWGDSTDBY</Name>
+									<Name>IWDGSTDBY</Name>
 									<Description/>
 									<BitOffset>0x12</BitOffset>
 									<BitWidth>0x1</BitWidth>
@@ -886,7 +887,7 @@
 									<BitOffset>0x19</BitOffset>
 									<BitWidth>0x2</BitWidth>
 									<Access>RW</Access>
-									<Equation multiplier="0x400" offset="0x2000B000"/>
+									<Equation multiplier="0x400" offset="0x20038000"/>
 								</Bit>
 								<Bit>
 									<Name>BRSD_A</Name>

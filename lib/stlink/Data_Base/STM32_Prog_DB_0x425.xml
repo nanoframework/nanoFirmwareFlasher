@@ -52,7 +52,7 @@
 					<Organization>Single</Organization>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x20000000" name="SRAM" occurence="0x1" size="0x2000"/>
+							<Parameters address="0x20000000" name="SRAM" occurrence="0x1" size="0x2000"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -65,20 +65,21 @@
 				<ErasedValue>0x00</ErasedValue>
 				<Access>RWE</Access>
 				<FlashSize address="0x1FF8007C" default="0x8000"/>
+				<BootloaderVersion address="0x1FF00FFE"/>
 				<!-- 128KB single Bank -->
 				<Configuration>
 					<Parameters address="0x08000000" name="32 Kbytes Embedded Flash" size="0x8000"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08000000" name="sector0" occurence="0x100" size="0x80"/>
+							<Parameters address="0x08000000" name="sector0" occurrence="0x100" size="0x80"/>
 						</Field>
 					</Bank>
 					<Bank name="EEPROM1">
 						<Field>
-							<Parameters address="0x08080000" name="sector65281" occurence="0x1" size="0x400"/>
+							<Parameters address="0x08080000" name="sector65281" occurrence="0x1" size="0x400"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -95,10 +96,10 @@
 					<Parameters address="0x08080000" name=" 1 Kbytes Data EEPROM" size="0x400"/>
 					<Description/>
 					<Organization>Single</Organization>
-					<Allignement>0x4</Allignement>
+					<Alignment>0x4</Alignment>
 					<Bank name="Bank 1">
 						<Field>
-							<Parameters address="0x08080000" name="EEPROM1" occurence="0x1" size="0x400"/>
+							<Parameters address="0x08080000" name="EEPROM1" occurrence="0x1" size="0x400"/>
 						</Field>
 					</Bank>
 				</Configuration>
@@ -183,7 +184,7 @@
 					<Category>
 						<Name>User Configuration</Name>
 						<Field>
-							<Parameters address="0x4002201C" nname="FLASH_OBR" size="0x4"/>
+							<Parameters address="0x4002201C" name="FLASH_OBR" size="0x4"/>
 							<AssignedBits>
 								<Bit>
 									<Name>IWDG_SW</Name>
@@ -192,8 +193,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>R</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -347,8 +348,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>W</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -490,8 +491,8 @@
 									<BitWidth>0x1</BitWidth>
 									<Access>RW</Access>
 									<Values>
-										<Val value="0x0">Hardware independant watchdog</Val>
-										<Val value="0x1">Software independant watchdog</Val>
+										<Val value="0x0">Hardware independent watchdog</Val>
+										<Val value="0x1">Software independent watchdog</Val>
 									</Values>
 								</Bit>
 								<Bit>
@@ -533,7 +534,7 @@
 					<Category>
 						<Name>Write Protection</Name>
 						<Field>
-							<Parameters address="0x40022020" name="FLASH_WRPR1" size="0x4"/>
+							<Parameters address="0x1FF80008" name="FLASH_WRPR1" size="0x4"/>
 							<AssignedBits>
 								<Bit config="0">
 									<Name>WRPOT0</Name>
