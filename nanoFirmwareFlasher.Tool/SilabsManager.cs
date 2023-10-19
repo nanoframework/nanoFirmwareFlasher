@@ -4,6 +4,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -67,7 +68,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             var connectedJLinkDevices = JLinkDevice.ListDevices();
             bool updateAndDeploy = false;
 
-            if (_options.BinFile.Any()
+            if ((_options.BinFile.Any() ||
+                !string.IsNullOrEmpty(_options.DeploymentImage))
                 && connectedJLinkDevices.Count != 0)
             {
                 try
@@ -108,9 +110,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // get mass erase option
                     jlinkDevice.DoMassErase = _options.MassErase;
 
+                    // is there a bin file to flash?
                     if (_options.BinFile.Any())
                     {
-                        return jlinkDevice.FlashBinFiles(_options.BinFile, _options.FlashAddress);
+                        var exitCode = jlinkDevice.FlashBinFiles(_options.BinFile, _options.FlashAddress);
+
+                        if (exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return exitCode;
+                        }
+
+                        updateAndDeploy = true;
+                    }
+                    else if (!string.IsNullOrEmpty(_options.DeploymentImage) && _options.Deploy)
+                    {
+                        var exitCode = jlinkDevice.FlashBinFiles(
+                            new List<string>() { _options.DeploymentImage },
+                            _options.FlashAddress);
+
+                        if (exitCode != ExitCodes.OK)
+                        {
+                            // done here
+                            return exitCode;
+                        }
+
+                        updateAndDeploy = true;
                     }
                 }
                 catch (CantConnectToJLinkDeviceException)
