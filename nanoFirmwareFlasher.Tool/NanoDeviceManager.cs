@@ -22,11 +22,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.Platform != SupportedPlatform.esp32)
-            {
-                throw new NotSupportedException($"{nameof(options)} - {options.Platform}");
-            }
-
             _options = options;
             _verbosityLevel = verbosityLevel;
         }

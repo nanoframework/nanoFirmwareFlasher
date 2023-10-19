@@ -24,7 +24,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.Platform != SupportedPlatform.esp32)
+            if (options.Platform != SupportedPlatform.ti_simplelink)
             {
                 throw new NotSupportedException($"{nameof(options)} - {options.Platform}");
             }
