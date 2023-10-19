@@ -222,12 +222,12 @@ Exit
                 DoMassErase = false;
             }
 
-            if (Verbosity < VerbosityLevel.Normal)
+            if (Verbosity == VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Flashing device...");
             }
-            else
+            else if (Verbosity >= VerbosityLevel.Detailed)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Flashing device...");
@@ -235,6 +235,8 @@ Exit
 
             // program BIN file(s)
             int index = 0;
+            bool warningPromptShown = false;
+
             foreach (string binFile in shadowFiles)
             {
                 // make sure path is absolute
@@ -265,7 +267,14 @@ Exit
                 if (Verbosity >= VerbosityLevel.Normal
                     && cliOutput.Contains("Skipped. Contents already match"))
                 {
+                    warningPromptShown = true;
+
                     Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    if (Verbosity == VerbosityLevel.Normal)
+                    {
+                        Console.WriteLine();
+                    }
 
                     Console.WriteLine("");
                     Console.WriteLine("******************* WARNING *********************");
@@ -286,12 +295,15 @@ Exit
                 ShowCLIOutput(cliOutput);
             }
 
-            if (Verbosity < VerbosityLevel.Normal)
+            if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK");
+                if (!warningPromptShown)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine(" OK");
+                }
             }
-            else
+            else if (Verbosity >= VerbosityLevel.Detailed)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Flashing completed...");
@@ -360,12 +372,12 @@ Exit
                 DoMassErase = false;
             }
 
-            if (Verbosity < VerbosityLevel.Normal)
+            if (Verbosity == VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Flashing device...");
             }
-            else
+            else if (Verbosity >= VerbosityLevel.Detailed)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Flashing device...");
@@ -409,10 +421,19 @@ Exit
             // OK to delete the JLink command file
             File.Delete(jlinkCmdFilePath);
 
+            bool warningPromptShown = false;
+
             if (Verbosity >= VerbosityLevel.Normal
                 && cliOutput.Contains("Skipped. Contents already match"))
             {
+                warningPromptShown = true;
+
                 Console.ForegroundColor = ConsoleColor.Yellow;
+
+                if (Verbosity == VerbosityLevel.Normal)
+                {
+                    Console.WriteLine();
+                }
 
                 Console.WriteLine("");
                 Console.WriteLine("******************* WARNING *********************");
@@ -432,12 +453,15 @@ Exit
 
             ShowCLIOutput(cliOutput);
 
-            if (Verbosity < VerbosityLevel.Normal)
+            if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK");
+                if (!warningPromptShown)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine(" OK");
+                }
             }
-            else
+            else if (Verbosity >= VerbosityLevel.Detailed)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Flashing completed...");
