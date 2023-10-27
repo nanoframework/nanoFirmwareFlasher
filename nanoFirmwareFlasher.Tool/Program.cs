@@ -364,29 +364,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 var manager = new NanoDeviceManager(o, _verbosityLevel);
 
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (CantConnectToNanoDeviceException ex)
-                {
-                    _exitCode = ExitCodes.E2001;
-                    _extraMessage = ex.Message;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    _exitCode = ExitCodes.E2002;
-                    _extraMessage = ex.Message;
-                }
-
                 // COM port is mandatory for nano device operations
                 if (string.IsNullOrEmpty(o.SerialPort))
                 {
                     _exitCode = ExitCodes.E6001;
+                }
+                else
+                {
+                    try
+                    {
+                        _exitCode = await manager.ProcessAsync();
+                    }
+                    catch (CantConnectToNanoDeviceException ex)
+                    {
+                        _exitCode = ExitCodes.E2001;
+                        _extraMessage = ex.Message;
+                    }
+                    catch (NoOperationPerformedException)
+                    {
+                        DisplayNoOperationMessage();
+                    }
+                    catch (Exception ex)
+                    {
+                        _exitCode = ExitCodes.E2002;
+                        _extraMessage = ex.Message;
+                    }
                 }
 
                 return;

@@ -29,6 +29,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <inheritdoc />
         public async Task<ExitCodes> ProcessAsync()
         {
+            bool failedToDoSomething = true;
+            ExitCodes exitCode = ExitCodes.OK;
+
             // COM port is mandatory for nano device operations
             if (string.IsNullOrEmpty(_options.SerialPort))
             {
@@ -46,7 +49,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else if (_options.Update)
             {
-                var exitCode = await _nanoDeviceOperations.UpdateDeviceClrAsync(
+                exitCode = await _nanoDeviceOperations.UpdateDeviceClrAsync(
                     _options.SerialPort,
                     _options.FwVersion,
                     _options.ClrFile,
@@ -56,11 +59,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     return exitCode;
                 }
+
+                // flag operation as done
+                failedToDoSomething = false;
             }
 
             if (_options.Deploy)
             {
-                var exitCode = _nanoDeviceOperations.DeployApplication(
+                exitCode = _nanoDeviceOperations.DeployApplication(
                     _options.SerialPort,
                     _options.DeploymentImage,
                     _verbosityLevel);
@@ -69,9 +75,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     return exitCode;
                 }
+
+                // flag operation as done
+                failedToDoSomething = false;
             }
 
-            throw new NoOperationPerformedException();
+            if (failedToDoSomething)
+            {
+                throw new NoOperationPerformedException();
+            }
+
+            return exitCode;
         }
     }
 }
