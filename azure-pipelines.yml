@@ -178,11 +178,17 @@ jobs:
     vmImage: 'windows-latest'
 
   variables:
-    DOTNET_NOLOGO: true
-    buildPlatform: 'x64'
-    buildConfiguration: 'Release'
-    solution: 'nanoFirmwareFlasher.sln'
-    run_update_dependents: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
+    - group: sign-client-credentials
+    - name: DOTNET_NOLOGO
+      value: true  
+    - name: buildPlatform
+      value: 'x64'  
+    - name: buildConfiguration
+      value: 'Release'
+    - name: solution
+      value: 'nanoFirmwareFlasher.sln'
+    - name: run_update_dependents
+      value: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
 
   steps:
 
@@ -336,7 +342,7 @@ jobs:
       flattenFolders: true
 
   - task: DotNetCoreCLI@2
-    displayName: Install SignTool tool
+    displayName: Install Sign Client CLI
     condition: >-
       and(
         succeeded(),
@@ -346,19 +352,21 @@ jobs:
     inputs:
       command: custom
       custom: tool
-      arguments: install --tool-path . SignClient
+      arguments: install --tool-path . sign --version 0.9.1-beta.23530.1
   
   - pwsh: |
-      .\SignClient "Sign" `
-      --baseDirectory "$(Build.ArtifactStagingDirectory)" `
-      --input "**/*.nupkg" `
-      --config "$(Build.Repository.LocalPath)\config\SignClient.json" `
-      --filelist "$(Build.Repository.LocalPath)\config\filelist.txt" `
-      --user "$(SignClientUser)" `
-      --secret '$(SignClientSecret)' `
-      --name ".NET nanoFramework firmware flasher" `
+      .\sign code azure-key-vault `
+      "**/*.nupkg" `
+      --base-directory "$(Build.ArtifactStagingDirectory)" `
+      --file-list "$(Build.Repository.LocalPath)\config\filelist.txt" `
       --description ".NET nanoFramework firmware flasher" `
-      --descriptionUrl "https://github.com/$env:Build_Repository_Name"
+      --description-url "https://github.com/$env:Build_Repository_Name" `
+      --azure-key-vault-tenant-id "$(SignTenantId)" `
+      --azure-key-vault-client-id "$(SignClientId)" `
+      --azure-key-vault-client-secret "$(SignClientSecret)" `
+      --azure-key-vault-certificate "$(SignKeyVaultCertificate)" `
+      --azure-key-vault-url "$(SignKeyVaultUrl)" `
+      --timestamp-url http://timestamp.digicert.com  
     displayName: Sign packages
     continueOnError: true
     condition: >-
