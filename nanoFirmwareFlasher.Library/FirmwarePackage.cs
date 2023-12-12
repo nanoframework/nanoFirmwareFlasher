@@ -365,6 +365,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         string insightConnectionString = _configuration["iConnectionString"];
                         string optOut = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT");
 
+                        stepSuccessful = true;
+
                         if (!string.IsNullOrEmpty(insightConnectionString) && optOut != "1")
                         {
                             TelemetryClient telemetryClient = new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration()
@@ -379,7 +381,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         }
 
-                        stepSuccessful = true;
+                        
                     }
                     catch
                     {
