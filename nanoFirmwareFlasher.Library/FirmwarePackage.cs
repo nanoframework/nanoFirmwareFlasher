@@ -363,7 +363,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         //send app insight on successful download
 
                         string insightConnectionString = _configuration["iConnectionString"];
-                        string optOut = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT");
+                        string optOut = Environment.GetEnvironmentVariable("NANOFRAMEWORK_TELEMETRY_OPTOUT");
 
                         stepSuccessful = true;
 
