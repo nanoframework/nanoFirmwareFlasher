@@ -327,24 +327,16 @@ jobs:
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
 
-# Replace the intrument key
-    - powershell: |
-            . ./common.ps1
-            $fileToReplace = "$(System.DefaultWorkingDirectory)/nanoFirmwareFlasher.Library/appsettings.json"
-            $sourceString = "INTRUMENT_KEY"
-            $instrumentKey = "$(InstrumentKey)"
+  # Replace the intrument key
+  - powershell: |
+          . ./common.ps1
+          $fileToReplace = "$(System.DefaultWorkingDirectory)/nanoFirmwareFlasher.Library/appsettings.json"
+          $sourceString = "INTRUMENT_KEY"
+          $instrumentKey = "$(InstrumentKey)"
 
-            Find-ReplaceInFile -filePath $fileToReplace -sourceString $sourceString -targetString $instrumentKey
-        displayName: Replace intrument key
-        condition: >-
-        and(
-            succeeded(), 
-            or(
-            eq(variables['BUILD_ALL'], 'true'),
-            contains(variables['BuildOptions.COMMIT_MESSAGE'], '***BUILD_ALL***'),
-            eq(variables['BuildOptions.BUILD_ALL'], 'true')
-            )
-        )
+          Find-ReplaceInFile -filePath $fileToReplace -sourceString $sourceString -targetString $instrumentKey
+    displayName: Replace intrument key
+    condition: succeeded()
 
   - task: CopyFiles@1
     condition: >-
