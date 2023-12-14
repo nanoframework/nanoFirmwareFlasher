@@ -18,6 +18,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
+using System.Reflection;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -103,7 +104,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public object BooterStartAddress { get; internal set; }
 
-        
+
 
         static FirmwarePackage()
         {
@@ -373,15 +374,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             {
                                 ConnectionString = insightConnectionString
                             });
+                            AssemblyInformationalVersionAttribute nanoffVersion = null;
+
+                            try
+                            {
+                                nanoffVersion = Attribute.GetCustomAttribute(
+                                         Assembly.GetEntryAssembly()!,
+                                         typeof(AssemblyInformationalVersionAttribute))
+                                     as AssemblyInformationalVersionAttribute;
+                            }
+                            catch
+                            {
+
+                            }
                             var packageTelemetry = new EventTelemetry("PackageDownloaded");
                             packageTelemetry.Properties.Add("TargetName", _targetName);
                             packageTelemetry.Properties.Add("Version", Version);
+                            packageTelemetry.Properties.Add("nanoffVersion", nanoffVersion == null ? "unknown" : nanoffVersion.InformationalVersion);
                             telemetryClient.TrackEvent(packageTelemetry);
                             telemetryClient.Flush();
 
                         }
 
-                        
+
                     }
                     catch
                     {
