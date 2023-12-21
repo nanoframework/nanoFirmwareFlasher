@@ -462,6 +462,12 @@ nanoff --clearcache
 
 The exit codes can be checked in [this source file](https://github.com/nanoframework/nanoFirmwareFlasher/blob/main/nanoFirmwareFlasher.Library/ExitCodes.cs).
 
+## Telemetry
+
+This tool is using anonymous telemetry to help us improve the usage. You can opt out by setting up an environment variable `NANOFRAMEWORK_TELEMETRY_OPTOUT` to 1.
+
+The telemetry information is mainly related to the command line arguments, the firmware versions installed and any issue that can occurs during the code execution.
+
 ## Feedback and documentation
 
 To provide feedback, report issues and finding out how to contribute please refer to the [Home repo](https://github.com/nanoframework/Home).
