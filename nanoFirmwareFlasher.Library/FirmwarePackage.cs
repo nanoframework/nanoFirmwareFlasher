@@ -3,8 +3,10 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.Debugger;
-using nanoFramework.Tools.FirmwareFlasher;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,13 +14,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
-using System.Reflection;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -36,10 +34,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private readonly string _targetName;
         private readonly bool _preview;
-
         private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
-
-        private static IConfigurationRoot _configuration;
 
         /// <summary>
         /// Path with the base location for firmware packages.
@@ -113,16 +108,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 BaseAddress = new Uri("https://api.cloudsmith.io/v1/packages/net-nanoframework/")
             };
             _cloudsmithClient.DefaultRequestHeaders.Add("Accept", "*/*");
-
-            if (_configuration == null)
-            {
-
-                var builder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json");
-
-                _configuration = builder.Build();
-            }
         }
 
         /// <summary>
@@ -361,19 +346,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             Console.ForegroundColor = ConsoleColor.White;
                         }
 
-                        //send app insight on successful download
-
-                        string insightConnectionString = _configuration["iConnectionString"];
-                        string optOut = Environment.GetEnvironmentVariable("NANOFRAMEWORK_TELEMETRY_OPTOUT");
-
                         stepSuccessful = true;
 
-                        if (!string.IsNullOrEmpty(insightConnectionString) && optOut != "1")
+                        // send telemetry data on successful download
+                        if (NanoTelemetryClient.TelemetryClient is not null)
                         {
-                            TelemetryClient telemetryClient = new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration()
-                            {
-                                ConnectionString = insightConnectionString
-                            });
                             AssemblyInformationalVersionAttribute nanoffVersion = null;
 
                             try
@@ -385,18 +362,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             }
                             catch
                             {
-
+                                // OK to fail here, just telemetry
                             }
+
                             var packageTelemetry = new EventTelemetry("PackageDownloaded");
                             packageTelemetry.Properties.Add("TargetName", _targetName);
                             packageTelemetry.Properties.Add("Version", Version);
                             packageTelemetry.Properties.Add("nanoffVersion", nanoffVersion == null ? "unknown" : nanoffVersion.InformationalVersion);
-                            telemetryClient.TrackEvent(packageTelemetry);
-                            telemetryClient.Flush();
 
+                            NanoTelemetryClient.TelemetryClient.TrackEvent(packageTelemetry);
+                            NanoTelemetryClient.TelemetryClient.Flush();
                         }
-
-
                     }
                     catch
                     {

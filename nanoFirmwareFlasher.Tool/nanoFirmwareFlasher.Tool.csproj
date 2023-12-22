@@ -69,6 +69,12 @@
 	  <ProjectReference Include="..\nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="appsettings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 	<Target Name="CopyToolsContent" AfterTargets="Build">
 	    <ItemGroup>
             <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
