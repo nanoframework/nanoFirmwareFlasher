@@ -95,7 +95,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (_verbosityLevel > VerbosityLevel.Quiet)
             {
-                OutputError(_exitCode, _verbosityLevel > VerbosityLevel.Normal, _extraMessage);
+                OutputError(_exitCode, _verbosityLevel >= VerbosityLevel.Normal, _extraMessage);
             }
 
             // force clean-up
