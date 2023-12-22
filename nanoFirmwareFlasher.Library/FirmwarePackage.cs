@@ -293,6 +293,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.hex").ToList());
             filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.s19").ToList());
             filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.dfu").ToList());
+            filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.csv").ToList());
 
             foreach (var file in filesToDelete)
             {
