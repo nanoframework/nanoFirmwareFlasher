@@ -330,8 +330,8 @@ jobs:
   # Replace the intrument key
   - powershell: |
           . ./common.ps1
-          $fileToReplace = "$(System.DefaultWorkingDirectory)/nanoFirmwareFlasher.Library/appsettings.json"
-          $sourceString = "INTRUMENT_KEY"
+          $fileToReplace = "$(System.DefaultWorkingDirectory)/nanoFirmwareFlasher.Tool\appsettings.json"
+          $sourceString = "INSTRUMENT_KEY"
           $instrumentKey = "$(InstrumentKey)"
 
           Find-ReplaceInFile -filePath $fileToReplace -sourceString $sourceString -targetString $instrumentKey

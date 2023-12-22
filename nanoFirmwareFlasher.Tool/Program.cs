@@ -5,7 +5,7 @@
 
 using CommandLine;
 using CommandLine.Text;
-using nanoFramework.Tools.Debugger;
+using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.FirmwareFlasher.Extensions;
 using Newtonsoft.Json;
 using System;
@@ -17,7 +17,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -50,6 +49,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string codeBase = Assembly.GetExecutingAssembly().Location;
             var fullPath = Path.GetFullPath(codeBase);
             ExecutingPath = Path.GetDirectoryName(fullPath);
+
+            // grab AppInsights connection string to setup telemetry client
+            IConfigurationRoot appConfigurationRoot = new ConfigurationBuilder()
+                .SetBasePath(ExecutingPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            NanoTelemetryClient.ConnectionString = appConfigurationRoot?["iConnectionString"];
 
             // check for empty argument collection
             if (!args.Any())
