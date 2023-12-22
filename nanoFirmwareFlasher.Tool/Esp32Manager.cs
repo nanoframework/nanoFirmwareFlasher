@@ -145,6 +145,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     null,
                     _options.ClrFile,
                     !_options.FitCheck,
+                    _options.MassErase,
                     _verbosityLevel,
                     _options.Esp32PartitionTableSize);
 
@@ -182,6 +183,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     appFlashAddress,
                     null,
                     !_options.FitCheck,
+                    _options.MassErase,
                     _verbosityLevel,
                     _options.Esp32PartitionTableSize);
 

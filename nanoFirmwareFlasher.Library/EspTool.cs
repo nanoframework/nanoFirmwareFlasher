@@ -394,6 +394,44 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
+        /// Backup the entire flash into a bin file
+        /// </summary>
+        /// <param name="backupFilename">Backup file including full path</param>
+        /// <param name="address">Start address of the config partition.</param>
+        /// <param name="size">Size of the config partition.</param>
+        /// <returns>true if successful</returns>
+        internal ExitCodes BackupConfigPartition(
+            string backupFilename,
+            int address,
+            int size)
+        {
+            // execute dump_mem  command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
+            if (!RunEspTool(
+                $"read_flash 0x{address:X} 0x{size:X} \"{backupFilename}\"",
+                false,
+                true,
+                false,
+                null,
+                out string messages))
+            {
+                throw new ReadEsp32FlashException(messages);
+            }
+
+            var match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
+            if (!match.Success)
+            {
+                throw new ReadEsp32FlashException(messages);
+            }
+
+            if (Verbosity >= VerbosityLevel.Detailed)
+            {
+                Console.WriteLine(match.Groups["message"].ToString().Trim());
+            }
+
+            return ExitCodes.OK;
+        }
+
+        /// <summary>
         /// Erase the entire flash of the ESP32 chip.
         /// </summary>
         /// <returns>true if successful</returns>

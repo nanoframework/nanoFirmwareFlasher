@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -103,6 +104,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="deploymentAddress">Flash address to use when deploying an aplication.</param>
         /// <param name="clrFile">Path to CLR file to use for firmware update.</param>
         /// <param name="fitCheck"><see langword="true"/> to perform validation of update package against connected target.</param>
+        /// <param name="massErase">If <see langword="true"/> perform mass erase on device before updating.</param>
         /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
         /// <param name="partitionTableSize">Size of partition table.</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
@@ -117,6 +119,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string deploymentAddress,
             string clrFile,
             bool fitCheck,
+            bool massErase,
             VerbosityLevel verbosity,
             PartitionTableSize? partitionTableSize)
         {
@@ -403,8 +406,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if (updateFw)
+            if (updateFw
+                && massErase)
             {
+                // erase flash, if masse erase was requested
                 // updating fw calls for a flash erase
                 if (verbosity >= VerbosityLevel.Normal)
                 {
@@ -412,7 +417,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     Console.Write($"Erasing flash...");
                 }
 
-                // erase flash
                 operationResult = espTool.EraseFlash();
 
                 if (operationResult == ExitCodes.OK)
@@ -436,6 +440,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     Console.Write($"Flashing firmware...");
+                }
+
+                int configPartitionAddress = 0;
+                int configPartitionSize = 0;
+                string configPartitionBackup = Path.GetTempFileName();
+
+                // if mass erase wasn't requested, backup config partitition
+                if (!massErase)
+                {
+                    // compose path to partition file
+                    string partitionCsvFile = Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv");
+
+                    var partitionDetails = File.ReadAllText(partitionCsvFile);
+
+                    // grab details for the config partition
+                    string pattern = @"config,.*?(0x[0-9A-Fa-f]+),.*?(0x[0-9A-Fa-f]+),";
+                    Regex regex = new Regex(pattern);
+                    Match match = regex.Match(partitionDetails);
+
+                    if (match.Success)
+                    {
+                        // just try to parse, ignore failures
+                        int.TryParse(match.Groups[1].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionAddress);
+                        int.TryParse(match.Groups[2].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionSize);
+                    }
+
+                    // backup config partition
+                    operationResult = espTool.BackupConfigPartition(
+                        configPartitionBackup,
+                        configPartitionAddress,
+                        configPartitionSize);
+
+                    firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
                 }
 
                 // write to flash
@@ -467,6 +504,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         Console.WriteLine("");
                     }
+                }
+
+                // delete config partition backup
+                try
+                {
+                    if (File.Exists(configPartitionBackup))
+                    {
+                        File.Delete(configPartitionBackup);
+                    }
+                }
+                catch
+                {
+                    // don't care
                 }
 
                 Console.ForegroundColor = ConsoleColor.White;
