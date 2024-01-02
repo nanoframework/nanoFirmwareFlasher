@@ -158,8 +158,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 updateAndDeploy = true;
             }
 
-            // it's OK to deploy after a successful update
-            if (_options.Deploy)
+            // deploy without update
+            if (_options.Deploy && !_options.Update)
             {
                 // need to take care of flash address
                 string appFlashAddress = string.Empty;
@@ -172,18 +172,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 // this to flash a deployment image without updating the firmware
                 // write flash
-                var exitCode = await Esp32Operations.UpdateFirmwareAsync(
+                var exitCode = await Esp32Operations.DeployApplicationAsync(
                     espTool,
                     esp32Device,
                     _options.TargetName,
-                    false,
-                    null,
-                    false,
                     _options.DeploymentImage,
                     appFlashAddress,
-                    null,
-                    !_options.FitCheck,
-                    _options.MassErase,
                     _verbosityLevel,
                     _options.Esp32PartitionTableSize);
 
