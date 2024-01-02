@@ -162,7 +162,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 null,
                 out messages))
             {
-                if(messages.Contains("A fatal error occurred: Failed to connect to Espressif device: No serial data received."))
+                if (messages.Contains("A fatal error occurred: Failed to connect to Espressif device: No serial data received."))
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
 
