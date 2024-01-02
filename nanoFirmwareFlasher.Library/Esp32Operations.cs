@@ -391,14 +391,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     string applicationBinary = new FileInfo(applicationPath).FullName;
 
-                    // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
-                    firmware.FlashPartitions = new Dictionary<int, string>()
+                    // check for empty flash partitions
+                    if (firmware.FlashPartitions is null)
                     {
-                        {
+                        firmware.FlashPartitions = [];
+                    }
+
+                    // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
+                    firmware.FlashPartitions.Add(
                             address != 0 ? (int)address : firmware.DeploymentPartitionAddress,
                             applicationBinary
-                        }
-                    };
+                    );
+
                 }
                 else
                 {
@@ -529,6 +533,134 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 Console.ForegroundColor = ConsoleColor.White;
             }
+
+            return operationResult;
+        }
+
+        /// <summary>
+        /// Deplay application on a ESP32 device.
+        /// </summary>
+        /// <param name="espTool"><see cref="EspTool"/> to use when performing update.</param>
+        /// <param name="esp32Device"><see cref="Esp32DeviceInfo"/> of device to update.</param>
+        /// <param name="targetName">Name of the target to update.</param>
+        /// <param name="applicationPath">Path to application to update along with the firmware update.</param>
+        /// <param name="deploymentAddress">Flash address to use when deploying an aplication.</param>
+        /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
+        /// <param name="partitionTableSize">Size of partition table.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
+        public static async System.Threading.Tasks.Task<ExitCodes> DeployApplicationAsync(
+            EspTool espTool,
+            Esp32DeviceInfo esp32Device,
+            string targetName,
+            string applicationPath,
+            string deploymentAddress,
+            VerbosityLevel verbosity,
+            PartitionTableSize? partitionTableSize)
+        {
+            var operationResult = ExitCodes.OK;
+            uint address = 0;
+
+            // perform sanity checks for the specified target against the connected device details
+            if (esp32Device.ChipType != "ESP32" &&
+                esp32Device.ChipType != "ESP32-S2" &&
+                esp32Device.ChipType != "ESP32-C3" &&
+                esp32Device.ChipType != "ESP32-S3")
+            {
+                // connected to a device not supported
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("");
+                Console.WriteLine("******************************* WARNING *******************************");
+                Console.WriteLine("Seems that the connected device is not supported by .NET nanoFramework");
+                Console.WriteLine("Most likely it won't boot");
+                Console.WriteLine("************************************************************************");
+                Console.WriteLine("");
+            }
+
+            Esp32Firmware firmware = new Esp32Firmware(
+                targetName,
+                null,
+                false,
+                partitionTableSize)
+            {
+                Verbosity = verbosity
+            };
+
+            // include application file?
+            if (!string.IsNullOrEmpty(applicationPath))
+            {
+                // check application file
+                if (File.Exists(applicationPath))
+                {
+                    // this operation includes a deployment image
+                    // try parsing the deployment address from parameter, if provided
+                    if (!string.IsNullOrEmpty(deploymentAddress))
+                    {
+                        // need to remove the leading 0x and to specify that hexadecimal values are allowed
+                        if (!uint.TryParse(deploymentAddress.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out address))
+                        {
+                            return ExitCodes.E9009;
+                        }
+                    }
+
+                    string applicationBinary = new FileInfo(applicationPath).FullName;
+
+                    // check for empty flash partitions
+                    if (firmware.FlashPartitions is null)
+                    {
+                        firmware.FlashPartitions = [];
+                    }
+
+                    // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
+                    firmware.FlashPartitions.Add(
+                            address != 0 ? (int)address : firmware.DeploymentPartitionAddress,
+                            applicationBinary
+                    );
+                }
+                else
+                {
+                    return ExitCodes.E9008;
+                }
+            }
+
+            Console.ForegroundColor = ConsoleColor.White;
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                Console.Write($"Flashing deployment partition...");
+            }
+
+            // write to flash
+            operationResult = espTool.WriteFlash(firmware.FlashPartitions);
+
+            if (operationResult == ExitCodes.OK)
+            {
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("OK".PadRight(110));
+
+                    // warn user if reboot is not possible
+                    if (espTool.CouldntResetTarget)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+
+                        Console.WriteLine("");
+                        Console.WriteLine("**********************************************");
+                        Console.WriteLine("The connected device is in 'download mode'.");
+                        Console.WriteLine("Please reset the chip manually to run nanoCLR.");
+                        Console.WriteLine("**********************************************");
+                        Console.WriteLine("");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("");
+                }
+            }
+
+            Console.ForegroundColor = ConsoleColor.White;
 
             return operationResult;
         }
