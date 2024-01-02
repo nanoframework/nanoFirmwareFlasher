@@ -449,30 +449,38 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // if mass erase wasn't requested, backup config partitition
                 if (!massErase)
                 {
-                    // compose path to partition file
-                    string partitionCsvFile = Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv");
-
-                    var partitionDetails = File.ReadAllText(partitionCsvFile);
-
-                    // grab details for the config partition
-                    string pattern = @"config,.*?(0x[0-9A-Fa-f]+),.*?(0x[0-9A-Fa-f]+),";
-                    Regex regex = new Regex(pattern);
-                    Match match = regex.Match(partitionDetails);
-
-                    if (match.Success)
+                    // check if the update file includes a partition table
+                    if (File.Exists(Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv")))
                     {
-                        // just try to parse, ignore failures
-                        int.TryParse(match.Groups[1].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionAddress);
-                        int.TryParse(match.Groups[2].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionSize);
+                        // can't do this without a partition table
+
+
+                        // compose path to partition file
+                        string partitionCsvFile = Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv");
+
+                        var partitionDetails = File.ReadAllText(partitionCsvFile);
+
+                        // grab details for the config partition
+                        string pattern = @"config,.*?(0x[0-9A-Fa-f]+),.*?(0x[0-9A-Fa-f]+),";
+                        Regex regex = new Regex(pattern);
+                        Match match = regex.Match(partitionDetails);
+
+                        if (match.Success)
+                        {
+                            // just try to parse, ignore failures
+                            int.TryParse(match.Groups[1].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionAddress);
+                            int.TryParse(match.Groups[2].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionSize);
+                        }
+
+                        // backup config partition
+                        // ignore failures
+                        _ = espTool.BackupConfigPartition(
+                            configPartitionBackup,
+                            configPartitionAddress,
+                            configPartitionSize);
+
+                        firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
                     }
-
-                    // backup config partition
-                    operationResult = espTool.BackupConfigPartition(
-                        configPartitionBackup,
-                        configPartitionAddress,
-                        configPartitionSize);
-
-                    firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
                 }
 
                 // write to flash
