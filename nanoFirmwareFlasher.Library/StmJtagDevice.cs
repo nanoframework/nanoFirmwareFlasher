@@ -11,6 +11,9 @@ using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// STM32 JTAG Device.
+    /// </summary>
     public class StmJtagDevice : StmDeviceBase
     {
         /// <summary>

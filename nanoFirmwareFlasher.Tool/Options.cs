@@ -282,7 +282,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Option(
             "address",
             Required = false,
-            HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with -binfile argument or flashing a deployment image with -deployment argument.")]
+            HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with --binfile argument or flashing a deployment image with --deploy argument.")]
         public IList<string> FlashAddress { get; set; }
 
         [Option(

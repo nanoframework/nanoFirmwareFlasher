@@ -77,6 +77,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="flashMode">The flash mode for the esptool</param>
         /// <param name="flashFrequency">The flash frequency for the esptool</param>
         /// <param name="partitionTableSize">Partition table size to use</param>
+        /// <param name="verbosity">The verbosity level of messages</param>
         public EspTool(
             string serialPort,
             int baudRate,
@@ -149,7 +150,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"Reading details from chip...");
+                Console.Write($"Reading details from chip...");
             }
 
             // execute flash_id command and parse the result
@@ -161,7 +162,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 null,
                 out messages))
             {
-                if(messages.Contains("A fatal error occurred: Failed to connect to Espressif device: No serial data received."))
+                if (messages.Contains("A fatal error occurred: Failed to connect to Espressif device: No serial data received."))
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
 
@@ -393,6 +394,44 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
+        /// Backup the entire flash into a bin file
+        /// </summary>
+        /// <param name="backupFilename">Backup file including full path</param>
+        /// <param name="address">Start address of the config partition.</param>
+        /// <param name="size">Size of the config partition.</param>
+        /// <returns>true if successful</returns>
+        internal ExitCodes BackupConfigPartition(
+            string backupFilename,
+            int address,
+            int size)
+        {
+            // execute dump_mem  command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
+            if (!RunEspTool(
+                $"read_flash 0x{address:X} 0x{size:X} \"{backupFilename}\"",
+                false,
+                true,
+                false,
+                null,
+                out string messages))
+            {
+                throw new ReadEsp32FlashException(messages);
+            }
+
+            var match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
+            if (!match.Success)
+            {
+                throw new ReadEsp32FlashException(messages);
+            }
+
+            if (Verbosity >= VerbosityLevel.Detailed)
+            {
+                Console.WriteLine(match.Groups["message"].ToString().Trim());
+            }
+
+            return ExitCodes.OK;
+        }
+
+        /// <summary>
         /// Erase the entire flash of the ESP32 chip.
         /// </summary>
         /// <returns>true if successful</returns>
@@ -458,6 +497,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Write to the flash
         /// </summary>
         /// <param name="partsToWrite">dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</param>
+        /// <param name="useStandardBaudrate">Use the standard baud rate (default is false).</param>
         /// <returns>true if successful</returns>
         internal ExitCodes WriteFlash(
             Dictionary<int, string> partsToWrite,

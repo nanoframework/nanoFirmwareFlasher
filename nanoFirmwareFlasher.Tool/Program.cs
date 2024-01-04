@@ -5,7 +5,7 @@
 
 using CommandLine;
 using CommandLine.Text;
-using nanoFramework.Tools.Debugger;
+using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.FirmwareFlasher.Extensions;
 using Newtonsoft.Json;
 using System;
@@ -17,7 +17,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -50,6 +49,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string codeBase = Assembly.GetExecutingAssembly().Location;
             var fullPath = Path.GetFullPath(codeBase);
             ExecutingPath = Path.GetDirectoryName(fullPath);
+
+            // grab AppInsights connection string to setup telemetry client
+            IConfigurationRoot appConfigurationRoot = new ConfigurationBuilder()
+                .SetBasePath(ExecutingPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            NanoTelemetryClient.ConnectionString = appConfigurationRoot?["iConnectionString"];
 
             // check for empty argument collection
             if (!args.Any())
@@ -95,7 +102,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (_verbosityLevel > VerbosityLevel.Quiet)
             {
-                OutputError(_exitCode, _verbosityLevel > VerbosityLevel.Normal, _extraMessage);
+                OutputError(_exitCode, _verbosityLevel >= VerbosityLevel.Normal, _extraMessage);
             }
 
             // force clean-up
@@ -362,93 +369,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.NanoDevice)
             {
+                var manager = new NanoDeviceManager(o, _verbosityLevel);
+
                 // COM port is mandatory for nano device operations
                 if (string.IsNullOrEmpty(o.SerialPort))
                 {
                     _exitCode = ExitCodes.E6001;
-                    return;
                 }
-
-                _nanoDeviceOperations = new NanoDeviceOperations();
-
-                if (o.DeviceDetails)
+                else
                 {
                     try
                     {
-                        NanoDeviceBase nanoDevice = null;
-                        _exitCode = _nanoDeviceOperations.GetDeviceDetails(
-                            o.SerialPort,
-                            ref nanoDevice);
-
-                        // done here
-                        return;
-                    }
-                    catch (CantConnectToNanoDeviceException ex)
-                    {
-                        _exitCode = ExitCodes.E2000;
-                        _extraMessage = ex.Message;
-
-                        return;
-                    }
-                }
-                else if (o.Update)
-                {
-                    try
-                    {
-                        _exitCode = await _nanoDeviceOperations.UpdateDeviceClrAsync(
-                            o.SerialPort,
-                            o.FwVersion,
-                            o.ClrFile,
-                            _verbosityLevel);
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            return;
-                        }
+                        _exitCode = await manager.ProcessAsync();
                     }
                     catch (CantConnectToNanoDeviceException ex)
                     {
                         _exitCode = ExitCodes.E2001;
                         _extraMessage = ex.Message;
-
-                        return;
+                    }
+                    catch (NoOperationPerformedException)
+                    {
+                        DisplayNoOperationMessage();
                     }
                     catch (Exception ex)
                     {
                         _exitCode = ExitCodes.E2002;
                         _extraMessage = ex.Message;
-
-                        return;
-                    }
-                }
-
-                if (o.Deploy)
-                {
-                    try
-                    {
-                        _exitCode = _nanoDeviceOperations.DeployApplication(
-                            o.SerialPort,
-                            o.DeploymentImage,
-                            _verbosityLevel);
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            return;
-                        }
-                    }
-                    catch (CantConnectToNanoDeviceException ex)
-                    {
-                        _exitCode = ExitCodes.E2001;
-                        _extraMessage = ex.Message;
-
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        _exitCode = ExitCodes.E2002;
-                        _extraMessage = ex.Message;
-
-                        return;
                     }
                 }
 
@@ -560,231 +506,38 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.esp32)
             {
-                // COM port is mandatory for ESP32
-                if (string.IsNullOrEmpty(o.SerialPort))
-                {
-                    _exitCode = ExitCodes.E6001;
-                    return;
-                }
-
-                EspTool espTool;
+                var manager = new Esp32Manager(o, _verbosityLevel);
 
                 try
                 {
-                    espTool = new EspTool(
-                        o.SerialPort,
-                        o.BaudRate,
-                        o.Esp32FlashMode,
-                        o.Esp32FlashFrequency,
-                        o.Esp32PartitionTableSize,
-                        _verbosityLevel);
+                    _exitCode = await manager.ProcessAsync();
                 }
-                catch (Exception)
+                catch (EspToolExecutionException ex)
                 {
-                    _exitCode = ExitCodes.E4005;
-                    return;
+                    _exitCode = ExitCodes.E4000;
+                    _extraMessage = ex.Message;
                 }
-
-                Esp32DeviceInfo esp32Device;
-
-                if (espTool.ComPortAvailable)
+                catch (ReadEsp32FlashException ex)
                 {
-                    try
-                    {
-                        esp32Device = espTool.GetDeviceDetails(o.TargetName, o.Esp32PartitionTableSize == null);
-                    }
-                    catch (EspToolExecutionException ex)
-                    {
-                        _exitCode = ExitCodes.E4000;
-                        _extraMessage = ex.Message;
-
-                        return;
-                    }
+                    _exitCode = ExitCodes.E4004;
+                    _extraMessage = ex.Message;
                 }
-                else
+                catch (WriteEsp32FlashException ex)
                 {
-                    // couldn't open COM port
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E6000;
-
-                    return;
+                    _exitCode = ExitCodes.E4003;
+                    _extraMessage = ex.Message;
                 }
-
-                if (_verbosityLevel >= VerbosityLevel.Normal)
+                catch (NoOperationPerformedException)
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-
-                    Console.WriteLine("");
-                    Console.WriteLine($"Connected to:");
-                    Console.WriteLine($"{esp32Device}");
-
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    // if this is a PICO and baud rate is not 115200 or 1M5, operations will most likely fail
-                    // warn user about this
-                    if (
-                        esp32Device.ChipName.Contains("ESP32-PICO")
-                        && (o.BaudRate != 115200
-                            && o.BaudRate != 1500000))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-
-                        Console.WriteLine("");
-                        Console.WriteLine("****************************** WARNING ******************************");
-                        Console.WriteLine("The connected device it's an ESP32 PICO which can be picky about the ");
-                        Console.WriteLine("baud rate used. Recommendation is to use --baud 115200 ");
-                        Console.WriteLine("*********************************************************************");
-                        Console.WriteLine("");
-
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
+                    DisplayNoOperationMessage();
                 }
-
-                // set verbosity
-                espTool.Verbosity = _verbosityLevel;
-
-                // backup requested
-                if (!string.IsNullOrEmpty(o.BackupPath) ||
-                   !string.IsNullOrEmpty(o.BackupFile))
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        // backup path specified, backup deployment
-                        _exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, o.BackupPath, o.BackupFile, _verbosityLevel);
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-
-                        operationPerformed = true;
-                    }
-                    catch (ReadEsp32FlashException ex)
-                    {
-                        _exitCode = ExitCodes.E4004;
-                        _extraMessage = ex.Message;
-
-                        // done here
-                        return;
-                    }
+                    // exception with 
+                    _exitCode = ExitCodes.E4000;
+                    _extraMessage = ex.Message;
                 }
 
-                // show device details
-                if (o.DeviceDetails)
-                {
-                    // device details already output
-                    _exitCode = ExitCodes.OK;
-
-                    // done here
-                    return;
-                }
-
-                // update operation requested?
-                if (o.Update)
-                {
-                    try
-                    {
-                        // write flash
-                        _exitCode = await Esp32Operations.UpdateFirmwareAsync(
-                            espTool,
-                            esp32Device,
-                            o.TargetName,
-                            true,
-                            o.FwVersion,
-                            o.Preview,
-                            o.DeploymentImage,
-                            null,
-                            o.ClrFile,
-                            !o.FitCheck,
-                            _verbosityLevel,
-                            o.Esp32PartitionTableSize);
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-
-                        // done here
-                        _exitCode = ExitCodes.OK;
-                        return;
-                    }
-                    catch (ReadEsp32FlashException ex)
-                    {
-                        _exitCode = ExitCodes.E4004;
-                        _extraMessage = ex.Message;
-                    }
-                    catch (WriteEsp32FlashException ex)
-                    {
-                        _exitCode = ExitCodes.E4003;
-                        _extraMessage = ex.Message;
-                    }
-                    catch (EspToolExecutionException ex)
-                    {
-                        _exitCode = ExitCodes.E4000;
-                        _extraMessage = ex.Message;
-                    }
-                }
-
-                // it's OK to deploy after update
-                if (o.Deploy)
-                {
-                    // need to take care of flash address
-                    string appFlashAddress = string.Empty;
-
-                    if (o.FlashAddress.Any())
-                    {
-                        // take the first address, it should be the only one valid
-                        appFlashAddress = o.FlashAddress.ElementAt(0);
-                    }
-
-                    // this to flash a deployment image without updating the firmware
-                    try
-                    {
-                        // write flash
-                        _exitCode = await Esp32Operations.UpdateFirmwareAsync(
-                            espTool,
-                            esp32Device,
-                            o.TargetName,
-                            false,
-                            null,
-                            false,
-                            o.DeploymentImage,
-                            appFlashAddress,
-                            null,
-                            !o.FitCheck,
-                            _verbosityLevel,
-                            o.Esp32PartitionTableSize);
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-
-                        // done here
-                        _exitCode = ExitCodes.OK;
-                        return;
-                    }
-                    catch (ReadEsp32FlashException ex)
-                    {
-                        _exitCode = ExitCodes.E4004;
-                        _extraMessage = ex.Message;
-                    }
-                    catch (WriteEsp32FlashException ex)
-                    {
-                        _exitCode = ExitCodes.E4003;
-                        _extraMessage = ex.Message;
-                    }
-                    catch (EspToolExecutionException ex)
-                    {
-                        _exitCode = ExitCodes.E4000;
-                        _extraMessage = ex.Message;
-                    }
-                }
-
-                // done here
                 return;
             }
 
@@ -794,353 +547,34 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.stm32)
             {
-                if (o.InstallDfuDrivers)
-                {
-                    _exitCode = Stm32Operations.InstallDfuDrivers(_verbosityLevel);
+                var manager = new Stm32Manager(o, _verbosityLevel);
 
-                    // done here
-                    return;
+                try
+                {
+                    _exitCode = await manager.ProcessAsync();
                 }
-
-                if (o.InstallJtagDrivers)
+                catch (CantConnectToDfuDeviceException)
                 {
-                    _exitCode = Stm32Operations.InstallJtagDrivers(_verbosityLevel);
-
-                    // done here
-                    return;
-                }
-
-                if (o.ListDevicesInDfuMode)
-                {
-                    var connecteDevices = StmDfuDevice.ListDevices();
-
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-
-                    if (connecteDevices.Count() == 0)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine("No DFU devices found");
-                    }
-                    else
-                    {
-                        Console.WriteLine("-- Connected DFU devices --");
-
-                        foreach ((string serial, string device) device in connecteDevices)
-                        {
-                            Console.WriteLine($"{device.serial} @ {device.device}");
-                        }
-
-                        Console.WriteLine("---------------------------");
-                    }
-
-                    Console.ForegroundColor = ConsoleColor.White;
-
                     // done here, this command has no further processing
-                    _exitCode = ExitCodes.OK;
-
-                    return;
+                    _exitCode = ExitCodes.E1005;
                 }
-
-                if (o.ListJtagDevices)
+                catch (CantConnectToJtagDeviceException)
                 {
-                    try
-                    {
-                        var connecteDevices = StmJtagDevice.ListDevices();
-
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-
-                        if (connecteDevices.Count == 0)
-                        {
-                            Console.WriteLine("No JTAG devices found");
-                        }
-                        else
-                        {
-                            Console.WriteLine("-- Connected JTAG devices --");
-
-                            foreach (string deviceId in connecteDevices)
-                            {
-                                Console.WriteLine(deviceId);
-                            }
-
-                            Console.WriteLine("---------------------------");
-                        }
-
-                        // done here, this command has no further processing
-                        _exitCode = ExitCodes.OK;
-                    }
-                    catch (Exception ex)
-                    {
-                        // exception with 
-                        _exitCode = ExitCodes.E5000;
-                        _extraMessage = ex.Message;
-                    }
-
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    return;
+                    // done here, this command has no further processing
+                    _exitCode = ExitCodes.E5002;
                 }
-
-                var connectedStDfuDevices = StmDfuDevice.ListDevices();
-                var connectedStJtagDevices = StmJtagDevice.ListDevices();
-
-                if (o.BinFile.Any() &&
-                    o.HexFile.Any() &&
-                    connectedStDfuDevices.Count != 0)
+                catch (NoOperationPerformedException)
                 {
-
-                    #region STM32 DFU options
-
-                    try
-                    {
-                        var dfuDevice = new StmDfuDevice(o.DfuDeviceId);
-
-                        if (!dfuDevice.DevicePresent)
-                        {
-                            // no JTAG device found
-
-                            // done here, this command has no further processing
-                            _exitCode = ExitCodes.E5001;
-
-                            return;
-                        }
-
-                        if (_verbosityLevel >= VerbosityLevel.Normal)
-                        {
-                            Console.WriteLine($"Connected to JTAG device with ID {dfuDevice.DfuId}");
-                        }
-
-                        // set verbosity
-                        dfuDevice.Verbosity = _verbosityLevel;
-
-                        // get mass erase option
-                        dfuDevice.DoMassErase = o.MassErase;
-
-                        if (o.HexFile.Any())
-                        {
-                            _exitCode = dfuDevice.FlashHexFiles(o.HexFile);
-
-                            // done here
-                            return;
-                        }
-
-                        if (o.BinFile.Any())
-                        {
-                            _exitCode = dfuDevice.FlashBinFiles(o.BinFile, o.FlashAddress);
-
-                            // done here
-                            return;
-                        }
-                    }
-                    catch (CantConnectToDfuDeviceException)
-                    {
-                        // done here, this command has no further processing
-                        _exitCode = ExitCodes.E1005;
-                    }
-
-                    #endregion
-
+                    DisplayNoOperationMessage();
                 }
-                else if (
-                    o.BinFile.Any() &&
-                    o.HexFile.Any() &&
-                    connectedStJtagDevices.Count != 0
-                     )
+                catch (Exception ex)
                 {
-                    // this has to be a JTAG connected device
-
-                    #region STM32 JTAG options
-
-                    try
-                    {
-                        var jtagDevice = new StmJtagDevice(o.JtagDeviceId);
-
-                        if (!jtagDevice.DevicePresent)
-                        {
-                            // no JTAG device found
-
-                            // done here, this command has no further processing
-                            _exitCode = ExitCodes.E5001;
-
-                            return;
-                        }
-
-                        if (_verbosityLevel >= VerbosityLevel.Normal)
-                        {
-                            Console.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
-                        }
-
-                        // set verbosity
-                        jtagDevice.Verbosity = _verbosityLevel;
-
-                        // get mass erase option
-                        jtagDevice.DoMassErase = o.MassErase;
-
-                        if (o.HexFile.Any())
-                        {
-                            _exitCode = jtagDevice.FlashHexFiles(o.HexFile);
-
-                            // done here
-                            return;
-                        }
-
-                        if (o.BinFile.Any())
-                        {
-                            _exitCode = jtagDevice.FlashBinFiles(o.BinFile, o.FlashAddress);
-
-                            // done here
-                            return;
-                        }
-                    }
-                    catch (CantConnectToJtagDeviceException)
-                    {
-                        // done here, this command has no further processing
-                        _exitCode = ExitCodes.E5002;
-                    }
-
-                    #endregion
+                    // exception with 
+                    _exitCode = ExitCodes.E5000;
+                    _extraMessage = ex.Message;
                 }
-                else if (!string.IsNullOrEmpty(o.TargetName))
-                {
-                    // update operation requested?
-                    if (o.Update)
-                    {
-                        // this to update the device with fw from CloudSmith
 
-                        // need to take care of flash address
-                        string appFlashAddress = null;
-
-                        if (o.FlashAddress.Any())
-                        {
-                            // take the first address, it should be the only one valid
-                            appFlashAddress = o.FlashAddress.ElementAt(0);
-                        }
-
-                        Interface updateInterface = Interface.None;
-
-                        if (o.DfuUpdate && o.JtagUpdate)
-                        {
-                            // can't select both JTAG and DFU simultaneously
-                            _exitCode = ExitCodes.E9000;
-                            return;
-                        }
-                        else if (o.DfuUpdate)
-                        {
-                            updateInterface = Interface.Dfu;
-                        }
-                        else if (o.JtagUpdate)
-                        {
-                            updateInterface = Interface.Jtag;
-                        }
-
-                        _exitCode = await Stm32Operations.UpdateFirmwareAsync(
-                            o.TargetName,
-                            o.FwVersion,
-                            o.Preview,
-                            true,
-                            o.DeploymentImage,
-                            appFlashAddress,
-                            o.DfuDeviceId,
-                            o.JtagDeviceId,
-                            !o.FitCheck,
-                            updateInterface,
-                            _verbosityLevel);
-
-                        operationPerformed = true;
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-                    }
-
-                    // it's OK to deploy after update
-                    if (o.Deploy)
-                    {
-                        // this to flash a deployment image without updating the firmware
-
-                        // need to take care of flash address
-                        string appFlashAddress;
-
-                        if (o.FlashAddress.Any())
-                        {
-                            // take the first address, it should be the only one valid
-                            appFlashAddress = o.FlashAddress.ElementAt(0);
-                        }
-                        else
-                        {
-                            _exitCode = ExitCodes.E9009;
-                            return;
-                        }
-
-                        Interface updateInterface = Interface.None;
-
-                        if (o.DfuUpdate && o.JtagUpdate)
-                        {
-                            // can't select both JTAG and DFU simultaneously
-                            _exitCode = ExitCodes.E9000;
-                            return;
-                        }
-                        else if (o.DfuUpdate)
-                        {
-                            updateInterface = Interface.Dfu;
-                        }
-                        else if (o.JtagUpdate)
-                        {
-                            updateInterface = Interface.Jtag;
-                        }
-
-                        _exitCode = await Stm32Operations.UpdateFirmwareAsync(
-                                        o.TargetName,
-                                        null,
-                                        false,
-                                        false,
-                                        o.DeploymentImage,
-                                        appFlashAddress,
-                                        o.DfuDeviceId,
-                                        o.JtagDeviceId,
-                                        !o.FitCheck,
-                                        updateInterface,
-                                        _verbosityLevel);
-
-                        operationPerformed = true;
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-                    }
-
-                    // reset MCU requested?
-                    if (o.ResetMcu)
-                    {
-                        _exitCode = Stm32Operations.ResetMcu(
-                                        o.JtagDeviceId,
-                                        _verbosityLevel);
-
-                        // done here
-                        return;
-                    }
-                }
-                else if (o.MassErase)
-                {
-                    _exitCode = Stm32Operations.MassErase(
-                                    o.JtagDeviceId,
-                                    _verbosityLevel);
-
-                    // done here
-                    return;
-                }
-                else if (o.ResetMcu)
-                {
-                    _exitCode = Stm32Operations.ResetMcu(
-                                    o.JtagDeviceId,
-                                    _verbosityLevel);
-
-                    // done here
-                    return;
-                }
+                return;
             }
 
             #endregion
@@ -1149,96 +583,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.ti_simplelink)
             {
-                if (o.TIInstallXdsDrivers)
-                {
-                    _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
+                var manager = new TIManager(o, _verbosityLevel);
 
-                    // done here
-                    return;
+                try
+                {
+                    _exitCode = await manager.ProcessAsync();
+                }
+                catch (NoOperationPerformedException)
+                {
+                    DisplayNoOperationMessage();
+                }
+                catch (Exception ex)
+                {
+                    // exception with 
+                    _exitCode = ExitCodes.E5000;
+                    _extraMessage = ex.Message;
                 }
 
-                if (!string.IsNullOrEmpty(o.TargetName))
-                {
-                    // update operation requested?
-                    if (o.Update)
-                    {
-                        // this to update the device with fw from Cloudsmith
-
-                        // need to take care of flash address
-                        string appFlashAddress = null;
-
-                        if (o.FlashAddress.Any())
-                        {
-                            // take the first address, it should be the only one valid
-                            appFlashAddress = o.FlashAddress.ElementAt(0);
-                        }
-
-                        _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
-                            o.TargetName,
-                            o.FwVersion,
-                            o.Preview,
-                            true,
-                            o.DeploymentImage,
-                            appFlashAddress,
-                            _verbosityLevel);
-
-                        operationPerformed = true;
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-                    }
-
-                    // it's OK to deploy after update
-                    if (o.Deploy)
-                    {
-                        // this to flash a deployment image without updating the firmware
-
-                        // need to take care of flash address
-                        string appFlashAddress = null;
-
-                        if (o.FlashAddress.Any())
-                        {
-                            // take the first address, it should be the only one valid
-                            appFlashAddress = o.FlashAddress.ElementAt(0);
-                        }
-                        else
-                        {
-                            _exitCode = ExitCodes.E9009;
-                            return;
-                        }
-
-                        _exitCode = await CC13x26x2Operations.UpdateFirmwareAsync(
-                                        o.TargetName,
-                                        null,
-                                        false,
-                                        false,
-                                        o.DeploymentImage,
-                                        appFlashAddress,
-                                        _verbosityLevel);
-
-                        operationPerformed = true;
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-                    }
-
-                    // reset MCU requested?
-                    if (o.ResetMcu)
-                    {
-                        // can't reset CC13x2 device without configuration file
-                        // would require to specify the exact target name and then had to try parsing that 
-                        _exitCode = ExitCodes.E9000;
-
-                        // done here
-                        return;
-                    }
-                }
+                return;
             }
 
             #endregion
@@ -1247,213 +609,34 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.gg11)
             {
-                if (o.ListJLinkDevices)
+                var manager = new SilabsManager(o, _verbosityLevel);
+
+                try
                 {
-                    try
-                    {
-                        var connecteDevices = JLinkDevice.ListDevices();
-
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-
-                        if (connecteDevices.Count == 0)
-                        {
-                            Console.WriteLine("No J-Link devices found");
-                        }
-                        else
-                        {
-                            Console.WriteLine("-- Connected USB J-Link devices --");
-
-                            foreach (string deviceId in connecteDevices)
-                            {
-                                Console.WriteLine(deviceId);
-                            }
-
-                            Console.WriteLine("----------------------------------");
-                        }
-
-                        // done here, this command has no further processing
-                        _exitCode = ExitCodes.OK;
-                    }
-                    catch (Exception ex)
-                    {
-                        // exception with 
-                        _exitCode = ExitCodes.E8000;
-                        _extraMessage = ex.Message;
-                    }
-
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    return;
+                    _exitCode = await manager.ProcessAsync();
+                }
+                catch (CantConnectToJLinkDeviceException)
+                {
+                    // done here, this command has no further processing
+                    _exitCode = ExitCodes.E8001;
+                }
+                catch (SilinkExecutionException)
+                {
+                    // done here, this command has no further processing
+                    _exitCode = ExitCodes.E8002;
+                }
+                catch (NoOperationPerformedException)
+                {
+                    DisplayNoOperationMessage();
+                }
+                catch (Exception ex)
+                {
+                    // exception with 
+                    _exitCode = ExitCodes.E8000;
+                    _extraMessage = ex.Message;
                 }
 
-                var connectedJLinkDevices = JLinkDevice.ListDevices();
-
-
-                if (o.BinFile.Any()
-                    && connectedJLinkDevices.Count != 0)
-                {
-                    try
-                    {
-                        var jlinkDevice = new JLinkDevice(o.JLinkDeviceId);
-
-                        if (!jlinkDevice.DevicePresent)
-                        {
-                            // no J-Link device found
-
-                            // done here, this command has no further processing
-                            _exitCode = ExitCodes.E8001;
-
-                            return;
-                        }
-
-                        if (_verbosityLevel >= VerbosityLevel.Normal)
-                        {
-                            Console.WriteLine($"Connected to J-Link device with ID {jlinkDevice.ProbeId}");
-                        }
-
-                        if (_verbosityLevel == VerbosityLevel.Diagnostic)
-                        {
-                            Console.WriteLine($"Firmware: {jlinkDevice.Firmare}");
-                            Console.WriteLine($"Hardware: {jlinkDevice.Hardware}");
-                        }
-
-                        // set VCP baud rate (if requested)
-                        if (o.SetVcpBaudRate.HasValue)
-                        {
-                            _ = SilinkCli.SetVcpBaudRate(
-                                o.JLinkDeviceId is null ? connectedJLinkDevices.First() : "",
-                                o.SetVcpBaudRate.Value,
-                                _verbosityLevel);
-                        }
-
-                        // set verbosity
-                        jlinkDevice.Verbosity = _verbosityLevel;
-
-                        // get mass erase option
-                        jlinkDevice.DoMassErase = o.MassErase;
-
-                        if (o.BinFile.Any())
-                        {
-                            _exitCode = jlinkDevice.FlashBinFiles(o.BinFile, o.FlashAddress);
-
-                            // done here
-                            return;
-                        }
-                    }
-                    catch (CantConnectToJLinkDeviceException)
-                    {
-                        // done here, this command has no further processing
-                        _exitCode = ExitCodes.E8002;
-                    }
-                }
-                else if (!string.IsNullOrEmpty(o.TargetName))
-                {
-                    // update operation requested?
-                    if (o.Update)
-                    {
-                        // this to update the device with fw from CloudSmith
-
-                        // need to take care of flash address
-                        string appFlashAddress = null;
-
-                        if (o.FlashAddress.Any())
-                        {
-                            // take the first address, it should be the only one valid
-                            appFlashAddress = o.FlashAddress.ElementAt(0);
-                        }
-
-                        _exitCode = await JLinkOperations.UpdateFirmwareAsync(
-                            o.TargetName,
-                            o.FwVersion,
-                            o.Preview,
-                            true,
-                            o.DeploymentImage,
-                            appFlashAddress,
-                            o.JLinkDeviceId,
-                            !o.FitCheck,
-                            _verbosityLevel);
-
-                        operationPerformed = true;
-
-                        if (o.SetVcpBaudRate.HasValue)
-                        {
-                            // set VCP baud rate (if needed)
-                            _ = SilinkCli.SetVcpBaudRate(
-                                o.JLinkDeviceId is null ? connectedJLinkDevices.First() : "",
-                                o.SetVcpBaudRate.Value,
-                                _verbosityLevel);
-                        }
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-                    }
-
-                    // it's OK to deploy after update
-                    if (o.Deploy)
-                    {
-                        // this to flash a deployment image without updating the firmware
-
-                        // need to take care of flash address
-                        string appFlashAddress;
-
-                        if (o.FlashAddress.Any())
-                        {
-                            // take the first address, it should be the only one valid
-                            appFlashAddress = o.FlashAddress.ElementAt(0);
-                        }
-                        else
-                        {
-                            _exitCode = ExitCodes.E9009;
-                            return;
-                        }
-
-                        _exitCode = await JLinkOperations.UpdateFirmwareAsync(
-                                        o.TargetName,
-                                        null,
-                                        false,
-                                        false,
-                                        o.DeploymentImage,
-                                        appFlashAddress,
-                                        o.JLinkDeviceId,
-                                        !o.FitCheck,
-                                        _verbosityLevel);
-
-                        operationPerformed = true;
-
-                        if (_exitCode != ExitCodes.OK)
-                        {
-                            // done here
-                            return;
-                        }
-                    }
-                }
-                else if (o.MassErase)
-                {
-                    try
-                    {
-                        _exitCode = JLinkOperations.MassErase(
-                            o.JLinkDeviceId,
-                            _verbosityLevel);
-                    }
-                    catch (CantConnectToJLinkDeviceException)
-                    {
-                        // exception with 
-                        _exitCode = ExitCodes.E8001;
-
-                    }
-                    catch (Exception ex)
-                    {
-                        // exception with 
-                        _exitCode = ExitCodes.E8000;
-                        _extraMessage = ex.Message;
-                    }
-
-                    // done here
-                    return;
-                }
+                return;
             }
 
             #endregion
@@ -1461,23 +644,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // done nothing... or maybe not...
             if (!operationPerformed)
             {
-                // because of short-comings in CommandLine parsing 
-                // need to customize the output to provide a consistent output
-                var parser = new Parser(config => config.HelpWriter = null);
-                var result = parser.ParseArguments<Options>(new[] { "", "" });
-
-                var helpText = new HelpText(
-                    new HeadingInfo(_headerInfo),
-                    _copyrightInfo)
-                        .AddPreOptionsLine("")
-                        .AddPreOptionsLine("No operation was performed with the options supplied.")
-                        .AddPreOptionsLine("")
-                        .AddPreOptionsLine(HelpText.RenderUsageText(result))
-                        .AddPreOptionsLine("")
-                        .AddOptions(result);
-
-                Console.WriteLine(helpText.ToString());
+                DisplayNoOperationMessage();
             }
+        }
+
+        private static void DisplayNoOperationMessage()
+        {
+            // because of short-comings in CommandLine parsing 
+            // need to customize the output to provide a consistent output
+            var parser = new Parser(config => config.HelpWriter = null);
+            var result = parser.ParseArguments<Options>(new[] { "", "" });
+
+            var helpText = new HelpText(
+                new HeadingInfo(_headerInfo),
+                _copyrightInfo)
+                    .AddPreOptionsLine("")
+                    .AddPreOptionsLine("No operation was performed with the options supplied.")
+                    .AddPreOptionsLine("")
+                    .AddPreOptionsLine(HelpText.RenderUsageText(result))
+                    .AddPreOptionsLine("")
+                    .AddOptions(result);
+
+            Console.WriteLine(helpText.ToString());
         }
 
         private static void DisplayBoardDetails(List<CloudSmithPackageDetail> boards)

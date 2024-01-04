@@ -4,7 +4,7 @@
 # this PS1 downloads the latest version of SEGGER J-Link from their website and unpacks it
 
 # version
-$version = "766f"
+$version = "792k"
 
 # make sure security doesn't block our request
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11"

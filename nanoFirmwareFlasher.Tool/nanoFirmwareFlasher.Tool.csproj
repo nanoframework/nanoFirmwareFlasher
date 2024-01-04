@@ -46,6 +46,7 @@
 	<ItemGroup>
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.38" />
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" PrivateAssets="All" />
 	</ItemGroup>
 
@@ -66,6 +67,12 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="appsettings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 	<Target Name="CopyToolsContent" AfterTargets="Build">

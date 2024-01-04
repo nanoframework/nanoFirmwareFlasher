@@ -8,6 +8,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// Exit Codes.
+    /// </summary>
     public enum ExitCodes
     {
         /// <summary>
@@ -33,7 +36,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         E1002 = 1002,
 
         /// <summary>
-        /// Error flashing DFU dvice
+        /// Error flashing DFU device
         /// </summary>
         [Display(Name = "Error flashing DFU device.")]
         E1003 = 1003,
@@ -53,7 +56,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Failed to start execution on the connected device.
         /// </summary>
-        [Display(Name = "Failed to start execition on the connected device.")]
+        [Display(Name = "Failed to start execution on the connected device.")]
         E1006 = 1006,
 
         ///////////////////////
@@ -315,7 +318,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// CLR image file has wrong format. It has to be a binary file.
         /// </summary>
-        [Display(Name = "CLR image file has wrong format.It has to be a binary file.")]
+        [Display(Name = "CLR image file has wrong format. It has to be a binary file.")]
         E9012 = 9012,
 
         /// <summary>
