@@ -392,7 +392,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} mode=UR -w \"{binFilePath}\" {addresses.ElementAt(index++)}");
 
-                if (!cliOutput.Contains("Programming Complete."))
+                if (!cliOutput.Contains("File download complete"))
                 {
                     ShowCLIOutput(cliOutput);
 
