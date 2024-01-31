@@ -152,6 +152,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
+            if (errors.All(e => e.Tag == ErrorType.HelpRequestedError || e.Tag == ErrorType.VersionRequestedError))
+            {
+                return Task.CompletedTask;
+            }
             _exitCode = ExitCodes.E9000;
             return Task.CompletedTask;
         }
