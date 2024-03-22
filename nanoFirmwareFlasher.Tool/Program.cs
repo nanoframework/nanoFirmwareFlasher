@@ -496,10 +496,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 // ESP32 related
                 else if (
-                    !string.IsNullOrEmpty(o.SerialPort) ||
-                    (o.BaudRate != 921600) ||
+                    !string.IsNullOrEmpty(o.SerialPort) && 
+                    ((o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
-                    (o.Esp32FlashFrequency != 40))
+                    (o.Esp32FlashFrequency != 40)))
                 {
                     o.Platform = SupportedPlatform.esp32;
                 }
@@ -647,7 +647,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             #endregion
 
             // done nothing... or maybe not...
-            if (!operationPerformed)
+            if (!operationPerformed && string.IsNullOrEmpty(o.FileDeployment))
             {
                 DisplayNoOperationMessage();
             }

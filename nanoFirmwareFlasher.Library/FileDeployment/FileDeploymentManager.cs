@@ -184,20 +184,41 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                 {
                     try
                     {
-                        Console.Write($"Deploying file {file.ContentFileName} to {file.FileName}...");
-                        var ret = device.DebugEngine.AddStorageFile(file.FileName, File.ReadAllBytes(file.ContentFileName));
-                        if (ret != Debugger.WireProtocol.StorageOperationErrorCode.NoError)
+                        if (string.IsNullOrEmpty(file.ContentFileName))
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine();
-                            Console.WriteLine($"Error deploying content file {file.ContentFileName} to {file.FileName}");
-                            Console.ForegroundColor = ConsoleColor.White;
+                            // deleting
+                            Console.Write($"Deleting file {file.FileName}...");
+                            if (device.DebugEngine.DeleteStorageFile(file.FileName) != Debugger.WireProtocol.StorageOperationErrorCode.NoError)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                Console.WriteLine();
+                                Console.WriteLine($"Error deleting file {file.FileName}, it may not exist on the storage.");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine($"OK");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
                         }
                         else
                         {
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine($"OK");
-                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.Write($"Deploying file {file.ContentFileName} to {file.FileName}...");
+                            var ret = device.DebugEngine.AddStorageFile(file.FileName, File.ReadAllBytes(file.ContentFileName));
+                            if (ret != Debugger.WireProtocol.StorageOperationErrorCode.NoError)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine();
+                                Console.WriteLine($"Error deploying content file {file.ContentFileName} to {file.FileName}");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine($"OK");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
                         }
                     }
                     catch
