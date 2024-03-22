@@ -7,6 +7,7 @@ using CommandLine;
 using CommandLine.Text;
 using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.FirmwareFlasher.Extensions;
+using nanoFramework.Tools.FirmwareFlasher.FileDeployment;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -542,7 +543,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _extraMessage = ex.Message;
                 }
 
-                return;
+                operationPerformed = true;
             }
 
             #endregion
@@ -578,7 +579,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _extraMessage = ex.Message;
                 }
 
-                return;
+                operationPerformed = true;
             }
 
             #endregion
@@ -604,7 +605,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _extraMessage = ex.Message;
                 }
 
-                return;
+                operationPerformed = true;
             }
 
             #endregion
@@ -640,7 +641,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _extraMessage = ex.Message;
                 }
 
-                return;
+                operationPerformed = true;
             }
 
             #endregion
@@ -649,6 +650,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!operationPerformed)
             {
                 DisplayNoOperationMessage();
+            }
+            else
+            {
+                if ((_exitCode == ExitCodes.OK) && !string.IsNullOrEmpty(o.FileDeployment))
+                {
+                    FileDeploymentManager deploy = new FileDeploymentManager(o.FileDeployment, o.SerialPort, _verbosityLevel);
+                    try
+                    {
+                        _exitCode = await deploy.DeployAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        // exception with 
+                        _exitCode = ExitCodes.E2003;
+                        _extraMessage = ex.Message;
+                    }
+                }
             }
         }
 

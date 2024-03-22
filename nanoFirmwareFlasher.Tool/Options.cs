@@ -334,6 +334,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Reads details from connected device.")]
         public bool DeviceDetails { get; set; }
 
+        [Option(
+            "filedeployment",
+            Required = false,
+            Default = null,
+            HelpText = "JSON file containing file deployment settings.")]
+        public string FileDeployment { get; set; }
+
         #endregion
 
 

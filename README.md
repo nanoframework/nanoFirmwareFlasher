@@ -447,6 +447,35 @@ nanoff --listtargets --platform stm32
 
 If you use the `--listtargets` switch in conjunction with `--preview`, you'll get the list of available firmware packages that are available with experimental or major feature changes.
 
+## Deploy file to device storage
+
+Some devices like ESP32, Orgpal and few others have storage available. Files can be deployed in this storage. You have to use the `filedeployment` parameter pointing on a JSON file:
+
+```console
+nanoff --target XIAO_ESP32C3 --update --masserase --serialport COM21  --filedeployment C:\path\deploy.json
+```
+
+The JSON an **optional** `SerialPort` in case the port to upload the files must be different than the one to flash the device or not specified in the main command line and a **mandatory** list of `Files` entries. Each entry must contains `FileName`, the destination full path file name and `ContentFileName`, the full path with file name of the source file to be deployed:
+
+```json
+{
+   "serialport":"COM42",
+   "files": [
+      {
+         "FileName": "I:\\TestFile.txt",
+         "ContentFileName": "C:\\tmp\\NFApp3\\NFApp3\\TestFile.txt"
+      },
+      {
+         "FileName": "I:\\wilnotexist.txt",
+         "ContentFileName": "C:\\WRONGPATH\\TestFile.txt"
+      }
+   ]
+}
+```
+
+> [!Note]
+> if a file already exists in the storage, it will be replaced by the new one.
+
 ## Clear cache location
 
 If needed one can clear the local cache from the firmware packages that are stored there.
