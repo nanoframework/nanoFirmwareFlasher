@@ -8,8 +8,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
 {
     internal class DeploymentFile
     {
-        public string FileName { get; set; }
+        /// <summary>
+        /// Gets or sets the destination fully qualified file path including file name.
+        /// </summary>
+        public string DestinationFilePath { get; set; }
 
-        public string ContentFileName { get; set; }
+        /// <summary>
+        /// Gets or sets the source fully qualified file path including file name.
+        /// </summary>
+        public string SourceFilePath { get; set; }
     }
 }

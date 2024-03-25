@@ -11,12 +11,18 @@ using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
 {
+    /// <summary>
+    /// File Deployment Manager class.
+    /// </summary>
     public class FileDeploymentManager
     {
         private FileDeploymentConfiguration _configuration;
         private VerbosityLevel _verbosity;
         private string _serialPort;
 
+        /// <summary>
+        /// Creates an instance of FileDeploymentManager.
+        /// </summary>
         public FileDeploymentManager(string configFilePath, string originalPort, VerbosityLevel verbosity)
         {
             _configuration = JsonConvert.DeserializeObject<FileDeploymentConfiguration>(File.ReadAllText(configFilePath));
@@ -24,6 +30,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
             _verbosity = verbosity;
         }
 
+        /// <summary>
+        /// Deploys async the files.
+        /// </summary>
+        /// <returns>An ExitCode error.</returns>
         public async Task<ExitCodes> DeployAsync()
         {
             // number of retries when performing a deploy operation
@@ -184,15 +194,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                 {
                     try
                     {
-                        if (string.IsNullOrEmpty(file.ContentFileName))
+                        if (string.IsNullOrEmpty(file.SourceFilePath))
                         {
                             // deleting
-                            Console.Write($"Deleting file {file.FileName}...");
-                            if (device.DebugEngine.DeleteStorageFile(file.FileName) != Debugger.WireProtocol.StorageOperationErrorCode.NoError)
+                            Console.Write($"Deleting file {file.DestinationFilePath}...");
+                            if (device.DebugEngine.DeleteStorageFile(file.DestinationFilePath) != Debugger.WireProtocol.StorageOperationErrorCode.NoError)
                             {
                                 Console.ForegroundColor = ConsoleColor.Yellow;
                                 Console.WriteLine();
-                                Console.WriteLine($"Error deleting file {file.FileName}, it may not exist on the storage.");
+                                Console.WriteLine($"Error deleting file {file.DestinationFilePath}, it may not exist on the storage.");
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
                             else
@@ -204,13 +214,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                         }
                         else
                         {
-                            Console.Write($"Deploying file {file.ContentFileName} to {file.FileName}...");
-                            var ret = device.DebugEngine.AddStorageFile(file.FileName, File.ReadAllBytes(file.ContentFileName));
+                            Console.Write($"Deploying file {file.SourceFilePath} to {file.DestinationFilePath}...");
+                            var ret = device.DebugEngine.AddStorageFile(file.DestinationFilePath, File.ReadAllBytes(file.SourceFilePath));
                             if (ret != Debugger.WireProtocol.StorageOperationErrorCode.NoError)
                             {
                                 Console.ForegroundColor = ConsoleColor.Red;
                                 Console.WriteLine();
-                                Console.WriteLine($"Error deploying content file {file.ContentFileName} to {file.FileName}");
+                                Console.WriteLine($"Error deploying content file {file.SourceFilePath} to {file.DestinationFilePath}");
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
                             else
@@ -227,7 +237,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine();
-                            Console.WriteLine($"Exception deploying content file {file.ContentFileName} to {file.FileName}");
+                            Console.WriteLine($"Exception deploying content file {file.SourceFilePath} to {file.DestinationFilePath}");
                             Console.ForegroundColor = ConsoleColor.White;
                         }
                     }

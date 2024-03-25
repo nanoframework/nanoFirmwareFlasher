@@ -455,22 +455,22 @@ Some devices like ESP32, Orgpal and few others have storage available. Files can
 nanoff --target XIAO_ESP32C3 --update --masserase --serialport COM21  --filedeployment C:\path\deploy.json
 ```
 
-The JSON an optional `SerialPort` in case the port to upload the files must be different than the one to flash the device or not specified in the main command line and a **mandatory** list of `Files` entries. Each entry must contains `FileName`, the destination full path file name and `ContentFileName` to deploy content, otherwise to delete the file, the full path with file name of the source file to be deployed:
+The JSON an optional `SerialPort` in case the port to upload the files must be different than the one to flash the device or not specified in the main command line and a **mandatory** list of `Files` entries. Each entry must contains `DestinationFilePath`, the destination full path file name and `SourceFilePath` to deploy content, otherwise to delete the file, the full path with file name of the source file to be deployed:
 
 ```json
 {
    "serialport":"COM42",
    "files": [
       {         
-         "FileName": "I:\\TestFile.txt",
-         "ContentFileName": "C:\\tmp\\NFApp3\\NFApp3\\TestFile.txt"
+         "DestinationFilePath": "I:\\TestFile.txt",
+         "SourceFilePath": "C:\\tmp\\NFApp3\\NFApp3\\TestFile.txt"
       },
       {
-         "FileName": "I:\\NoneFile.txt"
+         "DestinationFilePath": "I:\\NoneFile.txt"
       },
       {
-         "FileName": "I:\\wilnotexist.txt",
-         "ContentFileName": "C:\\WRONGPATH\\TestFile.txt"
+         "DestinationFilePath": "I:\\wilnotexist.txt",
+         "SourceFilePath": "C:\\WRONGPATH\\TestFile.txt"
       }
    ]
 }
