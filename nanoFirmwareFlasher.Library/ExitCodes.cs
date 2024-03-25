@@ -81,6 +81,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Error executing operation with nano device.")]
         E2002 = 2002,
 
+        /// <summary>
+        /// Error executing operation with nano device.
+        /// </summary>
+        [Display(Name = "Error executing file deployment on nano device.")]
+        E2003 = 2003,
+
         ////////////////////////
         // ESP32 tools Errors //
         ////////////////////////

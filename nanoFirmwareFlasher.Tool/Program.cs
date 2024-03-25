@@ -7,6 +7,7 @@ using CommandLine;
 using CommandLine.Text;
 using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.FirmwareFlasher.Extensions;
+using nanoFramework.Tools.FirmwareFlasher.FileDeployment;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -495,10 +496,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 // ESP32 related
                 else if (
-                    !string.IsNullOrEmpty(o.SerialPort) ||
-                    (o.BaudRate != 921600) ||
+                    !string.IsNullOrEmpty(o.SerialPort) && 
+                    ((o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
-                    (o.Esp32FlashFrequency != 40))
+                    (o.Esp32FlashFrequency != 40)))
                 {
                     o.Platform = SupportedPlatform.esp32;
                 }
@@ -542,7 +543,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _extraMessage = ex.Message;
                 }
 
-                return;
+                operationPerformed = true;
             }
 
             #endregion
@@ -578,7 +579,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _extraMessage = ex.Message;
                 }
 
-                return;
+                operationPerformed = true;
             }
 
             #endregion
@@ -604,7 +605,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _extraMessage = ex.Message;
                 }
 
-                return;
+                operationPerformed = true;
             }
 
             #endregion
@@ -640,15 +641,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _extraMessage = ex.Message;
                 }
 
-                return;
+                operationPerformed = true;
             }
 
             #endregion
 
             // done nothing... or maybe not...
-            if (!operationPerformed)
+            if (!operationPerformed && string.IsNullOrEmpty(o.FileDeployment))
             {
                 DisplayNoOperationMessage();
+            }
+            else
+            {
+                if ((_exitCode == ExitCodes.OK) && !string.IsNullOrEmpty(o.FileDeployment))
+                {
+                    FileDeploymentManager deploy = new FileDeploymentManager(o.FileDeployment, o.SerialPort, _verbosityLevel);
+                    try
+                    {
+                        _exitCode = await deploy.DeployAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        // exception with 
+                        _exitCode = ExitCodes.E2003;
+                        _extraMessage = ex.Message;
+                    }
+                }
             }
         }
 
