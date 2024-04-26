@@ -1,4 +1,4 @@
-﻿////
+////
 // Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 ////
@@ -54,7 +54,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     _ = device.DebugEngine.Connect(
                         false,
-                        true);
+                        false);
 
                     // check that we are in CLR
                     if (device.DebugEngine.IsConnectedTonanoCLR)
@@ -82,6 +82,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             // no need to report this, just move on
                         }
                     }
+
+                    device.Disconnect(true);
                 }
             }
 
