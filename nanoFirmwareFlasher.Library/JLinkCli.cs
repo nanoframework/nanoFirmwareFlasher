@@ -179,34 +179,9 @@ Exit
                 }
             }
 
-            List<string> shadowFiles = new List<string>();
+            List<string> shadowFiles = [];
 
-            // J-Link can't handle diacritc chars
-            // developer note: reported to Segger (Case: 60276735) and can be removed if this is fixed/improved
-            foreach (string binFile in files)
-            {
-                if (!binFile.IsNormalized(NormalizationForm.FormD)
-                    || binFile.Contains(' '))
-                {
-                    var tempFile = Path.Combine(
-                        Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine),
-                        Path.GetFileName(binFile));
-
-                    // copy file to shadow file
-                    File.Copy(
-                        binFile,
-                        tempFile,
-                        true);
-
-                    shadowFiles.Add(tempFile);
-                }
-                else
-                {
-                    // copy file to shadow list
-                    shadowFiles.Add(binFile);
-                }
-
-            }
+            ProcessFilePaths(files, shadowFiles);
 
             // erase flash
             if (DoMassErase)
@@ -239,19 +214,14 @@ Exit
 
             foreach (string binFile in shadowFiles)
             {
-                // make sure path is absolute
-                var binFilePath = Utilities.MakePathAbsolute(
-                    Environment.CurrentDirectory,
-                    binFile);
-
                 if (Verbosity > VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{Path.GetFileName(binFilePath)} @ {addresses.ElementAt(index)}");
+                    Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
                 // compose JLink command file
-                var jlinkCmdContent = FlashSingleFileCommandTemplate.Replace(FilePathToken, binFilePath).Replace(FlashAddressToken, addresses.ElementAt(index++));
+                var jlinkCmdContent = FlashSingleFileCommandTemplate.Replace(FilePathToken, binFile).Replace(FlashAddressToken, addresses.ElementAt(index++));
                 var jlinkCmdFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jlink");
 
                 // create file
@@ -314,6 +284,41 @@ Exit
             return ExitCodes.OK;
         }
 
+        private void ProcessFilePaths(IList<string> files, List<string> shadowFiles)
+        {
+            // J-Link can't handle diacritc chars
+            // developer note: reported to Segger (Case: 60276735) and can be removed if this is fixed/improved
+            foreach (string binFile in files)
+            {
+                // make sure path is absolute
+                var binFilePath = Utilities.MakePathAbsolute(
+                    Environment.CurrentDirectory,
+                    binFile);
+
+                if (!binFilePath.IsNormalized(NormalizationForm.FormD)
+                    || binFilePath.Contains(' '))
+                {
+                    var tempFile = Path.Combine(
+                        Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine),
+                        Path.GetFileName(binFilePath));
+
+                    // copy file to shadow file
+                    File.Copy(
+                        binFilePath,
+                        tempFile,
+                        true);
+
+                    shadowFiles.Add(tempFile);
+                }
+                else
+                {
+                    // copy file to shadow list
+                    shadowFiles.Add(binFile);
+                }
+
+            }
+        }
+
         /// <summary>
         /// Executes an operation that flashes a collection of Intel HEX format files to a connected J-Link device.
         /// </summary>
@@ -330,33 +335,9 @@ Exit
                 return ExitCodes.E5004;
             }
 
-            List<string> shadowFiles = new List<string>();
+            List<string> shadowFiles = [];
 
-            // J-Link can't handle diacritc chars
-            // developer note: reported to Segger (Case: 60276735) and can be removed if this is fixed/improved
-            foreach (string hexFile in files)
-            {
-                if (!hexFile.IsNormalized(NormalizationForm.FormD) ||
-                    hexFile.Contains(' '))
-                {
-                    var tempFile = Path.Combine(
-                        Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine),
-                        Path.GetFileName(hexFile));
-
-                    // copy file to shadow file
-                    File.Copy(
-                        hexFile,
-                        tempFile,
-                        true);
-
-                    shadowFiles.Add(tempFile);
-                }
-                else
-                {
-                    // copy file to shadow list
-                    shadowFiles.Add(hexFile);
-                }
-            }
+            ProcessFilePaths(files, shadowFiles);
 
             // erase flash
             if (DoMassErase)
@@ -388,18 +369,13 @@ Exit
 
             foreach (string hexFile in shadowFiles)
             {
-                // make sure path is absolute
-                var hexFilePath = Utilities.MakePathAbsolute(
-                    Environment.CurrentDirectory,
-                    hexFile);
-
                 if (Verbosity > VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{Path.GetFileName(hexFilePath)}");
+                    Console.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                listOfFiles.AppendLine($"LoadFile {hexFilePath}");
+                listOfFiles.AppendLine($"LoadFile {hexFile}");
             }
 
             // compose JLink command file
