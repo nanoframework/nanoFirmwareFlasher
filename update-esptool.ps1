@@ -64,9 +64,9 @@ Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptool
 
 # copy files to the correct locations
 "Copying files to tools folders..." | Write-Host -ForegroundColor White -NoNewline
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-win64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve) -Force
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-macos\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac" -Resolve) -Force
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-$version-linux-amd64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux" -Resolve) -Force
+Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-win64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve) -Force
+Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-macos\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac" -Resolve) -Force
+Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-linux-amd64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux" -Resolve) -Force
 "OK" | Write-Host -ForegroundColor Green
 
 # cleanup files
