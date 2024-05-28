@@ -133,6 +133,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Partition table size to use. Valid sizes are: 2, 4, 8 and 16.")]
         public PartitionTableSize? Esp32PartitionTableSize { get; set; }
 
+        [Option(
+            "checkpsram",
+            Required = false,
+            Default = false,
+            HelpText = "Perform check for PSRAM in device.")]
+        public bool CheckPsRam { get; set; }
+
         #endregion
 
 
