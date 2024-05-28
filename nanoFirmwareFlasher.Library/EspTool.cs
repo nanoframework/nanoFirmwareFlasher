@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly string _serialPort = null;
 
         /// <summary>
-        /// The baud rate for the serial port. The default comming from <see cref="Options.BaudRate"/>.
+        /// The baud rate for the serial port. The default comming from CLI Options.BaudRate./>.
         /// </summary>
         private int _baudRate = 0;
 
@@ -42,6 +42,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// The size of the flash in bytes; 4 MB = 0x40000 bytes
         /// </summary>
         private int _flashSize = -1;
+
+        
 
         private bool connectPatternFound;
 
@@ -120,7 +122,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else
             {
-                if (!File.Exists(serialPort))
+                if (!System.IO.File.Exists(serialPort))
                 {
                     throw new EspToolExecutionException();
                 }
@@ -143,7 +145,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occured</returns>
         public Esp32DeviceInfo GetDeviceDetails(
             string targetName,
-            bool requireFlashSize = true)
+            bool requireFlashSize = true,
+            bool forcePsRamCheck = false)
         {
             string messages;
 
@@ -232,36 +235,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // lower case, no hifen
             _chipType = chipType.ToLower().Replace("-", "");
 
-            // try to find out if PSRAM is present
             PSRamAvailability psramIsAvailable = PSRamAvailability.Undetermined;
+            int psRamSize = 0;
 
-            if (name.Contains("PICO"))
+            if (_chipType == "esp32c3"
+               || _chipType == "esp32c6"
+               || _chipType == "esp32h2")
             {
-                // PICO's don't have PSRAM, so don't even bother
+                // these series doesn't have PSRAM
                 psramIsAvailable = PSRamAvailability.No;
-            }
-            else if (name.Contains("ESP32-S2")
-                     && targetName == "FEATHER_S2")
-            {
-                // FEATHER_S2's have PSRAM, so don't even bother
-                psramIsAvailable = PSRamAvailability.Yes;
-            }
-            else if (name.Contains("ESP32-C3")
-                     || name.Contains("ESP32-S3"))
-            {
-                // all ESP32-C3/S3 SDK config have support for PSRAM, so don't even bother
-                psramIsAvailable = PSRamAvailability.Undetermined;
             }
             else
             {
-                // if a target name wasn't provided, check for PSRAM
-                // except for ESP32_C3 and S3
-                if (targetName == null
-                    && !name.Contains("ESP32-C3")
-                    && !name.Contains("ESP32-S3"))
-                {
-                    psramIsAvailable = FindPSRamAvailable();
-                }
+                //try to find out if PSRAM is present
+                psramIsAvailable = FindPSRamAvailable(
+                    out psRamSize,
+                    forcePsRamCheck);
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
@@ -280,51 +269,95 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 byte.Parse(manufacturer, NumberStyles.AllowHexSpecifier),
                 short.Parse(device, NumberStyles.HexNumber),
                 _flashSize,
-                psramIsAvailable);
+                psramIsAvailable,
+                psRamSize);
         }
 
         /// <summary>
         /// Perform detection of PSRAM availability on connected device.
         /// </summary>
+        /// <param name="force">Force the detection of PSRAM availability.</param>
+        /// <param name="psRamSize">Size of the PSRAM device, if detection was succesfull.</param>
         /// <returns>Information about availability of PSRAM, if that was possible to determine.</returns>
-        private PSRamAvailability FindPSRamAvailable()
+        private PSRamAvailability FindPSRamAvailable(
+            out int psRamSize,
+            bool force = false)
         {
-            PSRamAvailability pSRamAvailability = PSRamAvailability.Undetermined;
-
             // don't want to output anything from esptool
             // backup current verbosity setting
             var bkpVerbosity = Verbosity;
             Verbosity = VerbosityLevel.Quiet;
 
-            // compose bootloader partition
-            var bootloaderPartition = new Dictionary<int, string>
+            // default to no PSRAM
+            psRamSize = 0;
+
+            try
             {
-                // bootloader goes to 0x1000, except for ESP32_C3 and ESP32_S3, which goes to 0x0
-				{ _chipType == "esp32c3" || _chipType == "esp32s3" ? 0x0 : 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
+                // if forced, run the test app to determine PSRAM availability
+                if (force)
+                {
+                    // adjust flash size according to the series
+                    // defautl to 2MB for ESP32 series
+                    var flashSize = 2 * 1024 * 1024;
 
-				// nanoCLR goes to 0x10000
-				{ 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
+                    if(_chipType == "esp32s2"
+                       || _chipType == "esp32s3")
+                    {
+                        flashSize = 4 * 1024 * 1024;
+                    }
 
-                // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
-				{ 0x8000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(_flashSize).ToLowerInvariant()}.bin") }
-            };
+                    // compose bootloader partition
+                    var bootloaderPartition = new Dictionary<int, string>
+                    {
+                        // bootloader goes to 0x1000, except for ESP32_S3, which goes to 0x0
+				        { _chipType == "esp32s3" ? 0x0 : 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
 
-            // need to use standard baud rate here because of boards put in download mode
-            if (WriteFlash(bootloaderPartition, true) == ExitCodes.OK)
-            {
+				        // nanoCLR goes to 0x10000
+				        { 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
+
+                        // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
+				        { 0x8000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
+                    };
+
+                    // need to use standard baud rate here because of boards put in download mode
+                    if (WriteFlash(bootloaderPartition, true) != ExitCodes.OK)
+                    {
+                        // something went wrong, can't determine PSRAM availability
+                        return PSRamAvailability.Undetermined;
+                    }
+                }
+                else
+                {
+                    // execute run command to force soft reset
+                    // if the device is running a nanoFramework image, it will output information about the PSRAM
+                    if (!RunEspTool(
+                        $" run ",
+                        true,
+                        true,
+                        true,
+                        '\r',
+                        out _))
+                    {
+                        // something went wrong, can't determine PSRAM availability
+                        return PSRamAvailability.Undetermined;
+                    }
+                }
+
                 // check if the
                 if (_esptoolMessage.Contains("esptool.py can not exit the download mode over USB"))
                 {
                     // this board was put on download mode manually, can't run the test app...
-
                     return PSRamAvailability.Undetermined;
                 }
 
                 try
                 {
-                    // open COM port and grab output
                     // force baud rate to 115200 (standard baud rate for boootloader)
-                    SerialPort espDevice = new SerialPort(_serialPort, 115200);
+                    SerialPort espDevice = new(
+                        _serialPort,
+                        115200);
+
+                    // open COM port and grab output
                     espDevice.Open();
 
                     if (espDevice.IsOpen)
@@ -337,14 +370,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         espDevice.Close();
 
-                        // find magic string
+                        // look for "magic" string
+
                         if (bootloaderOutput.Contains("PSRAM initialized"))
                         {
-                            pSRamAvailability = PSRamAvailability.Yes;
+                            // output similiar to this:
+                            // I(206) esp_psram: Found 4MB PSRAM device
+                            // I(206) esp_psram: Speed: 40MHz
+                            // I(209) esp_psram: PSRAM initialized, cache is in low / high(2 - core) mode.
+
+                            // extract PSRAM size
+                            var match = Regex.Match(bootloaderOutput, @"Found (?<size>\d+)MB PSRAM device");
+                            if (match.Success)
+                            {
+                                psRamSize = int.Parse(match.Groups["size"].Value);
+                            }
+
+                            return PSRamAvailability.Yes;
+                        }
+                        else if (bootloaderOutput.Contains("PSRAM ID read error"))
+                        {
+                            // output similiar to this:
+                            // E(206) quad_psram: PSRAM ID read error: 0xffffffff, PSRAM chip not found or not supported
+                            // E(210) esp_psram: PSRAM enabled but initialization failed.Bailing out.
+                            return PSRamAvailability.No;
                         }
                         else
                         {
-                            pSRamAvailability = PSRamAvailability.No;
+                            // can't determine PSRAM availability
+                            return PSRamAvailability.Undetermined;
                         }
                     }
                 }
@@ -353,11 +407,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // don't care about any exceptions 
                 }
             }
+            finally
+            {
+                // restore verbosity setting
+                Verbosity = bkpVerbosity;
+            }
 
-            // restore verbosity setting
-            Verbosity = bkpVerbosity;
-
-            return pSRamAvailability;
+            return PSRamAvailability.Undetermined;
         }
 
         /// <summary>

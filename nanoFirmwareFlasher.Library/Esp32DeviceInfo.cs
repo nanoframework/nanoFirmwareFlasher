@@ -65,6 +65,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public PSRamAvailability PSRamAvailable { get; }
 
         /// <summary>
+        /// The size of the PSRAM (in MBytes).
+        /// </summary>
+        public int PsRamSize { get; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="chipType">The type of chip.</param>
@@ -85,7 +90,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             byte flashManufacturerId,
             short flashDeviceModelId,
             int flashSize,
-            PSRamAvailability psramAvailability)
+            PSRamAvailability psramAvailability,
+            int psRamSize)
         {
             ChipType = chipType;
             ChipName = chipName;
@@ -96,6 +102,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             FlashDeviceId = flashDeviceModelId;
             FlashSize = flashSize;
             PSRamAvailable = psramAvailability;
+            PsRamSize = psRamSize;
         }
 
         internal string GetFlashSizeAsString()
@@ -140,7 +147,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     break;
 
                 case PSRamAvailability.Yes:
-                    deviceInfo.AppendLine($"PSRAM: available");
+                    deviceInfo.AppendLine($"PSRAM: {PsRamSize}MB");
                     break;
 
                 case PSRamAvailability.No:

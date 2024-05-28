@@ -63,7 +63,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (espTool.ComPortAvailable)
             {
-                esp32Device = espTool.GetDeviceDetails(_options.TargetName, _options.Esp32PartitionTableSize == null);
+                esp32Device = espTool.GetDeviceDetails(
+                    _options.TargetName,
+                    // if partition table size is specified, no need to get flash size
+                    _options.Esp32PartitionTableSize == null,
+                    _options.CheckPsRam);
             }
             else
             {

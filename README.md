@@ -158,6 +158,8 @@ To show the details of the ESP32 device connected to COM31.
 nanoff --platform esp32 --serialport COM31 --devicedetails 
 ```
 
+Optionally an extra parameter `--checkpsram` can be passed, which forces the detection of PSRAM availability.
+
 ### Deploy a managed application to an ESP32 target
 
 To deploy a managed application to an ESP32_PSRAM_REV0 target connected to COM31.
