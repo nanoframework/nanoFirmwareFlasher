@@ -288,7 +288,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
                     }
 
-                    bool attemptToLaunchBooter = false;
+                    bool booterLaunched = false;
 
                     if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
                     {
@@ -306,9 +306,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
 
-                            attemptToLaunchBooter = nanoDevice.ConnectToNanoBooter();
+                            booterLaunched = nanoDevice.ConnectToNanoBooter();
 
-                            if (!attemptToLaunchBooter)
+                            if (!booterLaunched)
                             {
                                 // check for version where the software reboot to nanoBooter was made available
                                 if (currentClrVersion != null &&
@@ -334,10 +334,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     else
                     {
-                        attemptToLaunchBooter = true;
+                        booterLaunched = true;
                     }
 
-                    if (attemptToLaunchBooter &&
+                    if (booterLaunched &&
                         nanoDevice.Ping() == Debugger.WireProtocol.ConnectionSource.nanoBooter)
                     {
                         // get address for CLR block expected by device
@@ -380,7 +380,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 }
                             }
 
-                            if (attemptToLaunchBooter)
+                            if (booterLaunched)
                             {
                                 // try to reboot target 
                                 if (verbosity >= VerbosityLevel.Normal)
@@ -408,7 +408,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     else
                     {
-                        if (attemptToLaunchBooter)
+                        if (!booterLaunched)
                         {
                             // only report this as an error if the launch was successful
                             throw new NanoDeviceOperationFailedException("Failed to launch nanoBooter. Quitting update.");
