@@ -43,7 +43,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         private int _flashSize = -1;
 
-        
+
 
         private bool connectPatternFound;
 
@@ -300,7 +300,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // defautl to 2MB for ESP32 series
                     var flashSize = 2 * 1024 * 1024;
 
-                    if(_chipType == "esp32s2"
+                    if (_chipType == "esp32s2"
                        || _chipType == "esp32s3")
                     {
                         flashSize = 4 * 1024 * 1024;

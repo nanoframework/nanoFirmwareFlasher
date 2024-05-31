@@ -83,7 +83,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 FlashPartitions = new Dictionary<int, string>
                 {
 				    // bootloader goes to 0x1000, except for ESP32_C3/C6/H2/S3, which goes to 0x0
-				    { 
+				    {
                         deviceInfo.ChipType == "ESP32-C3"
                         || deviceInfo.ChipType == "ESP32-C6"
                         || deviceInfo.ChipType == "ESP32-H2"
