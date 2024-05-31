@@ -197,7 +197,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            var match = Regex.Match(messages, $"(Detecting chip type... )(?<type>[ESP32\\-ICOCH]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(Crystal is )(?<crystal>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
+            var match = Regex.Match(messages,
+                                    $"(Detecting chip type... )(?<type>[ESP32\\-ICOCH6]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(Crystal is )(?<crystal>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
+
             if (!match.Success)
             {
                 throw new EspToolExecutionException(messages);
