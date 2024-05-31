@@ -374,6 +374,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.NanoDevice)
             {
+                // check for invalid options passed with nano device operations
+                if (o.Platform.HasValue
+                    || !string.IsNullOrEmpty(o.TargetName))
+                {
+                    _exitCode = ExitCodes.E9000;
+                    _extraMessage = "Incompatible options combined with --nanodevice.";
+                    return;
+                }
+
                 var manager = new NanoDeviceManager(o, _verbosityLevel);
 
                 // COM port is mandatory for nano device operations
@@ -412,8 +421,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // if a target name was specified, try to be smart and set the platform accordingly (in case it wasn't specified)
             if (o.Platform == null
-            && !string.IsNullOrEmpty(o.TargetName))
+                && !string.IsNullOrEmpty(o.TargetName))
             {
+                // check for invalid options passed with platform option
+                if (o.NanoDevice)
+                {
+                    _exitCode = ExitCodes.E9000;
+                    _extraMessage = "Incompatible options combined with --platform.";
+                    return;
+                }
+
                 // easiest one: ESP32
                 if (o.TargetName.StartsWith("ESP")
                     || o.TargetName.StartsWith("M5")
@@ -496,7 +513,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 // ESP32 related
                 else if (
-                    !string.IsNullOrEmpty(o.SerialPort) && 
+                    !string.IsNullOrEmpty(o.SerialPort) &&
                     ((o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
                     (o.Esp32FlashFrequency != 40)))
