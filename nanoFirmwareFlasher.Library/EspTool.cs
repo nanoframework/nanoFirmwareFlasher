@@ -247,12 +247,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // these series doesn't have PSRAM
                 psramIsAvailable = PSRamAvailability.No;
             }
+            else if (_chipType == "esp32s3")
+            {
+                // Assuming S3 has PSRAM
+                psramIsAvailable = PSRamAvailability.Undetermined;
+            }
             else
             {
                 //try to find out if PSRAM is present
-                psramIsAvailable = FindPSRamAvailable(
-                    out psRamSize,
-                    forcePsRamCheck);
+                psramIsAvailable = FindPSRamAvailable(out psRamSize, forcePsRamCheck);
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
