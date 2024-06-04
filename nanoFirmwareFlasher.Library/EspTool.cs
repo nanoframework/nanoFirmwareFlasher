@@ -249,8 +249,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else if (_chipType == "esp32s3")
             {
-                // Assuming S3 has PSRAM.
-                // TODO: [esptool 4.8] The download mode resister is not cleared so a reset/run command does not work on the S3. When esptool 4.8 is released we should retest this to confirm the issue is resovled.
+                // For now assuming all S3 have PSRAM.
+                // TODO: following https://github.com/espressif/esptool/issues/970
+		// The download mode register is not cleared so a reset/run command does not work on the S3. We should retest this after depending on what will be the fix for that issue.
                 psramIsAvailable = PSRamAvailability.Undetermined;
             }
             else
