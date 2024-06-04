@@ -247,12 +247,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // these series doesn't have PSRAM
                 psramIsAvailable = PSRamAvailability.No;
             }
+            else if (_chipType == "esp32s3")
+            {
+                // For now assuming all S3 have PSRAM.
+                // TODO: following https://github.com/espressif/esptool/issues/970
+		// The download mode register is not cleared so a reset/run command does not work on the S3. We should retest this after depending on what will be the fix for that issue.
+                psramIsAvailable = PSRamAvailability.Undetermined;
+            }
             else
             {
                 //try to find out if PSRAM is present
-                psramIsAvailable = FindPSRamAvailable(
-                    out psRamSize,
-                    forcePsRamCheck);
+                psramIsAvailable = FindPSRamAvailable(out psRamSize, forcePsRamCheck);
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
