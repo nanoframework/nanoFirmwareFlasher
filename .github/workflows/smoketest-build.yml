@@ -3,8 +3,8 @@ name: Smoke-Build
 on:
   push:
     branches:
-      - test-pipeline-build
-#  pull_request:
+      - main
+  pull_request:
 
 jobs:
 
@@ -23,15 +23,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: '0' # Allow all history to be fetched.
+          fetch-depth: '0' # Allow all history to be fetched (required for versioning).
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-
-    #   - name: Handle versioning
-    #     run: cp ./version.json ./nanoFirmwareFlasher.Tool/
 
       - name: Build solution
         run: dotnet build
