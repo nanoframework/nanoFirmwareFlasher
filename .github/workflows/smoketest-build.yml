@@ -1,9 +1,11 @@
 name: Smoke-Build
 
 on:
-  pull_request:
+  push:
     branches:
       - test-pipeline-build
+  pull_request:
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
