@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -119,7 +118,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             ExitCodes programResult = ExitCodes.OK;
             // write HEX files to flash
-            if (filesToFlash.Any(f => f.EndsWith(".hex")))
+            if (filesToFlash.Exists(f => f.EndsWith(".hex")))
             {
                 programResult = ccDevice.FlashHexFiles(filesToFlash);
             }
@@ -127,7 +126,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (programResult == ExitCodes.OK && isApplicationBinFile)
             {
                 // now program the application file
-                programResult = ccDevice.FlashBinFiles(new List<string> { applicationPath }, new List<string> { deploymentAddress });
+                programResult = ccDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
             }
 
             if (updateFw)
