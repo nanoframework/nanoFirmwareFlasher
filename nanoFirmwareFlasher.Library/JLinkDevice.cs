@@ -151,7 +151,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (jlinkMatches.Count == 0)
             {
                 // no J-Link probe found
-                return new List<string>();
+                return [];
             }
 
             return jlinkMatches.Cast<Match>().Select(i => i.Value).ToList();

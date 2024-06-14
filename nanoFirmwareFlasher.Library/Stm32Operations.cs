@@ -215,7 +215,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (operationResult == ExitCodes.OK && isApplicationBinFile)
                 {
                     // now program the application file
-                    operationResult = dfuDevice.FlashBinFiles(new List<string> { applicationPath }, new List<string> { deploymentAddress });
+                    operationResult = dfuDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
                 }
 
                 if (
@@ -282,7 +282,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (operationResult == ExitCodes.OK && isApplicationBinFile)
                 {
                     // now program the application file
-                    operationResult = jtagDevice.FlashBinFiles(new List<string> { applicationPath }, new List<string> { deploymentAddress });
+                    operationResult = jtagDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
                 }
 
                 if (

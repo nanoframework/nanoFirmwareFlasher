@@ -32,8 +32,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private static CopyrightInfo _copyrightInfo;
         private static NanoDeviceOperations _nanoDeviceOperations;
 
-        internal static string ExecutingPath;
-
         public static async Task<int> Main(string[] args)
         {
             // take care of static fields
@@ -49,7 +47,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
             string codeBase = Assembly.GetExecutingAssembly().Location;
             var fullPath = Path.GetFullPath(codeBase);
-            ExecutingPath = Path.GetDirectoryName(fullPath);
+            var ExecutingPath = Path.GetDirectoryName(fullPath);
 
             // grab AppInsights connection string to setup telemetry client
             IConfigurationRoot appConfigurationRoot = new ConfigurationBuilder()
@@ -309,7 +307,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     var connectedDevices = _nanoDeviceOperations.ListDevices(_verbosityLevel > VerbosityLevel.Normal);
 
-                    if (connectedDevices.Count() == 0)
+                    if (!connectedDevices.Any())
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("No devices found");

@@ -450,7 +450,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // check for empty flash partitions
                     if (firmware.FlashPartitions is null)
                     {
-                        firmware.FlashPartitions = new Dictionary<int, string>();
+                        firmware.FlashPartitions = [];
                     }
 
                     // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
@@ -504,7 +504,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 int configPartitionAddress = 0;
                 int configPartitionSize = 0;
-                string configPartitionBackup = Path.GetTempFileName();
+                string configPartitionBackup = Path.GetRandomFileName();
 
                 // if mass erase wasn't requested, backup config partitition
                 if (!massErase)
@@ -613,7 +613,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             VerbosityLevel verbosity,
             PartitionTableSize? partitionTableSize)
         {
-            var operationResult = ExitCodes.OK;
             uint address = 0;
 
             // perform sanity checks for the specified target against the connected device details
@@ -665,7 +664,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // check for empty flash partitions
                     if (firmware.FlashPartitions is null)
                     {
-                        firmware.FlashPartitions = new Dictionary<int, string>();
+                        firmware.FlashPartitions = [];
                     }
 
                     // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
@@ -688,7 +687,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // write to flash
-            operationResult = espTool.WriteFlash(firmware.FlashPartitions);
+            ExitCodes operationResult = espTool.WriteFlash(firmware.FlashPartitions);
 
             if (operationResult == ExitCodes.OK)
             {

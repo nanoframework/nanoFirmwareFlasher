@@ -179,7 +179,7 @@ Exit
                 }
             }
 
-            List<string> shadowFiles = new List<string>();
+            List<string> shadowFiles = [];
 
             ProcessFilePaths(files, shadowFiles);
 
@@ -335,7 +335,7 @@ Exit
                 return ExitCodes.E5004;
             }
 
-            List<string> shadowFiles = new List<string>();
+            List<string> shadowFiles = [];
 
             ProcessFilePaths(files, shadowFiles);
 

@@ -222,7 +222,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (dfuMatches.Count == 0)
             {
                 // no DFU device found
-                return new List<(string serial, string device)>();
+                return [];
             }
 
             return dfuMatches.Cast<Match>().Select(i => (serial: i.Groups["serial"].Value, device: i.Groups["device"].Value)).ToList();

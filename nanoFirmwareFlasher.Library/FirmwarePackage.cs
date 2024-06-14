@@ -158,7 +158,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // Because new stable releases are published on a regular basis and preview very rarely, we query for stable versions published in past month and preview versions published during the past 6 months.
             string requestUri = $"{repoName}/?page_size=500&q=uploaded:'>{(preview ? "6" : "1")} month ago' {(platform.HasValue ? "AND tag:" + platform.Value : "")}";
 
-            List<CloudSmithPackageDetail> targetPackages = new();
+            List<CloudSmithPackageDetail> targetPackages = [];
 
             if (verbosity > VerbosityLevel.Normal)
             {
@@ -246,7 +246,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E9006;
             }
 
-            List<FileInfo> fwFiles = new();
+            List<FileInfo> fwFiles = [];
 
             if (_preview)
             {

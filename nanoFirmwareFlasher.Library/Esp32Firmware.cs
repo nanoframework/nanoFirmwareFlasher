@@ -24,7 +24,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// ESP32 nanoCLR is available for 2MB, 4MB, 8MB and 16MB flash sizes
         /// </summary>
-        private List<int> SupportedFlashSizes => new() { 0x200000, 0x400000, 0x800000, 0x1000000 };
+        private List<int> SupportedFlashSizes => [0x200000, 0x400000, 0x800000, 0x1000000];
 
         internal string BootloaderPath;
 
