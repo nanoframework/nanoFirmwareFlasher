@@ -23,11 +23,11 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-    #   - name: Install dependencies
-    #     run: dotnet tool install --global nbgv
+      - name: Restore NuGet packages
+        run: dotnet restore
 
-    #   - name: Restore NuGet packages
-    #     run: dotnet restore
+      - name: Handle versioning
+        run: nbgv cloud -a -c
 
       - name: Build solution
         run: dotnet build --configuration Release
