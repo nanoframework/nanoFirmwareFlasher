@@ -39,7 +39,7 @@ jobs:
 ##############################
 - job: Check_Build_Options
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'windows-latest'
 
   steps:
   
