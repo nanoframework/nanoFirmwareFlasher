@@ -217,6 +217,11 @@ jobs:
 
   - task: Cache@2
     displayName: Cache NuGet packages
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )    
     inputs:
       key: 'nuget | "$(Agent.OS)" | **/packages.lock.json, !bin/**'
       restoreKeys: |
@@ -344,7 +349,11 @@ jobs:
 
           Find-ReplaceInFile -filePath $fileToReplace -sourceString $sourceString -targetString $instrumentKey
     displayName: Replace intrument key
-    condition: succeeded()
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
 
   - task: CopyFiles@1
     condition: >-
@@ -415,7 +424,7 @@ jobs:
         eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
-    displayName: Push nanoff NuGet package to NuGet
+    displayName: Push nanoff dotnet tool to NuGet
     continueOnError: true
     inputs:
       command: push
@@ -433,7 +442,7 @@ jobs:
         eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )    
-    displayName: Push library NuGet package to NuGet
+    displayName: Push NuGet package with library to NuGet
     continueOnError: true
     inputs:
       command: push
@@ -462,6 +471,7 @@ jobs:
       action: create
       isDraft: false
       addChangeLog: true
+      changeLogType: issueBased
       changeLogLabels: |
         [
           { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
@@ -475,6 +485,7 @@ jobs:
   - task: PowerShell@2
     condition: >-
       or(
+        eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'true'),
         eq(variables['run_update_dependents'], 'true')
       )

@@ -2,7 +2,7 @@
 
 # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
 # 'encoded token' is the Base64 of the string "nfbot:personal-token"
-$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:GH_TOKEN"))))"
+$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:GH_TOKEN")))"
 
 # init/reset these
 $commitMessage = ""
@@ -55,21 +55,21 @@ $commitMessage += "`n[version update]`n`n"
 # better add this warning line               
 $commitMessage += "### :warning: This is an automated update. Merge only after all tests pass. :warning:`n"
 
-Write-Debug "Git branch" 
-
-# create branch to perform updates
-git branch $newBranchName
-
-Write-Debug "Checkout branch" 
-
-# checkout branch
-git checkout $newBranchName
-
 # check if anything was changed
 $repoStatus = "$(git status --short --porcelain)"
 
 if ($repoStatus -ne "")
 {
+    Write-Debug "Git branch" 
+
+    # create branch to perform updates
+    git branch $newBranchName
+
+    Write-Debug "Checkout branch" 
+
+    # checkout branch
+    git checkout $newBranchName
+
     Write-Debug "Add changes" 
 
     # commit changes
@@ -114,5 +114,5 @@ if ($repoStatus -ne "")
 }
 else
 {
-    Write-Host "Nothing udpate at nanoFramework.Tools.FirmwareFlasher."
+    Write-Host "Nothing udpate at $repoName."
 }
