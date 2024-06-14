@@ -22,14 +22,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '5'
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      - name: Handle versioning
-        run: cp ./version.json ./nanoFirmwareFlasher.Tool/
+    #   - name: Handle versioning
+    #     run: cp ./version.json ./nanoFirmwareFlasher.Tool/
 
       - name: Build solution
         run: dotnet build
