@@ -23,7 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: '5'
+          fetch-depth: '0' # Allow all history to be fetched.
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
