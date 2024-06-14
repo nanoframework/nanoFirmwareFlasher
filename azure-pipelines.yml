@@ -407,7 +407,7 @@ jobs:
         eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
-    displayName: Push nanoff NuGet package to NuGet
+    displayName: Push nanoff dotnet tool to NuGet
     continueOnError: true
     inputs:
       command: push
@@ -425,7 +425,7 @@ jobs:
         eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )    
-    displayName: Push library NuGet package to NuGet
+    displayName: Push NuGet package with library to NuGet
     continueOnError: true
     inputs:
       command: push
@@ -454,6 +454,7 @@ jobs:
       action: create
       isDraft: false
       addChangeLog: true
+      changeLogType: issueBased
       changeLogLabels: |
         [
           { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
@@ -467,6 +468,7 @@ jobs:
   - task: PowerShell@2
     condition: >-
       or(
+        eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'true'),
         eq(variables['run_update_dependents'], 'true')
       )
