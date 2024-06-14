@@ -208,7 +208,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (jtagMatches.Count == 0)
             {
                 // no JTAG found
-                return new List<string>();
+                return [];
             }
 
             return jtagMatches.Cast<Match>().Select(i => i.Value).ToList();

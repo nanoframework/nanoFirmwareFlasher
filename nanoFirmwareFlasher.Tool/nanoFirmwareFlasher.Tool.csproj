@@ -18,7 +18,6 @@
 		<PackageIconUrl></PackageIconUrl>
 		<Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
 		<!-- need this to allow async Main() -->
-		<LangVersion>latest</LangVersion>
 		<PackAsTool>true</PackAsTool>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<Platforms>AnyCPU;x64</Platforms>
@@ -29,7 +28,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(VSCodeExtensionBuild) == '' or $(VSCodeExtensionBuild) == 'False'">
-		<TargetFrameworks>net6.0</TargetFrameworks>
+		<TargetFrameworks>net8.0</TargetFrameworks>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(VSCodeExtensionBuild) == 'True'">
 		<TargetFrameworks>net472</TargetFrameworks>
@@ -87,8 +86,8 @@
 	</Target>
 
 	<PropertyGroup>
-		<!-- set this to 'net6.0\' to package contents in this TFM folder  -->
-		<PackageTfmSubFolder>net6.0\</PackageTfmSubFolder>
+		<!-- set this to 'net8.0\' to package contents in this TFM folder  -->
+		<PackageTfmSubFolder>net8.0\</PackageTfmSubFolder>
 	</PropertyGroup>
 
     <Import Project="..\nanoFirmwareFlasher.Library\nugetcontent.targets" />

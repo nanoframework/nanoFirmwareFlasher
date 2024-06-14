@@ -353,8 +353,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         [Usage(ApplicationAlias = "nanoff")]
         public static IEnumerable<Example> Examples =>
-            new List<Example>
-            {
+            [
                 new("- Update ESP32 WROVER Kit device with latest available firmware", new Options { TargetName = "ESP_WROVER_KIT", Update = true }),
                 new("- Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware, using JTAG interface", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, JtagUpdate = true}),
                 new("- Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { Platform = SupportedPlatform.esp32, Update = true, SerialPort = "COM31" }),
@@ -364,6 +363,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("- Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
                 new("- List all available STM32 targets", new Options { ListTargets = true, Platform =  SupportedPlatform.stm32 }),
                 new("- List all available COM ports", new Options { ListComPorts = true }),
-            };
+            ];
     }
 }

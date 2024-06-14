@@ -163,13 +163,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // report issue 
                 throw new CantConnectToNanoDeviceException("Couldn't connect to specified nano device.");
             }
-
-            if (nanoDevice is null)
-            {
-                throw new ArgumentNullException(nameof(nanoDevice));
-            }
-
-            return ExitCodes.E2000;
         }
 
         /// <summary>

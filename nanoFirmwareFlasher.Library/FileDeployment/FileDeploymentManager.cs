@@ -1,12 +1,13 @@
-﻿using nanoFramework.Tools.Debugger;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using nanoFramework.Tools.Debugger;
 using nanoFramework.Tools.Debugger.Extensions;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
@@ -16,9 +17,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
     /// </summary>
     public class FileDeploymentManager
     {
-        private FileDeploymentConfiguration _configuration;
-        private VerbosityLevel _verbosity;
-        private string _serialPort;
+        private readonly FileDeploymentConfiguration _configuration;
+        private readonly VerbosityLevel _verbosity;
+        private readonly string _serialPort;
 
         /// <summary>
         /// Creates an instance of FileDeploymentManager.

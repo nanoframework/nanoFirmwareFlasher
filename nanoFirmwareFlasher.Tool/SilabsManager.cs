@@ -126,7 +126,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     else if (!string.IsNullOrEmpty(_options.DeploymentImage) && _options.Deploy)
                     {
                         var exitCode = jlinkDevice.FlashBinFiles(
-                            new List<string>() { _options.DeploymentImage },
+                            [_options.DeploymentImage],
                             _options.FlashAddress);
 
                         if (exitCode != ExitCodes.OK)
