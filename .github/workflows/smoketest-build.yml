@@ -28,11 +28,8 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-    #   - name: Restore NuGet packages
-    #     run: dotnet restore
-
-    #   - name: Handle versioning
-    #     run: nbgv cloud -a -c
+      - name: Handle versioning
+        run: cp ./version.json ./nanoFirmwareFlasher.Tool/
 
       - name: Build solution
-        run: dotnet build --configuration Release
+        run: dotnet build

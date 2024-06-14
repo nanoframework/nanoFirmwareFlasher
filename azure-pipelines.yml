@@ -182,7 +182,7 @@ jobs:
     - name: DOTNET_NOLOGO
       value: true  
     - name: buildPlatform
-      value: 'Any CPU'  
+      value: 'x64'  # TODO: Attempt to aim for Arm64 builds
     - name: buildConfiguration
       value: 'Release'
     - name: solution
