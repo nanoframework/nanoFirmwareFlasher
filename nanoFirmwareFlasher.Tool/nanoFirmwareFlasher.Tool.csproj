@@ -18,7 +18,6 @@
 		<PackageIconUrl></PackageIconUrl>
 		<Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
 		<!-- need this to allow async Main() -->
-		<LangVersion>latest</LangVersion>
 		<PackAsTool>true</PackAsTool>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<Platforms>AnyCPU;x64</Platforms>
