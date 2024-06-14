@@ -161,7 +161,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (operationResult == ExitCodes.OK && isApplicationBinFile)
             {
                 // now program the application file
-                operationResult = jlinkDevice.FlashBinFiles(new[] { applicationPath }, new[] { deploymentAddress });
+                operationResult = jlinkDevice.FlashBinFiles(new List<string> { applicationPath }, new List<string> { deploymentAddress });
             }
 
             return operationResult;

@@ -67,7 +67,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // because of short-comings in CommandLine parsing 
                 // need to customize the output to provide a consistent output
                 var parser = new Parser(config => config.HelpWriter = null);
-                var result = parser.ParseArguments<Options>(new[] { "", "" });
+                var result = parser.ParseArguments<Options>(new string[] { "", "" });
 
                 var helpText = new HelpText(
                     new HeadingInfo(_headerInfo),
@@ -692,7 +692,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // because of short-comings in CommandLine parsing 
             // need to customize the output to provide a consistent output
             var parser = new Parser(config => config.HelpWriter = null);
-            var result = parser.ParseArguments<Options>(new[] { "", "" });
+            var result = parser.ParseArguments<Options>(new string[] { "", "" });
 
             var helpText = new HelpText(
                 new HeadingInfo(_headerInfo),

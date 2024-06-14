@@ -127,7 +127,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (programResult == ExitCodes.OK && isApplicationBinFile)
             {
                 // now program the application file
-                programResult = ccDevice.FlashBinFiles(new[] { applicationPath }, new[] { deploymentAddress });
+                programResult = ccDevice.FlashBinFiles(new List<string> { applicationPath }, new List<string> { deploymentAddress });
             }
 
             if (updateFw)

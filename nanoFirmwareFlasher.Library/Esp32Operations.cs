@@ -450,7 +450,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // check for empty flash partitions
                     if (firmware.FlashPartitions is null)
                     {
-                        firmware.FlashPartitions = [];
+                        firmware.FlashPartitions = new Dictionary<int, string>();
                     }
 
                     // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
@@ -665,7 +665,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // check for empty flash partitions
                     if (firmware.FlashPartitions is null)
                     {
-                        firmware.FlashPartitions = [];
+                        firmware.FlashPartitions = new Dictionary<int, string>();
                     }
 
                     // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
