@@ -39,7 +39,7 @@ jobs:
 ##############################
 - job: Check_Build_Options
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'ubuntu-latest'
 
   steps:
   
@@ -173,24 +173,16 @@ jobs:
     )
   dependsOn:
   - Check_Build_Options
-  strategy:
-    matrix:
-      # linux:
-      #   imageName: 'ubuntu-latest'
-      windows:
-        imageName: 'windows-latest'
-      # macos:
-      #   imageName: 'macos-latest'
 
   pool:
-    vmImage: '$(imageName)'
+    vmImage: 'windows-latest'
 
   variables:
     - group: sign-client-credentials
     - name: DOTNET_NOLOGO
       value: true  
     - name: buildPlatform
-      value: 'x64'  
+      value: 'Any CPU'  
     - name: buildConfiguration
       value: 'Release'
     - name: solution
