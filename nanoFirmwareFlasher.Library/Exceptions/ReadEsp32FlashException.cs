@@ -19,15 +19,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public string ExecutionError;
 
+        /// <summary>
+        /// ESP32 tool flash exception.
+        /// </summary>
+        /// <param name="message">Message to display.</param>
         public ReadEsp32FlashException(string message) : base(message)
         {
             ExecutionError = message;
         }
 
+        /// <summary>
+        /// ESP32 tool flash exception.
+        /// </summary>
+        /// <param name="message">Message to display.</param>
+        /// <param name="innerException">The exception to display.</param>
         public ReadEsp32FlashException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
+        /// <summary>
+        /// ESP32 tool flash exception.
+        /// </summary>
+        /// <param name="info">Serialized information.</param>
+        /// <param name="context">Streamed context.</param>
         protected ReadEsp32FlashException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

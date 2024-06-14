@@ -18,17 +18,17 @@
 		<PackageIconUrl></PackageIconUrl>
 		<Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
 		<!-- need this to allow async Main() -->
-		<LangVersion>latest</LangVersion>
 		<PackAsTool>true</PackAsTool>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<Platforms>AnyCPU;x64</Platforms>
 		<RuntimeIdentifiers>any</RuntimeIdentifiers>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+	    <RestoreLockedMode Condition="'$(TF_BUILD)' == 'True' or '$(ContinuousIntegrationBuild)' == 'True'">true</RestoreLockedMode>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(VSCodeExtensionBuild) == '' or $(VSCodeExtensionBuild) == 'False'">
-		<TargetFrameworks>net6.0</TargetFrameworks>
+		<TargetFrameworks>net8.0</TargetFrameworks>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(VSCodeExtensionBuild) == 'True'">
 		<TargetFrameworks>net472</TargetFrameworks>
@@ -46,6 +46,7 @@
 	<ItemGroup>
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.42" />
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" PrivateAssets="All" />
 	</ItemGroup>
 
@@ -68,6 +69,12 @@
 	  <ProjectReference Include="..\nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="appsettings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 	<Target Name="CopyToolsContent" AfterTargets="Build">
 	    <ItemGroup>
             <LibSourceFiles Include="$(MSBuildThisFileDirectory)\..\lib\**\*.*" />
@@ -76,8 +83,8 @@
 	</Target>
 
 	<PropertyGroup>
-		<!-- set this to 'net6.0\' to package contents in this TFM folder  -->
-		<PackageTfmSubFolder>net6.0\</PackageTfmSubFolder>
+		<!-- set this to 'net8.0\' to package contents in this TFM folder  -->
+		<PackageTfmSubFolder>net8.0\</PackageTfmSubFolder>
 	</PropertyGroup>
 
     <Import Project="..\nanoFirmwareFlasher.Library\nugetcontent.targets" />

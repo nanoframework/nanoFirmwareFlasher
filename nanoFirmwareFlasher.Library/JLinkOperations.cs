@@ -69,7 +69,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // setup files to flash
-            var filesToFlash = new List<string>();
+            List<string> filesToFlash = [];
 
             if (updateFw)
             {
@@ -153,7 +153,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             jlinkDevice.Verbosity = verbosity;
 
             // write HEX files to flash
-            if (filesToFlash.Any(f => f.EndsWith(".hex")))
+            if (filesToFlash.Exists(f => f.EndsWith(".hex")))
             {
                 operationResult = jlinkDevice.FlashHexFiles(filesToFlash);
             }
@@ -161,18 +161,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (operationResult == ExitCodes.OK && isApplicationBinFile)
             {
                 // now program the application file
-                operationResult = jlinkDevice.FlashBinFiles(new[] { applicationPath }, new[] { deploymentAddress });
+                operationResult = jlinkDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
             }
 
             return operationResult;
         }
 
+        /// <summary>
+        /// Mass erase device.
+        /// </summary>
+        /// <param name="probeId">The probe ID.</param>
+        /// <param name="verbosity">The verbosity level.</param>
+        /// <returns></returns>
         public static ExitCodes MassErase(
             string probeId,
             VerbosityLevel verbosity)
         {
             // J-Link device
-            JLinkDevice jlinkDevice = new JLinkDevice(probeId);
+            JLinkDevice jlinkDevice = new(probeId);
 
             if (!jlinkDevice.DevicePresent)
             {

@@ -3,8 +3,10 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.Debugger;
-using nanoFramework.Tools.FirmwareFlasher;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,6 +14,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -31,7 +34,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private readonly string _targetName;
         private readonly bool _preview;
-
         private const string _readmeContent = "This folder contains nanoFramework firmware files. Can safely be removed.";
 
         /// <summary>
@@ -58,6 +60,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public string Version { get; internal set; }
 
+        /// <summary>
+        /// The verbosity level.
+        /// </summary>
         public VerbosityLevel Verbosity { get; internal set; }
 
         /// <summary>
@@ -94,10 +99,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public object BooterStartAddress { get; internal set; }
 
+
+
         static FirmwarePackage()
         {
-            _cloudsmithClient = new HttpClient();
-            _cloudsmithClient.BaseAddress = new Uri("https://api.cloudsmith.io/v1/packages/net-nanoframework/");
+            _cloudsmithClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://api.cloudsmith.io/v1/packages/net-nanoframework/")
+            };
             _cloudsmithClient.DefaultRequestHeaders.Add("Accept", "*/*");
         }
 
@@ -116,6 +125,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Constructor
         /// </summary>
         /// <param name="targetName">Target name as designated in the repositories.</param>
+        /// <param name="fwVersion">The firmware version.</param>
+        /// <param name="preview">Whether to use preview versions.</param>
         protected FirmwarePackage(
             string targetName,
             string fwVersion,
@@ -147,7 +158,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // Because new stable releases are published on a regular basis and preview very rarely, we query for stable versions published in past month and preview versions published during the past 6 months.
             string requestUri = $"{repoName}/?page_size=500&q=uploaded:'>{(preview ? "6" : "1")} month ago' {(platform.HasValue ? "AND tag:" + platform.Value : "")}";
 
-            List<CloudSmithPackageDetail> targetPackages = new();
+            List<CloudSmithPackageDetail> targetPackages = [];
 
             if (verbosity > VerbosityLevel.Normal)
             {
@@ -235,7 +246,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E9006;
             }
 
-            List<FileInfo> fwFiles = new();
+            List<FileInfo> fwFiles = [];
 
             if (_preview)
             {
@@ -282,6 +293,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.hex").ToList());
             filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.s19").ToList());
             filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.dfu").ToList());
+            filesToDelete.AddRange(Directory.EnumerateFiles(LocationPath, "*.csv").ToList());
 
             foreach (var file in filesToDelete)
             {
@@ -336,6 +348,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         stepSuccessful = true;
+
+                        // send telemetry data on successful download
+                        if (NanoTelemetryClient.TelemetryClient is not null)
+                        {
+                            AssemblyInformationalVersionAttribute nanoffVersion = null;
+
+                            try
+                            {
+                                nanoffVersion = Attribute.GetCustomAttribute(
+                                         Assembly.GetEntryAssembly()!,
+                                         typeof(AssemblyInformationalVersionAttribute))
+                                     as AssemblyInformationalVersionAttribute;
+                            }
+                            catch
+                            {
+                                // OK to fail here, just telemetry
+                            }
+
+                            var packageTelemetry = new EventTelemetry("PackageDownloaded");
+                            packageTelemetry.Properties.Add("TargetName", _targetName);
+                            packageTelemetry.Properties.Add("Version", Version);
+                            packageTelemetry.Properties.Add("nanoffVersion", nanoffVersion == null ? "unknown" : nanoffVersion.InformationalVersion);
+
+                            NanoTelemetryClient.TelemetryClient.TrackEvent(packageTelemetry);
+                            NanoTelemetryClient.TelemetryClient.Flush();
+                        }
                     }
                     catch
                     {
@@ -637,6 +675,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private bool _disposedValue = false; // To detect redundant calls
 
+        /// <inherit/>
         protected void Dispose(bool disposing)
         {
             if (!_disposedValue)

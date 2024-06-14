@@ -11,6 +11,9 @@ using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// STM32 JTAG Device.
+    /// </summary>
     public class StmJtagDevice : StmDeviceBase
     {
         /// <summary>
@@ -205,7 +208,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (jtagMatches.Count == 0)
             {
                 // no JTAG found
-                return new List<string>();
+                return [];
             }
 
             return jtagMatches.Cast<Match>().Select(i => i.Value).ToList();

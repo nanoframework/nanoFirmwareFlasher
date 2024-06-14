@@ -178,11 +178,17 @@ jobs:
     vmImage: 'windows-latest'
 
   variables:
-    DOTNET_NOLOGO: true
-    buildPlatform: 'x64'
-    buildConfiguration: 'Release'
-    solution: 'nanoFirmwareFlasher.sln'
-    run_update_dependents: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
+    - group: sign-client-credentials
+    - name: DOTNET_NOLOGO
+      value: true  
+    - name: buildPlatform
+      value: 'x64'  
+    - name: buildConfiguration
+      value: 'Release'
+    - name: solution
+      value: 'nanoFirmwareFlasher.sln'
+    - name: run_update_dependents
+      value: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
 
   steps:
 
@@ -203,6 +209,11 @@ jobs:
 
   - task: Cache@2
     displayName: Cache NuGet packages
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )    
     inputs:
       key: 'nuget | "$(Agent.OS)" | **/packages.lock.json, !bin/**'
       restoreKeys: |
@@ -321,6 +332,21 @@ jobs:
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
 
+  # Replace the intrument key
+  - powershell: |
+          . ./common.ps1
+          $fileToReplace = "$(System.DefaultWorkingDirectory)/nanoFirmwareFlasher.Tool\appsettings.json"
+          $sourceString = "INSTRUMENT_KEY"
+          $instrumentKey = "$(InstrumentKey)"
+
+          Find-ReplaceInFile -filePath $fileToReplace -sourceString $sourceString -targetString $instrumentKey
+    displayName: Replace intrument key
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
+
   - task: CopyFiles@1
     condition: >-
       and(
@@ -336,7 +362,7 @@ jobs:
       flattenFolders: true
 
   - task: DotNetCoreCLI@2
-    displayName: Install SignTool tool
+    displayName: Install Sign Client CLI
     condition: >-
       and(
         succeeded(),
@@ -346,19 +372,21 @@ jobs:
     inputs:
       command: custom
       custom: tool
-      arguments: install --tool-path . SignClient
+      arguments: install --tool-path . sign --version 0.9.1-beta.23530.1
   
   - pwsh: |
-      .\SignClient "Sign" `
-      --baseDirectory "$(Build.ArtifactStagingDirectory)" `
-      --input "**/*.nupkg" `
-      --config "$(Build.Repository.LocalPath)\config\SignClient.json" `
-      --filelist "$(Build.Repository.LocalPath)\config\filelist.txt" `
-      --user "$(SignClientUser)" `
-      --secret '$(SignClientSecret)' `
-      --name ".NET nanoFramework firmware flasher" `
+      .\sign code azure-key-vault `
+      "**/*.nupkg" `
+      --base-directory "$(Build.ArtifactStagingDirectory)" `
+      --file-list "$(Build.Repository.LocalPath)\config\filelist.txt" `
       --description ".NET nanoFramework firmware flasher" `
-      --descriptionUrl "https://github.com/$env:Build_Repository_Name"
+      --description-url "https://github.com/$env:Build_Repository_Name" `
+      --azure-key-vault-tenant-id "$(SignTenantId)" `
+      --azure-key-vault-client-id "$(SignClientId)" `
+      --azure-key-vault-client-secret "$(SignClientSecret)" `
+      --azure-key-vault-certificate "$(SignKeyVaultCertificate)" `
+      --azure-key-vault-url "$(SignKeyVaultUrl)" `
+      --timestamp-url http://timestamp.digicert.com  
     displayName: Sign packages
     continueOnError: true
     condition: >-
@@ -388,7 +416,7 @@ jobs:
         eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
-    displayName: Push nanoff NuGet package to NuGet
+    displayName: Push nanoff dotnet tool to NuGet
     continueOnError: true
     inputs:
       command: push
@@ -406,7 +434,7 @@ jobs:
         eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )    
-    displayName: Push library NuGet package to NuGet
+    displayName: Push NuGet package with library to NuGet
     continueOnError: true
     inputs:
       command: push
@@ -435,6 +463,7 @@ jobs:
       action: create
       isDraft: false
       addChangeLog: true
+      changeLogType: issueBased
       changeLogLabels: |
         [
           { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
@@ -448,6 +477,7 @@ jobs:
   - task: PowerShell@2
     condition: >-
       or(
+        eq(variables['System.PullRequest.PullRequestId'], ''),
         eq(variables['UPDATE_DEPENDENTS'], 'true'),
         eq(variables['run_update_dependents'], 'true')
       )

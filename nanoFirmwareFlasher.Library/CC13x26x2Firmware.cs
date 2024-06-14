@@ -3,9 +3,6 @@
 // See LICENSE file in the project root for full license information.
 //
 
-using System.IO;
-using System.Linq;
-
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>

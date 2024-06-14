@@ -35,6 +35,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         public VerbosityLevel Verbosity { get; set; } = VerbosityLevel.Normal;
 
+        /// <summary>
+        /// Runs the STM32 programmer CLI.
+        /// </summary>
+        /// <param name="arguments">arguments to send.</param>
+        /// <returns>The returned message.</returns>
+        /// <exception cref="StLinkCliExecutionException"></exception>
         public static string RunSTM32ProgrammerCLI(string arguments)
         {
             try
@@ -115,6 +121,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
         }
 
+        /// <summary>
+        /// Gets the Error Message From STM32CLI.
+        /// </summary>
+        /// <param name="cliOutput">The retrived input.</param>
+        /// <returns>The outcome.</returns>
         public static string GetErrorMessageFromSTM32CLI(string cliOutput)
         {
             var regEx = new Regex(@"Error: (?<error>.+).", RegexOptions.IgnoreCase);
@@ -137,6 +148,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return "";
         }
 
+        /// <summary>
+        /// Output to CLI.
+        /// </summary>
+        /// <param name="cliOutput">Message to display.</param>
         public void ShowCLIOutput(string cliOutput)
         {
             // show CLI output, if verbosity is diagnostic
@@ -159,11 +174,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
         }
 
+        /// <summary>
+        /// Lists all found devices.
+        /// </summary>
+        /// <returns></returns>
         public static string ExecuteListDevices()
         {
             return RunSTM32ProgrammerCLI("--list");
         }
 
+        /// <summary>
+        /// Wipes the whole flash memory of the device.
+        /// </summary>
+        /// <param name="connectDetails">The device connection details.</param>
+        /// <returns>The outcome.</returns>
         public ExitCodes ExecuteMassErase(string connectDetails)
         {
             if (Verbosity >= VerbosityLevel.Normal)
@@ -198,6 +222,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return ExitCodes.OK;
         }
 
+        /// <summary>
+        /// Flash HEX files to device.
+        /// </summary>
+        /// <param name="files">The HEX files to flash.</param>
+        /// <param name="connectDetails">The device connection details.</param>
+        /// <returns>The outcome.</returns>
         public ExitCodes ExecuteFlashHexFiles(
             IList<string> files,
             string connectDetails)
@@ -273,6 +303,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return ExitCodes.OK;
         }
 
+        /// <summary>
+        /// Flash BIN files to device.
+        /// </summary>
+        /// <param name="files">The files to flash.</param>
+        /// <param name="addresses">The memory locations.</param>
+        /// <param name="connectDetails">The device connection details.</param>
+        /// <returns>The outcome.</returns>
         public ExitCodes ExecuteFlashBinFiles(
             IList<string> files,
             IList<string> addresses,
@@ -355,7 +392,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} mode=UR -w \"{binFilePath}\" {addresses.ElementAt(index++)}");
 
-                if (!cliOutput.Contains("Programming Complete."))
+                if (!cliOutput.Contains("File download complete"))
                 {
                     ShowCLIOutput(cliOutput);
 

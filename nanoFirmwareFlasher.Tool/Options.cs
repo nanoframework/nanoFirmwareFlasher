@@ -133,6 +133,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Partition table size to use. Valid sizes are: 2, 4, 8 and 16.")]
         public PartitionTableSize? Esp32PartitionTableSize { get; set; }
 
+        [Option(
+            "checkpsram",
+            Required = false,
+            Default = false,
+            HelpText = "Perform check for PSRAM in device.")]
+        public bool CheckPsRam { get; set; }
+
         #endregion
 
 
@@ -282,7 +289,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Option(
             "address",
             Required = false,
-            HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with -binfile argument or flashing a deployment image with -deployment argument.")]
+            HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with --binfile argument or flashing a deployment image with --deploy argument.")]
         public IList<string> FlashAddress { get; set; }
 
         [Option(
@@ -334,13 +341,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Reads details from connected device.")]
         public bool DeviceDetails { get; set; }
 
+        [Option(
+            "filedeployment",
+            Required = false,
+            Default = null,
+            HelpText = "JSON file containing file deployment settings.")]
+        public string FileDeployment { get; set; }
+
         #endregion
 
 
         [Usage(ApplicationAlias = "nanoff")]
         public static IEnumerable<Example> Examples =>
-            new List<Example>
-            {
+            [
                 new("- Update ESP32 WROVER Kit device with latest available firmware", new Options { TargetName = "ESP_WROVER_KIT", Update = true }),
                 new("- Update specific STM32 device (ST_STM32F769I_DISCOVERY) with latest available firmware, using JTAG interface", new Options { TargetName = "ST_STM32F769I_DISCOVERY" , Update = true, JtagUpdate = true}),
                 new("- Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { Platform = SupportedPlatform.esp32, Update = true, SerialPort = "COM31" }),
@@ -350,6 +363,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("- Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
                 new("- List all available STM32 targets", new Options { ListTargets = true, Platform =  SupportedPlatform.stm32 }),
                 new("- List all available COM ports", new Options { ListComPorts = true }),
-            };
+            ];
     }
 }

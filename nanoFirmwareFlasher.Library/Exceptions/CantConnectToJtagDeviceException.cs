@@ -14,18 +14,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
     [Serializable]
     public class CantConnectToJtagDeviceException : Exception
     {
+        /// <summary>
+        /// Cannot connect to JTAG device exception.
+        /// </summary>
         public CantConnectToJtagDeviceException()
         {
         }
 
+        /// <summary>
+        /// Cannot connect to JTAG device exception.
+        /// </summary>
+        /// <param name="message">Message to display.</param>
         public CantConnectToJtagDeviceException(string message) : base(message)
         {
         }
 
+        /// <summary>
+        /// Cannot connect to JTAG device exception.
+        /// </summary>
+        /// <param name="message">Message to display.</param>
+        /// <param name="innerException">The exception to display.</param>
         public CantConnectToJtagDeviceException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
+        /// <summary>
+        /// Cannot connect to JTAG device exception.
+        /// </summary>
+        /// <param name="info">Serialized information.</param>
+        /// <param name="context">Streamed context.</param>
         protected CantConnectToJtagDeviceException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>library</OutputType>
-    <TargetFrameworks>net6.0;net472</TargetFrameworks>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>latest</LangVersion>
     <RootNamespace>nanoFramework.Tools.FirmwareFlasher</RootNamespace>
@@ -29,6 +29,7 @@
   <PropertyGroup>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(TF_BUILD)' == 'True' or '$(ContinuousIntegrationBuild)' == 'True'">true</RestoreLockedMode>
   </PropertyGroup>
 
     <Target Name="CopyToolsContent" AfterTargets="Build">
@@ -58,7 +59,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.34" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.42" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" PrivateAssets="All" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
@@ -93,6 +97,8 @@
         </None>
         <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
+        <None Include="..\lib\esp32s3bootloader\**" Link="esp32s3bootloader\%(RecursiveDir)%(Filename)%(Extension)">
+        </None>
     </ItemGroup>
 
     <!-- STLink executables for all platforms -->
@@ -123,6 +129,35 @@
     <ItemGroup>
         <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
+    </ItemGroup>
+    <ItemGroup>
+      <None Update="..\lib\esp32bootloader\bootloader.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="..\lib\esp32bootloader\partitions_2mb.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="..\lib\esp32bootloader\test_startup.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="..\lib\esp32s2bootloader\bootloader.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="..\lib\esp32s2bootloader\partitions_4mb.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="..\lib\esp32s2bootloader\test_startup.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="..\lib\esp32s3bootloader\bootloader.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="..\lib\esp32s3bootloader\partitions_4mb.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="..\lib\esp32s3bootloader\test_startup.bin">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

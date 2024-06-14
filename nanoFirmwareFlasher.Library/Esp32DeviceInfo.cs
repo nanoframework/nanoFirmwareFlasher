@@ -65,15 +65,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public PSRamAvailability PSRamAvailable { get; }
 
         /// <summary>
-        /// Constructor
+        /// The size of the PSRAM (in MBytes).
         /// </summary>
-        /// <param name="toolVersion">Version of the esptool.py</param>
-        /// <param name="chipName">ESP32 chip name</param>
-        /// <param name="features">ESP32 chip features</param>
-        /// <param name="macAddress">MAC address of the ESP32 chip</param>
-        /// <param name="flashManufacturerId">Flash manufacturer ID</param>
-        /// <param name="flashDeviceModelId">Flash device type ID</param>
-        /// <param name="flashSize">The size of the flash in bytes</param>
+        public int PsRamSize { get; }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="chipType">The type of chip.</param>
+        /// <param name="chipName">ESP32 chip name.</param>
+        /// <param name="features">ESP32 chip features.</param>
+        /// <param name="crystal"> ESP32 crystal.</param>
+        /// <param name="macAddress">MAC address of the ESP32 chip.</param>
+        /// <param name="flashManufacturerId">Flash manufacturer ID.</param>
+        /// <param name="flashDeviceModelId">Flash device type ID.</param>
+        /// <param name="flashSize">The size of the flash in bytes.</param>
+        /// <param name="psramAvailability">Availability of PSRAM.</param>
         public Esp32DeviceInfo(
             string chipType,
             string chipName,
@@ -83,7 +90,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             byte flashManufacturerId,
             short flashDeviceModelId,
             int flashSize,
-            PSRamAvailability psramAvailability)
+            PSRamAvailability psramAvailability,
+            int psRamSize)
         {
             ChipType = chipType;
             ChipName = chipName;
@@ -94,6 +102,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             FlashDeviceId = flashDeviceModelId;
             FlashSize = flashSize;
             PSRamAvailable = psramAvailability;
+            PsRamSize = psRamSize;
         }
 
         internal string GetFlashSizeAsString()
@@ -101,6 +110,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return GetFlashSizeAsString(FlashSize);
         }
 
+        /// <summary>
+        /// Gets the flash size as a string.
+        /// </summary>
+        /// <param name="flashSize">The flash size.</param>
+        /// <returns>The flash size.</returns>
         public static string GetFlashSizeAsString(int flashSize)
         {
             return flashSize >= 0x10000 ? $"{flashSize / 0x100000}MB" : $"{flashSize / 0x400}kB";
@@ -133,7 +147,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     break;
 
                 case PSRamAvailability.Yes:
-                    deviceInfo.AppendLine($"PSRAM: available");
+                    deviceInfo.AppendLine($"PSRAM: {PsRamSize}MB");
                     break;
 
                 case PSRamAvailability.No:

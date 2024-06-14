@@ -14,18 +14,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
     [Serializable]
     public class CantConnectToNanoDeviceException : Exception
     {
+        /// <summary>
+        /// Cannot connect to device exception.
+        /// </summary>
         public CantConnectToNanoDeviceException()
         {
         }
 
+        /// <summary>
+        /// Cannot connect to device exception.
+        /// </summary>
+        /// <param name="message">Message to display.</param>
         public CantConnectToNanoDeviceException(string message) : base(message)
         {
         }
 
+        /// <summary>
+        /// Cannot connect to device exception.
+        /// </summary>
+        /// <param name="message">Message to display.</param>
+        /// <param name="innerException">The exception to display.</param>
         public CantConnectToNanoDeviceException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
+        /// <summary>
+        /// Cannot connect to device exception.
+        /// </summary>
+        /// <param name="info">Serialized information.</param>
+        /// <param name="context">Streamed context.</param>
         protected CantConnectToNanoDeviceException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

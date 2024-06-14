@@ -15,6 +15,9 @@ using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
+    /// <summary>
+    /// SI Link CLI.
+    /// </summary>
     public class SilinkCli
     {
         private const int SilinkTelnetPort = 49000;

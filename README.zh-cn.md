@@ -138,6 +138,8 @@ nanoff --update --target KALUGA_1 --serialport COM31 --clrfile "C:\nf-interprete
 nanoff --platform esp32 --serialport COM31 --devicedetails 
 ```
 
+可选地，可以传递额外的参数 `--checkpsram`，它会强制检测PSRAM的可用性。
+
 ### 将托管应用程序部署到ESP32设备  
 
 将托管应用程序部署到连接到COM31的ESP32_PSRAM_REV0设备上。  
