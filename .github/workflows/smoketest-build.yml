@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        dotnet-ver: ['8.0.x', '6.12.0'] # 6.0.x is the latest version available for .Net Mono
+        dotnet-ver: ['8.0.x', '6.0.x'] # 6.0.x is the latest version available for .Net Mono
 
     runs-on: ${{ matrix.os }}
 
