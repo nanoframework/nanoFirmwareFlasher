@@ -175,10 +175,10 @@ jobs:
   - Check_Build_Options
   strategy:
     matrix:
-      linux:
-        imageName: 'ubuntu-latest'
-      # windows:
-      #   imageName: 'windows-latest'
+      # linux:
+      #   imageName: 'ubuntu-latest'
+      windows:
+        imageName: 'windows-latest'
       # macos:
       #   imageName: 'macos-latest'
 
@@ -190,7 +190,7 @@ jobs:
     - name: DOTNET_NOLOGO
       value: true  
     - name: buildPlatform
-      value: 'Any CPU'  
+      value: 'x64'  
     - name: buildConfiguration
       value: 'Release'
     - name: solution
