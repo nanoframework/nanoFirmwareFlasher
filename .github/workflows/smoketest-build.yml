@@ -7,12 +7,17 @@ on:
 #  pull_request:
 
 jobs:
+
   build:
-    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: [windows-latest] #, ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout repository
@@ -23,11 +28,11 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore NuGet packages
-        run: dotnet restore
+    #   - name: Restore NuGet packages
+    #     run: dotnet restore
 
-      - name: Handle versioning
-        run: nbgv cloud -a -c
+    #   - name: Handle versioning
+    #     run: nbgv cloud -a -c
 
       - name: Build solution
         run: dotnet build --configuration Release
