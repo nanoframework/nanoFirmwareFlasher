@@ -136,10 +136,13 @@ Exit
             IList<string> addresses,
             string probeId)
         {
-            // check file existence
-            if (files.Any(f => !File.Exists(f)))
+            List<string> shadowFiles = [];
+
+            var processFileResult = ProcessFilePaths(files, shadowFiles);
+
+            if (processFileResult != ExitCodes.OK)
             {
-                return ExitCodes.E5004;
+                return processFileResult;
             }
 
             // perform check on address(es)
@@ -178,10 +181,6 @@ Exit
                     return ExitCodes.E5008;
                 }
             }
-
-            List<string> shadowFiles = [];
-
-            ProcessFilePaths(files, shadowFiles);
 
             // erase flash
             if (DoMassErase)
@@ -284,7 +283,7 @@ Exit
             return ExitCodes.OK;
         }
 
-        private void ProcessFilePaths(IList<string> files, List<string> shadowFiles)
+        private ExitCodes ProcessFilePaths(IList<string> files, List<string> shadowFiles)
         {
             // J-Link can't handle diacritc chars
             // developer note: reported to Segger (Case: 60276735) and can be removed if this is fixed/improved
@@ -294,6 +293,12 @@ Exit
                 var binFilePath = Utilities.MakePathAbsolute(
                     Environment.CurrentDirectory,
                     binFile);
+
+                // check file existence
+                if (!File.Exists(binFilePath))
+                {
+                    return ExitCodes.E5004;
+                }
 
                 if (!binFilePath.IsNormalized(NormalizationForm.FormD)
                     || binFilePath.Contains(' '))
@@ -315,8 +320,9 @@ Exit
                     // copy file to shadow list
                     shadowFiles.Add(binFile);
                 }
-
             }
+
+            return ExitCodes.OK;
         }
 
         /// <summary>
@@ -329,15 +335,14 @@ Exit
             IList<string> files,
             string probeId)
         {
-            // check file existence
-            if (files.Any(f => !File.Exists(f)))
-            {
-                return ExitCodes.E5004;
-            }
-
             List<string> shadowFiles = [];
 
-            ProcessFilePaths(files, shadowFiles);
+            var processFileResult = ProcessFilePaths(files, shadowFiles);
+
+            if (processFileResult != ExitCodes.OK)
+            {
+                return processFileResult;
+            }
 
             // erase flash
             if (DoMassErase)
