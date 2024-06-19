@@ -495,13 +495,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (operationResult == ExitCodes.OK)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    Console.Write($"Flashing firmware...");
-                }
-
                 int configPartitionAddress = 0;
                 int configPartitionSize = 0;
                 string configPartitionBackup = Path.GetRandomFileName();
@@ -513,7 +506,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (File.Exists(Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv")))
                     {
                         // can't do this without a partition table
-
+                        if (verbosity >= VerbosityLevel.Normal)
+                        {
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.Write($"Backup configuration...");
+                        }
 
                         // compose path to partition file
                         string partitionCsvFile = Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv");
@@ -541,6 +538,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
                     }
+                }
+
+                Console.ForegroundColor = ConsoleColor.White;
+
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    Console.Write($"Flashing firmware...");
                 }
 
                 // write to flash
