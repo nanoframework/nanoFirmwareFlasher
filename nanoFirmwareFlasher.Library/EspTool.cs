@@ -474,7 +474,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 false,
                 true,
                 false,
-                null,
+                (char)8,
                 out string messages))
             {
                 throw new ReadEsp32FlashException(messages);
@@ -745,12 +745,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                 // try to find a progress message
                                 string progress = FindProgress(messageBuilder, progressTestChar.Value);
-                                if (progress != null && Verbosity >= VerbosityLevel.Detailed)
+                                if (progress != null && Verbosity >= VerbosityLevel.Normal)
                                 {
                                     if (!progressStarted)
                                     {
                                         // need to print the first line of the progress message
-                                        Console.Write("\r");
+                                        Console.WriteLine();
 
                                         progressStarted = true;
                                     }
@@ -764,7 +764,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             }
                             else
                             {
-                                if (Verbosity >= VerbosityLevel.Detailed)
+                                if (Verbosity >= VerbosityLevel.Normal)
                                 {
                                     // need to clear all progress lines
                                     for (int i = 0; i < messageBuilder.Length; i++)
