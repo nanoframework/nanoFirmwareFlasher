@@ -23,6 +23,7 @@
 		<Platforms>AnyCPU;x64</Platforms>
 		<RuntimeIdentifiers>any</RuntimeIdentifiers>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<LangVersion>12.0</LangVersion>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 	    <RestoreLockedMode Condition="'$(TF_BUILD)' == 'True' or '$(ContinuousIntegrationBuild)' == 'True'">true</RestoreLockedMode>
 	</PropertyGroup>
