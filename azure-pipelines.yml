@@ -68,27 +68,9 @@ jobs:
           else
           {
               # build NOT from PR
-              Write-Host "Build NOT from PR, commit ID: $env:Build_SourceVersion"
-          
-              # get PR associated with commit
-              $prUrl = "https://api.github.com/repos/$env:Build_Repository_Name/commits/$env:Build_SourceVersion/pulls"
-              $commit = Invoke-RestMethod -Uri $prUrl -ContentType "application/json" -Headers @{"Accept"="application/vnd.github.groot-preview+json"} -Method GET
-      
-              if($commit -ne $null)
-              {
-                  # there is a PR, check labels
-                  $updateDependents = $commit.labels | where {$_.Name -eq 'CI: Update Dependents'}
-                  if($updateDependents -ne $null)
-                  {
-                      $update = $true
-                  }
-              }
+              Write-Host "Build NOT from PR, commit ID: $env:Build_SourceVersion"         
           }
-      }
-  
-      # set variable to foward to jobs
-      echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS;isOutput=true]$update"
-  
+      }  
     name: BuildOptions
     displayName: Evaluate build options
 
@@ -187,8 +169,6 @@ jobs:
       value: 'Release'
     - name: solution
       value: 'nanoFirmwareFlasher.sln'
-    - name: run_update_dependents
-      value: $[dependencies.Check_Build_Options.outputs['BuildOptions.RUN_UPDATE_DEPENDENTS']]
 
   steps:
 
@@ -472,21 +452,6 @@ jobs:
           { "label" : "Type: dependencies", "displayName" : "Dependencies updated", "state" : "closed" },
           { "label" : "Type: documentation", "displayName" : "Documentation", "state" : "closed" }
         ]
-
-  # update dependents
-  - task: PowerShell@2
-    condition: >-
-      or(
-        eq(variables['System.PullRequest.PullRequestId'], ''),
-        eq(variables['UPDATE_DEPENDENTS'], 'true'),
-        eq(variables['run_update_dependents'], 'true')
-      )
-    displayName: Update dependent tools
-    inputs:
-      targetType: filePath
-      filePath: azure-pipelines/update-dependents.ps1
-    env:
-      GH_TOKEN: $(GitHubToken)
 
 ##################################
 # report build failure to Discord
