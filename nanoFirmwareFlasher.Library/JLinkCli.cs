@@ -138,7 +138,9 @@ Exit
         {
             List<string> shadowFiles = [];
 
-            var processFileResult = ProcessFilePaths(files, shadowFiles);
+            var processFileResult = ProcessFilePaths(
+                files,
+                shadowFiles);
 
             if (processFileResult != ExitCodes.OK)
             {
@@ -280,19 +282,6 @@ Exit
 
             Console.ForegroundColor = ConsoleColor.White;
 
-            // be nice and clean up shadow files
-            try
-            {
-                foreach (string shadowFile in shadowFiles)
-                {
-                    File.Delete(shadowFile);
-                }
-            }
-            catch (Exception)
-            {
-                // ignore any exception here
-            }
-
             return ExitCodes.OK;
         }
 
@@ -308,7 +297,9 @@ Exit
         {
             List<string> shadowFiles = [];
 
-            var processFileResult = ProcessFilePaths(files, shadowFiles);
+            var processFileResult = ProcessFilePaths(
+                files,
+                shadowFiles);
 
             if (processFileResult != ExitCodes.OK)
             {
@@ -421,19 +412,6 @@ Exit
 
             Console.ForegroundColor = ConsoleColor.White;
 
-            // be nice and clean up shadow files
-            try
-            {
-                foreach (string shadowFile in shadowFiles)
-                {
-                    File.Delete(shadowFile);
-                }
-            }
-            catch (Exception)
-            {
-                // ignore any exception here
-            }
-
             return ExitCodes.OK;
         }
 
@@ -521,7 +499,9 @@ Exit
             return jlinkCli.StandardOutput.ReadToEnd();
         }
 
-        private ExitCodes ProcessFilePaths(IList<string> files, List<string> shadowFiles)
+        private static ExitCodes ProcessFilePaths(
+            IList<string> files,
+            List<string> shadowFiles)
         {
             // J-Link can't handle diacritc chars
             // developer note: reported to Segger (Case: 60276735) and can be removed if this is fixed/improved
