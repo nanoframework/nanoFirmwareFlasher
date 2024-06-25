@@ -263,7 +263,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("OK");
+                Console.WriteLine("OK".PadRight(110));
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
@@ -750,7 +750,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                     if (!progressStarted)
                                     {
                                         // need to print the first line of the progress message
-                                        Console.WriteLine();
+                                        Console.Write("\r");
 
                                         progressStarted = true;
                                     }
