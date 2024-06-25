@@ -505,13 +505,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // check if the update file includes a partition table
                     if (File.Exists(Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv")))
                     {
-                        // can't do this without a partition table
                         if (verbosity >= VerbosityLevel.Normal)
                         {
                             Console.ForegroundColor = ConsoleColor.White;
                             Console.Write($"Backup configuration...");
                         }
 
+                        // can't do this without a partition table
                         // compose path to partition file
                         string partitionCsvFile = Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv");
 
@@ -535,15 +535,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             configPartitionBackup,
                             configPartitionAddress,
                             configPartitionSize);
-
+                        
+                        if (verbosity >= VerbosityLevel.Normal)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine("OK");
+                        }
+                        
                         firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
                     }
                 }
 
                 Console.ForegroundColor = ConsoleColor.White;
 
-                if (verbosity >= VerbosityLevel.Normal)
+                if (verbosity < VerbosityLevel.Normal)
                 {
+                    // output the start of operation message for verbosity lower than normal
+                    // otherwise the progress from esptool is shown
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.Write($"Flashing firmware...");
                 }
 
@@ -552,8 +561,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (operationResult == ExitCodes.OK)
                 {
+                    if (verbosity < VerbosityLevel.Normal)
+                    {
+                        // operation completed output
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("OK".PadRight(110));
+                    }
+
                     if (verbosity >= VerbosityLevel.Normal)
                     {
+                        // output the full message as usual after the progress from esptool
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Write($"Flashing firmware...");
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("OK".PadRight(110));
 
@@ -698,7 +717,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("OK".PadRight(110));
+                    Console.WriteLine(.PadRight(110));
 
                     // warn user if reboot is not possible
                     if (espTool.CouldntResetTarget)
