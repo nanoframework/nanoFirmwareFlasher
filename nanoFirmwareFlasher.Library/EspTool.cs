@@ -263,7 +263,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("OK");
+                Console.WriteLine("OK".PadRight(110));
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
@@ -474,7 +474,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 false,
                 true,
                 false,
-                null,
+                (char)8,
                 out string messages))
             {
                 throw new ReadEsp32FlashException(messages);
@@ -745,7 +745,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                 // try to find a progress message
                                 string progress = FindProgress(messageBuilder, progressTestChar.Value);
-                                if (progress != null && Verbosity >= VerbosityLevel.Detailed)
+                                if (progress != null && Verbosity >= VerbosityLevel.Normal)
                                 {
                                     if (!progressStarted)
                                     {
@@ -764,7 +764,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             }
                             else
                             {
-                                if (Verbosity >= VerbosityLevel.Detailed)
+                                if (Verbosity >= VerbosityLevel.Normal)
                                 {
                                     // need to clear all progress lines
                                     for (int i = 0; i < messageBuilder.Length; i++)
