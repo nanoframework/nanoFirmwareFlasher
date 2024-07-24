@@ -26,7 +26,7 @@ spelling_exclusion_path = spelling_exclusion.dic
 
 #=====================================================
 #
-# Formatting rules for C#
+# C# code files
 #
 #=====================================================
 [*.cs]
@@ -74,18 +74,3 @@ csharp_space_between_square_brackets = false
 
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
-
-# Naming rules
-
-# nF_InternalPrivateFields: all private or internal fields
-dotnet_naming_symbols.nF_InternalPrivateFields.applicable_kinds = field
-dotnet_naming_symbols.nF_InternalPrivateFields.applicable_accessibilities = internal, private
-
-# nF_CamelCaseAndUnderscore: camel casing rule
-dotnet_naming_style.nF_CamelCase.capitalization = camel_case
-dotnet_naming_style.nF_CamelCase.required_prefix = _
-
-# nF naming rule for private or internal fields
-dotnet_naming_rule.nF_InternalPrivateFields_Rule.symbols = nF_InternalPrivateFields
-dotnet_naming_rule.nF_InternalPrivateFields_Rule.style = nF_CamelCaseAndUnderscore
-dotnet_naming_rule.nF_InternalPrivateFields_Rule.severity = warning
