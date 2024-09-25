@@ -292,11 +292,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             {
                                 Console.WriteLine("");
 
-                                Console.ForegroundColor = ConsoleColor.Cyan;
-                                Console.Write("Launching nanoBooter...");
-                                Console.WriteLine("");
-
                                 Console.ForegroundColor = ConsoleColor.White;
+                                Console.Write("Launching nanoBooter...");
                             }
 
                             booterLaunched = nanoDevice.ConnectToNanoBooter();
