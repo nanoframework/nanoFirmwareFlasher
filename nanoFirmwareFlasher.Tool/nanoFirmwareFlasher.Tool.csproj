@@ -48,7 +48,7 @@
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.4.42" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" PrivateAssets="All" />
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.143" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup>
