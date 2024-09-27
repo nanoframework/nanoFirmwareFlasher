@@ -1,7 +1,5 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -36,6 +34,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <inheritdoc />
         public async Task<ExitCodes> ProcessAsync()
         {
+            if (_options.ShowFirmwareOnly)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine($"Cannot determine the best matching target for a {SupportedPlatform.ti_simplelink} device.");
+                OutputWriter.WriteLine();
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                return ExitCodes.OK;
+            }
+
             if (_options.TIInstallXdsDrivers)
             {
                 return CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
@@ -63,6 +71,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _options.TargetName,
                         _options.FwVersion,
                         _options.Preview,
+                        _options.FromFwArchive ? _options.FwArchivePath : null,
                         true,
                         _options.DeploymentImage,
                         appFlashAddress,
@@ -99,6 +108,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                     _options.TargetName,
                                     null,
                                     false,
+                                    null,
                                     false,
                                     _options.DeploymentImage,
                                     appFlashAddress,

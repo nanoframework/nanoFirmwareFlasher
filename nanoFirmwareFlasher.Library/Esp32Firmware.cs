@@ -1,9 +1,6 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,17 +37,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public Esp32Firmware(
             string targetName,
             string fwVersion,
-            bool stable,
+            bool preview,
             PartitionTableSize? partitionTableSize)
             : base(
                  targetName,
                  fwVersion,
-                 stable)
+                 preview)
         {
             _partitionTableSize = partitionTableSize;
         }
 
-        internal async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(Esp32DeviceInfo deviceInfo)
+        internal async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(Esp32DeviceInfo deviceInfo, string archiveDirectoryPath)
         {
             int flashSize = deviceInfo.FlashSize;
 
@@ -66,14 +63,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
-                    Console.WriteLine($"There is no firmware available for ESP32 with {Esp32DeviceInfo.GetFlashSizeAsString(flashSize)} flash size!{Environment.NewLine}Only the following flash sizes are supported: {string.Join(", ", SupportedFlashSizes.Select(size => size >= 0x10000 ? $"{size / 0x100000}MB" : $"{size / 0x400}kB."))}");
+                    OutputWriter.WriteLine($"There is no firmware available for ESP32 with {Esp32DeviceInfo.GetFlashSizeAsString(flashSize)} flash size!{Environment.NewLine}Only the following flash sizes are supported: {string.Join(", ", SupportedFlashSizes.Select(size => size >= 0x10000 ? $"{size / 0x100000}MB" : $"{size / 0x400}kB."))}");
                 }
 
                 return ExitCodes.E4001;
             }
 
             // perform download and extract
-            var executionResult = await DownloadAndExtractAsync();
+            ExitCodes executionResult = await DownloadAndExtractAsync(archiveDirectoryPath);
 
             if (executionResult == ExitCodes.OK)
             {
