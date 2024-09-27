@@ -1,10 +1,7 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,29 +34,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <inheritdoc />
         public async Task<ExitCodes> ProcessAsync()
         {
+            if (_options.ShowFirmwareOnly)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine($"Cannot determine the best matching target for a {SupportedPlatform.gg11} device.");
+                OutputWriter.WriteLine();
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                return ExitCodes.OK;
+            }
+
             if (_options.ListJLinkDevices)
             {
                 var connecteDevices = JLinkDevice.ListDevices();
 
-                Console.ForegroundColor = ConsoleColor.Cyan;
+                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
                 if (connecteDevices.Count == 0)
                 {
-                    Console.WriteLine("No J-Link devices found");
+                    OutputWriter.WriteLine("No J-Link devices found");
                 }
                 else
                 {
-                    Console.WriteLine("-- Connected USB J-Link devices --");
+                    OutputWriter.WriteLine("-- Connected USB J-Link devices --");
 
                     foreach (string deviceId in connecteDevices)
                     {
-                        Console.WriteLine(deviceId);
+                        OutputWriter.WriteLine(deviceId);
                     }
 
-                    Console.WriteLine("----------------------------------");
+                    OutputWriter.WriteLine("----------------------------------");
                 }
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
 
                 // done here, this command has no further processing
                 return ExitCodes.OK;
@@ -86,13 +93,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     if (_verbosityLevel >= VerbosityLevel.Normal)
                     {
-                        Console.WriteLine($"Connected to J-Link device with ID {jlinkDevice.ProbeId}");
+                        OutputWriter.WriteLine($"Connected to J-Link device with ID {jlinkDevice.ProbeId}");
                     }
 
                     if (_verbosityLevel == VerbosityLevel.Diagnostic)
                     {
-                        Console.WriteLine($"Firmware: {jlinkDevice.Firmare}");
-                        Console.WriteLine($"Hardware: {jlinkDevice.Hardware}");
+                        OutputWriter.WriteLine($"Firmware: {jlinkDevice.Firmare}");
+                        OutputWriter.WriteLine($"Hardware: {jlinkDevice.Hardware}");
                     }
 
                     // set VCP baud rate (if requested)
@@ -164,6 +171,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _options.TargetName,
                         _options.FwVersion,
                         _options.Preview,
+                        _options.FromFwArchive ? _options.FwArchivePath : null,
                         true,
                         _options.DeploymentImage,
                         appFlashAddress,
@@ -211,6 +219,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                     _options.TargetName,
                                     null,
                                     false,
+                                    null,
                                     false,
                                     _options.DeploymentImage,
                                     appFlashAddress,

@@ -11,8 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		version.json = version.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nanoFirmwareFlasher.Tests", "nanoFirmwareFlasher.Tests\nanoFirmwareFlasher.Tests.csproj", "{CF76CB85-81C8-40AF-B252-84A8B43F13BA}"
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nanoFirmwareFlasher", "nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj", "{FE33E79E-5392-4469-B2BC-D0083C608808}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nanoFirmwareFlasher.Tests", "nanoFirmwareFlasher.Tests\nanoFirmwareFlasher.Tests.csproj", "{CF76CB85-81C8-40AF-B252-84A8B43F13BA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nanoFirmwareFlasher.Library", "nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj", "{FE33E79E-5392-4469-B2BC-D0083C608808}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,14 +29,14 @@ Global
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x64.ActiveCfg = Debug|x64
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x64.Build.0 = Debug|x64
-		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x86.ActiveCfg = Debug|x64
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x86.ActiveCfg = Debug|x86
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Debug|x86.Build.0 = Debug|x86
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x64.ActiveCfg = Release|x64
 		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x64.Build.0 = Release|x64
-		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x86.ActiveCfg = Release|x64
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x86.ActiveCfg = Release|x86
+		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x86.Build.0 = Release|x86
 		{CF76CB85-81C8-40AF-B252-84A8B43F13BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CF76CB85-81C8-40AF-B252-84A8B43F13BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF76CB85-81C8-40AF-B252-84A8B43F13BA}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -48,8 +49,6 @@ Global
 		{CF76CB85-81C8-40AF-B252-84A8B43F13BA}.Release|x64.Build.0 = Release|Any CPU
 		{CF76CB85-81C8-40AF-B252-84A8B43F13BA}.Release|x86.ActiveCfg = Release|Any CPU
 		{CF76CB85-81C8-40AF-B252-84A8B43F13BA}.Release|x86.Build.0 = Release|Any CPU
-		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x86.ActiveCfg = Release|x86
-		{762BA2A1-B3E9-4E26-9491-AE11D1F1C1EA}.Release|x86.Build.0 = Release|x86
 		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE33E79E-5392-4469-B2BC-D0083C608808}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -67,7 +66,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {AF6C2B32-984F-41C2-B0F7-B895E45A1BB5}
 		        SolutionGuid = {56E99FF7-1E34-4FB8-8E3C-F98890E741D0}
+		SolutionGuid = {AF6C2B32-984F-41C2-B0F7-B895E45A1BB5}
 	EndGlobalSection
 EndGlobal

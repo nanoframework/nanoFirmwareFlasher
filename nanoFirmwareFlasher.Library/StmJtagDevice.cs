@@ -1,7 +1,5 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -57,7 +55,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (string.IsNullOrEmpty(jtagId))
             {
                 // no JTAG id supplied, list available
-                var jtagDevices = ListDevices();
+                List<string> jtagDevices = ListDevices();
 
                 if (jtagDevices.Count > 0)
                 {
@@ -78,11 +76,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // try to connect to JTAG ID device to check availability
             // connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} HOTPLUG");
+            string cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} HOTPLUG");
 
             if (cliOutput.Contains("Error"))
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
 
                 ShowCLIOutput(cliOutput);
 
@@ -90,7 +88,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // parse the output to fill in the details
-            var match = Regex.Match(cliOutput, $"(Board       :)(?<board>.*)(.*?[\r\n]*)*(Device ID   :)(?<deviceid>.*)(.*?[\r\n]*)*(Device name :)(?<devicename>.*)(.*?[\r\n]*)*(Device CPU  :)(?<devicecpu>.*)");
+            Match match = Regex.Match(cliOutput, $"(Board       :)(?<board>.*)(.*?[\r\n]*)*(Device ID   :)(?<deviceid>.*)(.*?[\r\n]*)*(Device name :)(?<devicename>.*)(.*?[\r\n]*)*(Device CPU  :)(?<devicecpu>.*)");
             if (match.Success)
             {
                 // grab details
@@ -141,16 +139,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Reset MCU on device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Reset MCU on device...");
             }
 
             // try to connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} mode=UR -rst");
+            string cliOutput = RunSTM32ProgrammerCLI($"-c port=SWD sn={JtagId} mode=UR -rst");
 
             if (cliOutput.Contains("Error"))
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
 
                 ShowCLIOutput(cliOutput);
 
@@ -159,24 +157,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!cliOutput.Contains("MCU Reset"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ERROR");
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine("ERROR");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.E5010;
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine(" OK");
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine("");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -187,7 +185,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>A collection of connected STM JTAG devices.</returns>
         public static List<string> ListDevices()
         {
-            var cliOutput = ExecuteListDevices();
+            string cliOutput = ExecuteListDevices();
 
             // (successful) output from the above for JTAG devices is
             //
@@ -203,7 +201,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             const string regexPattern = @"(?<=ST-LINK SN  :\s)(?<serial>.{24})";
 
             var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
-            var jtagMatches = myRegex1.Matches(cliOutput);
+            MatchCollection jtagMatches = myRegex1.Matches(cliOutput);
 
             if (jtagMatches.Count == 0)
             {

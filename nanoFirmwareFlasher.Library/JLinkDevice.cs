@@ -58,7 +58,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (string.IsNullOrEmpty(probeId))
             {
                 // no probe id supplied, list available
-                var jlinkDevices = ListDevices();
+                List<string> jlinkDevices = ListDevices();
 
                 if (jlinkDevices.Count > 0)
                 {
@@ -78,11 +78,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // try to connect to J-Link ID device to check availability
-            var cliOutput = RunJLinkCLI(Path.Combine(CmdFilesDir, "test_connection.jlink"));
+            string cliOutput = RunJLinkCLI(Path.Combine(CmdFilesDir, "test_connection.jlink"));
 
             if (cliOutput.Contains("Error"))
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
 
                 ShowCLIOutput(cliOutput);
 
@@ -90,7 +90,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // parse the output to fill in the details
-            var match = Regex.Match(cliOutput, "(Firmware: )(?<firmware>.*)$", RegexOptions.Multiline);
+            Match match = Regex.Match(cliOutput, "(Firmware: )(?<firmware>.*)$", RegexOptions.Multiline);
             if (match.Success)
             {
                 if (match.Groups["firmware"].Captures.Count > 0)
@@ -134,7 +134,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>A collection of connected Silabs Giant Gecko devices.</returns>
         public static List<string> ListDevices()
         {
-            var cliOutput = ExecuteListDevices();
+            string cliOutput = ExecuteListDevices();
 
             // (successful) output from the above is
             //
@@ -146,7 +146,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             const string regexPattern = @"(?<=Connection: USB, Serial number:\s)(?<serial>\d+)";
 
             var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
-            var jlinkMatches = myRegex1.Matches(cliOutput);
+            MatchCollection jlinkMatches = myRegex1.Matches(cliOutput);
 
             if (jlinkMatches.Count == 0)
             {

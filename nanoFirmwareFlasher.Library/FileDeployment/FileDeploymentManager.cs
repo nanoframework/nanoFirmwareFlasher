@@ -1,14 +1,12 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using nanoFramework.Tools.Debugger;
-using nanoFramework.Tools.Debugger.Extensions;
-using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using nanoFramework.Tools.Debugger;
+using nanoFramework.Tools.Debugger.Extensions;
+using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
 {
@@ -54,11 +52,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
 
                 device = serialDebugClient.NanoFrameworkDevices[0];
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error connecting to nanoDevice on {_serialPort} to deploy files");
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine($"Error connecting to nanoDevice on {_serialPort} to deploy files");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.E2000;
             }
 
@@ -68,7 +66,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                 device.CreateDebugEngine();
                 if (_verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine($"Debug engine created.");
+                    OutputWriter.WriteLine($"Debug engine created.");
                 }
             }
 
@@ -78,11 +76,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
             bool connectResult = device.DebugEngine.Connect(5000, true, true);
             if (retryCount == 0 && _verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Device connected and ready for file deployment.");
+                OutputWriter.WriteLine($"Device connected and ready for file deployment.");
             }
             else if (_verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Device connect result is {connectResult}. Attempt {retryCount}/{_numberOfRetries}");
+                OutputWriter.WriteLine($"Device connect result is {connectResult}. Attempt {retryCount}/{_numberOfRetries}");
             }
 
             if (!connectResult)
@@ -97,9 +95,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Error connecting to debug engine on nanoDevice on {_serialPort} to deploy files");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine($"Error connecting to debug engine on nanoDevice on {_serialPort} to deploy files");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                     return ExitCodes.E2000;
                 }
             }
@@ -111,9 +109,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
             {
                 if (_verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"Device status verified as being in initialized state. Requesting to resume execution. Attempt {retryCount}/{_numberOfRetries}.");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine($"Device status verified as being in initialized state. Requesting to resume execution. Attempt {retryCount}/{_numberOfRetries}.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 // set flag
@@ -132,7 +130,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                 {
                     if (_verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        Console.WriteLine($"Device has completed initialization.");
+                        OutputWriter.WriteLine($"Device has completed initialization.");
                     }
 
                     // done here
@@ -142,7 +140,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
 
                 if (_verbosity >= VerbosityLevel.Diagnostic)
                 {
-                    Console.WriteLine($"Waiting for device to report initialization completed ({retryCount}/{_numberOfRetries}).");
+                    OutputWriter.WriteLine($"Waiting for device to report initialization completed ({retryCount}/{_numberOfRetries}).");
                 }
 
                 // provide feedback to user on the 1st pass
@@ -150,7 +148,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                 {
                     if (_verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        Console.WriteLine($"Waiting for device to initialize.");
+                        OutputWriter.WriteLine($"Waiting for device to initialize.");
                     }
                 }
 
@@ -158,7 +156,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                 {
                     if (_verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        Console.WriteLine($"Device reported running nanoBooter. Requesting to load nanoCLR.");
+                        OutputWriter.WriteLine($"Device reported running nanoBooter. Requesting to load nanoCLR.");
                     }
 
                     // request nanoBooter to load CLR
@@ -168,9 +166,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                 {
                     if (_verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"Device reported running nanoCLR. Requesting to reboot nanoCLR.");
-                        Console.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine($"Device reported running nanoCLR. Requesting to reboot nanoCLR.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
                     }
 
                     await Task.Run(delegate
@@ -191,44 +189,44 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
             if (!deviceIsInInitializeState)
             {
                 // Deploy each file
-                foreach (var file in _configuration.Files)
+                foreach (DeploymentFile file in _configuration.Files)
                 {
                     try
                     {
                         if (string.IsNullOrEmpty(file.SourceFilePath))
                         {
                             // deleting
-                            Console.Write($"Deleting file {file.DestinationFilePath}...");
+                            OutputWriter.Write($"Deleting file {file.DestinationFilePath}...");
                             if (device.DebugEngine.DeleteStorageFile(file.DestinationFilePath) != Debugger.WireProtocol.StorageOperationErrorCode.NoError)
                             {
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-                                Console.WriteLine();
-                                Console.WriteLine($"Error deleting file {file.DestinationFilePath}, it may not exist on the storage.");
-                                Console.ForegroundColor = ConsoleColor.White;
+                                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                                OutputWriter.WriteLine();
+                                OutputWriter.WriteLine($"Error deleting file {file.DestinationFilePath}, it may not exist on the storage.");
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
                             }
                             else
                             {
-                                Console.ForegroundColor = ConsoleColor.Green;
-                                Console.WriteLine($"OK");
-                                Console.ForegroundColor = ConsoleColor.White;
+                                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                OutputWriter.WriteLine($"OK");
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
                             }
                         }
                         else
                         {
-                            Console.Write($"Deploying file {file.SourceFilePath} to {file.DestinationFilePath}...");
-                            var ret = device.DebugEngine.AddStorageFile(file.DestinationFilePath, File.ReadAllBytes(file.SourceFilePath));
+                            OutputWriter.Write($"Deploying file {file.SourceFilePath} to {file.DestinationFilePath}...");
+                            Debugger.WireProtocol.StorageOperationErrorCode ret = device.DebugEngine.AddStorageFile(file.DestinationFilePath, File.ReadAllBytes(file.SourceFilePath));
                             if (ret != Debugger.WireProtocol.StorageOperationErrorCode.NoError)
                             {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine();
-                                Console.WriteLine($"Error deploying content file {file.SourceFilePath} to {file.DestinationFilePath}");
-                                Console.ForegroundColor = ConsoleColor.White;
+                                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                                OutputWriter.WriteLine();
+                                OutputWriter.WriteLine($"Error deploying content file {file.SourceFilePath} to {file.DestinationFilePath}");
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
                             }
                             else
                             {
-                                Console.ForegroundColor = ConsoleColor.Green;
-                                Console.WriteLine($"OK");
-                                Console.ForegroundColor = ConsoleColor.White;
+                                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                OutputWriter.WriteLine($"OK");
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
                             }
                         }
                     }
@@ -236,10 +234,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
                     {
                         if (_verbosity >= VerbosityLevel.Normal)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine();
-                            Console.WriteLine($"Exception deploying content file {file.SourceFilePath} to {file.DestinationFilePath}");
-                            Console.ForegroundColor = ConsoleColor.White;
+                            OutputWriter.ForegroundColor = ConsoleColor.Red;
+                            OutputWriter.WriteLine();
+                            OutputWriter.WriteLine($"Exception deploying content file {file.SourceFilePath} to {file.DestinationFilePath}");
+                            OutputWriter.ForegroundColor = ConsoleColor.White;
                         }
                     }
                 }
