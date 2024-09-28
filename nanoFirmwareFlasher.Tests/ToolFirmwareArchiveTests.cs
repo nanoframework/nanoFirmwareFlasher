@@ -18,7 +18,7 @@ namespace nanoFirmwareFlasher.Tests
     [TestClass]
     [TestCategory("Firmware archive")]
     [DoNotParallelize] // because of static variables in the programs
-    public sealed class Tool_FirmwareArchiveTests
+    public sealed class ToolFirmwareArchiveTests
     {
         public TestContext TestContext { get; set; } = null!;
 

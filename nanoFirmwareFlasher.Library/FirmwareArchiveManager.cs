@@ -10,18 +10,14 @@ using Newtonsoft.Json;
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// The manager of a firmware archive directory. By default, all firmware is downloaded from the online
-    /// CloudSmith repository or obtained from a global cache. In general the latest version is used. As a result,
-    /// subsequent executions of the nanoFirmwareFlasher may yield different versions of the firmware.
-    /// The nanoFirmwareFlasher can be used to create a snapshot of firmware packages at a particular moment
-    /// and use the snapshot as were it the online repository, by storing the snapshot in the firmware archive directory.
-    /// The <see cref="FirmwareArchiveManager"/> implements listing, storing and retrieving of firmware in that directory.
+    /// The manager of a firmware archive directory. It supports downloading firmware packages and the runtimes
+    /// for the Virtual Device to a local directory from the online archive. That directory can then be used as
+    /// a source for list and deployment operations instead of the online archive.
     /// </summary>
     public sealed class FirmwareArchiveManager
     {
-        #region Fields
         private readonly string _archivePath;
-        #endregion
+        private const string INFOFILE_EXTENSION = ".json";
 
         #region Construction
         /// <summary>
@@ -189,7 +185,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             /// </summary>
             public bool IsPreview { get; set; }
         }
-        private const string INFOFILE_EXTENSION = ".json";
         #endregion
 
         #region Firmware package

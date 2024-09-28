@@ -34,7 +34,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             // take care of static fields
             _informationalVersionAttribute = Attribute.GetCustomAttribute(
-                typeof(Program).Assembly, // Cannot be Assembly.GetEntryAssembly()! as that fails in tests
+                // Cannot be Assembly.GetEntryAssembly()! as that fails in tests
+                typeof(Program).Assembly,
                 typeof(AssemblyInformationalVersionAttribute))
             as AssemblyInformationalVersionAttribute;
 
@@ -42,7 +43,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             _copyrightInfo = new CopyrightInfo(true, $".NET Foundation and nanoFramework project contributors", 2019);
 
-            _exitCode = ExitCodes.OK; // for tests
+            // for tests
+            _exitCode = ExitCodes.OK;
             _extraMessage = null;
             _verbosityLevel = VerbosityLevel.Quiet;
 

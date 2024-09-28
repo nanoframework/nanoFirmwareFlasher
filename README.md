@@ -506,17 +506,7 @@ nanoff --clearcache
 
 ## Firmware archive
 
-By default, *nanoff* is designed to work with the latest version of the tool itself and of the firmware packages published in the online firmware repository. Command line arguments like
-
-```console
-nanoff --nanodevice --update --serialport COM9
-```
-
-will cause *nanoff* to check whether an update of the tool is available, download and deploy the latest version of the firmware for the connected device. This firmware has to match the NuGet packages used in the .NET **nanoFramework** applications, that may have to be updated to the latest version as well.
-
-For some projects auto-updating of tools, firmware and NuGet packages is not desirable, and a more controlled transition to new versions of the framework components is required. This can be done by downloading the firmware packages to a firmware archive location first, and then updating a nanoDevice's firmware from that archive. See the [documentation](https://docs.nanoframework.net/content/getting-started-guides/getting-started-versioning.html) for a more detailed description.
-
-Firmware can be archived via the *--updatefwarchive* option, e.g.:
+By default, *nanoff* uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the *--updatefwarchive* option:
 
 ```console
 nanoff --updatefwarchive --target ESP32_S3_ALL --fwarchivepath c:\...\firmware 
@@ -527,13 +517,16 @@ For a list of archived firmware:
 ```console
 nanoff --listtargets --fromfwarchive --fwarchivepath c:\...\firmware
 ```
-where the option *--suppressnanoffversioncheck* can be added to suppress the check for an update of *nanoff*.
 
-To install firmware on a device, use the same command line arguments as usual, but add *--fromfwarchive*, *--fwarchivepath* and optionally *--suppressnanoffversioncheck*, e.g.:
+To install firmware on a device, use the same command line arguments as usual, but add *--fromfwarchive* and *--fwarchivepath*:
 
 ```console
 nanoff --nanodevice --update --serialport COM9 --fromfwarchive --fwarchivepath c:\...\firmware
 ```
+
+## Bypass version check
+
+By default nanoff checks whether a new version of the tool has been published. If that is not necessary, the option *--suppressnanoffversioncheck* can be added to suppress the check.
 
 ## Exit codes
 

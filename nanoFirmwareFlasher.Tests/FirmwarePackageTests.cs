@@ -12,7 +12,7 @@ using nanoFramework.Tools.FirmwareFlasher;
 namespace nanoFirmwareFlasher.Tests
 {
     [TestClass]
-    public class FirmwarePackage_Tests
+    public class FirmwarePackageTests
     {
         public TestContext TestContext { get; set; } = null!;
 

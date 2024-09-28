@@ -9,14 +9,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// <summary>
     /// Writes output to the console. In unit tests the output can be directed to
     /// a per-test implementation to make the library and tool testable.
-    /// This is the easiest way, as library and tool were infested with Console.*
-    /// that is hard to test, especially when running tests in parallel.
+    /// Parallel running of unit tests is supported in that case.
     /// </summary>
     public static class OutputWriter
     {
-        #region Fields
         private static readonly AsyncLocal<IOutputWriter> s_outputWriter = new();
-        #endregion
 
         #region Properties
         /// <summary>
@@ -41,7 +38,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         #region Methods
         /// <summary>
-        /// Write a line to the standard output
+        /// Write a line to the standard output.
         /// </summary>
         /// <param name="text">Text to write</param>
         public static void Write(string text)
@@ -57,7 +54,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
-        /// Write a line to the standard output
+        /// Write a line to the standard output.
         /// </summary>
         /// <param name="text">Text to write</param>
         public static void WriteLine(string text = null)
@@ -102,7 +99,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal interface IOutputWriter
         {
             /// <summary>
-            /// Get or set the foreground color
+            /// Get or set the foreground color.
             /// </summary>
             ConsoleColor ForegroundColor
             {
@@ -110,7 +107,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             /// <summary>
-            /// Write text to the standard output
+            /// Write text to the standard output.
             /// </summary>
             /// <param name="text">Text to write; can be <c>null</c>.</param>
             void Write(string text);
