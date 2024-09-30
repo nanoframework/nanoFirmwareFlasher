@@ -36,9 +36,9 @@
       },
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.4.42, )",
-        "resolved": "2.4.42",
-        "contentHash": "3RWlCdTOkf0RDHRc+qFs0Di4QP9JLwaa3msLK1WT+XUeIaG45MJo9WLJ+tBS4rXcn0dHQSAKIP17q374WmaMag==",
+        "requested": "[2.4.45, )",
+        "resolved": "2.4.45",
+        "contentHash": "tG8lWhL4GAdVjrRHBB/g/bvaaXw8aidcatZ09pxkiBTqlIrHdrUM4Nsu/wvvMAgWscWrXDVAEYna1KHaFD9vfg==",
         "dependencies": {
           "Polly": "7.2.3",
           "PropertyChanged.Fody": "2.6.1",
@@ -304,9 +304,9 @@
       },
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.4.42, )",
-        "resolved": "2.4.42",
-        "contentHash": "3RWlCdTOkf0RDHRc+qFs0Di4QP9JLwaa3msLK1WT+XUeIaG45MJo9WLJ+tBS4rXcn0dHQSAKIP17q374WmaMag==",
+        "requested": "[2.4.45, )",
+        "resolved": "2.4.45",
+        "contentHash": "tG8lWhL4GAdVjrRHBB/g/bvaaXw8aidcatZ09pxkiBTqlIrHdrUM4Nsu/wvvMAgWscWrXDVAEYna1KHaFD9vfg==",
         "dependencies": {
           "Polly": "7.2.3",
           "PropertyChanged.Fody": "2.6.1",
