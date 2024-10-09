@@ -34,7 +34,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <inheritdoc />
         public async Task<ExitCodes> ProcessAsync()
         {
-            if (_options.ShowFirmwareOnly)
+            if (_options.IdentifyFirmware)
             {
                 OutputWriter.ForegroundColor = ConsoleColor.Red;
                 OutputWriter.WriteLine();

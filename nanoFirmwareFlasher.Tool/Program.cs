@@ -137,10 +137,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (latestVersion > currentVersion)
                 {
-                    OutputWriter.ForegroundColor = ConsoleColor.DarkYellow;
-                    OutputWriter.WriteLine("** There is a new version available **");
-                    OutputWriter.WriteLine("** Check the update instructions here: https://git.io/JiU0C **");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("** There is a new version available, update is recommended **");
+                    Console.WriteLine("** You should consider updating via the 'dotnet tool update -g nanoff' command **");
+                    Console.WriteLine("** If you have it installed on a specific path please check the instructions here: https://git.io/JiU0C **");
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
             }
             catch (Exception)
@@ -445,7 +446,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!string.IsNullOrEmpty(o.TargetName))
             {
                 // check for invalid options passed with platform option
-                if (o.NanoDevice || o.ShowFirmwareOnly)
+                if (o.NanoDevice || o.IdentifyFirmware)
                 {
                     _exitCode = ExitCodes.E9000;
                     _extraMessage = "Incompatible options combined with --targetname.";

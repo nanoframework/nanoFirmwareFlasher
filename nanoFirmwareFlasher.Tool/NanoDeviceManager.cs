@@ -31,6 +31,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <inheritdoc />
         public async Task<ExitCodes> ProcessAsync()
         {
+            bool failedToDoSomething = true;
             ExitCodes exitCode = ExitCodes.OK;
 
             // COM port is mandatory for nano device operations
@@ -39,37 +40,40 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E6001;
             }
 
-            if (!(_options.DeviceDetails || _options.Update || _options.Deploy))
-            {
-                throw new NoOperationPerformedException();
-            }
-
             NanoDeviceOperations _nanoDeviceOperations = new NanoDeviceOperations();
 
-            if (!GlobalExclusiveDeviceAccess.CommunicateWithDevice(_options.SerialPort, () =>
+            using (var access = GlobalExclusiveDeviceAccess.TryGet(_options.SerialPort, AccessSerialPortTimeout))
             {
+                if (access is null)
+                {
+                    return ExitCodes.E6002;
+                }
+
                 if (_options.DeviceDetails)
                 {
                     NanoDeviceBase nanoDevice = null;
                     exitCode = _nanoDeviceOperations.GetDeviceDetails(
                         _options.SerialPort,
                         ref nanoDevice);
-                    return;
+                    return ExitCodes.OK;
                 }
                 else if (_options.Update)
                 {
                     exitCode = _nanoDeviceOperations.UpdateDeviceClrAsync(
                         _options.SerialPort,
                         _options.FwVersion,
-                        _options.ShowFirmwareOnly,
+                        _options.IdentifyFirmware,
                         _options.FromFwArchive ? _options.FwArchivePath : null,
                         _options.ClrFile,
                         _verbosityLevel).GetAwaiter().GetResult();
 
                     if (exitCode != ExitCodes.OK)
                     {
-                        return;
+                        return ExitCodes.OK;
                     }
+
+                    // flag operation as done
+                    failedToDoSomething = false;
                 }
 
                 if (_options.Deploy)
@@ -81,13 +85,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     if (exitCode != ExitCodes.OK)
                     {
-                        return;
+                        return exitCode;
                     }
+
+                    // flag operation as done
+                    failedToDoSomething = false;
                 }
-            },
-            AccessSerialPortTimeout))
+            }
+
+            if (failedToDoSomething)
             {
-                exitCode = ExitCodes.E6002;
+                throw new NoOperationPerformedException();
             }
 
             return exitCode;

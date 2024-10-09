@@ -340,11 +340,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool DeviceDetails { get; set; }
 
         [Option(
-            "showfwonly",
+            "identifyfirmware",
             Required = false,
             Default = false,
             HelpText = "Show which firmware to use for a device without deploying anything.")]
-        public bool ShowFirmwareOnly { get; set; }
+        public bool IdentifyFirmware { get; set; }
 
         [Option(
             "filedeployment",
@@ -354,21 +354,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public string FileDeployment { get; set; }
 
         [Option(
-            "fwarchivepath",
+            "archivepath",
             Required = false,
             Default = null,
             HelpText = "Path of the directory where the firmware is archived.")]
         public string FwArchivePath { get; set; }
 
         [Option(
-            "updatefwarchive",
+            "updatearchive",
             Required = false,
             Default = false,
             HelpText = "Copy the firmware from the online repository to the firmware archive directory; do not update the firmware on a connected device.")]
         public bool UpdateFwArchive { get; set; }
 
         [Option(
-            "fromfwarchive",
+            "fromarchive",
             Required = false,
             Default = false,
             HelpText = "Get the firmware from the firmware archive rather than from the online repository.")]
