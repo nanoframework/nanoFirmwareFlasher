@@ -1,15 +1,13 @@
-////
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-////
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using nanoFramework.Tools.Debugger;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using nanoFramework.Tools.Debugger;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -50,7 +48,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (getDeviceDetails)
             {
                 // get device details
-                foreach (var device in _serialDebuggerPort.NanoFrameworkDevices)
+                foreach (NanoDeviceBase device in _serialDebuggerPort.NanoFrameworkDevices)
                 {
                     _ = device.DebugEngine.Connect(
                         false,
@@ -121,12 +119,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // we have to have a valid device info
                     if (nanoDevice.DeviceInfo.Valid)
                     {
-                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
-                        Console.WriteLine("");
-                        Console.WriteLine($"{nanoDevice.DeviceInfo}");
+                        OutputWriter.WriteLine("");
+                        OutputWriter.WriteLine($"{nanoDevice.DeviceInfo}");
 
-                        Console.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
 
                         return ExitCodes.OK;
                     }
@@ -142,12 +140,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // we have to have a valid device info
                     if (nanoDevice.DebugEngine.TargetInfo != null)
                     {
-                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
-                        Console.WriteLine("");
-                        Console.WriteLine($"{nanoDevice.DebugEngine.TargetInfo}");
+                        OutputWriter.WriteLine("");
+                        OutputWriter.WriteLine($"{nanoDevice.DebugEngine.TargetInfo}");
 
-                        Console.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
 
                         return ExitCodes.OK;
                     }
@@ -170,6 +168,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="serialPort">Serial port name where the device is connected to.</param>
         /// <param name="fwVersion">Firmware version to update to.</param>
+        /// <param name="showFwOnly">Only show which firmware to use; do not deploy anything to the device.</param>
+        /// <param name="archiveDirectoryPath">Path to the archive directory where all targets are located. Pass <c>null</c> if there is no archive.
+        /// If not <c>null</c>, the package will always be retrieved from the archive and never be downloaded.</param>
         /// <param name="clrFile">Path to CLR file to use for firmware update.</param>
         /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
@@ -187,6 +188,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public async Task<ExitCodes> UpdateDeviceClrAsync(
             string serialPort,
             string fwVersion,
+            bool showFwOnly,
+            string archiveDirectoryPath,
             string clrFile,
             VerbosityLevel verbosity = VerbosityLevel.Quiet)
         {
@@ -197,8 +200,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write($"Getting details from nano device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write($"Getting details from nano device...");
             }
 
             bool updateCLRfile = !string.IsNullOrEmpty(clrFile);
@@ -241,25 +244,33 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("OK");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("OK");
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
             else
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
             }
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine("");
-                Console.ForegroundColor = ConsoleColor.Cyan;
+                OutputWriter.WriteLine("");
+                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
-                Console.WriteLine($"Connected to nano device: {nanoDevice.Description}");
-                Console.WriteLine("");
+                OutputWriter.WriteLine($"Connected to nano device: {nanoDevice.Description}");
+                OutputWriter.WriteLine("");
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+            }
+
+            if (showFwOnly)
+            {
+                OutputWriter.WriteLine("");
+                OutputWriter.WriteLine($"Connected nanoDevice uses target '{nanoDevice.TargetName}'; platform is {nanoDevice.Platform}.");
+                OutputWriter.WriteLine("");
+                return ExitCodes.OK;
             }
 
             // local file will be flashed straight away
@@ -290,10 +301,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         {
                             if (verbosity > VerbosityLevel.Normal)
                             {
-                                Console.WriteLine("");
+                                OutputWriter.WriteLine("");
 
-                                Console.ForegroundColor = ConsoleColor.White;
-                                Console.Write("Launching nanoBooter...");
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
+                                OutputWriter.Write("Launching nanoBooter...");
                             }
 
                             booterLaunched = nanoDevice.ConnectToNanoBooter();
@@ -304,7 +315,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 if (currentClrVersion != null &&
                                     nanoDevice.DeviceInfo.SolutionBuildVersion < new Version("1.6.0.54"))
                                 {
-                                    Console.WriteLine("");
+                                    OutputWriter.WriteLine("");
 
                                     throw new NanoDeviceOperationFailedException("The device is running a version that doesn't support rebooting by software. Please update your device using 'nanoff' tool.");
                                 }
@@ -312,9 +323,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                             if (verbosity > VerbosityLevel.Normal)
                             {
-                                Console.ForegroundColor = ConsoleColor.Green;
-                                Console.WriteLine("OK");
-                                Console.ForegroundColor = ConsoleColor.White;
+                                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                OutputWriter.WriteLine("OK");
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
                             }
                         }
                         catch
@@ -331,14 +342,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         nanoDevice.Ping() == Debugger.WireProtocol.ConnectionSource.nanoBooter)
                     {
                         // get address for CLR block expected by device
-                        var clrAddress = nanoDevice.GetCLRStartAddress();
+                        int clrAddress = nanoDevice.GetCLRStartAddress();
 
                         await Task.Yield();
 
                         if (verbosity >= VerbosityLevel.Normal)
                         {
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.Write($"Starting CLR update with local file...");
+                            OutputWriter.ForegroundColor = ConsoleColor.White;
+                            OutputWriter.Write($"Starting CLR update with local file...");
                         }
 
                         try
@@ -354,17 +365,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                 if (verbosity >= VerbosityLevel.Normal)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("OK");
-                                    Console.ForegroundColor = ConsoleColor.White;
+                                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                    OutputWriter.WriteLine("OK");
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
                                 }
                             }
                             else
                             {
                                 if (verbosity >= VerbosityLevel.Normal)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine("FAILED!");
+                                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                                    OutputWriter.WriteLine("FAILED!");
 
                                     return ExitCodes.E2002;
                                 }
@@ -375,17 +386,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 // try to reboot target 
                                 if (verbosity >= VerbosityLevel.Normal)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.White;
-                                    Console.Write("Rebooting...");
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                                    OutputWriter.Write("Rebooting...");
                                 }
 
                                 nanoDevice.DebugEngine.RebootDevice(RebootOptions.NormalReboot);
 
                                 if (verbosity >= VerbosityLevel.Normal)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("OK");
-                                    Console.ForegroundColor = ConsoleColor.White;
+                                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                    OutputWriter.WriteLine("OK");
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
                                 }
 
                                 return ExitCodes.OK;
@@ -416,11 +427,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else
             {
                 // get firmware package
-                var fwPackage = FirmwarePackageFactory.GetFirmwarePackage(
+                FirmwarePackage fwPackage = FirmwarePackageFactory.GetFirmwarePackage(
                     nanoDevice,
                     fwVersion);
 
-                var downloadResult = await fwPackage.DownloadAndExtractAsync();
+                ExitCodes downloadResult = await fwPackage.DownloadAndExtractAsync(archiveDirectoryPath);
 
                 if (downloadResult == ExitCodes.OK)
                 {
@@ -454,13 +465,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 {
                                     if (verbosity > VerbosityLevel.Normal)
                                     {
-                                        Console.WriteLine("");
+                                        OutputWriter.WriteLine("");
 
-                                        Console.ForegroundColor = ConsoleColor.Cyan;
-                                        Console.Write("Launching nanoBooter...");
-                                        Console.WriteLine("");
+                                        OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                                        OutputWriter.Write("Launching nanoBooter...");
+                                        OutputWriter.WriteLine("");
 
-                                        Console.ForegroundColor = ConsoleColor.White;
+                                        OutputWriter.ForegroundColor = ConsoleColor.White;
                                     }
 
                                     attemptToLaunchBooter = nanoDevice.ConnectToNanoBooter();
@@ -471,7 +482,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         if (currentClrVersion != null &&
                                             nanoDevice.DeviceInfo.SolutionBuildVersion < new Version("1.6.0.54"))
                                         {
-                                            Console.WriteLine("");
+                                            OutputWriter.WriteLine("");
 
                                             throw new NanoDeviceOperationFailedException("The device is running a version that doesn't support rebooting by software. Please update your device using 'nanoff' tool.");
                                         }
@@ -479,9 +490,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                     if (verbosity > VerbosityLevel.Normal)
                                     {
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.WriteLine("OK");
-                                        Console.ForegroundColor = ConsoleColor.White;
+                                        OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                        OutputWriter.WriteLine("OK");
+                                        OutputWriter.ForegroundColor = ConsoleColor.White;
                                     }
                                 }
                                 catch
@@ -498,7 +509,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 nanoDevice.Ping() == Debugger.WireProtocol.ConnectionSource.nanoBooter)
                             {
                                 // get address for CLR block expected by device
-                                var clrAddress = nanoDevice.GetCLRStartAddress();
+                                int clrAddress = nanoDevice.GetCLRStartAddress();
 
                                 // compare with address on the fw packages
                                 if (clrAddress !=
@@ -512,8 +523,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                 if (verbosity >= VerbosityLevel.Normal)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.White;
-                                    Console.Write($"Starting update to CLR v{fwPackage.Version}...");
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                                    OutputWriter.Write($"Starting update to CLR v{fwPackage.Version}...");
                                 }
 
                                 try
@@ -529,9 +540,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                         if (verbosity >= VerbosityLevel.Normal)
                                         {
-                                            Console.ForegroundColor = ConsoleColor.Green;
-                                            Console.WriteLine("OK");
-                                            Console.ForegroundColor = ConsoleColor.White;
+                                            OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                            OutputWriter.WriteLine("OK");
+                                            OutputWriter.ForegroundColor = ConsoleColor.White;
                                         }
                                     }
 
@@ -540,17 +551,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                         // try to reboot target 
                                         if (verbosity > VerbosityLevel.Normal)
                                         {
-                                            Console.ForegroundColor = ConsoleColor.White;
-                                            Console.Write("Rebooting...");
+                                            OutputWriter.ForegroundColor = ConsoleColor.White;
+                                            OutputWriter.Write("Rebooting...");
                                         }
 
                                         nanoDevice.DebugEngine.RebootDevice(RebootOptions.NormalReboot);
 
                                         if (verbosity > VerbosityLevel.Normal)
                                         {
-                                            Console.ForegroundColor = ConsoleColor.Green;
-                                            Console.WriteLine("OK");
-                                            Console.ForegroundColor = ConsoleColor.White;
+                                            OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                            OutputWriter.WriteLine("OK");
+                                            OutputWriter.ForegroundColor = ConsoleColor.White;
                                         }
 
                                         return ExitCodes.OK;
@@ -577,13 +588,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             {
                                 if (verbosity >= VerbosityLevel.Normal)
                                 {
-                                    Console.WriteLine("");
-                                    Console.ForegroundColor = ConsoleColor.Yellow;
+                                    OutputWriter.WriteLine("");
+                                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
 
-                                    Console.WriteLine("Nothing to update as device is already running the requested version.");
-                                    Console.WriteLine("");
+                                    OutputWriter.WriteLine("Nothing to update as device is already running the requested version.");
+                                    OutputWriter.WriteLine("");
 
-                                    Console.ForegroundColor = ConsoleColor.White;
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
                                 }
 
                                 // done here
@@ -630,8 +641,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write($"Getting details from nano device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write($"Getting details from nano device...");
             }
 
             NanoDeviceBase nanoDevice = null;
@@ -651,14 +662,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("OK");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("OK");
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
             else
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
             }
 
             if (nanoDevice.DebugEngine.Connect(
@@ -668,7 +679,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.Write($"Deploying managed application...");
+                    OutputWriter.Write($"Deploying managed application...");
                 }
 
                 if (!nanoDevice.DeployBinaryFile(
@@ -679,8 +690,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     if (verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("FAILED!");
+                        OutputWriter.ForegroundColor = ConsoleColor.Red;
+                        OutputWriter.WriteLine("FAILED!");
 
                         return ExitCodes.E2002;
                     }
@@ -689,21 +700,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("OK");
+                        OutputWriter.ForegroundColor = ConsoleColor.Green;
+                        OutputWriter.WriteLine("OK");
 
-                        Console.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
                     }
                     else
                     {
-                        Console.WriteLine("");
+                        OutputWriter.WriteLine("");
                     }
 
                     // try to reboot target 
                     if (verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.ForegroundColor = ConsoleColor.White;
-                        Console.Write("Rebooting...");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.Write("Rebooting...");
                     }
 
                     // reboot device
@@ -711,9 +722,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     if (verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("OK");
-                        Console.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.ForegroundColor = ConsoleColor.Green;
+                        OutputWriter.WriteLine("OK");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
                     }
                 }
 
@@ -769,7 +780,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 #if DEBUG
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to add device: {ex.Message}");
+                OutputWriter.WriteLine($"Failed to add device: {ex.Message}");
 
                 return false;
             }
@@ -803,7 +814,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         try
                         {
                             // get device info
-                            var deviceInfo = nanoDevice.GetDeviceInfo(true);
+                            INanoFrameworkDeviceInfo deviceInfo = nanoDevice.GetDeviceInfo(true);
 
                             // we have to have a valid device info
                             if (deviceInfo.Valid)
@@ -828,7 +839,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         try
                         {
                             // get device info
-                            var deviceInfo = nanoDevice.DebugEngine?.TargetInfo;
+                            Debugger.WireProtocol.TargetInfo deviceInfo = nanoDevice.DebugEngine?.TargetInfo;
 
                             // we have to have a valid device info
                             if (deviceInfo != null)

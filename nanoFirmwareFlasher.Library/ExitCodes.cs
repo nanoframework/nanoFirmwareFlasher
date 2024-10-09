@@ -1,9 +1,6 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -212,6 +209,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Need to specify a COM port.")]
         E6001 = 6001,
+
+        /// <summary>
+        /// Timeout of the connection
+        /// </summary>
+        [Display(Name = "Couldn't access serial device. Another (nanoFramework) application has exclusive access to the device.")]
+        E6002 = 6002,
 
         ///////////////
         // TI Errors //

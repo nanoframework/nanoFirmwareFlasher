@@ -92,15 +92,15 @@ Exit
         {
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Mass erase device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Mass erase device...");
             }
 
-            var cliOutput = RunJLinkCLI(Path.Combine(CmdFilesDir, "erase_gg11.jlink"));
+            string cliOutput = RunJLinkCLI(Path.Combine(CmdFilesDir, "erase_gg11.jlink"));
 
             if (!cliOutput.Contains("Erasing done."))
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
 
                 ShowCLIOutput(cliOutput);
 
@@ -109,17 +109,17 @@ Exit
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine(" OK");
             }
             else
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
             }
 
             ShowCLIOutput(cliOutput);
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -138,7 +138,7 @@ Exit
         {
             List<string> shadowFiles = [];
 
-            var processFileResult = ProcessFilePaths(
+            ExitCodes processFileResult = ProcessFilePaths(
                 files,
                 shadowFiles);
 
@@ -187,7 +187,7 @@ Exit
             // erase flash
             if (DoMassErase)
             {
-                var eraseResult = ExecuteMassErase(probeId);
+                ExitCodes eraseResult = ExecuteMassErase(probeId);
 
                 if (eraseResult != ExitCodes.OK)
                 {
@@ -200,13 +200,13 @@ Exit
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Flashing device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Flashing device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine("Flashing device...");
             }
 
             // program BIN file(s)
@@ -217,20 +217,20 @@ Exit
             {
                 if (Verbosity > VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
+                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                    OutputWriter.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
                 // compose JLink command file
-                var jlinkCmdContent = FlashSingleFileCommandTemplate.Replace(FilePathToken, binFile).Replace(FlashAddressToken, addresses.ElementAt(index++));
-                var jlinkCmdFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jlink");
+                string jlinkCmdContent = FlashSingleFileCommandTemplate.Replace(FilePathToken, binFile).Replace(FlashAddressToken, addresses.ElementAt(index++));
+                string jlinkCmdFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jlink");
 
                 // create file
-                var jlinkCmdFile = File.CreateText(jlinkCmdFilePath);
+                StreamWriter jlinkCmdFile = File.CreateText(jlinkCmdFilePath);
                 jlinkCmdFile.Write(jlinkCmdContent);
                 jlinkCmdFile.Close();
 
-                var cliOutput = RunJLinkCLI(jlinkCmdFilePath);
+                string cliOutput = RunJLinkCLI(jlinkCmdFilePath);
 
                 // OK to delete the JLink command file
                 File.Delete(jlinkCmdFilePath);
@@ -240,20 +240,20 @@ Exit
                 {
                     warningPromptShown = true;
 
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
 
                     if (Verbosity == VerbosityLevel.Normal)
                     {
-                        Console.WriteLine();
+                        OutputWriter.WriteLine();
                     }
 
-                    Console.WriteLine("");
-                    Console.WriteLine("******************* WARNING *********************");
-                    Console.WriteLine("Skip flashing. Contents already match the update.");
-                    Console.WriteLine("*************************************************");
-                    Console.WriteLine("");
+                    OutputWriter.WriteLine("");
+                    OutputWriter.WriteLine("******************* WARNING *********************");
+                    OutputWriter.WriteLine("Skip flashing. Contents already match the update.");
+                    OutputWriter.WriteLine("*************************************************");
+                    OutputWriter.WriteLine("");
 
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
                 else if (!(cliOutput.Contains("Flash download: Program & Verify")
                            && cliOutput.Contains("O.K.")))
@@ -270,17 +270,17 @@ Exit
             {
                 if (!warningPromptShown)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine(" OK");
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine(" OK");
                 }
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Flashing completed...");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("Flashing completed...");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -297,7 +297,7 @@ Exit
         {
             List<string> shadowFiles = [];
 
-            var processFileResult = ProcessFilePaths(
+            ExitCodes processFileResult = ProcessFilePaths(
                 files,
                 shadowFiles);
 
@@ -309,7 +309,7 @@ Exit
             // erase flash
             if (DoMassErase)
             {
-                var eraseResult = ExecuteMassErase(probeId);
+                ExitCodes eraseResult = ExecuteMassErase(probeId);
 
                 if (eraseResult != ExitCodes.OK)
                 {
@@ -322,13 +322,13 @@ Exit
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Flashing device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Flashing device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine("Flashing device...");
             }
 
             // program HEX file(s)
@@ -338,28 +338,28 @@ Exit
             {
                 if (Verbosity > VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{Path.GetFileName(hexFile)}");
+                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                    OutputWriter.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
                 listOfFiles.AppendLine($"LoadFile {hexFile}");
             }
 
             // compose JLink command file
-            var jlinkCmdContent = FlashMultipleFilesCommandTemplate.Replace(
+            string jlinkCmdContent = FlashMultipleFilesCommandTemplate.Replace(
                 LoadFileListToken,
                 listOfFiles.ToString());
 
-            var jlinkCmdFilePath = Path.Combine(
+            string jlinkCmdFilePath = Path.Combine(
                 Path.GetTempPath(),
                 $"{Guid.NewGuid()}.jlink");
 
             // create file
-            var jlinkCmdFile = File.CreateText(jlinkCmdFilePath);
+            StreamWriter jlinkCmdFile = File.CreateText(jlinkCmdFilePath);
             jlinkCmdFile.Write(jlinkCmdContent);
             jlinkCmdFile.Close();
 
-            var cliOutput = RunJLinkCLI(jlinkCmdFilePath);
+            string cliOutput = RunJLinkCLI(jlinkCmdFilePath);
 
             // OK to delete the JLink command file
             File.Delete(jlinkCmdFilePath);
@@ -371,20 +371,20 @@ Exit
             {
                 warningPromptShown = true;
 
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
 
                 if (Verbosity == VerbosityLevel.Normal)
                 {
-                    Console.WriteLine();
+                    OutputWriter.WriteLine();
                 }
 
-                Console.WriteLine("");
-                Console.WriteLine("******************* WARNING *********************");
-                Console.WriteLine("Skip flashing. Contents already match the update.");
-                Console.WriteLine("*************************************************");
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
+                OutputWriter.WriteLine("******************* WARNING *********************");
+                OutputWriter.WriteLine("Skip flashing. Contents already match the update.");
+                OutputWriter.WriteLine("*************************************************");
+                OutputWriter.WriteLine("");
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
             else if (!(cliOutput.Contains("Flash download: Program & Verify")
                         && cliOutput.Contains("O.K.")))
@@ -400,17 +400,17 @@ Exit
             {
                 if (!warningPromptShown)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine(" OK");
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine(" OK");
                 }
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Flashing completed...");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("Flashing completed...");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -420,17 +420,17 @@ Exit
             // show CLI output, if verbosity is diagnostic
             if (Verbosity == VerbosityLevel.Diagnostic)
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
 
-                Console.WriteLine();
-                Console.WriteLine();
-                Console.WriteLine(">>>>>>>>");
-                Console.WriteLine(cliOutput);
-                Console.WriteLine(">>>>>>>>");
-                Console.WriteLine();
-                Console.WriteLine();
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine(">>>>>>>>");
+                OutputWriter.WriteLine(cliOutput);
+                OutputWriter.WriteLine(">>>>>>>>");
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine();
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
         }
 
@@ -508,7 +508,7 @@ Exit
             foreach (string binFile in files)
             {
                 // make sure path is absolute
-                var binFilePath = Utilities.MakePathAbsolute(
+                string binFilePath = Utilities.MakePathAbsolute(
                     Environment.CurrentDirectory,
                     binFile);
 
@@ -521,7 +521,7 @@ Exit
                 if (!binFilePath.IsNormalized(NormalizationForm.FormD)
                     || binFilePath.Contains(' '))
                 {
-                    var tempFile = Path.Combine(
+                    string tempFile = Path.Combine(
                         Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine),
                         Path.GetFileName(binFilePath));
 

@@ -57,7 +57,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             //{
             //    if (Verbosity >= VerbosityLevel.Normal)
             //    {
-            //        Console.Write("Mass erase device...");
+            //        OutputWriter.Write("Mass erase device...");
             //    }
 
             //    cliOutput = RunUniflashCli($"-c SN={DeviceId} UR -ME");
@@ -69,11 +69,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             //    if (Verbosity >= VerbosityLevel.Normal)
             //    {
-            //        Console.WriteLine(" OK");
+            //        OutputWriter.WriteLine(" OK");
             //    }
             //    else
             //    {
-            //        Console.WriteLine("");
+            //        OutputWriter.WriteLine("");
             //    }
 
             //    // toggle mass erase so it's only performed before the first file is flashed
@@ -82,11 +82,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.Write("Flashing device...");
+                OutputWriter.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine("Flashing device...");
+                OutputWriter.WriteLine("Flashing device...");
             }
 
             // program HEX file(s)
@@ -94,10 +94,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
-                    Console.WriteLine($"{Path.GetFileName(hexFile)}");
+                    OutputWriter.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                var cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -f -v {hexFile}");
+                string cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -f -v {hexFile}");
 
                 if (!cliOutput.Contains("Program verification successful"))
                 {
@@ -107,11 +107,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.WriteLine(" OK");
+                OutputWriter.WriteLine(" OK");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine("Flashing completed...");
+                OutputWriter.WriteLine("Flashing completed...");
             }
 
             return ExitCodes.OK;
@@ -166,24 +166,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
             //{
             //    if (Verbosity >= VerbosityLevel.Normal)
             //    {
-            //        Console.Write("Mass erase device...");
+            //        OutputWriter.Write("Mass erase device...");
             //    }
 
             //    cliOutput = RunUniflashCli($"-b");
 
             //    if (!cliOutput.Contains("Flash memory erased."))
             //    {
-            //        Console.WriteLine("");
+            //        OutputWriter.WriteLine("");
             //        return ExitCodes.E5005;
             //    }
 
             //    if (Verbosity >= VerbosityLevel.Normal)
             //    {
-            //        Console.WriteLine(" OK");
+            //        OutputWriter.WriteLine(" OK");
             //    }
             //    else
             //    {
-            //        Console.WriteLine("");
+            //        OutputWriter.WriteLine("");
             //    }
 
             //    // toggle mass erase so it's only performed before the first file is flashed
@@ -192,11 +192,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.Write("Flashing device...");
+                OutputWriter.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine("Flashing device...");
+                OutputWriter.WriteLine("Flashing device...");
             }
 
             // program BIN file(s)
@@ -205,10 +205,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
-                    Console.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
+                    OutputWriter.WriteLine($"{Path.GetFileName(binFile)} @ {addresses.ElementAt(index)}");
                 }
 
-                var cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -f -v {binFile},{addresses.ElementAt(index++)}");
+                string cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -f -v {binFile},{addresses.ElementAt(index++)}");
 
                 if (!cliOutput.Contains("Program verification successful"))
                 {
@@ -218,11 +218,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.WriteLine(" OK");
+                OutputWriter.WriteLine(" OK");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine("Flashing completed...");
+                OutputWriter.WriteLine("Flashing completed...");
             }
 
             return ExitCodes.OK;
@@ -234,21 +234,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public ExitCodes ResetMcu()
         {
             // try to connect to device with RESET
-            var cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -r 0");
+            string cliOutput = RunUniflashCli($" flash -c {ConfigurationFile} -r 0");
 
             if (!cliOutput.Contains("CPU Reset is issued"))
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
                 return ExitCodes.E5010;
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine(" OK");
+                OutputWriter.WriteLine(" OK");
             }
             else
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
             }
 
             return ExitCodes.OK;

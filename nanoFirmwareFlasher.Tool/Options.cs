@@ -1,11 +1,9 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using CommandLine;
 using CommandLine.Text;
-using System.Collections.Generic;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -342,16 +340,50 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool DeviceDetails { get; set; }
 
         [Option(
+            "identifyfirmware",
+            Required = false,
+            Default = false,
+            HelpText = "Show which firmware to use for a device without deploying anything.")]
+        public bool IdentifyFirmware { get; set; }
+
+        [Option(
             "filedeployment",
             Required = false,
             Default = null,
             HelpText = "JSON file containing file deployment settings.")]
         public string FileDeployment { get; set; }
 
+        [Option(
+            "archivepath",
+            Required = false,
+            Default = null,
+            HelpText = "Path of the directory where the firmware is archived.")]
+        public string FwArchivePath { get; set; }
+
+        [Option(
+            "updatearchive",
+            Required = false,
+            Default = false,
+            HelpText = "Copy the firmware from the online repository to the firmware archive directory; do not update the firmware on a connected device.")]
+        public bool UpdateFwArchive { get; set; }
+
+        [Option(
+            "fromarchive",
+            Required = false,
+            Default = false,
+            HelpText = "Get the firmware from the firmware archive rather than from the online repository.")]
+        public bool FromFwArchive { get; set; }
+
+        [Option(
+            "suppressnanoffversioncheck",
+            Required = false,
+            Default = false,
+            HelpText = $"Do not check whether a new version of {_APPLICATIONALIAS} is available.")]
+        public bool SuppressNanoFFVersionCheck { get; set; }
         #endregion
 
 
-        [Usage(ApplicationAlias = "nanoff")]
+        [Usage(ApplicationAlias = _APPLICATIONALIAS)]
         public static IEnumerable<Example> Examples =>
             [
                 new("- Update ESP32 WROVER Kit device with latest available firmware", new Options { TargetName = "ESP_WROVER_KIT", Update = true }),
@@ -364,5 +396,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("- List all available STM32 targets", new Options { ListTargets = true, Platform =  SupportedPlatform.stm32 }),
                 new("- List all available COM ports", new Options { ListComPorts = true }),
             ];
+        private const string _APPLICATIONALIAS = "nanoff";
     }
 }

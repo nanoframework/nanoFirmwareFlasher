@@ -1,4 +1,4 @@
-[![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoFirmwareFlasher?repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
+﻿[![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoFirmwareFlasher?repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
 
 ![nanoFramework logo](https://raw.githubusercontent.com/nanoframework/Home/main/resources/logo/nanoFramework-repo-logo.png)
 
@@ -503,6 +503,30 @@ When this option is included in the command no other options are processed.
 ```console
 nanoff --clearcache
 ```
+
+## Firmware archive
+
+By default, *nanoff* uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the *--updatefwarchive* option:
+
+```console
+nanoff --updatefwarchive --target ESP32_S3_ALL --fwarchivepath c:\...\firmware 
+nanoff --updatefwarchive --platform esp32 --fwarchivepath c:\...\firmware
+```
+
+For a list of archived firmware:
+```console
+nanoff --listtargets --fromfwarchive --fwarchivepath c:\...\firmware
+```
+
+To install firmware on a device, use the same command line arguments as usual, but add *--fromfwarchive* and *--fwarchivepath*:
+
+```console
+nanoff --nanodevice --update --serialport COM9 --fromfwarchive --fwarchivepath c:\...\firmware
+```
+
+## Bypass version check
+
+By default nanoff checks whether a new version of the tool has been published. If that is not necessary, the option *--suppressnanoffversioncheck* can be added to suppress the check.
 
 ## Exit codes
 
