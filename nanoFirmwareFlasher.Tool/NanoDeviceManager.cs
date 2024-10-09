@@ -52,24 +52,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (_options.DeviceDetails)
                 {
                     NanoDeviceBase nanoDevice = null;
-                    exitCode = _nanoDeviceOperations.GetDeviceDetails(
+                    return _nanoDeviceOperations.GetDeviceDetails(
                         _options.SerialPort,
                         ref nanoDevice);
-                    return ExitCodes.OK;
                 }
                 else if (_options.Update)
                 {
-                    exitCode = _nanoDeviceOperations.UpdateDeviceClrAsync(
+                    exitCode = await _nanoDeviceOperations.UpdateDeviceClrAsync(
                         _options.SerialPort,
                         _options.FwVersion,
                         _options.IdentifyFirmware,
                         _options.FromFwArchive ? _options.FwArchivePath : null,
                         _options.ClrFile,
-                        _verbosityLevel).GetAwaiter().GetResult();
+                        _verbosityLevel);
 
                     if (exitCode != ExitCodes.OK)
                     {
-                        return ExitCodes.OK;
+                        return exitCode;
                     }
 
                     // flag operation as done
