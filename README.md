@@ -506,22 +506,22 @@ nanoff --clearcache
 
 ## Firmware archive
 
-By default, *nanoff* uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the *--updatefwarchive* option:
+By default, *nanoff* uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the *--updatearchive* option:
 
 ```console
-nanoff --updatefwarchive --target ESP32_S3_ALL --fwarchivepath c:\...\firmware 
-nanoff --updatefwarchive --platform esp32 --fwarchivepath c:\...\firmware
+nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
+nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
 ```
 
 For a list of archived firmware:
 ```console
-nanoff --listtargets --fromfwarchive --fwarchivepath c:\...\firmware
+nanoff --listtargets --fromarchive --archivepath c:\...\firmware
 ```
 
-To install firmware on a device, use the same command line arguments as usual, but add *--fromfwarchive* and *--fwarchivepath*:
+To install firmware on a device, use the same command line arguments as usual, but add *--fromarchive* and *--archivepath*:
 
 ```console
-nanoff --nanodevice --update --serialport COM9 --fromfwarchive --fwarchivepath c:\...\firmware
+nanoff --nanodevice --update --serialport COM9 --fromarchive --archivepath c:\...\firmware
 ```
 
 ## Bypass version check
