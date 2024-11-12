@@ -73,6 +73,8 @@
   <PropertyGroup>
     <!-- set this to 'empty' to package contents in 'any' folder  -->
     <PackageTfmSubFolder></PackageTfmSubFolder>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
     <Import Project="nugetcontent.targets" />
