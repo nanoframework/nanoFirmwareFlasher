@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9FD8C426-A16A-49DB-952D-747C3AD96C42}"
 	ProjectSection(SolutionItems) = preProject
 		NuGet.Config = NuGet.Config
+		README.md = README.md
 		version.json = version.json
 	EndProjectSection
 EndProject
@@ -66,7 +67,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		        SolutionGuid = {56E99FF7-1E34-4FB8-8E3C-F98890E741D0}
 		SolutionGuid = {AF6C2B32-984F-41C2-B0F7-B895E45A1BB5}
+		        SolutionGuid = {56E99FF7-1E34-4FB8-8E3C-F98890E741D0}
 	EndGlobalSection
 EndGlobal

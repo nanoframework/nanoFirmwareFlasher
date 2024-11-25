@@ -179,6 +179,13 @@ This example uses the binary format file that you can find when you are building
 nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
 ```
 
+### Skip backing up configuration partition
+
+To skip backing up the configuration partition when updating the firmware of an ESP32 target connected to COM31.
+```console
+nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --noconfigbackup
+```
+
 ## STM32 usage examples
 
 ### Update the firmware of a specific STM32 target
