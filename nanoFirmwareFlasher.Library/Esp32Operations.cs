@@ -520,7 +520,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         if (verbosity >= VerbosityLevel.Normal)
                         {
                             OutputWriter.ForegroundColor = ConsoleColor.White;
-                            OutputWriter.Write($"Backup configuration...");
+                            OutputWriter.WriteLine($"Backup configuration...");
                         }
 
                         // can't do this without a partition table
@@ -550,6 +550,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (verbosity >= VerbosityLevel.Normal)
                         {
+                            // move cursor up and clear line
+                            OutputWriter.Write("\u001b[A\r\u001b[K");
+
                             OutputWriter.ForegroundColor = ConsoleColor.White;
                             OutputWriter.Write($"Backup configuration...");
                             OutputWriter.ForegroundColor = ConsoleColor.Green;
@@ -562,12 +565,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 OutputWriter.ForegroundColor = ConsoleColor.White;
 
-                if (verbosity < VerbosityLevel.Normal)
+                if (verbosity >= VerbosityLevel.Normal)
                 {
-                    // output the start of operation message for verbosity lower than normal
+                    // output the start of operation message for verbosity normal and above
                     // otherwise the progress from esptool is shown
                     OutputWriter.ForegroundColor = ConsoleColor.White;
-                    OutputWriter.Write($"Flashing firmware...");
+                    OutputWriter.WriteLine($"Flashing firmware...");
                 }
 
                 // write to flash
@@ -575,15 +578,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (operationResult == ExitCodes.OK)
                 {
-                    if (verbosity < VerbosityLevel.Normal)
-                    {
-                        // operation completed output
-                        OutputWriter.ForegroundColor = ConsoleColor.Green;
-                        OutputWriter.WriteLine("OK".PadRight(110));
-                    }
-
                     if (verbosity >= VerbosityLevel.Normal)
                     {
+                        // output the start of operation message for verbosity normal and above
+                        // move cursor up and clear line
+                        OutputWriter.Write("\u001b[A\r\u001b[K");
+
+                        // operation completed output
                         // output the full message as usual after the progress from esptool
                         OutputWriter.ForegroundColor = ConsoleColor.White;
                         OutputWriter.Write($"Flashing firmware...");
