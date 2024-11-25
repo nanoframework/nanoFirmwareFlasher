@@ -107,6 +107,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="massErase">If <see langword="true"/> perform mass erase on device before updating.</param>
         /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
         /// <param name="partitionTableSize">Size of partition table.</param>
+        /// <param name="noBackupConfig"><see langword="true"/> for skiping backup of configuration partition.</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             EspTool espTool,
@@ -123,7 +124,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool fitCheck,
             bool massErase,
             VerbosityLevel verbosity,
-            PartitionTableSize? partitionTableSize)
+            PartitionTableSize? partitionTableSize,
+            bool noBackupConfig)
         {
             ExitCodes operationResult = ExitCodes.OK;
             uint address = 0;
@@ -511,8 +513,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 int configPartitionSize = 0;
                 string configPartitionBackup = Path.GetRandomFileName();
 
-                // if mass erase wasn't requested, backup config partitition
-                if (!massErase)
+                // if mass erase wasn't requested or skip backup config partitition
+                if (!massErase || !noBackupConfig)
                 {
                     // check if the update file includes a partition table
                     if (File.Exists(Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv")))

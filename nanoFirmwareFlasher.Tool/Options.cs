@@ -138,6 +138,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Perform check for PSRAM in device.")]
         public bool CheckPsRam { get; set; }
 
+        [Option(
+            "noconfigbackup",
+            Required = false,
+            Default = false,
+            HelpText = "Skip backup of configuration partition.")]
+        public bool NoBackupConfig { get; set; }
+
         #endregion
 
 
