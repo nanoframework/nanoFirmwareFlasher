@@ -39,7 +39,7 @@ Tool 'nanoff' (version '9.9.9') was successfully installed.
 
 ### 安装路径相关的问题
 
-:warning:已知在安装路径中包含变音符号（例如：法语中的重音符号（acute accent）用于表示元音应该发/ay/的音）时，使用nanoff为STM32设备运行命令会出现问题。这是由于STM32 Cube Programmer中的一个已知错误引起的。如果您的路径中存在这种情况，您必须将其安装在没有这些字符的位置。为了实现这一点，可以使用以下.NET Core CLI命令，在其中指定工具将安装的路径：
+> **WARNING:** 已知在安装路径中包含变音符号（例如：法语中的重音符号（acute accent）用于表示元音应该发/ay/的音）时，使用nanoff为STM32设备运行命令会出现问题。这是由于STM32 Cube Programmer中的一个已知错误引起的。如果您的路径中存在这种情况，您必须将其安装在没有这些字符的位置。为了实现这一点，可以使用以下.NET Core CLI命令，在其中指定工具将安装的路径：
 
 ```shell
 dotnet tool install nanoff --tool-path c:\a-plain-simple-path-to-install-the-tool
@@ -109,7 +109,7 @@ No target name was provided! Using 'ESP32_REV0' based on the device characterist
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
 
-:warning: 要更新FeatherS2、TinyS2和一些S3模块，您需要将开发板置于下载模式。具体操作方法是按住[BOOT]按钮，单击[RESET]按钮，然后松开[BOOT]按钮。  
+> **WARNING:** 要更新FeatherS2、TinyS2和一些S3模块，您需要将开发板置于下载模式。具体操作方法是按住[BOOT]按钮，单击[RESET]按钮，然后松开[BOOT]按钮。  
 
 ### 更新ESP32版本的设备器固件
 
@@ -157,6 +157,14 @@ nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\
 
 ```shell
 nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
+```
+
+### 跳过备份配置分区
+
+在更新连接到 COM31 的 ESP32 目标的固件时跳过备份配置分区。
+
+```shell
+nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --noconfigbackup
 ```
 
 ## STM32用法示例
@@ -281,6 +289,86 @@ nanoff --listboards --platform stm32
 ```
 
 如果你只使用'——listtargets'开关，你会得到所有设备的所有稳定包的列表。  
+
+## 部署文件到设备存储
+
+一些设备如 ESP32、Orgpal 和其他一些设备有可用的存储空间。文件可以部署到这个存储空间中。你需要使用 `filedeployment` 参数指向一个 JSON 文件，在刷写设备时部署文件：
+
+```console
+nanoff --target XIAO_ESP32C3 --update --masserase --serialport COM21 --filedeployment C:\path\deploy.json
+```
+
+JSON 文件中可以包含一个可选的 `SerialPort`，以防上传文件的端口与刷写设备的端口不同或未在主命令行中指定，并且必须包含一个 `Files` 条目的列表。每个条目必须包含 `DestinationFilePath`，即目标完整路径文件名，以及 `SourceFilePath`，即要部署的内容的源文件路径；否则，要删除文件时，必须包含要部署的源文件的完整路径和文件名：
+
+```json
+{
+   "serialport":"COM42",
+   "files": [
+      {         
+         "DestinationFilePath": "I:\\TestFile.txt",
+         "SourceFilePath": "C:\\tmp\\NFApp3\\NFApp3\\TestFile.txt"
+      },
+      {
+         "DestinationFilePath": "I:\\NoneFile.txt"
+      },
+      {
+         "DestinationFilePath": "I:\\wilnotexist.txt",
+         "SourceFilePath": "C:\\WRONGPATH\\TestFile.txt"
+      }
+   ]
+}
+```
+
+如果你只想部署文件而不进行其他操作，你可以只指定：
+
+```console
+nanoff --filedeployment C:\path\deploy.json
+```
+
+在这种情况下，`SerialPort` 必须在 JSON 文件中存在。
+
+> **注意：**
+> 如果存储中已经存在文件，它将被新文件替换。
+>
+> 如果文件不存在且请求删除，则不会发生任何事情，会显示警告。
+>
+> 如果由于某种问题无法上传文件，其他文件的部署将继续，并会显示错误。
+
+## 清除缓存位置
+
+如果需要，可以清除存储在本地缓存中的固件包。
+另外，缓存位置是用户文件夹中的目录 `-nanoFramework\fw_cache`。
+
+当命令中包含此选项时，不会处理其他选项。
+
+```console
+nanoff --clearcache
+```
+
+## 固件存档
+
+默认情况下，_nanoff_ 使用在线仓库来查找固件包。也可以使用本地目录作为固件的来源。可以通过 _--updatearchive_ 选项来填充固件存档：
+
+```console
+nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
+nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
+```
+
+查看已存档的固件列表：
+
+```console
+nanoff --listtargets --fromarchive --archivepath c:\...\firmware
+```
+
+要在设备上安装固件，使用与平常相同的命令行参数，但添加 _--fromarchive_ 和 _--archivepath_：
+
+```console
+nanoff --nanodevice --update --serialport COM9 --fromarchive --archivepath c:\...\firmware
+```
+
+## 跳过版本检查
+
+默认情况下，nanoff 会检查是否发布了新版本的工具。如果不需要，可以添加选项 _--suppressnanoffversioncheck_ 来跳过检查。
 
 ## Exit codes
 

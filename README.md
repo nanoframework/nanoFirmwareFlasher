@@ -43,7 +43,7 @@ Tool 'nanoff' (version '9.9.9') was successfully installed.
 
 ### Install path issues
 
-:warning: That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer. 
+> **WARNING:**  That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer. 
 If that's the case with your user path, for example, you have to install it in a location that does have those.
 To accomplish that, use the following .NET Core CLI command on which the path where the tool will be installed is specified:
 
@@ -129,7 +129,7 @@ In case `nanoff` detects this situation the following warning is shown:
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
 
-:warning: To update FeatherS2, TinyS2 and some S3 modules, the board needs to be put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
+> **WARNING:** To update FeatherS2, TinyS2 and some S3 modules, the board needs to be put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
 
 ### Update the firmware of an ESP32 target
 
@@ -182,6 +182,7 @@ nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c
 ### Skip backing up configuration partition
 
 To skip backing up the configuration partition when updating the firmware of an ESP32 target connected to COM31.
+
 ```console
 nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --noconfigbackup
 ```
@@ -513,7 +514,7 @@ nanoff --clearcache
 
 ## Firmware archive
 
-By default, *nanoff* uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the *--updatearchive* option:
+By default, _nanoff_ uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the _--updatearchive_ option:
 
 ```console
 nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
@@ -521,11 +522,12 @@ nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
 ```
 
 For a list of archived firmware:
+
 ```console
 nanoff --listtargets --fromarchive --archivepath c:\...\firmware
 ```
 
-To install firmware on a device, use the same command line arguments as usual, but add *--fromarchive* and *--archivepath*:
+To install firmware on a device, use the same command line arguments as usual, but add _--fromarchive_ and _--archivepath_:
 
 ```console
 nanoff --nanodevice --update --serialport COM9 --fromarchive --archivepath c:\...\firmware
@@ -533,7 +535,7 @@ nanoff --nanodevice --update --serialport COM9 --fromarchive --archivepath c:\..
 
 ## Bypass version check
 
-By default nanoff checks whether a new version of the tool has been published. If that is not necessary, the option *--suppressnanoffversioncheck* can be added to suppress the check.
+By default nanoff checks whether a new version of the tool has been published. If that is not necessary, the option _--suppressnanoffversioncheck_ can be added to suppress the check.
 
 ## Exit codes
 
@@ -564,6 +566,6 @@ The **nanoFramework** firmware flasher tool is licensed under the [MIT license](
 This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behaviour in our community.
 For more information see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct).
 
-### .NET Foundation
+### _NET Foundation_
 
-This project is supported by the [.NET Foundation](https://dotnetfoundation.org).
+This project is supported by the [_NET Foundation_](https://dotnetfoundation.org).
