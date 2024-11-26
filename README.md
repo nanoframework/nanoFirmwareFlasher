@@ -43,7 +43,8 @@ Tool 'nanoff' (version '9.9.9') was successfully installed.
 
 ### Install path issues
 
-> **WARNING:**  That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer. 
+> [!CAUTION]
+> That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer.
 If that's the case with your user path, for example, you have to install it in a location that does have those.
 To accomplish that, use the following .NET Core CLI command on which the path where the tool will be installed is specified:
 
@@ -129,7 +130,8 @@ In case `nanoff` detects this situation the following warning is shown:
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
 
-> **WARNING:** To update FeatherS2, TinyS2 and some S3 modules, the board needs to be put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
+> [!WARNING]
+> To update FeatherS2, TinyS2 and some S3 modules, the board needs to be put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
 
 ### Update the firmware of an ESP32 target
 

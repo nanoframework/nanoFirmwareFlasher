@@ -39,7 +39,8 @@ Tool 'nanoff' (version '9.9.9') was successfully installed.
 
 ### 安装路径相关的问题
 
-> **WARNING:** 已知在安装路径中包含变音符号（例如：法语中的重音符号（acute accent）用于表示元音应该发/ay/的音）时，使用nanoff为STM32设备运行命令会出现问题。这是由于STM32 Cube Programmer中的一个已知错误引起的。如果您的路径中存在这种情况，您必须将其安装在没有这些字符的位置。为了实现这一点，可以使用以下.NET Core CLI命令，在其中指定工具将安装的路径：
+> [!CAUTION]
+> 已知在安装路径中包含变音符号（例如：法语中的重音符号（acute accent）用于表示元音应该发/ay/的音）时，使用nanoff为STM32设备运行命令会出现问题。这是由于STM32 Cube Programmer中的一个已知错误引起的。如果您的路径中存在这种情况，您必须将其安装在没有这些字符的位置。为了实现这一点，可以使用以下.NET Core CLI命令，在其中指定工具将安装的路径：
 
 ```shell
 dotnet tool install nanoff --tool-path c:\a-plain-simple-path-to-install-the-tool
@@ -109,7 +110,8 @@ No target name was provided! Using 'ESP32_REV0' based on the device characterist
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
 
-> **WARNING:** 要更新FeatherS2、TinyS2和一些S3模块，您需要将开发板置于下载模式。具体操作方法是按住[BOOT]按钮，单击[RESET]按钮，然后松开[BOOT]按钮。  
+> [!WARNING]
+> 要更新FeatherS2、TinyS2和一些S3模块，您需要将开发板置于下载模式。具体操作方法是按住[BOOT]按钮，单击[RESET]按钮，然后松开[BOOT]按钮。  
 
 ### 更新ESP32版本的设备器固件
 
