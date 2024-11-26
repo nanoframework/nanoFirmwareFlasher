@@ -48,7 +48,7 @@
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
-		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.1" />
+		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.4" />
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.146" PrivateAssets="All" />
 		<PackageReference Include="System.Private.Uri" Version="4.3.2" />
 		<PackageReference Include="System.Text.Json" Version="8.0.5" />
