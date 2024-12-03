@@ -186,7 +186,7 @@ nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c
 To skip backing up the configuration partition when updating the firmware of an ESP32 target connected to COM31.
 
 ```console
-nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --noconfigbackup
+nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --nobackupconfig
 ```
 
 ## STM32 usage examples

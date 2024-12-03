@@ -514,7 +514,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 string configPartitionBackup = Path.GetRandomFileName();
 
                 // if mass erase wasn't requested or skip backup config partitition
-                if (!massErase || !noBackupConfig)
+                if (!massErase && !noBackupConfig)
                 {
                     // check if the update file includes a partition table
                     if (File.Exists(Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv")))

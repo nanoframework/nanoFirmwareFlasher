@@ -139,7 +139,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool CheckPsRam { get; set; }
 
         [Option(
-            "noconfigbackup",
+            "nobackupconfig",
             Required = false,
             Default = false,
             HelpText = "Skip backup of configuration partition.")]
