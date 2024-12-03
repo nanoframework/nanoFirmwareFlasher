@@ -552,8 +552,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (verbosity >= VerbosityLevel.Normal)
                         {
-                            // move cursor up and clear line
-                            OutputWriter.Write("\u001b[A\r\u001b[K");
+                            // clear output of the progress from esptool, move cursor up and clear line
+                            Console.SetCursorPosition(0, Console.CursorTop);
+                            Console.Write(new string(' ', Console.WindowWidth));
+                            int currentLineCursor = Console.CursorTop;
+                            Console.SetCursorPosition(0, currentLineCursor - 1);
+                            Console.Write(new string(' ', Console.WindowWidth));
+                            Console.SetCursorPosition(0, currentLineCursor - 1);
 
                             OutputWriter.ForegroundColor = ConsoleColor.White;
                             OutputWriter.Write($"Backup configuration...");
@@ -583,15 +588,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (verbosity >= VerbosityLevel.Normal)
                     {
                         // output the start of operation message for verbosity normal and above
-                        // move cursor up and clear line
-                        OutputWriter.Write("\u001b[A\r\u001b[K");
+
+                        // clear output of the progress from esptool, move cursor up and clear line
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                        Console.Write(new string(' ', Console.WindowWidth));
+                        int currentLineCursor = Console.CursorTop;
+                        Console.SetCursorPosition(0, currentLineCursor - 1);
+                        Console.Write(new string(' ', Console.WindowWidth));
+                        Console.SetCursorPosition(0, currentLineCursor - 1);
 
                         // operation completed output
                         // output the full message as usual after the progress from esptool
                         OutputWriter.ForegroundColor = ConsoleColor.White;
                         OutputWriter.Write($"Flashing firmware...");
                         OutputWriter.ForegroundColor = ConsoleColor.Green;
-                        OutputWriter.WriteLine("OK".PadRight(110));
+                        OutputWriter.WriteLine("OK".PadRight(Console.WindowWidth - Console.CursorLeft));
 
                         // warn user if reboot is not possible
                         if (espTool.CouldntResetTarget)
