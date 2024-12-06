@@ -19,9 +19,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public const int CLRAddress = 0x10000;
 
         /// <summary>
-        /// ESP32 nanoCLR is available for 2MB, 4MB, 8MB and 16MB flash sizes
+        /// ESP32 nanoCLR is available for 2MB, 4MB, 8MB, 16MB, 32MB and 64MB flash sizes if supported.
         /// </summary>
-        private List<int> SupportedFlashSizes => [0x200000, 0x400000, 0x800000, 0x1000000];
+        private List<int> SupportedFlashSizes => [0x200000, 0x400000, 0x800000, 0x1000000, 0x2000000, 0x4000000];
 
         internal string BootloaderPath;
 
@@ -76,15 +76,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 BootloaderPath = "bootloader.bin";
 
+                // Boot loader goes to 0x1000, except for ESP32_C3/C6/H2/S3, which goes to 0x0
+                // and ESP32_P4 where it goes at 0x2000
+                int BootLoaderAddress = 0x1000;
+                if (deviceInfo.ChipType == "ESP32-C3"
+                    || deviceInfo.ChipType == "ESP32-C6"
+                    || deviceInfo.ChipType == "ESP32-H2"
+                    || deviceInfo.ChipType == "ESP32-S3")
+                {
+                    BootLoaderAddress = 0;
+                }
+                if (deviceInfo.ChipType == "ESP32-P4")
+                {
+                    BootLoaderAddress = 0x2000;
+                }
+                
                 // get ESP32 partitions
                 FlashPartitions = new Dictionary<int, string>
                 {
-				    // bootloader goes to 0x1000, except for ESP32_C3/C6/H2/S3, which goes to 0x0
-				    {
-                        deviceInfo.ChipType == "ESP32-C3"
-                        || deviceInfo.ChipType == "ESP32-C6"
-                        || deviceInfo.ChipType == "ESP32-H2"
-                        || deviceInfo.ChipType == "ESP32-S3" ? 0x0 : 0x1000, Path.Combine(LocationPath, BootloaderPath) },
+                    // BootLoader goes to an address depending on chip type
+				    { BootLoaderAddress, Path.Combine(LocationPath, BootloaderPath) },
 
 				    // nanoCLR goes to 0x10000
 				    { CLRAddress, Path.Combine(LocationPath, "nanoCLR.bin") },
