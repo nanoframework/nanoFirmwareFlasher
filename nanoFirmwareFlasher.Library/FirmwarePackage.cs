@@ -344,6 +344,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             }
 
+            if (archiveDirectoryPath is not null && Version is null)
+            {
+                // Find the latest version in the archive directory
+                var archiveManager = new FirmwareArchiveManager(archiveDirectoryPath);
+                Version = archiveManager.GetLatestVersion(_preview, _targetName)?.Version;
+                if (Version is null)
+                {
+                    // Package is considered to be not present, even if it does exist in the cache location
+                    return (ExitCodes.E9015, null);
+                }
+            }
+
             // create the download folder
             try
             {
@@ -369,7 +381,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (!File.Exists(archiveFileName))
                 {
                     // Package is considered to be not present, even if it does exist in the cache location
-                    return (ExitCodes.E9007, null);
+                    return (ExitCodes.E9015, null);
                 }
 
                 if (!skipDownload)

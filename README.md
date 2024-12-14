@@ -522,6 +522,11 @@ By default, _nanoff_ uses the online repository to look for firmware packages. I
 nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
 nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
 ```
+By default only the most recent firmware version is kept in the archive. If _--platform_ is specified, firmware is removed for targets that are no longer present in the online repository. If old firmware versions should not be deleted from the archive, specify the _--keepallversions_ option:
+```console
+nanoff --updatearchive --target ESP32_S3_ALL --keepallversions --archivepath c:\...\firmware 
+nanoff --updatearchive --platform esp32 --keepallversions --archivepath c:\...\firmware
+```
 
 For a list of archived firmware:
 

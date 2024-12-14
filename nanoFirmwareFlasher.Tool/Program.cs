@@ -286,7 +286,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (string.IsNullOrEmpty(o.FwArchivePath))
                     {
                         _exitCode = ExitCodes.E9000;
-                        _extraMessage = "--fwarchivepath is required when --fromfwarchive is specified.";
+                        _extraMessage = "--archivepath is required when --fromarchive is specified.";
                         return;
                     }
 
@@ -555,20 +555,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (o.FromFwArchive)
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = "Incompatible option --fromfwarchive combined with --updatefwarchive.";
+                    _extraMessage = "Incompatible option --fromarchive combined with --updatearchive.";
                     return;
                 }
                 if (string.IsNullOrEmpty(o.FwArchivePath))
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--fwarchivepath is required when --updatefwarchive is specified.";
+                    _extraMessage = $"--archivepath is required when --updatearchive is specified.";
                     return;
                 }
 
                 if (o.Platform is null && string.IsNullOrEmpty(o.TargetName))
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--platform or --target is required when --updatefwarchive is specified.";
+                    _extraMessage = $"--platform or --target is required when --updatearchive is specified.";
+                    return;
+                }
+
+                if (o.KeepAllFwVersions && string.IsNullOrEmpty(o.TargetName))
+                {
+                    _exitCode = ExitCodes.E9000;
+                    _extraMessage = $"--keepallversions can only be used with --target and not when --platform is specified.";
                     return;
                 }
 
@@ -578,6 +585,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.Platform,
                     o.TargetName,
                     o.FwVersion,
+                    o.KeepAllFwVersions,
                     _verbosityLevel);
                 return;
             }
@@ -588,14 +596,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (o.FromFwArchive)
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--fwarchivepath is required when --fromfwarchive is specified.";
+                    _extraMessage = $"--archivepath is required when --fromarchive is specified.";
                     return;
                 }
             }
             else if (!o.FromFwArchive)
             {
                 _exitCode = ExitCodes.E9000;
-                _extraMessage = $"--fromfwarchive is required when --fwarchivepath is specified.";
+                _extraMessage = $"--fromarchive is required when --archivepath is specified.";
                 return;
             }
             #endregion

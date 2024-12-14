@@ -375,6 +375,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool UpdateFwArchive { get; set; }
 
         [Option(
+            "keepallversions",
+            Required = false,
+            Default = false,
+            HelpText = "Keep all firmware versions for the target in the firmware archive.")]
+        public bool KeepAllFwVersions { get; set; }
+
+        [Option(
             "fromarchive",
             Required = false,
             Default = false,
