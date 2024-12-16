@@ -146,10 +146,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             catch (Exception)
             {
-                OutputWriter.ForegroundColor = ConsoleColor.DarkYellow;
-                OutputWriter.WriteLine("** Can't check the version! **");
-                OutputWriter.WriteLine("** Continuing anyway. **");
-                OutputWriter.ForegroundColor = ConsoleColor.White;
+                if (_verbosityLevel > VerbosityLevel.Quiet)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.DarkYellow;
+                    OutputWriter.WriteLine("** Can't check the version! **");
+                    OutputWriter.WriteLine("** Continuing anyway. **");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
             }
         }
 
