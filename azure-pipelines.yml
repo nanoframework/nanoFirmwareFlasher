@@ -224,6 +224,37 @@ jobs:
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
 
+  - task: VisualStudioTestPlatformInstaller@1
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
+    displayName: 'Visual Studio Test Platform Installer'
+    inputs:
+      versionSelector: latestStable
+
+  - task: VSTest@2
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
+    displayName: 'Running Unit Tests'
+    continueOnError: false
+    inputs:
+      testSelector: 'testAssemblies'
+      testAssemblyVer2: |
+        **\*Tests*.dll
+        !**\obj\**
+        !**\TestAdapter\**
+      searchFolder: '$(System.DefaultWorkingDirectory)'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      diagnosticsEnabled: true
+      vsTestVersion: toolsInstaller
+      codeCoverageEnabled: true
+
   - task: NuGetCommand@2
     condition: >-
       and(
@@ -448,7 +479,7 @@ jobs:
         [
           { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
           { "label" : "Type: enhancement", "displayName" : "Enhancements and new features", "state" : "closed" },
-          { "label" : "Breaking-Change", "displayName" : "Breaking Changes", "state" : "closed" }
+          { "label" : "Breaking-Change", "displayName" : "Breaking Changes", "state" : "closed" },
           { "label" : "Type: dependencies", "displayName" : "Dependencies updated", "state" : "closed" },
           { "label" : "Type: documentation", "displayName" : "Documentation", "state" : "closed" }
         ]
