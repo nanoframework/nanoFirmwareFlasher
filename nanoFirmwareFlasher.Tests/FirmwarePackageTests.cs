@@ -194,7 +194,7 @@ namespace nanoFirmwareFlasher.Tests
 
         [TestMethod]
         [TestCategory("CloudSmith")]
-        public void FirmwarePackage_DebugFirmware_Download()
+        public void FirmwarePackage_LegacyVirtualDevice_Download()
         {
             #region Setup
             using var output = new OutputWriterHelper();
@@ -236,32 +236,55 @@ namespace nanoFirmwareFlasher.Tests
             {
                 Assert.Inconclusive("Cannot download the ESP32 package.");
             }
-            string testTargetName = "NO_REAL_TARGET";
-            string testVersion = "0.0.0.0";
-            File.Copy(Path.Combine(cacheDirectory, package.Name, $"{package.Name}-{package.Version}.zip"), Path.Combine(archiveDirectory, $"{testTargetName}-{testVersion}.zip"));
+            string testTarget1Name = "TARGET1_IN_ARCHIVE_ONLY";
+            string testTarget2Name = "TARGET2_IN_ARCHIVE_ONLY";
+            string testVersion = "1.23.4.5";
+            string testOldVersion = "1.6.7.8";
+
+            // Copy the package to the archive directory, modified for TARGET1_IN_ARCHIVE_ONLY and TARGET2_IN_ARCHIVE_ONLY
+            File.Copy(Path.Combine(cacheDirectory, package.Name, $"{package.Name}-{package.Version}.zip"), Path.Combine(archiveDirectory, $"{testTarget1Name}-{testVersion}.zip"));
+            File.WriteAllText(Path.Combine(archiveDirectory, $"{testTarget1Name}-{testVersion}.zip.json"), $@"{{ ""Name"": ""{testTarget1Name}"", ""Version"": ""{testVersion}"", ""Platform"": ""esp32"" }}");
+            File.Copy(Path.Combine(cacheDirectory, package.Name, $"{package.Name}-{package.Version}.zip"), Path.Combine(archiveDirectory, $"{testTarget2Name}-{testVersion}.zip"));
+            File.WriteAllText(Path.Combine(archiveDirectory, $"{testTarget2Name}-{testVersion}.zip.json"), $@"{{ ""Name"": ""{testTarget2Name}"", ""Version"": ""{testVersion}"", ""Platform"": ""esp32"" }}");
+
+            // Create an invalid package for an earlier version of TARGET2_IN_ARCHIVE_ONLY - this should not be used
+            File.WriteAllText(Path.Combine(archiveDirectory, $"{testTarget2Name}-{testOldVersion}.zip"), "");
+            File.WriteAllText(Path.Combine(archiveDirectory, $"{testTarget2Name}-{testOldVersion}.zip.json"), $@"{{ ""Name"": ""{testTarget2Name}"", ""Version"": ""{testOldVersion}"", ""Platform"": ""esp32"" }}");
             #endregion
 
-            #region Get package that exist in the archive directory but not in the repository
+            #region Get package that exist in the archive directory but not in the repository; include version
             output.Reset();
-            var actual = new Esp32Firmware(testTargetName, testVersion, false, null);
+            var actual = new Esp32Firmware(testTarget1Name, testVersion, false, null);
             exitCode = actual.DownloadAndExtractAsync(archiveDirectory).GetAwaiter().GetResult();
 
             Assert.AreEqual(ExitCodes.OK, exitCode);
             output.AssertAreEqual("");
-            Assert.IsTrue(Directory.Exists(Path.Combine(cacheDirectory, testTargetName)));
-            Assert.IsTrue(File.Exists(Path.Combine(cacheDirectory, testTargetName, $"{testTargetName}-{testVersion}.zip")));
-            Assert.IsTrue(File.Exists(Path.Combine(cacheDirectory, testTargetName, "nanoCLR.bin")));
+            Assert.IsTrue(Directory.Exists(Path.Combine(cacheDirectory, testTarget1Name)));
+            Assert.IsTrue(File.Exists(Path.Combine(cacheDirectory, testTarget1Name, $"{testTarget1Name}-{testVersion}.zip")));
+            Assert.IsTrue(File.Exists(Path.Combine(cacheDirectory, testTarget1Name, "nanoCLR.bin")));
+            #endregion
+
+            #region Get package that exist in the archive directory but not in the repository; do not include version
+            output.Reset();
+            actual = new Esp32Firmware(testTarget2Name, null, false, null);
+            exitCode = actual.DownloadAndExtractAsync(archiveDirectory).GetAwaiter().GetResult();
+
+            Assert.AreEqual(ExitCodes.OK, exitCode);
+            output.AssertAreEqual("");
+            Assert.IsTrue(Directory.Exists(Path.Combine(cacheDirectory, testTarget2Name)));
+            Assert.IsTrue(File.Exists(Path.Combine(cacheDirectory, testTarget2Name, $"{testTarget2Name}-{testVersion}.zip")));
+            Assert.IsTrue(File.Exists(Path.Combine(cacheDirectory, testTarget2Name, "nanoCLR.bin")));
             #endregion
 
             #region Get package that does not exist in the archive directory
-            testTargetName = "MISSING_TARGET";
+            testTarget1Name = "MISSING_TARGET";
 
-            actual = new Esp32Firmware(testTargetName, testVersion, false, null);
+            actual = new Esp32Firmware(testTarget1Name, testVersion, false, null);
             exitCode = actual.DownloadAndExtractAsync(archiveDirectory).GetAwaiter().GetResult();
 
-            Assert.AreEqual(ExitCodes.E9007, exitCode);
+            Assert.AreEqual(ExitCodes.E9015, exitCode);
             output.AssertAreEqual("");
-            Assert.IsFalse(File.Exists(Path.Combine(cacheDirectory, testTargetName, $"{testTargetName}-{testVersion}.zip")));
+            Assert.IsFalse(File.Exists(Path.Combine(cacheDirectory, testTarget1Name, $"{testTarget1Name}-{testVersion}.zip")));
             #endregion
         }
     }

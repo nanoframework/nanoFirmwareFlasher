@@ -68,6 +68,40 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
+        /// Get the latest version present in the firmware archive for the specified target.
+        /// </summary>
+        /// <param name="preview">Option for preview version.</param>
+        /// <param name="target">Target to find the latest version of.</param>
+        /// <returns>The <see cref="CloudSmithPackageDetail"/> with details on latest firmware package for the target, or <see langword="null"/> if none is present.</returns>
+        public CloudSmithPackageDetail GetLatestVersion(
+            bool preview,
+            string target)
+        {
+            CloudSmithPackageDetail result = null;
+            Version latest = null;
+            if (Directory.Exists(_archivePath) && !string.IsNullOrEmpty(target))
+            {
+                foreach (string filePath in Directory.EnumerateFiles(_archivePath, $"{target}-*{INFOFILE_EXTENSION}"))
+                {
+                    PersistedPackageInformation packageInformation = JsonConvert.DeserializeObject<PersistedPackageInformation>(File.ReadAllText(filePath));
+                    if (packageInformation is not null && packageInformation.IsPreview == preview)
+                    {
+                        if (Version.TryParse(packageInformation.Version, out Version version))
+                        {
+                            if (latest is null || latest < version)
+                            {
+                                latest = version;
+                                result = packageInformation;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Download a firmware package from the repository and add it to the archive directory
         /// </summary>
         /// <param name="preview">Option for preview version.</param>

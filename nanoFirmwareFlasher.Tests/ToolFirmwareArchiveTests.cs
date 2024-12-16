@@ -33,21 +33,21 @@ namespace nanoFirmwareFlasher.Tests
             #endregion
 
             #region List empty archive
-            int actual = Program.Main(["--listtargets", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromfwarchive", "--fwarchivepath", archiveDirectory])
+            int actual = Program.Main(["--listtargets", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromarchive", "--archivepath", archiveDirectory])
                     .GetAwaiter().GetResult();
             Assert.AreEqual((int)ExitCodes.OK, actual);
             #endregion
 
             #region Update archive
             output.Reset();
-            actual = Program.Main(["--updatefwarchive", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fwarchivepath", archiveDirectory])
+            actual = Program.Main(["--updatearchive", "--platform", $"{SupportedPlatform.ti_simplelink}", "--archivepath", archiveDirectory])
                 .GetAwaiter().GetResult();
             Assert.AreEqual((int)ExitCodes.OK, actual);
             #endregion
 
             #region List filled archive
             output.Reset();
-            actual = Program.Main(["--listtargets", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromfwarchive", "--fwarchivepath", archiveDirectory])
+            actual = Program.Main(["--listtargets", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromarchive", "--archivepath", archiveDirectory])
                     .GetAwaiter().GetResult();
             Assert.AreEqual((int)ExitCodes.OK, actual);
 
@@ -70,14 +70,14 @@ namespace nanoFirmwareFlasher.Tests
 
             #region Update archive
             output.Reset();
-            int actual = Program.Main(["--updatefwarchive", "--target", $"{allPackages[0].Name}", "--fwarchivepath", archiveDirectory])
+            int actual = Program.Main(["--updatearchive", "--target", $"{allPackages[0].Name}", "--archivepath", archiveDirectory])
                 .GetAwaiter().GetResult();
             Assert.AreEqual((int)ExitCodes.OK, actual);
             #endregion
 
             #region List filled archive
             output.Reset();
-            actual = Program.Main(["--listtargets", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromfwarchive", "--fwarchivepath", archiveDirectory])
+            actual = Program.Main(["--listtargets", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromarchive", "--archivepath", archiveDirectory])
                     .GetAwaiter().GetResult();
             Assert.AreEqual((int)ExitCodes.OK, actual);
 
@@ -96,11 +96,11 @@ namespace nanoFirmwareFlasher.Tests
             string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
             string archiveDirectory = Path.Combine(testDirectory, "archive");
 
-            int actual = Program.Main(["--listtargets", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromfwarchive", "--verbosity", "diagnostic"])
+            int actual = Program.Main(["--listtargets", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromarchive", "--verbosity", "diagnostic"])
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
-            Assert.IsTrue(output.Output.Contains("--fwarchivepath is required when --fromfwarchive is specified."));
+            Assert.IsTrue(output.Output.Contains("--archivepath is required when --fromarchive is specified."));
         }
 
         [TestMethod]
@@ -110,25 +110,25 @@ namespace nanoFirmwareFlasher.Tests
             string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
             string archiveDirectory = Path.Combine(testDirectory, "archive");
 
-            int actual = Program.Main(["--updatefwarchive", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromfwarchive", "--verbosity", "diagnostic"])
+            int actual = Program.Main(["--updatearchive", "--platform", $"{SupportedPlatform.ti_simplelink}", "--fromarchive", "--verbosity", "diagnostic"])
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
-            Assert.IsTrue(output.Output.Contains("Incompatible option --fromfwarchive combined with --updatefwarchive."));
+            Assert.IsTrue(output.Output.Contains("Incompatible option --fromarchive combined with --updatearchive."));
 
             output.Reset();
-            actual = Program.Main(["--updatefwarchive", "--platform", $"{SupportedPlatform.ti_simplelink}", "--verbosity", "diagnostic"])
+            actual = Program.Main(["--updatearchive", "--platform", $"{SupportedPlatform.ti_simplelink}", "--verbosity", "diagnostic"])
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
-            Assert.IsTrue(output.Output.Contains("--fwarchivepath is required when --updatefwarchive is specified."));
+            Assert.IsTrue(output.Output.Contains("--archivepath is required when --updatearchive is specified."));
 
             output.Reset();
-            actual = Program.Main(["--updatefwarchive", "--fwarchivepath", $"{SupportedPlatform.ti_simplelink}", "--verbosity", "diagnostic"])
+            actual = Program.Main(["--updatearchive", "--archivepath", $"{SupportedPlatform.ti_simplelink}", "--verbosity", "diagnostic"])
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
-            Assert.IsTrue(output.Output.Contains("--platform or --target is required when --updatefwarchive is specified."));
+            Assert.IsTrue(output.Output.Contains("--platform or --target is required when --updatearchive is specified."));
         }
 
         [TestMethod]
@@ -138,18 +138,18 @@ namespace nanoFirmwareFlasher.Tests
             string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
             string archiveDirectory = Path.Combine(testDirectory, "archive");
 
-            int actual = Program.Main(["--serialport", "COM3", "--target", "SOME_TARGET", "--fromfwarchive", "--verbosity", "diagnostic"])
+            int actual = Program.Main(["--serialport", "COM3", "--target", "SOME_TARGET", "--fromarchive", "--verbosity", "diagnostic"])
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
-            Assert.IsTrue(output.Output.Contains("--fwarchivepath is required when --fromfwarchive is specified."));
+            Assert.IsTrue(output.Output.Contains("--archivepath is required when --fromarchive is specified."));
 
             output.Reset();
-            actual = Program.Main(["--serialport", "COM3", "--target", "SOME_TARGET", "--fwarchivepath", archiveDirectory, "--verbosity", "diagnostic"])
+            actual = Program.Main(["--serialport", "COM3", "--target", "SOME_TARGET", "--archivepath", archiveDirectory, "--verbosity", "diagnostic"])
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
-            Assert.IsTrue(output.Output.Contains("--fromfwarchive is required when --fwarchivepath is specified."));
+            Assert.IsTrue(output.Output.Contains("--fromarchive is required when --archivepath is specified."));
         }
     }
 }
