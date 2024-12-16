@@ -339,7 +339,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Error clearing cache location.
         /// </summary>
-        [Display(Name = "Error occured when clearing the firmware cache location.")]
+        [Display(Name = "Error occurred when clearing the firmware cache location.")]
         E9014 = 9014,
+
+        /// <summary>
+        /// Can't find the target in the firmware archive.
+        /// </summary>
+        [Display(Name = "Can't find the target in the firmware archive.")]
+        E9015 = 9015,
     }
 }
