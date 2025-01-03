@@ -1,7 +1,5 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -146,7 +144,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public Esp32DeviceInfo GetDeviceDetails(
             string targetName,
             bool requireFlashSize = true,
-            bool forcePsRamCheck = false)
+            bool forcePsRamCheck = false,
+            bool hardResetAfterCommand = false)
         {
             string messages;
 
@@ -161,7 +160,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 "flash_id",
                 false,
                 true,
-                false,
+                hardResetAfterCommand && !requireFlashSize,
                 null,
                 out messages))
             {
@@ -182,14 +181,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // check if we got flash size (in case we need it)
             if (requireFlashSize
-                && messages.Contains("Detected flash size: Unknown"))
+                && (messages.Contains("Detected flash size: Unknown") || hardResetAfterCommand))
             {
                 // try again now without the stub
+                // Also run this for the hardResetAfterCommand, as there is no way to use the tool for a reset only (esptool issue 910).
                 if (!RunEspTool(
                     "flash_id",
                     true,
                     true,
-                    false,
+                    hardResetAfterCommand,
                     null,
                     out messages))
                 {
@@ -328,13 +328,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     var bootloaderPartition = new Dictionary<int, string>
                     {
                         // bootloader goes to 0x1000, except for ESP32_S3, which goes to 0x0
-				        { _chipType == "esp32s3" ? 0x0 : 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
+                        { _chipType == "esp32s3" ? 0x0 : 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
 
-				        // nanoCLR goes to 0x10000
-				        { 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
+                        // nanoCLR goes to 0x10000
+                        { 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
 
                         // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
-				        { 0x8000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
+                        { 0x8000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
                     };
 
                     // need to use standard baud rate here because of boards put in download mode
@@ -439,16 +439,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="backupFilename">Backup file including full path</param>
         /// <param name="flashSize">Flash size in bytes</param>
+        /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
         /// <returns>true if successful</returns>
         internal void BackupFlash(string backupFilename,
-            int flashSize)
+            int flashSize,
+            bool hardResetAfterCommand = false)
         {
             // execute read_flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
             if (!RunEspTool(
                 $"read_flash 0 0x{flashSize:X} \"{backupFilename}\"",
                 true,
                 false,
-                false,
+                hardResetAfterCommand,
                 (char)8,
                 out string messages))
             {

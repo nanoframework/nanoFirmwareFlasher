@@ -20,13 +20,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="backupPath">Path to store backup image.</param>
         /// <param name="fileName">Name of backup file.</param>
         /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
+        /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static ExitCodes BackupFlash(
             EspTool tool,
             Esp32DeviceInfo device,
             string backupPath,
             string fileName,
-            VerbosityLevel verbosity)
+            VerbosityLevel verbosity,
+            bool hardResetAfterCommand = false)
         {
             // check for backup file without backup path
             if (!string.IsNullOrEmpty(fileName) &&
@@ -77,7 +79,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
-            tool.BackupFlash(backupFilePath, device.FlashSize);
+            tool.BackupFlash(backupFilePath, device.FlashSize, hardResetAfterCommand);
 
             if (verbosity > VerbosityLevel.Quiet)
             {

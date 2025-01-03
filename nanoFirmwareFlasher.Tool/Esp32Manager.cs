@@ -78,6 +78,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E4005;
             }
 
+            bool backupFlash = !string.IsNullOrEmpty(_options.BackupPath) ||
+               !string.IsNullOrEmpty(_options.BackupFile);
+
             Esp32DeviceInfo esp32Device;
 
             if (espTool.ComPortAvailable)
@@ -86,7 +89,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _options.TargetName,
                     // if partition table size is specified, no need to get flash size
                     _options.Esp32PartitionTableSize == null,
-                    _options.CheckPsRam);
+                    _options.CheckPsRam,
+                    (_options.DeviceDetails || _options.IdentifyFirmware) && !backupFlash
+                    );
             }
             else
             {
@@ -131,11 +136,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // backup requested
             // Should backup be an unique operation => exit whatever success or not ?
             // In this case, should find how manage a NoOperationPerformedException info
-            if (!string.IsNullOrEmpty(_options.BackupPath) ||
-               !string.IsNullOrEmpty(_options.BackupFile))
+            if (backupFlash)
             {
                 // backup path specified, backup deployment
-                var exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, _options.BackupPath, _options.BackupFile, _verbosityLevel);
+                var exitCode = Esp32Operations.BackupFlash(
+                    espTool,
+                    esp32Device,
+                    _options.BackupPath,
+                    _options.BackupFile,
+                    _verbosityLevel,
+                    _options.DeviceDetails || _options.IdentifyFirmware);
 
                 if (exitCode != ExitCodes.OK)
                 {
