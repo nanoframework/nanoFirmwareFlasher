@@ -187,7 +187,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     IsPreview = preview,
                     Name = remoteTarget.Name,
-                    Platform = platform.ToString(),
+                    Platform = remoteTarget.Platform ?? platform?.ToString(),
                     Version = remoteTarget.Version,
                 };
                 File.WriteAllText(
@@ -209,11 +209,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         private sealed class PersistedPackageInformation : CloudSmithPackageDetail
         {
-            /// <summary>
-            /// Platform code
-            /// </summary>
-            public string Platform { get; set; }
-
             /// <summary>
             /// Indicates whether this is a preview
             /// </summary>

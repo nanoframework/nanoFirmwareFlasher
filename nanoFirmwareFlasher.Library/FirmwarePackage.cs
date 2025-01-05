@@ -38,6 +38,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     ".nanoFramework",
                     "fw_cache");
         private static readonly AsyncLocal<string> s_locationPathBase = new();
+        private static readonly HashSet<string> s_supportedPlatforms = new HashSet<string>(Enum.GetNames(typeof(SupportedPlatform)), StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Path with the base location for firmware packages.
@@ -197,10 +198,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return targetPackages;
             }
 
-            targetPackages = JsonConvert.DeserializeObject<List<CloudSmithPackageDetail>>(responseBody);
-
+            List<CloudSmithPackageDetailJson> deserializedPackages = JsonConvert.DeserializeObject<List<CloudSmithPackageDetailJson>>(responseBody);
+            targetPackages.AddRange(from p in deserializedPackages
+                                    select new CloudSmithPackageDetail()
+                                    {
+                                        Name = p.Name,
+                                        Version = p.Version,
+                                        Platform = p.Tags?.Info is null
+                                            ? null
+                                            : (from t in p.Tags.Info
+                                               where s_supportedPlatforms.Contains(t)
+                                               select t).FirstOrDefault(),
+                                    });
             return targetPackages;
         }
+
+        private sealed class CloudSmithPackageDetailJson : CloudSmithPackageDetail
+        {
+            public CloudSmithPackageDetailTagsJson Tags { get; set; }
+
+            public sealed class CloudSmithPackageDetailTagsJson
+            {
+                public List<string> Info { get; set; }
+            }
+        }
+
 
         /// <summary>
         /// Download the firmware zip, extract this zip file, and get the firmware parts
