@@ -487,8 +487,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     else if (o.TargetName.StartsWith("SL"))
                     {
-                        // candidates for Silabs GG11
-                        o.Platform = SupportedPlatform.gg11;
+                        // candidates for Silabs EFM32 Gecko
+                        o.Platform = SupportedPlatform.efm32;
                     }
                     else
                     {
@@ -522,10 +522,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     o.Platform = SupportedPlatform.stm32;
                 }
-                // GG11 related
+                // EFM32 related
                 else if (o.ListJLinkDevices)
                 {
-                    o.Platform = SupportedPlatform.gg11;
+                    o.Platform = SupportedPlatform.efm32;
                 }
                 // drivers install
                 else if (o.TIInstallXdsDrivers)
@@ -708,7 +708,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region Silabs Giant Gecko S1 platform options
 
-            if (o.Platform == SupportedPlatform.gg11)
+            if (o.Platform == SupportedPlatform.efm32)
             {
                 var manager = new SilabsManager(o, _verbosityLevel);
 

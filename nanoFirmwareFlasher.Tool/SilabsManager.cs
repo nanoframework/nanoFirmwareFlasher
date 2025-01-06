@@ -22,7 +22,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.Platform != SupportedPlatform.gg11)
+            if (options.Platform != SupportedPlatform.efm32)
             {
                 throw new NotSupportedException($"{nameof(options)} - {options.Platform}");
             }
@@ -38,7 +38,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 OutputWriter.ForegroundColor = ConsoleColor.Red;
                 OutputWriter.WriteLine();
-                OutputWriter.WriteLine($"Cannot determine the best matching target for a {SupportedPlatform.gg11} device.");
+                OutputWriter.WriteLine($"Cannot determine the best matching target for a {SupportedPlatform.efm32} device.");
                 OutputWriter.WriteLine();
                 OutputWriter.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.OK;

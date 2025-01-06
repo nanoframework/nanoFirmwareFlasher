@@ -285,7 +285,7 @@ To update the firmware of a Silabs target with a local firmware file (for exampl
 This file has to be a binary file with a valid Booter and CLR from a build. No checks or validations are performed on the file(s) content.
 
 ```console
-nanoff --update --platform gg11 --binfile "C:\nf-interpreter\build\nanobooter-nanoclr.bin" --address 0x0
+nanoff --update --platform efm32 --binfile "C:\nf-interpreter\build\nanobooter-nanoclr.bin" --address 0x0
 ```
 
 ### Deploy a managed application to a SL_STK3701A target
