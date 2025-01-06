@@ -216,7 +216,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "platform",
             Required = false,
             Default = null,
-            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2, gg11.")]
+            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2, efm32.")]
         public SupportedPlatform? Platform { get; set; }
 
         /// <summary>
