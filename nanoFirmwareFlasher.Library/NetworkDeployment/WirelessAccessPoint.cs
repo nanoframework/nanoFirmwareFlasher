@@ -4,9 +4,9 @@
 namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
 {
     /// <summary>
-    /// Represents a wireless client configuration.
+    /// Represents a wireless access point configuration.
     /// </summary>
-    public class WirelessClient
+    public class WirelessAccessPoint
     {
         /// <summary>
         /// Gets or sets the SSID of the wireless network.
@@ -17,16 +17,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// Gets or sets the password of the wireless network.
         /// </summary>
         public string Password { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether DHCP is enabled.
-        /// </summary>
-        public bool DhcpEnabled { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether automatic DNS is enabled.
-        /// </summary>
-        public bool AutomaticDNS { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the IPv4 address.

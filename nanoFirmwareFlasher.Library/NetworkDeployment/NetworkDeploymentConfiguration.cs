@@ -17,5 +17,30 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// Gets or sets the wireless client configuration.
         /// </summary>
         public WirelessClient WirelessClient { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wireless access point configuration.
+        /// </summary>
+        public WirelessAccessPoint WirelessAccessPoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device certificates.
+        /// </summary>
+        public string DeviceCertificates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path to the device certificates.
+        /// </summary>
+        public string DeviceCertificatesPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CA certificates.
+        /// </summary>
+        public string CACertificates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path to the CA certificates.
+        /// </summary>
+        public string CACertificatesPath { get; set; }
     }
 }
