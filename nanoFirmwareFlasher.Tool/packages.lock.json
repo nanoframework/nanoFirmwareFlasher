@@ -28,11 +28,10 @@
       },
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.5.4, )",
-        "resolved": "2.5.4",
-        "contentHash": "5H4kqe8+CskYxKDpslfLmn7Z39SjkTT9NUHTRkO3d9oyplL1lLvR1YJkwaipNxveTfg78EziFMjsK7QLWo+WCg==",
+        "requested": "[2.5.10, )",
+        "resolved": "2.5.10",
+        "contentHash": "ETpK8oihKti7iCV6GkJhvExj3FT66wD8djRj/qWglMl8UaWQhJ4g+j2st5bOqmBrMf2llwOu5qk9wnkTbPAAVA==",
         "dependencies": {
-          "CommunityToolkit.Mvvm": "7.1.2",
           "Polly": "7.2.4",
           "System.IO.Ports": "8.0.0"
         }
@@ -58,11 +57,6 @@
         "requested": "[8.0.5, )",
         "resolved": "8.0.5",
         "contentHash": "0f1B50Ss7rqxXiaBJyzUu9bWFOO2/zSlifZ/UNMdiIpDYe4cY4LQQicP4nirK1OS31I43rn062UIJ1Q9bpmHpg=="
-      },
-      "CommunityToolkit.Mvvm": {
-        "type": "Transitive",
-        "resolved": "7.1.2",
-        "contentHash": "/zEpNH3FIBFY2iZRBi+S3Sia3q2yJgy1IQHnWRW7MdhQIe3IGcA1TGqJdbtjiJBmNy4v7kkPdNzgYlvvNDjXZg=="
       },
       "Microsoft.ApplicationInsights": {
         "type": "Transitive",
@@ -745,7 +739,7 @@
           "System.IO.Ports": "[8.0.0, )",
           "System.Net.Http": "[4.3.4, )",
           "System.Text.Json": "[8.0.5, )",
-          "nanoFramework.Tools.Debugger.Net": "[2.5.4, )"
+          "nanoFramework.Tools.Debugger.Net": "[2.5.10, )"
         }
       }
     },
