@@ -62,7 +62,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
-    <PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.4" />
+    <PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.6.146" PrivateAssets="All" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />

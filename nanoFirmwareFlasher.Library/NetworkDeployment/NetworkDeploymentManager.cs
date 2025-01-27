@@ -4,6 +4,8 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using nanoFramework.Tools.Debugger;
 using nanoFramework.Tools.FirmwareFlasher.DeploymentHelpers;
@@ -49,11 +51,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
             // check if device is still in initialized state
             if (!deviceIsInInitializeState)
             {
+                //var devConf = device.DebugEngine.GetDeviceConfiguration(new CancellationTokenSource(5000).Token);
+                var devConf = device.DebugEngine.GetDeviceConfiguration(default);
+
                 // Deploy the network configuration for woreless client
                 if (_configuration.WirelessClient != null)
                 {
                     // Read the configuration for the wifi interface
-                    var wifiConfigurations = device.DebugEngine.GetAllWireless80211Configurations();
+                    var wifiConfigurations = devConf.Wireless80211Configurations;
                     if (wifiConfigurations == null || wifiConfigurations.Count == 0)
                     {
                         OutputWriter.ForegroundColor = ConsoleColor.Yellow;
@@ -63,133 +68,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                         return ExitCodes.E2002;
                     }
 
-                    // So far, there is only 1 wifi interface
+                    // So far, there is only 1 wifi interface, pick the first one
+                    // Later, we can add more configurations if wanted
                     var wifiConfiguration = wifiConfigurations[0];
-                    if (!string.IsNullOrEmpty(_configuration.WirelessClient.Authentication))
-                    {
-                        switch (_configuration.WirelessClient.Authentication.ToUpper())
-                        {
-                            case "EAP":
-                                wifiConfiguration.Authentication = AuthenticationType.EAP;
-                                break;
-                            case "PEAP":
-                                wifiConfiguration.Authentication = AuthenticationType.PEAP;
-                                break;
-                            case "WCN":
-                                wifiConfiguration.Authentication = AuthenticationType.WCN;
-                                break;
-                            case "OPEN":
-                                wifiConfiguration.Authentication = AuthenticationType.Open;
-                                break;
-                            case "SHARED":
-                                wifiConfiguration.Authentication = AuthenticationType.Shared;
-                                break;
-                            case "WEP":
-                                wifiConfiguration.Authentication = AuthenticationType.WEP;
-                                break;
-                            case "WPA":
-                                wifiConfiguration.Authentication = AuthenticationType.WPA;
-                                break;
-                            case "WPA2":
-                                wifiConfiguration.Authentication = AuthenticationType.WPA2;
-                                break;
-                            case "NONE":
-                                wifiConfiguration.Authentication = AuthenticationType.None;
-                                break;
-                            default:
-                                throw new ArgumentException($"{nameof(_configuration.WirelessClient.Authentication)} must be either: None, EAP, PEPA, WCN, Open, Shared, WEP, WPA or WPA2");
-                        }
-                    }
+                    PopulateWirelessConfigurationProperties(wifiConfiguration, _configuration.WirelessClient);
 
-                    wifiConfiguration.Password = _configuration.WirelessClient.Password;
-                    wifiConfiguration.Ssid = _configuration.WirelessClient.Ssid;
-
-                    if (!string.IsNullOrEmpty(_configuration.WirelessClient.ConfigurationOption))
-                    {
-                        switch (_configuration.WirelessClient.ConfigurationOption.ToUpper())
-                        {
-                            case "NONE":
-                                wifiConfiguration.Wireless80211Options = Wireless80211_ConfigurationOptions.None;
-                                break;
-                            case "DISABLE":
-                                wifiConfiguration.Wireless80211Options = Wireless80211_ConfigurationOptions.Disable;
-                                break;
-                            case "ENABLE":
-                                wifiConfiguration.Wireless80211Options = Wireless80211_ConfigurationOptions.Enable;
-                                break;
-                            case "AUTOCONNECT":
-                                wifiConfiguration.Wireless80211Options = Wireless80211_ConfigurationOptions.AutoConnect;
-                                break;
-                            case "SMARTCONFIG":
-                                wifiConfiguration.Wireless80211Options = Wireless80211_ConfigurationOptions.SmartConfig;
-                                break;
-                            default:
-                                throw new ArgumentException($"{nameof(_configuration.WirelessClient.ConfigurationOption)} must be either: None, Disable, Enable, AutoConnect or SmartConfig");
-                        }
-
-                    }
-
-                    if (!string.IsNullOrEmpty(_configuration.WirelessClient.RadioType))
-                    {
-                        switch (_configuration.WirelessClient.RadioType)
-                        {
-                            case "802.11a":
-                                wifiConfiguration.Radio = RadioType._802_11a;
-                                break;
-                            case "802.11b":
-                                wifiConfiguration.Radio = RadioType._802_11b;
-                                break;
-                            case "802.11g":
-                                wifiConfiguration.Radio = RadioType._802_11g;
-                                break;
-                            case "802.11n":
-                                wifiConfiguration.Radio = RadioType._802_11n;
-                                break;
-                            default:
-                                throw new ArgumentException($"{nameof(_configuration.WirelessClient.RadioType)} must be either: 802.11a, 802.11b, 802.11g or 802.11n");
-                        }
-                    }
-
-                    switch (_configuration.WirelessClient.Encryption)
-                    {
-                        case "WEP":
-                            wifiConfiguration.Encryption = EncryptionType.WEP;
-                            break;
-                        case "WPA":
-                            wifiConfiguration.Encryption = EncryptionType.WPA;
-                            break;
-                        case "WPA2":
-                            wifiConfiguration.Encryption = EncryptionType.WPA2;
-                            break;
-                        case "WPA_PSK":
-                            wifiConfiguration.Encryption = EncryptionType.WPA_PSK;
-                            break;
-                        case "WPA2_PSK2":
-                            wifiConfiguration.Encryption = EncryptionType.WPA2_PSK2;
-                            break;
-                        case "Certificate":
-                            wifiConfiguration.Encryption = EncryptionType.Certificate;
-                            break;
-                        default:
-                            wifiConfiguration.Encryption = EncryptionType.None;
-                            break;
-                    }
-
-                    // Read the configuration for the network interfaces
-                    var networkConfigurations = device.DebugEngine.GetAllNetworkConfigurations();
-
-                    // Find the wireless one
-                    DeviceConfiguration.NetworkConfigurationProperties networkConfigurationToSave = null;
-                    uint blockId = 0;
-                    for (uint i = 0; i < networkConfigurations.Count; i++)
-                    {
-                        if (networkConfigurations[(int)i].InterfaceType == NetworkInterfaceType.Wireless80211)
-                        {
-                            blockId = i;
-                            networkConfigurationToSave = networkConfigurations[(int)i];
-                            break;
-                        }
-                    }
+                    // Find the wireless network configuration
+                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(devConf, NetworkInterfaceType.Wireless80211);
 
                     if (networkConfigurationToSave == null)
                     {
@@ -200,60 +85,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                         return ExitCodes.E2002;
                     }
 
-                    // Checks the IP Addesses if DHCP is set IPv4 from DHCP
-                    if (_configuration.WirelessClient.DhcpEnabled)
-                    {
-                        networkConfigurationToSave.StartupAddressMode = AddressMode.DHCP;
-                        // clear remaining options
-                        networkConfigurationToSave.IPv4Address = IPAddress.None;
-                        networkConfigurationToSave.IPv4NetMask = IPAddress.None;
-                        networkConfigurationToSave.IPv4GatewayAddress = IPAddress.None;
-                    }
-                    else
-                    {
-                        networkConfigurationToSave.StartupAddressMode = AddressMode.Static;
-                        networkConfigurationToSave.IPv4Address = IPAddress.Parse(_configuration.WirelessClient.IPv4Address);
-                        networkConfigurationToSave.IPv4NetMask = IPAddress.Parse(_configuration.WirelessClient.IPv4NetMask);
-                        networkConfigurationToSave.IPv4GatewayAddress = IPAddress.Parse(_configuration.WirelessClient.IPv4Gateway);
-                    }
-
-                    if (networkConfigurationToSave.AutomaticDNS)
-                    {
-                        // clear DNS addresses
-                        networkConfigurationToSave.IPv4DNSAddress1 = IPAddress.None;
-                        networkConfigurationToSave.IPv4DNSAddress2 = IPAddress.None;
-                    }
-                    else
-                    {
-                        networkConfigurationToSave.IPv4DNSAddress1 = IPAddress.Parse(_configuration.WirelessClient.IPv4DNSAddress1);
-                        networkConfigurationToSave.IPv4DNSAddress2 = IPAddress.Parse(_configuration.WirelessClient.IPv4DNSAddress2);
-                    }
+                    PopulateNetworkProperties(networkConfigurationToSave, _configuration.WirelessClient);
 
                     try
                     {
                         if (!string.IsNullOrEmpty(_configuration.WirelessClient.MacAddress))
                         {
-                            networkConfigurationToSave.MacAddress = new byte[6];
-                            if (_configuration.WirelessClient.MacAddress.Contains(":"))
-                            {
-                                var macParts = _configuration.WirelessClient.MacAddress.Split(':');
-                                for (int i = 0; i < 6; i++)
-                                {
-                                    networkConfigurationToSave.MacAddress[i] = Convert.ToByte(macParts[i], 16);
-                                }
-                            }
-                            else
-                            {
-                                if (_configuration.WirelessClient.MacAddress.Length != 12)
-                                {
-                                    throw new ArgumentException($"Mac address has to be 6 bytes, so 12 characters long.");
-                                }
-
-                                for (int i = 0; i < _configuration.WirelessClient.MacAddress.Length; i += 2)
-                                {
-                                    networkConfigurationToSave.MacAddress[i / 2] = Convert.ToByte(_configuration.WirelessClient.MacAddress.Substring(i, 2), 16);
-                                }
-                            }
+                            networkConfigurationToSave.MacAddress = GetMacAddress(_configuration.WirelessClient.MacAddress);
                         }
                     }
                     catch (Exception ex)
@@ -295,9 +133,137 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                 }
 
                 // Deploy Wireless Access Point configuration if any
-                if(_configuration.WirelessAccessPoint != null)
+                if (_configuration.WirelessAccessPoint != null)
                 {
-                    // TODO
+                    // Read the configuration for the wifi AP interface
+                    var wifiApConfigurations = devConf.WirelessAPConfigurations;
+                    if (wifiApConfigurations.Count == 0)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine();
+                        OutputWriter.WriteLine($"Cannot find any wireless AP configuration.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E2002;
+                    }
+
+                    var wifiApConfiguration = wifiApConfigurations[0];                                       
+                    PopulateWirelessConfigurationProperties(wifiApConfiguration, _configuration.WirelessAccessPoint);
+
+                    // Those two ones are specific to the AP, default to None
+                    wifiApConfiguration.WirelessAPOptions = GetWirelessAPOptions(_configuration.WirelessAccessPoint.AccessPointOptions ?? "None");
+                    wifiApConfiguration.MaxConnections = _configuration.WirelessAccessPoint.MaxConnections;
+
+                    // Find the wireless AP one
+                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(devConf, NetworkInterfaceType.WirelessAP);
+
+                    if (networkConfigurationToSave == null)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine();
+                        OutputWriter.WriteLine($"Cannot find any network configuration for wireless client.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E2002;
+                    }
+
+                    networkConfigurationToSave.StartupAddressMode = AddressMode.Static;
+                    networkConfigurationToSave.IPv4Address = IPAddress.Parse(_configuration.WirelessAccessPoint.IPv4Address);
+                    networkConfigurationToSave.IPv4NetMask = IPAddress.Parse(_configuration.WirelessAccessPoint.IPv4NetMask);
+                    // We will use the IP addess of the device itself if no gateway provided
+                    networkConfigurationToSave.IPv4GatewayAddress = IPAddress.Parse(string.IsNullOrEmpty(_configuration.WirelessAccessPoint.IPv4Gateway) ? _configuration.WirelessAccessPoint.IPv4Address : _configuration.WirelessClient.IPv4Gateway);
+
+                    networkConfigurationToSave.IPv4DNSAddress1 = string.IsNullOrEmpty(_configuration.WirelessAccessPoint.IPv4DNSAddress1) ? IPAddress.None : IPAddress.Parse(_configuration.WirelessAccessPoint.IPv4DNSAddress1);
+                    networkConfigurationToSave.IPv4DNSAddress2 = string.IsNullOrEmpty(_configuration.WirelessAccessPoint.IPv4DNSAddress2) ? IPAddress.None : IPAddress.Parse(_configuration.WirelessAccessPoint.IPv4DNSAddress2);
+
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(_configuration.WirelessAccessPoint.MacAddress))
+                        {
+                            networkConfigurationToSave.MacAddress = GetMacAddress(_configuration.WirelessAccessPoint.MacAddress);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine();
+                        OutputWriter.WriteLine($"Error converting MAC address:{ex}");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E2002;
+                    }
+
+                    OutputWriter.Write($"Updating network AP configuration...");
+                    if (device.DebugEngine.UpdateDeviceConfiguration(networkConfigurationToSave, blockId) != Engine.UpdateDeviceResult.Sucess)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine();
+                        OutputWriter.WriteLine($"Error uploading network configuration.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E2002;
+                    }
+
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine($"OK");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    OutputWriter.Write($"Updating wireless AP configuration...");
+                    if (device.DebugEngine.UpdateDeviceConfiguration(wifiApConfiguration, 0) != Engine.UpdateDeviceResult.Sucess)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine();
+                        OutputWriter.WriteLine($"Error uploading wireless configuration.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E2002;
+                    }
+
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine($"OK");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+
+                if (_configuration.Ethernet != null)
+                {
+                    // Find the wireless one
+                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(devConf, NetworkInterfaceType.Ethernet);
+
+                    if (networkConfigurationToSave == null)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine();
+                        OutputWriter.WriteLine($"Cannot find any network configuration for ethernet.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E2002;
+                    }
+
+                    PopulateNetworkProperties(networkConfigurationToSave, _configuration.Ethernet);
+
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(_configuration.Ethernet.MacAddress))
+                        {
+                            networkConfigurationToSave.MacAddress = GetMacAddress(_configuration.Ethernet.MacAddress);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine();
+                        OutputWriter.WriteLine($"Error converting MAC address:{ex}");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E2002;
+                    }
+
+                    OutputWriter.Write($"Updating network ethernet configuration...");
+                    if (device.DebugEngine.UpdateDeviceConfiguration(networkConfigurationToSave, blockId) != Engine.UpdateDeviceResult.Sucess)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine();
+                        OutputWriter.WriteLine($"Error uploading network ethernet configuration.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E2002;
+                    }
+
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine($"OK");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 // Deploy certificates if any
@@ -328,13 +294,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     // Decode the Base64 encoded device certificates
                     deviceCertificatesBytes = Convert.FromBase64String(_configuration.DeviceCertificates);
                 }
-                else if(!string.IsNullOrEmpty(_configuration.DeviceCertificatesPath))
+                else if (!string.IsNullOrEmpty(_configuration.DeviceCertificatesPath))
                 {
                     // Read the device certificates from the file
                     deviceCertificatesBytes = File.ReadAllBytes(_configuration.DeviceCertificatesPath);
                 }
 
-                if (deviceCertificatesBytes!=null)
+                CheckNullPemTermination(deviceCertificatesBytes);
+                if (deviceCertificatesBytes != null)
                 {
                     // deploy the client certificates
                     OutputWriter.Write($"Updating client certificates...");
@@ -343,6 +310,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     clientCertificates.Add(new DeviceConfiguration.X509DeviceCertificatesProperties()
                     {
                         Certificate = deviceCertificatesBytes,
+                        CertificateSize = (uint)deviceCertificatesBytes.Length,
                     });
 
                     if (device.DebugEngine.UpdateDeviceConfiguration(clientCertificates, 0) != Engine.UpdateDeviceResult.Sucess)
@@ -372,7 +340,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     caCertificatesBytes = File.ReadAllBytes(_configuration.CACertificatesPath);
                 }
 
-                if (caCertificatesBytes!=null)
+                CheckNullPemTermination(caCertificatesBytes);
+                if (caCertificatesBytes != null)
                 {
                     // deploy the client certificates
                     OutputWriter.Write($"Updating client certificates...");
@@ -381,6 +350,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     caCertificates.Add(new DeviceConfiguration.X509CaRootBundleProperties()
                     {
                         Certificate = caCertificatesBytes,
+                        CertificateSize = (uint)caCertificatesBytes.Length,
                     });
 
                     if (device.DebugEngine.UpdateDeviceConfiguration(caCertificates, 0) != Engine.UpdateDeviceResult.Sucess)
@@ -403,6 +373,217 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
             }
 
             return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// Configures the authentication for the wireless client.
+        /// </summary>
+        /// <param name="authentication">The authentication type as a string.</param>
+        /// <returns>The authentication type.</returns>
+        private AuthenticationType GetConfigureAuthentication(string authentication) => authentication.ToUpper() switch
+        {
+            "EAP" => AuthenticationType.EAP,
+            "PEAP" => AuthenticationType.PEAP,
+            "WCN" => AuthenticationType.WCN,
+            "OPEN" => AuthenticationType.Open,
+            "SHARED" => AuthenticationType.Shared,
+            "WEP" => AuthenticationType.WEP,
+            "WPA" => AuthenticationType.WPA,
+            "WPA2" => AuthenticationType.WPA2,
+            "NONE" => AuthenticationType.None,
+            _ => throw new ArgumentException($"{nameof(authentication)} must be either: None, EAP, PEPA, WCN, Open, Shared, WEP, WPA or WPA2"),
+        };
+
+        /// <summary>
+        /// Configures the wireless configuration options.
+        /// </summary>
+        /// <param name="configurationOpton">The configuration option as a string.</param>
+        /// <returns>The cifiguraiton option.</returns>
+        private Wireless80211_ConfigurationOptions GetConfigurationOptions(string configurationOpton) => configurationOpton.ToUpper() switch
+        {
+            "NONE" => Wireless80211_ConfigurationOptions.None,
+            "DISABLE" => Wireless80211_ConfigurationOptions.Disable,
+            "ENABLE" => Wireless80211_ConfigurationOptions.Enable,
+            "AUTOCONNECT" => Wireless80211_ConfigurationOptions.AutoConnect,
+            "SMARTCONFIG" => Wireless80211_ConfigurationOptions.SmartConfig,
+            _ => throw new ArgumentException($"{nameof(_configuration.WirelessClient.ConfigurationOption)} must be either: None, Disable, Enable, AutoConnect or SmartConfig"),
+        };
+
+        /// <summary>
+        /// Configures the radio type.
+        /// </summary>
+        /// <param name="radioType">The radio type as a string</param>
+        /// <returns>The radio type.</returns>
+        private RadioType GetRadioType(string radioType) => radioType.ToUpper() switch
+        {
+            "802.11A" => RadioType._802_11a,
+            "802.11B" => RadioType._802_11b,
+            "802.11G" => RadioType._802_11g,
+            "802.11N" => RadioType._802_11n,
+            _ => throw new ArgumentException($"{nameof(radioType)} must be either: 802.11a, 802.11b, 802.11g or 802.11n"),
+        };
+
+        /// <summary>
+        /// Configures the encryption type.
+        /// </summary>
+        /// <param name="encryptionType">The encryption type as a string.</param>
+        /// <returns>The encryption type.</returns>
+        private EncryptionType GetEncryptionType(string encryptionType) => encryptionType.ToUpper() switch
+        {
+            "WEP" => EncryptionType.WEP,
+            "WPA" => EncryptionType.WPA,
+            "WPA2" => EncryptionType.WPA2,
+            "WPA_PSK" => EncryptionType.WPA_PSK,
+            "WPA2_PSK2" => EncryptionType.WPA2_PSK2,
+            "CERTIFICATE" => EncryptionType.Certificate,
+            _ => EncryptionType.None,
+        };
+
+        private WirelessAP_ConfigurationOptions GetWirelessAPOptions(string wirelessAPOptions) => wirelessAPOptions.ToUpper() switch
+        {
+            "NONE" => WirelessAP_ConfigurationOptions.None,
+            "DISABLE" => WirelessAP_ConfigurationOptions.Disable,
+            "ENABLE" => WirelessAP_ConfigurationOptions.Enable,
+            "AUTOSTART" => WirelessAP_ConfigurationOptions.AutoStart,
+            "HIDDENSSID" => WirelessAP_ConfigurationOptions.HiddenSSID,
+            _ => throw new ArgumentException($"{nameof(wirelessAPOptions)} must be either: None, Disable, Enable, AutoStart or HiddenSSID"),
+        };
+
+        /// <summary>
+        /// Gets the MAC address.
+        /// </summary>
+        /// <param name="macAddress">The MAC address as a string.</param>
+        /// <returns>The MAC address as a byte array.</returns>
+        private byte[] GetMacAddress(string macAddress)
+        {
+            byte[] mac = new byte[6];
+            if (macAddress.Contains(":"))
+            {
+                var macParts = macAddress.Split(':');
+                for (int i = 0; i < 6; i++)
+                {
+                    mac[i] = Convert.ToByte(macParts[i], 16);
+                }
+            }
+            else
+            {
+                if (macAddress.Length != 12)
+                {
+                    throw new ArgumentException($"Mac address has to be 6 bytes, so 12 characters long.");
+                }
+
+                for (int i = 0; i < macAddress.Length; i += 2)
+                {
+                    mac[i / 2] = Convert.ToByte(macAddress.Substring(i, 2), 16);
+                }
+            }
+
+            return mac;
+        }
+
+        /// <summary>
+        /// Gets the network configuration.
+        /// </summary>
+        /// <param name="devConf">The device configuration.</param>
+        /// <param name="networkInterfaceType">The network type to find.</param>
+        /// <returns></returns>
+        private (DeviceConfiguration.NetworkConfigurationProperties networkConfigurationToSave, uint blockId) GetNetworkConfiguration(DeviceConfiguration devConf, NetworkInterfaceType networkInterfaceType)
+        {
+            // Read the configuration for the network interfaces
+            var networkConfigurations = devConf.NetworkConfigurations;
+            // Find the wireless one
+            DeviceConfiguration.NetworkConfigurationProperties networkConfigurationToSave = null;
+            uint blockId = 0;
+            for (uint i = 0; i < networkConfigurations.Count; i++)
+            {
+                if (networkConfigurations[(int)i].InterfaceType == networkInterfaceType)
+                {
+                    networkConfigurationToSave = networkConfigurations[(int)i];
+                    blockId = i;
+                    break;
+                }
+            }
+            return (networkConfigurationToSave, blockId);
+        }
+
+        /// <summary>
+        /// Populates the network properties.
+        /// </summary>
+        /// <param name="networkConfigurationToSave">The network properties to populate.</param>
+        /// <param name="ethernet">The ethernet elements.</param>
+        private void PopulateNetworkProperties(DeviceConfiguration.NetworkConfigurationProperties networkConfigurationToSave, Ethernet ethernet)
+        {
+            // Checks the IP Addesses if DHCP is set IPv4 from DHCP
+            if (ethernet.DhcpEnabled)
+            {
+                networkConfigurationToSave.StartupAddressMode = AddressMode.DHCP;
+                // clear remaining options
+                networkConfigurationToSave.IPv4Address = IPAddress.None;
+                networkConfigurationToSave.IPv4NetMask = IPAddress.None;
+                networkConfigurationToSave.IPv4GatewayAddress = IPAddress.None;
+            }
+            else
+            {
+                networkConfigurationToSave.StartupAddressMode = AddressMode.Static;
+                networkConfigurationToSave.IPv4Address = IPAddress.Parse(ethernet.IPv4Address);
+                networkConfigurationToSave.IPv4NetMask = IPAddress.Parse(ethernet.IPv4NetMask);
+                networkConfigurationToSave.IPv4GatewayAddress = IPAddress.Parse(ethernet.IPv4Gateway);
+            }
+
+            if (networkConfigurationToSave.AutomaticDNS)
+            {
+                // clear DNS addresses
+                networkConfigurationToSave.IPv4DNSAddress1 = IPAddress.None;
+                networkConfigurationToSave.IPv4DNSAddress2 = IPAddress.None;
+            }
+            else
+            {
+                networkConfigurationToSave.IPv4DNSAddress1 = IPAddress.Parse(ethernet.IPv4DNSAddress1);
+                networkConfigurationToSave.IPv4DNSAddress2 = IPAddress.Parse(ethernet.IPv4DNSAddress2);
+            }
+        }
+
+        /// <summary>
+        /// Checks if the PEM certificate has a null termination and add it if needed.
+        /// </summary>
+        /// <param name="cert">The cert byte array.</param>
+        private void CheckNullPemTermination(byte[] cert)
+        {
+            // Check if it's a PEM certificate starting with -----BEGIN CERTIFICATE-----
+            if(Encoding.ASCII.GetString(cert).Contains("-----BEGIN CERTIFICATE-----"))
+            {
+                // Check if the last byte is a null terminator
+                if (cert[cert.Length - 1] != 0)
+                {
+                    // Add the PEM termination
+                    Array.Resize(ref cert, cert.Length + 1);
+                    cert[cert.Length - 1] = 0;
+                }
+            }            
+        }
+
+        /// <summary>
+        /// Populates the wireless properties.
+        /// </summary>
+        /// <param name="wifiConfiguration">The wireless property to populate</param>
+        /// <param name="wirelessClient">The wireless configuration</param>
+        private void PopulateWirelessConfigurationProperties(WirelessConfigurationPropertiesBase wifiConfiguration, WirelessConfiguration wirelessClient)
+        {
+            if (!string.IsNullOrEmpty(wirelessClient.Authentication))
+            {
+                wifiConfiguration.Authentication = GetConfigureAuthentication(wirelessClient.Authentication);
+            }
+            wifiConfiguration.Password = wirelessClient.Password ?? string.Empty;
+            wifiConfiguration.Ssid = wirelessClient.Ssid;
+            if (!string.IsNullOrEmpty(wirelessClient.ConfigurationOption))
+            {
+                wifiConfiguration.Wireless80211Options = GetConfigurationOptions(wirelessClient.ConfigurationOption);
+            }
+            if (!string.IsNullOrEmpty(wirelessClient.RadioType))
+            {
+                wifiConfiguration.Radio = GetRadioType(wirelessClient.RadioType);
+            }
+            wifiConfiguration.Encryption = string.IsNullOrEmpty(wirelessClient.Encryption) ? EncryptionType.None : GetEncryptionType(wirelessClient.Encryption);
         }
     }
 }

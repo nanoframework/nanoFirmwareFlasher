@@ -503,6 +503,245 @@ In that case, the `SerialPort` must be present in the JSON file.
 >
 > If a file can't be uploaded because of a problem, the deployment of the other files will continue and an error will be displayed.
 
+## Deploy Wireless, Wireless Access Point, Ethernet configuration and Certificates
+
+You can upload Wireless, Wireless Access Point, Ethernet configurations and Certificates during flash so that your device is ready to go and those elements do not need to be stored in the code or in the internal storage. Depending on your device, some options may not be available. So check out what is available on your device before trying to upload them. The `--networkdeployment` can be combined with any other option. 
+
+```console
+nanoff --networkdeployment C:\path\deploy.json
+```
+
+The json file can contains various configurations and thet are all optional:
+
+```json
+{
+   "serialport":"COM42",
+   "WirelessClient": { },
+   "WirelessAccessPoint": { },
+   "Ethernet": { },
+   // Only one or the other can be used
+   "DeviceCertificates": "base64",
+   "DeviceCertificatesPath": "c:\\pathto\\cert.pem",
+   // Only one or the other can be used
+   "CACertificates": "base64",
+   "CACertificatesPath": "c:\\pathto\\certca.pem"
+}
+```
+
+The optional `SerialPort` can be used in case the port to upload the configurations is different than the one to flash the device or not specified in the main command line like in the previous example.
+
+Here is a minimal example setting up a Wireless Client and a Wireless Access Point configuration at the same time:
+
+```json
+{"SerialPort":"COM10","WirelessClient":{"SSID":"MySSID","Password":"the_secret_password"},"WirelessAccessPoint":{"SSID":"nanoDevice","Password":null,"IPv4Address":"192.168.10.1","IPv4NetMAsk":"255.255.255.0","Authentication":"None"}}
+```
+
+See the section further to understand what are the mandatory fields and which ones are optionals.
+
+### Wireless Client options
+
+The `WirelessClient` object represents the wireless configuration settings for a network deployment. It contains the following properties:
+
+- **Ssid**:
+   - Type: `string`
+   - Format: 32 characters maximum.
+   - Mandatory
+
+- **Password**:
+   - Type: `string`
+   - Format: 64 characters maximum 
+   - Default: empty string meaning no password.
+   - Optional
+
+- **Authentication**
+   - Type: `string`
+   - Possible values (case insensitive): `EAP, PEAP, WCN, OPEN, SHARED, WEP, WPA, WPA2, NONE`
+   - Description: the authentication type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **Encryption**
+   - Type `string`
+   - Possible values (case insensitive): `WEP, WPA, WPA2, WPA_PSK, WPA2_PSK2, Certificate, None`
+   - Description: the encryption type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **ConfigurationOption**
+   - Type: `string`
+   - Possible values (case insensitive): `None, Disable, Enable, AutoConnect, SmartConfig`
+   - Description: the configuration option.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **RadioType**
+   - Type: `string`
+   - Possible values (case insensitive): `802.11a, 802.11b, 802.11g, 802.11n`
+   - Description: the radio type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **DhcpEnabled**: 
+  - Type: `bool`
+  - Default: true
+  - Optional
+  - Description: a value indicating whether DHCP is enabled. If set to `false`, the `IPv4Address` and `IPv4NetMask` need to be set up.
+
+- **AutomaticDNS**: 
+  - Type: `bool`
+  - Default: true
+  - Optional
+  - Description: a value indicating whether automatic DNS is enabled. If set to `false`, `Ipv4DNSAddress1` needs at least to be set.
+
+- **IPv4Address**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 address. This needs to be set if `DhcpEnabled` is `false`.
+
+- **IPv4NetMask**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 netmask. This needs to be set if `DhcpEnabled` is `false`.
+
+- **IPv4Gateway**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 gateway.
+
+- **IPv4DNSAddress1**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the primary IPv4 DNS address.
+
+- **IPv4DNSAddress2**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the secondary IPv4 DNS address.
+
+- **MacAddress**: 
+  - Type: `string`
+  - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
+  - Description: the MAC address.
+  - Note: some devivces do not allow to be set up, please check your device first.
+
+### Wireless Access Point options
+
+- **Ssid**:
+   - Type: `string`
+   - Format: 32 characters maximum.
+   - Mandatory
+
+- **Password**:
+   - Type: `string`
+   - Format: 64 characters maximum 
+   - Default: empty string meaning no password.
+   - Optional
+
+- **Authentication**
+   - Type: `string`
+   - Possible values (case insensitive): `EAP, PEAP, WCN, OPEN, SHARED, WEP, WPA, WPA2, NONE`
+   - Description: the authentication type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **Encryption**
+   - Type `string`
+   - Possible values (case insensitive): `WEP, WPA, WPA2, WPA_PSK, WPA2_PSK2, Certificate, None`
+   - Description: the encryption type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **ConfigurationOption**
+   - Type: `string`
+   - Possible values (case insensitive): `None, Disable, Enable, AutoConnect, SmartConfig`
+   - Description: the configuration option.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **RadioType**
+   - Type: `string`
+   - Possible values (case insensitive): `802.11a, 802.11b, 802.11g, 802.11n`
+   - Description: the radio type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **IPv4Address**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 address.
+  - Mandatory.
+
+- **IPv4NetMask**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 netmask.
+  - Mandatory.
+
+- **IPv4Gateway**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 gateway.
+  - Default: the `IPv4Address` value
+
+- **IPv4DNSAddress1**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the primary IPv4 DNS address.
+
+- **IPv4DNSAddress2**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the secondary IPv4 DNS address.
+
+- **MacAddress**: 
+  - Type: `string`
+  - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
+  - Description: the MAC address.
+  - Note: some devivces do not allow to be set up, please check your device first.
+
+### Ethernet options
+
+Represents an Ethernet configuration and here are the properties:
+
+- **DhcpEnabled**: 
+  - Type: `bool`
+  - Default: true
+  - Optional
+  - Description: a value indicating whether DHCP is enabled. If set to `false`, the `IPv4Address` and `IPv4NetMask` need to be set up.
+
+- **AutomaticDNS**: 
+  - Type: `bool`
+  - Default: true
+  - Optional
+  - Description: a value indicating whether automatic DNS is enabled. If set to `false`, `Ipv4DNSAddress1` needs at least to be set.
+
+- **IPv4Address**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 address. This needs to be set if `DhcpEnabled` is `false`.
+
+- **IPv4NetMask**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 netmask. This needs to be set if `DhcpEnabled` is `false`.
+
+- **IPv4Gateway**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 gateway.
+
+- **IPv4DNSAddress1**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the primary IPv4 DNS address.
+
+- **IPv4DNSAddress2**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the secondary IPv4 DNS address.
+
+- **MacAddress**: 
+  - Type: `string`
+  - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
+  - Description: the MAC address.
+  - Note: some devivces do not allow to be set up, please check your device first.
+
+### Device and CA Certificates
+
+You can either **base64** encode your certificates (`DeviceCertificates` and `CACertificates`) or provide a path on a certificate file (`DeviceCertificatesPath` and `CACertificatesPath`). Note that the certificate file can contain multiple certificates one after the other. This is especially usefull for CA certificates.
+
 ## Clear cache location
 
 If needed one can clear the local cache from the firmware packages that are stored there.
