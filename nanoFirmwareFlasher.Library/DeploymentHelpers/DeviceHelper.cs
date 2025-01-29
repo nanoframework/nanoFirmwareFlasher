@@ -88,7 +88,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.DeploymentHelpers
                     OutputWriter.ForegroundColor = ConsoleColor.Red;
                     OutputWriter.WriteLine($"Error connecting to debug engine on nanoDevice on {serialPort}.");
                     OutputWriter.ForegroundColor = ConsoleColor.White;
-                    return (device ,ExitCodes.E2000, true);
+                    return (device, ExitCodes.E2000, true);
                 }
             }
 

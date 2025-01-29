@@ -505,7 +505,7 @@ In that case, the `SerialPort` must be present in the JSON file.
 
 ## Deploy Wireless, Wireless Access Point, Ethernet configuration and Certificates
 
-You can upload Wireless, Wireless Access Point, Ethernet configurations and Certificates during flash so that your device is ready to go and those elements do not need to be stored in the code or in the internal storage. Depending on your device, some options may not be available. So check out what is available on your device before trying to upload them. The `--networkdeployment` can be combined with any other option. 
+You can upload Wireless, Wireless Access Point, Ethernet configurations and Certificates during the flash operation so that your device is ready to go and those elements do not need to be stored in the code or beforehand in the internal storage. Depending on your device, some options may not be available. So check out what is available on your device before trying to upload them. The `--networkdeployment` can be combined with any other option. 
 
 ```console
 nanoff --networkdeployment C:\path\deploy.json
