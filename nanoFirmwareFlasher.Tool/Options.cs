@@ -361,6 +361,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public string FileDeployment { get; set; }
 
         [Option(
+            "networkdeployment",
+            Required = false,
+            Default = null,
+            HelpText = "JSON file containing network deployment settings.")]
+        public string NetworkDeployment { get; set; }
+
+        [Option(
             "archivepath",
             Required = false,
             Default = null,

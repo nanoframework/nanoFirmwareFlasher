@@ -16,6 +16,7 @@ using CommandLine.Text;
 using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.FirmwareFlasher.Extensions;
 using nanoFramework.Tools.FirmwareFlasher.FileDeployment;
+using nanoFramework.Tools.FirmwareFlasher.NetworkDeployment;
 using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -742,6 +743,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
+            #region Files and Network deployment
+
             // done nothing... or maybe not...
             if (!operationPerformed && string.IsNullOrEmpty(o.FileDeployment))
             {
@@ -764,6 +767,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 }
             }
+
+            // done nothing... or maybe not...
+            if (!operationPerformed && string.IsNullOrEmpty(o.NetworkDeployment))
+            {
+                DisplayNoOperationMessage();
+            }
+            else
+            {
+                if ((_exitCode == ExitCodes.OK) && !string.IsNullOrEmpty(o.NetworkDeployment))
+                {
+                    NetworkDeploymentManager deploy = new NetworkDeploymentManager(o.NetworkDeployment, o.SerialPort, _verbosityLevel);
+                    try
+                    {
+                        _exitCode = await deploy.DeployAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        // exception with 
+                        _exitCode = ExitCodes.E2003;
+                        _extraMessage = ex.Message;
+                    }
+                }
+            }
+
+            #endregion
         }
 
         private static void DisplayNoOperationMessage()
