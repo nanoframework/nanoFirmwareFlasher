@@ -10,6 +10,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
@@ -17,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.FirmwareFlasher.Extensions;
 using nanoFramework.Tools.FirmwareFlasher.FileDeployment;
 using nanoFramework.Tools.FirmwareFlasher.NetworkDeployment;
-using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -130,8 +131,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/nanoframework/nanoFirmwareFlasher/releases/latest").Result;
 
-                    dynamic responseContent = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
-                    string tagName = responseContent.tag_name.ToString();
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                    };
+
+                    JsonNode responseContent = JsonSerializer.Deserialize<JsonNode>(response.Content.ReadAsStringAsync().Result, options);
+                    string tagName = responseContent["tag_name"].ToString();
 
                     latestVersion = Version.Parse(tagName.Substring(1));
                 }

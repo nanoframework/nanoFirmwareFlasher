@@ -5,11 +5,11 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using nanoFramework.Tools.Debugger;
 using nanoFramework.Tools.FirmwareFlasher.DeploymentHelpers;
-using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
 {
@@ -30,7 +30,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// <param name="verbosity">The verbosity level.</param>
         public NetworkDeploymentManager(string configFilePath, string originalPort, VerbosityLevel verbosity)
         {
-            _configuration = JsonConvert.DeserializeObject<NetworkDeploymentConfiguration>(File.ReadAllText(configFilePath));
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
+
+            _configuration = JsonSerializer.Deserialize<NetworkDeploymentConfiguration>(File.ReadAllText(configFilePath), options);
             _serialPort = string.IsNullOrEmpty(_configuration.SerialPort) ? originalPort : _configuration.SerialPort;
             _verbosity = verbosity;
         }
@@ -299,10 +304,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     // Read the device certificates from the file
                     deviceCertificatesBytes = File.ReadAllBytes(_configuration.DeviceCertificatesPath);
                 }
-
-                CheckNullPemTermination(deviceCertificatesBytes);
+                
                 if (deviceCertificatesBytes != null)
                 {
+                    CheckNullPemTermination(deviceCertificatesBytes);
                     // deploy the client certificates
                     OutputWriter.Write($"Updating client certificates...");
                     var clientCertificates = device.DebugEngine.GetAllX509DeviceCertificates();
@@ -339,10 +344,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     // Read the CA certificates from the file
                     caCertificatesBytes = File.ReadAllBytes(_configuration.CACertificatesPath);
                 }
-
-                CheckNullPemTermination(caCertificatesBytes);
+                
                 if (caCertificatesBytes != null)
                 {
+                    CheckNullPemTermination(caCertificatesBytes);
                     // deploy the client certificates
                     OutputWriter.Write($"Updating client certificates...");
                     var caCertificates = device.DebugEngine.GetAllX509Certificates();

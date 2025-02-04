@@ -8,12 +8,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.DataContracts;
 using nanoFramework.Tools.Debugger;
-using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -198,7 +198,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return targetPackages;
             }
 
-            List<CloudSmithPackageDetailJson> deserializedPackages = JsonConvert.DeserializeObject<List<CloudSmithPackageDetailJson>>(responseBody);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
+
+            List<CloudSmithPackageDetailJson> deserializedPackages = JsonSerializer.Deserialize<List<CloudSmithPackageDetailJson>>(responseBody, options);
             targetPackages.AddRange(from p in deserializedPackages
                                     select new CloudSmithPackageDetail()
                                     {
@@ -660,7 +665,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 else
                 {
                     // parse response
-                    packageInfo = JsonConvert.DeserializeObject<List<CloudsmithPackageInfo>>(responseBody);
+                    packageInfo = JsonSerializer.Deserialize<List<CloudsmithPackageInfo>>(responseBody);
 
                     // sanity check
                     if (packageInfo.Count != 1)

@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -55,7 +55,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 foreach (string filePath in Directory.EnumerateFiles(_archivePath, $"*{INFOFILE_EXTENSION}"))
                 {
-                    PersistedPackageInformation packageInformation = JsonConvert.DeserializeObject<PersistedPackageInformation>(File.ReadAllText(filePath));
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                    };
+
+                    PersistedPackageInformation packageInformation = JsonSerializer.Deserialize<PersistedPackageInformation>(File.ReadAllText(filePath), options);
                     if (packageInformation.IsPreview == preview &&
                         (platform is null || platform.Value.ToString().Equals(packageInformation.Platform, StringComparison.OrdinalIgnoreCase)))
                     {
@@ -83,7 +88,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 foreach (string filePath in Directory.EnumerateFiles(_archivePath, $"{target}-*{INFOFILE_EXTENSION}"))
                 {
-                    PersistedPackageInformation packageInformation = JsonConvert.DeserializeObject<PersistedPackageInformation>(File.ReadAllText(filePath));
+                    PersistedPackageInformation packageInformation = JsonSerializer.Deserialize<PersistedPackageInformation>(File.ReadAllText(filePath));
                     if (packageInformation is not null && packageInformation.IsPreview == preview)
                     {
                         if (Version.TryParse(packageInformation.Version, out Version version))
@@ -192,7 +197,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 };
                 File.WriteAllText(
                     $"{(fwFilePath.EndsWith(".zip") ? fwFilePath : Path.GetDirectoryName(fwFilePath))}{INFOFILE_EXTENSION}",
-                    JsonConvert.SerializeObject(packageInformation)
+                    JsonSerializer.Serialize(packageInformation)
                 );
             }
             return result;

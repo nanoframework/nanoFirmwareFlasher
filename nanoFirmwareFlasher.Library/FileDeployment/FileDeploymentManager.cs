@@ -3,11 +3,11 @@
 
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using nanoFramework.Tools.Debugger;
 using nanoFramework.Tools.Debugger.Extensions;
 using nanoFramework.Tools.FirmwareFlasher.DeploymentHelpers;
-using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
 {
@@ -25,7 +25,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.FileDeployment
         /// </summary>
         public FileDeploymentManager(string configFilePath, string originalPort, VerbosityLevel verbosity)
         {
-            _configuration = JsonConvert.DeserializeObject<FileDeploymentConfiguration>(File.ReadAllText(configFilePath));
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
+
+            _configuration = JsonSerializer.Deserialize<FileDeploymentConfiguration>(File.ReadAllText(configFilePath), options);
             _serialPort = string.IsNullOrEmpty(_configuration.SerialPort) ? originalPort : _configuration.SerialPort;
             _verbosity = verbosity;
         }
