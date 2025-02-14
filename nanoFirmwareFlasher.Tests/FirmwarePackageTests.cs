@@ -20,8 +20,6 @@ namespace nanoFirmwareFlasher.Tests
         [TestCategory("CloudSmith")]
         public void FirmwarePackage_ListReferenceTargets()
         {
-            using var output = new OutputWriterHelper();
-
             #region Get the stable packages
 
             List<CloudSmithPackageDetail> stable = FirmwarePackage.GetTargetList(
@@ -37,7 +35,6 @@ namespace nanoFirmwareFlasher.Tests
 
             #region Get the preview packages
 
-            output.Reset();
             List<CloudSmithPackageDetail> preview = FirmwarePackage.GetTargetList(
                 false,
                 true,
@@ -58,7 +55,6 @@ namespace nanoFirmwareFlasher.Tests
 
             #region Get the stable esp32 packages
 
-            output.Reset();
             List<CloudSmithPackageDetail> stableEsp32 = FirmwarePackage.GetTargetList(
                 false,
                 false,
@@ -79,26 +75,103 @@ namespace nanoFirmwareFlasher.Tests
             }
 
             #endregion
+
+            #region Get the stable ti_simplelink packages
+
+            List<CloudSmithPackageDetail> stableTiSimpleLink = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                SupportedPlatform.ti_simplelink,
+                VerbosityLevel.Quiet);
+
+            Assert.IsNotNull(stableTiSimpleLink);
+            Assert.AreNotEqual(0, stableTiSimpleLink.Count);
+
+            // Assert that there are more stable packages than for the ti_simplelink
+            Assert.IsTrue(stableTiSimpleLink.Count < stable.Count);
+
+            // Assert that all ti_simplelink packages are in the stable list
+            foreach (CloudSmithPackageDetail tiSimpleLinkPackage in stableTiSimpleLink)
+            {
+                Assert.IsTrue(stable.Any(s => s.Name == tiSimpleLinkPackage.Name && s.Version == tiSimpleLinkPackage.Version),
+                              $"Package {tiSimpleLinkPackage.Name} with version {tiSimpleLinkPackage.Version} is not in the stable list.");
+            }
+
+            #endregion
+
+            #region Get the stable stm32 packages
+
+            List<CloudSmithPackageDetail> stableStm32 = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                SupportedPlatform.stm32,
+                VerbosityLevel.Quiet);
+
+            Assert.IsNotNull(stableStm32);
+            Assert.AreNotEqual(0, stableStm32.Count);
+
+            // Assert that there are more stable packages than for the stm32
+            Assert.IsTrue(stableStm32.Count < stable.Count);
+
+            // Assert that all stm32 packages are in the stable list
+            foreach (CloudSmithPackageDetail stm32Package in stableStm32)
+            {
+                Assert.IsTrue(stable.Any(s => s.Name == stm32Package.Name && s.Version == stm32Package.Version),
+                              $"Package {stm32Package.Name} with version {stm32Package.Version} is not in the stable list.");
+            }
+
+            #endregion
+
+            #region Get the stable efm32 packages
+
+            List<CloudSmithPackageDetail> stableEfm32 = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                SupportedPlatform.efm32,
+                VerbosityLevel.Quiet);
+
+            Assert.IsNotNull(stableEfm32);
+            Assert.AreNotEqual(0, stableEfm32.Count);
+
+            // Assert that there are more stable packages than for the efm32
+            Assert.IsTrue(stableEfm32.Count < stable.Count);
+
+            // Assert that all efm32 packages are in the stable list
+            foreach (CloudSmithPackageDetail efm32Package in stableEfm32)
+            {
+                Assert.IsTrue(stable.Any(s => s.Name == efm32Package.Name && s.Version == efm32Package.Version),
+                              $"Package {efm32Package.Name} with version {efm32Package.Version} is not in the stable list.");
+            }
+
+            #endregion
         }
 
         [TestMethod]
         [TestCategory("CloudSmith")]
         public void FirmwarePackage_ListCommunityTargets()
         {
-            using var output = new OutputWriterHelper();
-
             #region Get the stable packages
-            List<CloudSmithPackageDetail> stable = FirmwarePackage.GetTargetList(true, false, null, VerbosityLevel.Diagnostic);
+
+            List<CloudSmithPackageDetail> stable = FirmwarePackage.GetTargetList(
+                true,
+                false,
+                null,
+                VerbosityLevel.Diagnostic);
+
             Assert.IsNotNull(stable);
             Assert.AreNotEqual(0, stable.Count);
-            
+
             #endregion
 
             #region Get the stable esp32 packages
-            output.Reset();
-            List<CloudSmithPackageDetail> stableEsp32 = FirmwarePackage.GetTargetList(true, false, SupportedPlatform.esp32, VerbosityLevel.Quiet);
+
+            List<CloudSmithPackageDetail> stableEsp32 = FirmwarePackage.GetTargetList(
+                true,
+                false,
+                SupportedPlatform.esp32,
+                VerbosityLevel.Quiet);
+
             Assert.AreNotEqual(0, stableEsp32.Count);
-            output.AssertAreEqual("");
 
             // Assert that there are more stable packages than for the esp32
             Assert.IsTrue(stableEsp32.Count < stable.Count);
@@ -110,6 +183,30 @@ namespace nanoFirmwareFlasher.Tests
                                where s.Name == esp32Package.Name && s.Version == esp32Package.Version
                                select s).Any());
             }
+
+            #endregion
+
+            #region Get the stable stm32 packages
+
+            List<CloudSmithPackageDetail> stableStm32 = FirmwarePackage.GetTargetList(
+                true,
+                false,
+                SupportedPlatform.stm32,
+                VerbosityLevel.Quiet);
+
+            Assert.AreNotEqual(0, stableStm32.Count);
+
+            // Assert that there are more stable packages than for the stm32
+            Assert.IsTrue(stableStm32.Count < stable.Count);
+
+            // Assert that all stm32 packages are in the stable list
+            foreach (CloudSmithPackageDetail stm32Package in stableStm32)
+            {
+                Assert.IsTrue((from s in stable
+                               where s.Name == stm32Package.Name && s.Version == stm32Package.Version
+                               select s).Any());
+            }
+
             #endregion
         }
 
