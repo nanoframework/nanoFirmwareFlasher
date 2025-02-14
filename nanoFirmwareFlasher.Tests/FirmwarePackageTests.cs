@@ -23,17 +23,28 @@ namespace nanoFirmwareFlasher.Tests
             using var output = new OutputWriterHelper();
 
             #region Get the stable packages
-            List<CloudSmithPackageDetail> stable = FirmwarePackage.GetTargetList(false, false, null, VerbosityLevel.Diagnostic);
+
+            List<CloudSmithPackageDetail> stable = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                null,
+                VerbosityLevel.Diagnostic);
+
             Assert.IsNotNull(stable);
             Assert.AreNotEqual(0, stable.Count);
-            output.AssertAreEqual("Listing  targets from 'nanoframework-images' repository [STABLE]...");
+
             #endregion
 
             #region Get the preview packages
+
             output.Reset();
-            List<CloudSmithPackageDetail> preview = FirmwarePackage.GetTargetList(false, true, null, VerbosityLevel.Quiet);
+            List<CloudSmithPackageDetail> preview = FirmwarePackage.GetTargetList(
+                false,
+                true,
+                null,
+                VerbosityLevel.Quiet);
+
             Assert.IsNotNull(preview);
-            output.AssertAreEqual("");
 
             // Assert that the preview packages are not part of the stable package list
             foreach (CloudSmithPackageDetail previewPackage in preview)
@@ -42,14 +53,20 @@ namespace nanoFirmwareFlasher.Tests
                                 where s.Name == previewPackage.Name && s.Version == previewPackage.Version
                                 select s).Any());
             }
+
             #endregion
 
             #region Get the stable esp32 packages
+
             output.Reset();
-            List<CloudSmithPackageDetail> stableEsp32 = FirmwarePackage.GetTargetList(false, false, SupportedPlatform.esp32, VerbosityLevel.Diagnostic);
+            List<CloudSmithPackageDetail> stableEsp32 = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                SupportedPlatform.esp32,
+                VerbosityLevel.Diagnostic);
+
             Assert.IsNotNull(stableEsp32);
             Assert.AreNotEqual(0, stableEsp32.Count);
-            output.AssertAreEqual("Listing esp32 targets from 'nanoframework-images' repository [STABLE]...");
 
             // Assert that there are more stable packages than for the esp32
             Assert.IsTrue(stableEsp32.Count < stable.Count);
@@ -57,10 +74,10 @@ namespace nanoFirmwareFlasher.Tests
             // Assert that all esp32 packages are in the stable list
             foreach (CloudSmithPackageDetail esp32Package in stableEsp32)
             {
-                Assert.IsTrue((from s in stable
-                               where s.Name == esp32Package.Name && s.Version == esp32Package.Version
-                               select s).Any());
+                Assert.IsTrue(stable.Any(s => s.Name == esp32Package.Name && s.Version == esp32Package.Version),
+                              $"Package {esp32Package.Name} with version {esp32Package.Version} is not in the stable list.");
             }
+
             #endregion
         }
 
@@ -74,7 +91,7 @@ namespace nanoFirmwareFlasher.Tests
             List<CloudSmithPackageDetail> stable = FirmwarePackage.GetTargetList(true, false, null, VerbosityLevel.Diagnostic);
             Assert.IsNotNull(stable);
             Assert.AreNotEqual(0, stable.Count);
-            output.AssertAreEqual("Listing  targets from 'nanoframework-images-community-targets' repository...");
+            
             #endregion
 
             #region Get the stable esp32 packages

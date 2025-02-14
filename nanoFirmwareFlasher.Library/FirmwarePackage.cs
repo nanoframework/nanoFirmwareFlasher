@@ -147,74 +147,75 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="verbosity">VerbosityLevel to use when outputting progress and error messages.</param>
         /// <returns>List of <see cref="CloudSmithPackageDetail"/> with details on target firmware packages.</returns>
         public static List<CloudSmithPackageDetail> GetTargetList(
-            bool communityTargets,
-            bool preview,
-            SupportedPlatform? platform,
-            VerbosityLevel verbosity)
+    bool communityTargets,
+    bool preview,
+    SupportedPlatform? platform,
+    VerbosityLevel verbosity)
         {
             string repoName = communityTargets ? CommunityTargetsRepo : preview ? RefTargetsDevRepo : RefTargetsStableRepo;
 
             // NOTE: the query seems to be the opposite, it should be LESS THAN.
             // this has been reported to Cloudsmith and it's being checked. Maybe need to revisit this if changes are made in their API.
             // Because new stable releases are published on a regular basis and preview very rarely, we query for stable versions published in past month and preview versions published during the past 6 months.
-            string requestUri = $"{repoName}/?page_size=500&q=uploaded:'>{(preview ? "6" : "1")} month ago' {(platform.HasValue ? "AND tag:" + platform.Value : "")}";
+            // This is a paged query with page size 100 to improve performance.
+            string requestUri = $"{repoName}/?page_size=100&q=uploaded:'>{(preview ? "6" : "1")} month ago' {(platform.HasValue ? "AND tag:" + platform.Value : "")}";
 
             List<CloudSmithPackageDetail> targetPackages = [];
+            int page = 1;
+            bool morePages = true;
 
-            if (verbosity > VerbosityLevel.Normal)
+            while (morePages)
             {
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                OutputWriter.Write($"Listing {platform} targets from '{repoName}' repository");
-
-                if (!communityTargets)
+                if (verbosity > VerbosityLevel.Normal)
                 {
-                    if (preview)
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.Write($"Listing {platform} targets from '{repoName}' repository, page {page}...");
+
+                    if (!communityTargets)
                     {
-                        OutputWriter.Write(" [PREVIEW]");
+                        if (preview)
+                        {
+                            OutputWriter.Write(" [PREVIEW]");
+                        }
+                        else
+                        {
+                            OutputWriter.Write(" [STABLE]");
+                        }
                     }
-                    else
-                    {
-                        OutputWriter.Write(" [STABLE]");
-                    }
+
+                    OutputWriter.WriteLine("...");
                 }
 
-                OutputWriter.WriteLine("...");
-            }
+                HttpResponseMessage response = s_cloudsmithClient.GetAsync($"{requestUri}&page={page}").GetAwaiter().GetResult();
+                string responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-            HttpResponseMessage response = s_cloudsmithClient.GetAsync(requestUri).GetAwaiter().GetResult();
-
-            string responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-            // check for empty array 
-            if (responseBody == "[]")
-            {
-                if (verbosity > VerbosityLevel.Quiet)
+                if (responseBody == "[]" || responseBody.Contains("\"Invalid page.\""))
                 {
-                    OutputWriter.WriteLine("");
+                    morePages = false;
+                    continue;
                 }
 
-                // can't find this target
-                return targetPackages;
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                };
+
+                List<CloudSmithPackageDetailJson> deserializedPackages = JsonSerializer.Deserialize<List<CloudSmithPackageDetailJson>>(responseBody, options);
+                targetPackages.AddRange(from p in deserializedPackages
+                                        select new CloudSmithPackageDetail()
+                                        {
+                                            Name = p.Name,
+                                            Version = p.Version,
+                                            Platform = p.Tags?.Info is null
+                                                ? null
+                                                : (from t in p.Tags.Info
+                                                   where s_supportedPlatforms.Contains(t)
+                                                   select t).FirstOrDefault(),
+                                        });
+
+                page++;
             }
 
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-            };
-
-            List<CloudSmithPackageDetailJson> deserializedPackages = JsonSerializer.Deserialize<List<CloudSmithPackageDetailJson>>(responseBody, options);
-            targetPackages.AddRange(from p in deserializedPackages
-                                    select new CloudSmithPackageDetail()
-                                    {
-                                        Name = p.Name,
-                                        Version = p.Version,
-                                        Platform = p.Tags?.Info is null
-                                            ? null
-                                            : (from t in p.Tags.Info
-                                               where s_supportedPlatforms.Contains(t)
-                                               select t).FirstOrDefault(),
-                                    });
             return targetPackages;
         }
 
