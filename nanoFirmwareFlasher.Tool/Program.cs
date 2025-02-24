@@ -764,6 +764,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     try
                     {
                         _exitCode = await deploy.DeployAsync();
+                        operationPerformed = true;
                     }
                     catch (Exception ex)
                     {
