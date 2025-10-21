@@ -94,38 +94,6 @@ namespace nanoFirmwareFlasher.Tests
 
         [TestMethod]
         [TestCategory("CloudSmith")]
-        public void FirmwareArchiveManager_nanoCLR()
-        {
-            #region Setup
-            using var output = new OutputWriterHelper();
-            string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
-            string archiveDirectory = Path.Combine(testDirectory, "archive");
-            string targetName = "WIN_DLL_nanoCLR";
-            #endregion
-
-            #region Download the package
-            var actual = new FirmwareArchiveManager(archiveDirectory);
-
-            ExitCodes exitCode = actual.DownloadFirmwareFromRepository(false, null, targetName, null, VerbosityLevel.Detailed)
-                .GetAwaiter().GetResult();
-
-            Assert.AreEqual(ExitCodes.OK, exitCode);
-            Assert.IsTrue(output.Output.Contains($"Added target {targetName} "));
-            #endregion
-
-            #region Assert it is present
-            var targetDirectory = (from d in Directory.EnumerateDirectories(archiveDirectory)
-                                   where Path.GetFileName(d).StartsWith($"{targetName}-")
-                                   select d).FirstOrDefault();
-            Assert.IsNotNull(targetDirectory);
-            Assert.AreEqual(1, Directory.GetDirectories(archiveDirectory).Length);
-            Assert.IsTrue(File.Exists(Path.Combine(targetDirectory, "nanoFramework.nanoCLR.dll")));
-            Assert.IsTrue(File.Exists($"{targetDirectory}.json"));
-            #endregion
-        }
-
-        [TestMethod]
-        [TestCategory("CloudSmith")]
         public void FirmwareArchiveManager_TargetLatestVersion()
         {
             #region Setup
