@@ -157,7 +157,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // execute flash_id command and parse the result
             if (!RunEspTool(
-                "flash_id",
+                "flash-id",
                 false,
                 true,
                 hardResetAfterCommand && !requireFlashSize,
@@ -186,7 +186,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // try again now without the stub
                 // Also run this for the hardResetAfterCommand, as there is no way to use the tool for a reset only (esptool issue 910).
                 if (!RunEspTool(
-                    "flash_id",
+                    "flash-id",
                     true,
                     true,
                     hardResetAfterCommand,
@@ -198,7 +198,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             Match match = Regex.Match(messages,
-                                    $"(Detecting chip type... )(?<type>[ESP32\\-ICOCH6]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(Crystal is )(?<crystal>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
+                                    $"(Detecting chip type... )(?<type>[ESP32\\-ICOCH6]+)(.*?[\r\n]*)*(Chip type:          )(?<name>.*)(.*?[\r\n]*)*(Features:           )(?<features>.*)(.*?[\r\n]*)*(Crystal frequency:  )(?<crystal>.*)(.*?[\r\n]*)*(MAC:                )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
 
             if (!match.Success)
             {
@@ -260,14 +260,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     psRamSize = int.Parse(psRamMatch.Groups["size"].Value);
                     psramIsAvailable = PSRamAvailability.Yes;
                 }
-                else
-                {
-                    psramIsAvailable = PSRamAvailability.No;
-                }
             }
-            else
+            else if (_chipType == "esp32s2")
             {
-                //try to find out if PSRAM is present
+                // these devices usually require boot into bootloader which prevents running the app to get psram details.
+                psramIsAvailable = PSRamAvailability.Undetermined;
+            }
+
+            if (psramIsAvailable == PSRamAvailability.Undetermined)
+            {
+                // try to find out if PSRAM is present
                 psramIsAvailable = FindPSRamAvailable(out psRamSize, forcePsRamCheck);
             }
 
@@ -445,9 +447,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             int flashSize,
             bool hardResetAfterCommand = false)
         {
-            // execute read_flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
+            // execute read-flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
             if (!RunEspTool(
-                $"read_flash 0 0x{flashSize:X} \"{backupFilename}\"",
+                $"read-flash 0 0x{flashSize:X} \"{backupFilename}\"",
                 true,
                 false,
                 hardResetAfterCommand,
@@ -481,9 +483,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             int address,
             int size)
         {
-            // execute dump_mem  command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
+            // execute dump-mem command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
             if (!RunEspTool(
-                $"read_flash 0x{address:X} 0x{size:X} \"{backupFilename}\"",
+                $"read-flash 0x{address:X} 0x{size:X} \"{backupFilename}\"",
                 false,
                 true,
                 false,
@@ -515,7 +517,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             // execute erase_flash command and parse the result
             if (!RunEspTool(
-                "erase_flash",
+                "erase-flash",
                 false,
                 true,
                 false,
@@ -525,7 +527,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EraseEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, "(?<message>Chip erase completed successfully.*)(.*?\n)*");
+            Match match = Regex.Match(messages, "(?<message>Flash memory erased successfully.*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new EraseEsp32FlashException(messages);
@@ -545,7 +547,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // execute erase_flash command and parse the result
             if (!RunEspTool(
-                $"erase_region 0x{startAddress:X} 0x{length:X}",
+                $"erase-region 0x{startAddress:X} 0x{length:X}",
                 false,
                 false,
                 false,
@@ -555,7 +557,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EraseEsp32FlashException(messages);
             }
 
-            Match match = Regex.Match(messages, "(?<message>Erase completed successfully.*)(.*?\n)*");
+            Match match = Regex.Match(messages, "(?<message>Flash memory erased successfully.*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new EraseEsp32FlashException(messages);
@@ -595,7 +597,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 counter++;
             }
 
-            // if flash size was detected already use it for the --flash_size parameter; otherwise use the default "detect"
+            // if flash size was detected already use it for the --flash-size parameter; otherwise use the default "detect"
             string flashSize = _flashSize switch
             {
                 >= 0x100000 => $"{_flashSize / 0x100000}MB",
@@ -605,7 +607,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // execute write_flash command and parse the result; progress message can be found be searching for linefeed
             if (!RunEspTool(
-                $"write_flash --flash_size {flashSize} {partsArguments.ToString().Trim()}",
+                $"write-flash --flash-size {flashSize} {partsArguments.ToString().Trim()}",
                 false,
                 useStandardBaudrate,
                 true,
@@ -625,7 +627,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Run the esptool one time
         /// </summary>
         /// <param name="commandWithArguments">the esptool command (e.g. write_flash) incl. all arguments (if needed)</param>
-        /// <param name="noStub">if true --no-stub will be added; the chip_id, read_mac and flash_id commands can be quicker executes without uploading the stub program to the chip</param>
+        /// <param name="noStub">if true --no-stub will be added; the chip_id, read_mac and flash-id commands can be quicker executes without uploading the stub program to the chip</param>
         /// <param name="useStandardBaudRate">If <see langword="true"/> the tool will use the standard baud rate to connect to the chip.</param>
         /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
         /// <param name="progressTestChar">If not null: After each of this char a progress message will be printed out</param>
@@ -648,7 +650,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string noStubParameter = null;
             string baudRateParameter = null;
             string beforeParameter = null;
-            string afterParameter = hardResetAfterCommand ? "hard_reset" : "no_reset_stub";
+            string afterParameter = hardResetAfterCommand ? "hard-reset" : "no-reset";
 
             if (noStub)
             {
