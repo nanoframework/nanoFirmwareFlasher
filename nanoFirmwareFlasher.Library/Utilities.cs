@@ -16,8 +16,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         static Utilities()
         {
             // need this to be able to use ProcessStart at the location where the .NET Core CLI tool is running from
-            string codeBase = Assembly.GetExecutingAssembly().Location;
-            var fullPath = Path.GetFullPath(codeBase);
+            string codeBase = System.AppContext.BaseDirectory;
+            string fullPath = Path.GetFullPath(codeBase);
             ExecutingPath = Path.GetDirectoryName(fullPath);
         }
 

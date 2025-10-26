@@ -23,10 +23,12 @@ else {
 # make sure security doesn't block our request
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11"
 
+$tempPath = (Get-Item -LiteralPath ([System.IO.Path]::GetTempPath())).FullName
+
 #############
 # WIN version
-$urlWin = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-win64.zip"
-$outputWin = "$env:TEMP\esptool-$version-win64.zip"
+$urlWin = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-windows-amd64.zip"
+$outputWin = (Join-Path -Path $tempPath -ChildPath "esptool-$version-windows-amd64.zip")
 
 "Downloading esptool $version for Windows..." | Write-Host -ForegroundColor White -NoNewline
 (New-Object Net.WebClient).DownloadFile($urlWin, $outputWin)
@@ -34,8 +36,8 @@ $outputWin = "$env:TEMP\esptool-$version-win64.zip"
 
 #############
 # MAC version
-$urlMac = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-macos.zip"
-$outputMac = "$env:TEMP\esptool-$version-macos.zip"
+$urlMac = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-macos-amd64.tar.gz"
+$outputMac = (Join-Path -Path $tempPath -ChildPath "esptool-$version-macos-amd64.tar.gz")
 
 "Downloading esptool $version for MAC..." | Write-Host -ForegroundColor White -NoNewline
 (New-Object Net.WebClient).DownloadFile($urlMac, $outputMac)
@@ -43,8 +45,8 @@ $outputMac = "$env:TEMP\esptool-$version-macos.zip"
 
 ###############
 # Linux version
-$urlLinux = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-linux-amd64.zip"
-$outputLinux = "$env:TEMP\esptool-$version-linux-amd64.zip"
+$urlLinux = "https://github.com/espressif/esptool/releases/download/$version/esptool-$version-linux-amd64.tar.gz"
+$outputLinux = (Join-Path -Path $tempPath -ChildPath "esptool-$version-linux-amd64.tar.gz")
 
 "Downloading esptool for $version Linux..." | Write-Host -ForegroundColor White -NoNewline
 (New-Object Net.WebClient).DownloadFile($urlLinux, $outputLinux)
@@ -52,9 +54,12 @@ $outputLinux = "$env:TEMP\esptool-$version-linux-amd64.zip"
 
 # unzip files
 "Unzip files..." | Write-Host -ForegroundColor White -NoNewline
-Expand-Archive $outputWin -DestinationPath $env:TEMP -Force > $null
-Expand-Archive $outputMac -DestinationPath $env:TEMP  -Force > $null
-Expand-Archive $outputLinux -DestinationPath $env:TEMP  -Force > $null
+Expand-Archive $outputWin -DestinationPath $tempPath -Force > $null
+
+# tarballs need an extra extraction pass because Expand-Archive only supports zip
+& tar -xf $outputMac -C $tempPath
+& tar -xf $outputLinux -C $tempPath
+
 "OK" | Write-Host -ForegroundColor Green
 
 # clean destination folders
@@ -64,9 +69,9 @@ Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptool
 
 # copy files to the correct locations
 "Copying files to tools folders..." | Write-Host -ForegroundColor White -NoNewline
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-win64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve) -Force
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-macos\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac" -Resolve) -Force
-Move-Item -Path (Join-Path -Path $env:TEMP -ChildPath "esptool-linux-amd64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux" -Resolve) -Force
+Move-Item -Path (Join-Path -Path $tempPath -ChildPath "esptool-windows-amd64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolWin" -Resolve) -Force
+Move-Item -Path (Join-Path -Path $tempPath -ChildPath "esptool-macos-amd64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolMac" -Resolve) -Force
+Move-Item -Path (Join-Path -Path $tempPath -ChildPath "esptool-linux-amd64\**" -Resolve) -Destination (Join-Path -Path $PSScriptRoot -ChildPath "lib\esptool\esptoolLinux" -Resolve) -Force
 "OK" | Write-Host -ForegroundColor Green
 
 # cleanup files

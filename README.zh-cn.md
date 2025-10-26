@@ -1,4 +1,4 @@
-[![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoFirmwareFlasher?repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
+﻿[![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoFirmwareFlasher?repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
 
 ![nanoFramework logo](https://raw.githubusercontent.com/nanoframework/Home/main/resources/logo/nanoFramework-repo-logo.png)
 
@@ -39,7 +39,8 @@ Tool 'nanoff' (version '9.9.9') was successfully installed.
 
 ### 安装路径相关的问题
 
-:warning:已知在安装路径中包含变音符号（例如：法语中的重音符号（acute accent）用于表示元音应该发/ay/的音）时，使用nanoff为STM32设备运行命令会出现问题。这是由于STM32 Cube Programmer中的一个已知错误引起的。如果您的路径中存在这种情况，您必须将其安装在没有这些字符的位置。为了实现这一点，可以使用以下.NET Core CLI命令，在其中指定工具将安装的路径：
+> [!CAUTION]
+> 已知在安装路径中包含变音符号（例如：法语中的重音符号（acute accent）用于表示元音应该发/ay/的音）时，使用nanoff为STM32设备运行命令会出现问题。这是由于STM32 Cube Programmer中的一个已知错误引起的。如果您的路径中存在这种情况，您必须将其安装在没有这些字符的位置。为了实现这一点，可以使用以下.NET Core CLI命令，在其中指定工具将安装的路径：
 
 ```shell
 dotnet tool install nanoff --tool-path c:\a-plain-simple-path-to-install-the-tool
@@ -83,33 +84,48 @@ nanoff [command] [args]
 nanoff --help
 ```
 
-## ESP32 用法示例
+各平台的使用示例和常用选项列表：
 
-有多个ESP32固件可用，一些是专门为一个设备构建的。 请参阅 [列表](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards).
+- [ESP32](#esp32-使用示例)
+- [STM32](#stm32-使用示例)
+- [TI CC13x2](#ti-cc13x2-使用示例)
+- [Silabs Giant Gecko](#silabs-giant-gecko-使用示例)
+- [普通连接使用示例](#普通连接使用示例)
+- [常用选项](#常用选项)
 
-ESP32_PSRAM_REV0固件将只适用于ESP32系列的任何变体，带或不带pram，以及所有silicon版。  
-你可以阅读更多关于不同固件之间的差异 [链接](https://docs.nanoframework.NET/content/reference-targets/esp32.html).
+请注意，如果平台支持这些操作，可以组合多个选项，例如在同一次执行中更新 CLR 并部署托管应用程序。
 
-FEATHER_S2固件将适用于几乎所有的ESP32-S2系列的变体，暴露嵌入式USB CDC引脚。  
+## ESP32 使用示例
 
-你可以阅读更多关于不同固件之间的差异 [链接](https://docs.nanoframework.NET/content/reference-targets/esp32.html).
+有多种可用的 ESP32 映像，有些是专门为特定目标构建的。请查看[列表](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards)。您还需要知道设备使用的 COM 端口。请查看[如何在 Windows 上找到设备的 COM 端口](#finding-the-device-com-port-on-windows)。或者，您也可以列出可用的 COM 端口。如果先在没有设备的情况下列出端口，然后插入设备，显示的新增端口就是要刷写的设备的端口。此方法适用于所有操作系统：
 
-当使用'nanoff'时，你可以添加'——target MY_TARGET_NAME_HERE'来使用特定的固件。 如果，相反，您只指定平台与'——platform esp32' 'nanoff'将自动选择最合适的固件，这取决于所连接的设备的功能。 类似于这个的输出将会显示出什么固件将要被使用:  
-
-```shell
-No target name was provided! Using 'ESP32_REV0' based on the device characteristics.
+```console
+nanoff --listports
 ```
 
->注意:请注意，对于ESP32-S2，不可能安全地确定使用什么是最好的固件。 由于这个原因，它必须提供适当的设备名称与'——target MY_TARGET_NAME_HERE'。  
+ESP32_PSRAM_REV0 映像适用于任何变体的 ESP32 系列，无论是否带有 PSRAM，并且适用于所有硅片版本。
+您可以在[这里](https://docs.nanoframework.net/content/reference-targets/esp32.html)阅读有关各种映像之间差异的更多信息。
 
-部分ESP32单板进入引导加载模式存在问题。 这通常可以通过按住BOOT/FLASH按钮来解决。  
-如果' nanoff '检测到这种情况，会显示以下警告:  
+FEATHER_S2 映像适用于几乎所有暴露嵌入式 USB CDC 引脚的 ESP32-S2 系列变体。
+您可以在[这里](https://docs.nanoframework.net/content/reference-targets/esp32.html)阅读有关各种映像之间差异的更多信息。
 
-```shell
-*** Hold down the BOOT/FLASH button in ESP32 board ***
+使用 `nanoff` 时，您可以添加 `--target MY_TARGET_NAME_HERE` 以使用特定映像。或者，您只需指定平台 `--platform esp32`，`nanoff` 将根据连接设备的功能选择最合适的映像。输出将类似于以下内容，以告知即将使用的映像：
+
+```console
+未提供目标名称！根据设备特性使用 'ESP32_REV0'。
 ```
 
-:warning: 要更新FeatherS2、TinyS2和一些S3模块，您需要将开发板置于下载模式。具体操作方法是按住[BOOT]按钮，单击[RESET]按钮，然后松开[BOOT]按钮。  
+> 注意：请注意，对于 ESP32-S2 目标，无法安全地确定最佳映像。因此，必须提供适当的目标名称 `--target MY_TARGET_NAME_HERE`。
+
+一些 ESP32 开发板在进入引导加载程序模式时有问题。通常可以通过按住开发板上的 BOOT/FLASH 按钮来解决此问题。
+如果 `nanoff` 检测到这种情况，将显示以下警告：
+
+```console
+*** 按住 ESP32 开发板上的 BOOT/FLASH 按钮 ***
+```
+
+> **警告：**
+> 要更新 FeatherS2、TinyS2 和一些 S3 模块，开发板需要通过按住 [BOOT]、点击 [RESET] 然后释放 [BOOT] 进入下载模式。  
 
 ### 更新ESP32版本的设备器固件
 
@@ -157,6 +173,14 @@ nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\
 
 ```shell
 nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
+```
+
+### 跳过备份配置分区
+
+在更新连接到 COM31 的 ESP32 目标的固件时跳过备份配置分区。
+
+```shell
+nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --nobackupconfig
 ```
 
 ## STM32用法示例
@@ -239,6 +263,94 @@ nanoff --update --target TI_CC1352R1_LAUNCHXL --preview
 nanoff --installxdsdrivers
 ```
 
+## Silabs Giant Gecko 使用示例
+
+### 更新特定 Silabs 目标的固件
+
+将 SL_STK3701A 目标的固件更新到最新版本。
+
+```console
+nanoff --update --target SL_STK3701A
+```
+
+### 从本地文件更新 Silabs 目标的固件
+
+使用本地固件文件（例如从构建中生成的文件）更新 Silabs 目标的固件。
+该文件必须是包含有效 Booter 和 CLR 的二进制文件。不会对文件内容进行任何检查或验证。
+
+```console
+nanoff --update --platform efm32 --binfile "C:\nf-interpreter\build\nanobooter-nanoclr.bin" --address 0x0
+```
+
+### 向 SL_STK3701A 目标部署托管应用程序
+
+向 SL_STK3701A 目标部署托管应用程序，该目标的部署区域位于 0x000EE000 闪存地址，并在刷写后重置 MCU。
+
+> 注意：部署映像的二进制文件可以在 Visual Studio 项目成功构建后的 Release 或 Debug 文件夹中找到。该文件包含部署托管应用程序到目标所需的一切（即应用程序可执行文件和所有引用的库和程序集）。
+
+```console
+nanoff --target SL_STK3701A --deploy --image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin" --address 0x000EE000
+```
+
+### 更新 SL_STK3701A 的固件并部署托管应用程序
+
+使用 J-Link 连接将 SL_STK3701A 目标的固件更新到最新可用版本，并部署托管应用程序。
+您必须指定托管应用程序的路径。
+此示例使用 Visual Studio 构建任何 nanoFramework C# 应用程序时生成的二进制格式文件。由于它是二进制文件，您还必须指定部署区域的闪存地址（此处为 0x000EE000，请注意十六进制格式）。
+
+```console
+nanoff --update --target SL_STK3701A --binfile "c:\dev\my awesome app\bin\debug\my_awesome_app.bin" --address 0x000EE000
+```
+
+### 列出所有通过 J-Link 连接的 Silabs 设备
+
+这对于列出所有通过 J-Link 连接的 Silabs 设备非常有用。
+
+```console
+nanoff --listjlink
+```
+
+## 普通连接使用示例
+
+可以使用与 Visual Studio 连接相同的连接来更新 nano 设备，这意味着不需要专门的连接（如 JTAG 或 JLink）。这仅在设备之前已刷写了工作 nanoFramework 固件的情况下才可能。
+
+### 更新 nano 设备的 CLR
+
+将连接到串行端口的 nano 设备的 CLR 更新到最新可用版本。
+这将找到连接设备的最新可用固件并更新 CLR。
+
+```console
+nanoff --nanodevice --update --serialport COM9
+```
+
+### 部署托管应用程序
+
+要部署（或更新）托管应用程序，必须提供托管应用程序的路径。
+此示例使用 Visual Studio 构建任何 nanoFramework C# 应用程序时生成的二进制格式文件。由于可以从连接的设备中检索所有必需的详细信息，因此不需要其他配置。
+
+```console
+nanoff --nanodevice --deploy --serialport COM9 --image "c:\dev\my awesome app\bin\debug\my_awesome_app.bin"
+```
+
+### 从本地文件更新 nano 设备的 CLR
+
+使用本地固件文件（例如从构建中生成的文件）更新 nano 设备的固件。
+该文件必须是包含有效 nanoCLR 的二进制文件。不会对文件内容进行任何检查或验证。
+
+```console
+nanoff --nanodevice --update --serialport COM9 --clrfile "C:\nf-interpreter\build\nanoclr.bin"
+```
+
+### 获取 nano 设备的详细信息
+
+获取连接到串行端口的 nano 设备的详细信息。
+
+```console
+nanoff --nanodevice --devicedetails --serialport COM9
+```
+
+## 常用选项
+
 ### 预先检查设备是否与连接的设备相匹配
 
 该工具会尽最大努力检查所请求的设备是否符合已连接的设备。  
@@ -281,6 +393,86 @@ nanoff --listboards --platform stm32
 ```
 
 如果你只使用'——listtargets'开关，你会得到所有设备的所有稳定包的列表。  
+
+## 部署文件到设备存储
+
+一些设备如 ESP32、Orgpal 和其他一些设备有可用的存储空间。文件可以部署到这个存储空间中。你需要使用 `filedeployment` 参数指向一个 JSON 文件，在刷写设备时部署文件：
+
+```console
+nanoff --target XIAO_ESP32C3 --update --masserase --serialport COM21 --filedeployment C:\path\deploy.json
+```
+
+JSON 文件中可以包含一个可选的 `SerialPort`，以防上传文件的端口与刷写设备的端口不同或未在主命令行中指定，并且必须包含一个 `Files` 条目的列表。每个条目必须包含 `DestinationFilePath`，即目标完整路径文件名，以及 `SourceFilePath`，即要部署的内容的源文件路径；否则，要删除文件时，必须包含要部署的源文件的完整路径和文件名：
+
+```json
+{
+   "serialport":"COM42",
+   "files": [
+      {         
+         "DestinationFilePath": "I:\\TestFile.txt",
+         "SourceFilePath": "C:\\tmp\\NFApp3\\NFApp3\\TestFile.txt"
+      },
+      {
+         "DestinationFilePath": "I:\\NoneFile.txt"
+      },
+      {
+         "DestinationFilePath": "I:\\wilnotexist.txt",
+         "SourceFilePath": "C:\\WRONGPATH\\TestFile.txt"
+      }
+   ]
+}
+```
+
+如果你只想部署文件而不进行其他操作，你可以只指定：
+
+```console
+nanoff --filedeployment C:\path\deploy.json
+```
+
+在这种情况下，`SerialPort` 必须在 JSON 文件中存在。
+
+> **注意：**
+> 如果存储中已经存在文件，它将被新文件替换。
+>
+> 如果文件不存在且请求删除，则不会发生任何事情，会显示警告。
+>
+> 如果由于某种问题无法上传文件，其他文件的部署将继续，并会显示错误。
+
+## 清除缓存位置
+
+如果需要，可以清除存储在本地缓存中的固件包。
+另外，缓存位置是用户文件夹中的目录 `-nanoFramework\fw_cache`。
+
+当命令中包含此选项时，不会处理其他选项。
+
+```console
+nanoff --clearcache
+```
+
+## 固件存档
+
+默认情况下，_nanoff_ 使用在线仓库来查找固件包。也可以使用本地目录作为固件的来源。可以通过 _--updatearchive_ 选项来填充固件存档：
+
+```console
+nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
+nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
+```
+
+查看已存档的固件列表：
+
+```console
+nanoff --listtargets --fromarchive --archivepath c:\...\firmware
+```
+
+要在设备上安装固件，使用与平常相同的命令行参数，但添加 _--fromarchive_ 和 _--archivepath_：
+
+```console
+nanoff --nanodevice --update --serialport COM9 --fromarchive --archivepath c:\...\firmware
+```
+
+## 跳过版本检查
+
+默认情况下，nanoff 会检查是否发布了新版本的工具。如果不需要，可以添加选项 _--suppressnanoffversioncheck_ 来跳过检查。
 
 ## Exit codes
 

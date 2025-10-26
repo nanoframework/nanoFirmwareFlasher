@@ -1,7 +1,5 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -23,6 +21,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="targetName">The name of the target.</param>
         /// <param name="fwVersion">The firmware version to send.</param>
         /// <param name="preview">Whether preview packages should be used.</param>
+        /// <param name="archiveDirectoryPath">Path to the archive directory where all targets are located. Pass <c>null</c> if there is no archive.
+        /// If not <c>null</c>, the package will always be retrieved from the archive and never be downloaded.</param>
         /// <param name="updateFw">Update firmware to latest version.</param>
         /// <param name="applicationPath">Path to the directory where the files are located.</param>
         /// <param name="deploymentAddress">The start memory address.</param>
@@ -36,6 +36,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string targetName,
             string fwVersion,
             bool preview,
+            string archiveDirectoryPath,
             bool updateFw,
             string applicationPath,
             string deploymentAddress,
@@ -66,7 +67,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // need to download update package?
             if (updateFw)
             {
-                var operationResult = await firmware.DownloadAndExtractAsync();
+                ExitCodes operationResult = await firmware.DownloadAndExtractAsync(archiveDirectoryPath);
                 if (operationResult != ExitCodes.OK)
                 {
                     return operationResult;
@@ -107,8 +108,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            var connectedStDfuDevices = StmDfuDevice.ListDevices();
-            var connectedStJtagDevices = StmJtagDevice.ListDevices();
+            List<(string serial, string device)> connectedStDfuDevices = StmDfuDevice.ListDevices();
+            List<string> connectedStJtagDevices = StmJtagDevice.ListDevices();
 
             if (updateInterface != Interface.None)
             {
@@ -179,23 +180,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (fitCheck)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
 
-                    Console.WriteLine("");
-                    Console.WriteLine("It's not possible to perform image fit check for devices connected with DFU");
-                    Console.WriteLine("");
+                    OutputWriter.WriteLine("");
+                    OutputWriter.WriteLine("It's not possible to perform image fit check for devices connected with DFU");
+                    OutputWriter.WriteLine("");
 
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
-                    Console.WriteLine($"Connected to DFU device with ID {dfuDevice.DfuId}");
-                    Console.WriteLine("");
-                    Console.WriteLine($"{dfuDevice}");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.WriteLine($"Connected to DFU device with ID {dfuDevice.DfuId}");
+                    OutputWriter.WriteLine("");
+                    OutputWriter.WriteLine($"{dfuDevice}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 // set verbosity
@@ -255,12 +256,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosity >= VerbosityLevel.Normal)
                 {
-                    Console.WriteLine("");
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
-                    Console.WriteLine("");
-                    Console.WriteLine($"{jtagDevice}");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.WriteLine("");
+                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                    OutputWriter.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
+                    OutputWriter.WriteLine("");
+                    OutputWriter.WriteLine($"{jtagDevice}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 if (fitCheck)
@@ -309,16 +310,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 string.IsNullOrEmpty(jtagDevice.BoardName)
                 || jtagDevice.BoardName == "--")
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
 
-                Console.WriteLine("");
-                Console.WriteLine("******************************************* WARNING ************************ *************");
-                Console.WriteLine("It wasn't possible to validate if the firmware image that's about to be used works on the");
-                Console.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
-                Console.WriteLine("******************************************************************************************");
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
+                OutputWriter.WriteLine("******************************************* WARNING ************************ *************");
+                OutputWriter.WriteLine("It wasn't possible to validate if the firmware image that's about to be used works on the");
+                OutputWriter.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
+                OutputWriter.WriteLine("******************************************************************************************");
+                OutputWriter.WriteLine("");
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
             else
             {
@@ -327,16 +328,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (!targetName.Contains(boardName))
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
 
-                    Console.WriteLine("");
-                    Console.WriteLine("******************************************* WARNING ***************************************");
-                    Console.WriteLine("It seems that the firmware image that's about to be used isn't the appropriate one for the");
-                    Console.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
-                    Console.WriteLine("*******************************************************************************************");
-                    Console.WriteLine("");
+                    OutputWriter.WriteLine("");
+                    OutputWriter.WriteLine("******************************************* WARNING ***************************************");
+                    OutputWriter.WriteLine("It seems that the firmware image that's about to be used isn't the appropriate one for the");
+                    OutputWriter.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
+                    OutputWriter.WriteLine("*******************************************************************************************");
+                    OutputWriter.WriteLine("");
 
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
             }
         }
@@ -364,7 +365,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
+                OutputWriter.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
             }
 
             // set verbosity
@@ -397,7 +398,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbosity >= VerbosityLevel.Normal)
             {
-                Console.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
+                OutputWriter.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
             }
 
             // set verbosity
@@ -417,7 +418,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                Console.WriteLine("No driver installation needed on MacOS");
+                OutputWriter.WriteLine("No driver installation needed on MacOS");
                 return ExitCodes.OK;
             }
 
@@ -445,9 +446,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     if (verbosityLevel >= VerbosityLevel.Normal)
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("OK");
-                        Console.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.ForegroundColor = ConsoleColor.Green;
+                        OutputWriter.WriteLine("OK");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
                     }
 
                     return ExitCodes.OK;
@@ -455,11 +456,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosityLevel >= VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write("Calling installer for STM32 DFU drivers...");
+                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                    OutputWriter.Write("Calling installer for STM32 DFU drivers...");
                 }
 
-                var infPath = Path.Combine(Utilities.ExecutingPath, "stlink\\DFU_Driver\\Driver\\STM32Bootloader.inf");
+                string infPath = Path.Combine(Utilities.ExecutingPath, "stlink\\DFU_Driver\\Driver\\STM32Bootloader.inf");
 
                 Process installerCli = new Process
                 {
@@ -505,9 +506,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosityLevel >= VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("OK");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine("OK");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 // always true as the drivers will be installed depending on user answering yes to elevate prompt
@@ -518,8 +519,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (verbosityLevel >= VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ERROR");
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine("ERROR");
                 }
 
                 throw new Exception(ex.Message);
@@ -536,23 +537,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                Console.WriteLine("No driver installation needed on MacOS");
+                OutputWriter.WriteLine("No driver installation needed on MacOS");
                 return ExitCodes.OK;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Driver installation for JTAG no supported on Linux. Please refer to the STM32 website to get the specific drivers.");
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.WriteLine("Driver installation for JTAG no supported on Linux. Please refer to the STM32 website to get the specific drivers.");
                 return ExitCodes.OK;
             }
 
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
             if (verbosityLevel >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.Write("Calling installer for STM32 JTAG drivers...");
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                OutputWriter.Write("Calling installer for STM32 JTAG drivers...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
             try
@@ -585,9 +586,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (verbosityLevel >= VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("OK");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine("OK");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 // always true as the drivers will be installed depending on user answering yes to elevate prompt
@@ -598,9 +599,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (verbosityLevel >= VerbosityLevel.Normal)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ERROR");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine("ERROR");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 throw new Exception(ex.Message);

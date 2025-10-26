@@ -1,13 +1,11 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using nanoFramework.Tools.Debugger;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using nanoFramework.Tools.Debugger;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -47,10 +45,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         }
 
-        internal new System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync()
+        internal new System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
         {
             // perform download and extract
-            return base.DownloadAndExtractAsync();
+            return base.DownloadAndExtractAsync(archiveDirectoryPath);
         }
     }
 }

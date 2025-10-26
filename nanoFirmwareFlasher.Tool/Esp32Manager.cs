@@ -1,11 +1,10 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using nanoFramework.Tools.Debugger.NFDevice;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -16,6 +15,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     {
         private readonly Options _options;
         private readonly VerbosityLevel _verbosityLevel;
+        private const int AccessSerialPortTimeout = 3000;
 
         public Esp32Manager(Options options, VerbosityLevel verbosityLevel)
         {
@@ -42,6 +42,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E6001;
             }
 
+            ExitCodes result = ExitCodes.E6002;
+
+            using (var access = GlobalExclusiveDeviceAccess.TryGet(_options.SerialPort, AccessSerialPortTimeout))
+            {
+                if (access is null)
+                {
+                    result = ExitCodes.E6002;
+                }
+                else
+                {
+                    result = await DoProcessAsync();
+                }
+            }
+
+            return result;
+        }
+
+        private async Task<ExitCodes> DoProcessAsync()
+        {
             EspTool espTool;
 
             try
@@ -59,6 +78,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E4005;
             }
 
+            bool backupFlash = !string.IsNullOrEmpty(_options.BackupPath) ||
+               !string.IsNullOrEmpty(_options.BackupFile);
+
             Esp32DeviceInfo esp32Device;
 
             if (espTool.ComPortAvailable)
@@ -67,7 +89,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _options.TargetName,
                     // if partition table size is specified, no need to get flash size
                     _options.Esp32PartitionTableSize == null,
-                    _options.CheckPsRam);
+                    _options.CheckPsRam,
+                    (_options.DeviceDetails || _options.IdentifyFirmware) && !backupFlash
+                    );
             }
             else
             {
@@ -78,13 +102,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (_verbosityLevel >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Cyan;
+                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
-                Console.WriteLine("");
-                Console.WriteLine($"Connected to:");
-                Console.WriteLine($"{esp32Device}");
+                OutputWriter.WriteLine("");
+                OutputWriter.WriteLine($"Connected to:");
+                OutputWriter.WriteLine($"{esp32Device}");
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
 
                 // if this is a PICO and baud rate is not 115200 or 1M5, operations will most likely fail
                 // warn user about this
@@ -93,16 +117,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     && (_options.BaudRate != 115200
                         && _options.BaudRate != 1500000))
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
 
-                    Console.WriteLine("");
-                    Console.WriteLine("****************************** WARNING ******************************");
-                    Console.WriteLine("The connected device it's an ESP32 PICO which can be picky about the ");
-                    Console.WriteLine("baud rate used. Recommendation is to use --baud 115200 ");
-                    Console.WriteLine("*********************************************************************");
-                    Console.WriteLine("");
+                    OutputWriter.WriteLine("");
+                    OutputWriter.WriteLine("****************************** WARNING ******************************");
+                    OutputWriter.WriteLine("The connected device it's an ESP32 PICO which can be picky about the ");
+                    OutputWriter.WriteLine("baud rate used. Recommendation is to use --baud 115200 ");
+                    OutputWriter.WriteLine("*********************************************************************");
+                    OutputWriter.WriteLine("");
 
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
             }
 
@@ -112,11 +136,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // backup requested
             // Should backup be an unique operation => exit whatever success or not ?
             // In this case, should find how manage a NoOperationPerformedException info
-            if (!string.IsNullOrEmpty(_options.BackupPath) ||
-               !string.IsNullOrEmpty(_options.BackupFile))
+            if (backupFlash)
             {
                 // backup path specified, backup deployment
-                var exitCode = Esp32Operations.BackupFlash(espTool, esp32Device, _options.BackupPath, _options.BackupFile, _verbosityLevel);
+                var exitCode = Esp32Operations.BackupFlash(
+                    espTool,
+                    esp32Device,
+                    _options.BackupPath,
+                    _options.BackupFile,
+                    _verbosityLevel,
+                    _options.DeviceDetails || _options.IdentifyFirmware);
 
                 if (exitCode != ExitCodes.OK)
                 {
@@ -135,7 +164,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool updateAndDeploy = false;
 
             // update operation requested?
-            if (_options.Update)
+            if (_options.Update || _options.IdentifyFirmware)
             {
                 // write flash
                 var exitCode = await Esp32Operations.UpdateFirmwareAsync(
@@ -145,15 +174,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     true,
                     _options.FwVersion,
                     _options.Preview,
+                    _options.IdentifyFirmware,
+                    _options.FromFwArchive ? _options.FwArchivePath : null,
                     _options.DeploymentImage,
                     null,
                     _options.ClrFile,
                     !_options.FitCheck,
                     _options.MassErase,
                     _verbosityLevel,
-                    _options.Esp32PartitionTableSize);
+                    _options.Esp32PartitionTableSize,
+                    _options.NoBackupConfig);
 
-                if (exitCode != ExitCodes.OK)
+                if (exitCode != ExitCodes.OK || _options.IdentifyFirmware)
                 {
                     // done here
                     return exitCode;

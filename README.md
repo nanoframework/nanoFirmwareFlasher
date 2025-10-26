@@ -1,4 +1,4 @@
-[![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoFirmwareFlasher?repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
+﻿[![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_apis/build/status/nanoFirmwareFlasher?repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main)](https://dev.azure.com/nanoframework/nanoFirmwareFlasher/_build/latest?definitionId=45&repoName=nanoframework%2FnanoFirmwareFlasher&branchName=main) [![NuGet](https://img.shields.io/nuget/v/nanoff.svg?label=NuGet&style=flat&logo=nuget)](https://www.nuget.org/packages/nanoff/) [![Discord](https://img.shields.io/discord/478725473862549535.svg?logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/gCyBu8T)
 
 ![nanoFramework logo](https://raw.githubusercontent.com/nanoframework/Home/main/resources/logo/nanoFramework-repo-logo.png)
 
@@ -43,7 +43,8 @@ Tool 'nanoff' (version '9.9.9') was successfully installed.
 
 ### Install path issues
 
-:warning: That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer. 
+> [!CAUTION]
+> That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer.
 If that's the case with your user path, for example, you have to install it in a location that does have those.
 To accomplish that, use the following .NET Core CLI command on which the path where the tool will be installed is specified:
 
@@ -129,7 +130,8 @@ In case `nanoff` detects this situation the following warning is shown:
 *** Hold down the BOOT/FLASH button in ESP32 board ***
 ```
 
-:warning: To update FeatherS2, TinyS2 and some S3 modules, the board needs to be put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
+> [!WARNING]
+> To update FeatherS2, TinyS2 and some S3 modules, the board needs to be put in _download mode_ by holding [BOOT], clicking [RESET] and then releasing [BOOT].
 
 ### Update the firmware of an ESP32 target
 
@@ -177,6 +179,14 @@ This example uses the binary format file that you can find when you are building
 
 ```console
 nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
+```
+
+### Skip backing up configuration partition
+
+To skip backing up the configuration partition when updating the firmware of an ESP32 target connected to COM31.
+
+```console
+nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --nobackupconfig
 ```
 
 ## STM32 usage examples
@@ -275,7 +285,7 @@ To update the firmware of a Silabs target with a local firmware file (for exampl
 This file has to be a binary file with a valid Booter and CLR from a build. No checks or validations are performed on the file(s) content.
 
 ```console
-nanoff --update --platform gg11 --binfile "C:\nf-interpreter\build\nanobooter-nanoclr.bin" --address 0x0
+nanoff --update --platform efm32 --binfile "C:\nf-interpreter\build\nanobooter-nanoclr.bin" --address 0x0
 ```
 
 ### Deploy a managed application to a SL_STK3701A target
@@ -493,6 +503,245 @@ In that case, the `SerialPort` must be present in the JSON file.
 >
 > If a file can't be uploaded because of a problem, the deployment of the other files will continue and an error will be displayed.
 
+## Deploy Wireless, Wireless Access Point, Ethernet configuration and Certificates
+
+You can upload Wireless, Wireless Access Point, Ethernet configurations and Certificates during the flash operation so that your device is ready to go and those elements do not need to be stored in the code or beforehand in the internal storage. Depending on your device, some options may not be available. So check out what is available on your device before trying to upload them. The `--networkdeployment` can be combined with any other option. 
+
+```console
+nanoff --networkdeployment C:\path\deploy.json
+```
+
+The json file can contains various configurations and thet are all optional:
+
+```json
+{
+   "serialport":"COM42",
+   "WirelessClient": { },
+   "WirelessAccessPoint": { },
+   "Ethernet": { },
+   // Only one or the other can be used
+   "DeviceCertificates": "base64",
+   "DeviceCertificatesPath": "c:\\pathto\\cert.pem",
+   // Only one or the other can be used
+   "CACertificates": "base64",
+   "CACertificatesPath": "c:\\pathto\\certca.pem"
+}
+```
+
+The optional `SerialPort` can be used in case the port to upload the configurations is different than the one to flash the device or not specified in the main command line like in the previous example.
+
+Here is a minimal example setting up a Wireless Client and a Wireless Access Point configuration at the same time:
+
+```json
+{"SerialPort":"COM10","WirelessClient":{"SSID":"MySSID","Password":"the_secret_password"},"WirelessAccessPoint":{"SSID":"nanoDevice","Password":null,"IPv4Address":"192.168.10.1","IPv4NetMAsk":"255.255.255.0","Authentication":"None"}}
+```
+
+See the section further to understand what are the mandatory fields and which ones are optionals.
+
+### Wireless Client options
+
+The `WirelessClient` object represents the wireless configuration settings for a network deployment. It contains the following properties:
+
+- **Ssid**:
+   - Type: `string`
+   - Format: 32 characters maximum.
+   - Mandatory
+
+- **Password**:
+   - Type: `string`
+   - Format: 64 characters maximum 
+   - Default: empty string meaning no password.
+   - Optional
+
+- **Authentication**
+   - Type: `string`
+   - Possible values (case insensitive): `EAP, PEAP, WCN, OPEN, SHARED, WEP, WPA, WPA2, NONE`
+   - Description: the authentication type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **Encryption**
+   - Type `string`
+   - Possible values (case insensitive): `WEP, WPA, WPA2, WPA_PSK, WPA2_PSK2, Certificate, None`
+   - Description: the encryption type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **ConfigurationOption**
+   - Type: `string`
+   - Possible values (case insensitive): `None, Disable, Enable, AutoConnect, SmartConfig`
+   - Description: the configuration option.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **RadioType**
+   - Type: `string`
+   - Possible values (case insensitive): `802.11a, 802.11b, 802.11g, 802.11n`
+   - Description: the radio type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **DhcpEnabled**: 
+  - Type: `bool`
+  - Default: true
+  - Optional
+  - Description: a value indicating whether DHCP is enabled. If set to `false`, the `IPv4Address` and `IPv4NetMask` need to be set up.
+
+- **AutomaticDNS**: 
+  - Type: `bool`
+  - Default: true
+  - Optional
+  - Description: a value indicating whether automatic DNS is enabled. If set to `false`, `Ipv4DNSAddress1` needs at least to be set.
+
+- **IPv4Address**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 address. This needs to be set if `DhcpEnabled` is `false`.
+
+- **IPv4NetMask**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 netmask. This needs to be set if `DhcpEnabled` is `false`.
+
+- **IPv4Gateway**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 gateway.
+
+- **IPv4DNSAddress1**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the primary IPv4 DNS address.
+
+- **IPv4DNSAddress2**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the secondary IPv4 DNS address.
+
+- **MacAddress**: 
+  - Type: `string`
+  - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
+  - Description: the MAC address.
+  - Note: some devivces do not allow to be set up, please check your device first.
+
+### Wireless Access Point options
+
+- **Ssid**:
+   - Type: `string`
+   - Format: 32 characters maximum.
+   - Mandatory
+
+- **Password**:
+   - Type: `string`
+   - Format: 64 characters maximum 
+   - Default: empty string meaning no password.
+   - Optional
+
+- **Authentication**
+   - Type: `string`
+   - Possible values (case insensitive): `EAP, PEAP, WCN, OPEN, SHARED, WEP, WPA, WPA2, NONE`
+   - Description: the authentication type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **Encryption**
+   - Type `string`
+   - Possible values (case insensitive): `WEP, WPA, WPA2, WPA_PSK, WPA2_PSK2, Certificate, None`
+   - Description: the encryption type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **ConfigurationOption**
+   - Type: `string`
+   - Possible values (case insensitive): `None, Disable, Enable, AutoConnect, SmartConfig`
+   - Description: the configuration option.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **RadioType**
+   - Type: `string`
+   - Possible values (case insensitive): `802.11a, 802.11b, 802.11g, 802.11n`
+   - Description: the radio type.
+   - Default: if nothing is specified, the internal value is not going to be changed
+
+- **IPv4Address**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 address.
+  - Mandatory.
+
+- **IPv4NetMask**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 netmask.
+  - Mandatory.
+
+- **IPv4Gateway**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 gateway.
+  - Default: the `IPv4Address` value
+
+- **IPv4DNSAddress1**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the primary IPv4 DNS address.
+
+- **IPv4DNSAddress2**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the secondary IPv4 DNS address.
+
+- **MacAddress**: 
+  - Type: `string`
+  - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
+  - Description: the MAC address.
+  - Note: some devivces do not allow to be set up, please check your device first.
+
+### Ethernet options
+
+Represents an Ethernet configuration and here are the properties:
+
+- **DhcpEnabled**: 
+  - Type: `bool`
+  - Default: true
+  - Optional
+  - Description: a value indicating whether DHCP is enabled. If set to `false`, the `IPv4Address` and `IPv4NetMask` need to be set up.
+
+- **AutomaticDNS**: 
+  - Type: `bool`
+  - Default: true
+  - Optional
+  - Description: a value indicating whether automatic DNS is enabled. If set to `false`, `Ipv4DNSAddress1` needs at least to be set.
+
+- **IPv4Address**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 address. This needs to be set if `DhcpEnabled` is `false`.
+
+- **IPv4NetMask**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 netmask. This needs to be set if `DhcpEnabled` is `false`.
+
+- **IPv4Gateway**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the IPv4 gateway.
+
+- **IPv4DNSAddress1**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the primary IPv4 DNS address.
+
+- **IPv4DNSAddress2**: 
+  - Type: `string`
+  - Format: `1.2.3.4` where 1, 2, 3 and 4 are bytes with values from 0 to 255.
+  - Description: the secondary IPv4 DNS address.
+
+- **MacAddress**: 
+  - Type: `string`
+  - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
+  - Description: the MAC address.
+  - Note: some devivces do not allow to be set up, please check your device first.
+
+### Device and CA Certificates
+
+You can either **base64** encode your certificates (`DeviceCertificates` and `CACertificates`) or provide a path on a certificate file (`DeviceCertificatesPath` and `CACertificatesPath`). Note that the certificate file can contain multiple certificates one after the other. This is especially usefull for CA certificates.
+
 ## Clear cache location
 
 If needed one can clear the local cache from the firmware packages that are stored there.
@@ -503,6 +752,31 @@ When this option is included in the command no other options are processed.
 ```console
 nanoff --clearcache
 ```
+
+## Firmware archive
+
+By default, _nanoff_ uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the _--updatearchive_ option:
+
+```console
+nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
+nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
+```
+
+For a list of archived firmware:
+
+```console
+nanoff --listtargets --fromarchive --archivepath c:\...\firmware
+```
+
+To install firmware on a device, use the same command line arguments as usual, but add _--fromarchive_ and _--archivepath_:
+
+```console
+nanoff --nanodevice --update --serialport COM9 --fromarchive --archivepath c:\...\firmware
+```
+
+## Bypass version check
+
+By default nanoff checks whether a new version of the tool has been published. If that is not necessary, the option _--suppressnanoffversioncheck_ can be added to suppress the check.
 
 ## Exit codes
 
@@ -533,6 +807,6 @@ The **nanoFramework** firmware flasher tool is licensed under the [MIT license](
 This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behaviour in our community.
 For more information see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct).
 
-### .NET Foundation
+### _NET Foundation_
 
-This project is supported by the [.NET Foundation](https://dotnetfoundation.org).
+This project is supported by the [_NET Foundation_](https://dotnetfoundation.org).

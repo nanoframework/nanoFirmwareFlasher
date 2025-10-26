@@ -1,0 +1,6 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Runtime.CompilerServices;
+
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("nanoFirmwareFlasher.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100bd9f75c68f58d8ca29113a250a8b5b377f3396d08e702b0a494485e88974715f20313841f574f817637327739f6543123585c9875fe8960eafaaeec8588ca5f09543664baa2867ab4c25d1fc819e925939303a535cf7e2ac9faf276c712a0e8a4be4a863f1ed80830c03600321df3794010f547c1eb5d3ff878cb4d28e9f7fbd")]

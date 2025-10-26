@@ -1,9 +1,6 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -213,6 +210,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Need to specify a COM port.")]
         E6001 = 6001,
 
+        /// <summary>
+        /// Timeout of the connection
+        /// </summary>
+        [Display(Name = "Couldn't access serial device. Another (nanoFramework) application has exclusive access to the device.")]
+        E6002 = 6002,
+
         ///////////////
         // TI Errors //
         ///////////////
@@ -336,7 +339,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Error clearing cache location.
         /// </summary>
-        [Display(Name = "Error occured when clearing the firmware cache location.")]
+        [Display(Name = "Error occurred when clearing the firmware cache location.")]
         E9014 = 9014,
+
+        /// <summary>
+        /// Can't find the target in the firmware archive.
+        /// </summary>
+        [Display(Name = "Can't find the target in the firmware archive.")]
+        E9015 = 9015,
     }
 }

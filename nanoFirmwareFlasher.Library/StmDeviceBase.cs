@@ -53,18 +53,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (!Utilities.ExecutingPath.IsNormalized(NormalizationForm.FormD))
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
+                        OutputWriter.ForegroundColor = ConsoleColor.Red;
 
-                        Console.WriteLine("");
-                        Console.WriteLine("**************************** WARNING ****************************");
-                        Console.WriteLine("nanoff installation path contains diacritic chars!");
-                        Console.WriteLine("There are know issues executing some commands in this situation.");
-                        Console.WriteLine("Recommend that the tool be installed in a path without those.");
-                        Console.WriteLine("For a detailed explanation please visit https://git.io/JEcpK.");
-                        Console.WriteLine("*****************************************************************");
-                        Console.WriteLine("");
+                        OutputWriter.WriteLine("");
+                        OutputWriter.WriteLine("**************************** WARNING ****************************");
+                        OutputWriter.WriteLine("nanoff installation path contains diacritic chars!");
+                        OutputWriter.WriteLine("There are know issues executing some commands in this situation.");
+                        OutputWriter.WriteLine("Recommend that the tool be installed in a path without those.");
+                        OutputWriter.WriteLine("For a detailed explanation please visit https://git.io/JEcpK.");
+                        OutputWriter.WriteLine("*****************************************************************");
+                        OutputWriter.WriteLine("");
 
-                        Console.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
                     }
 
                     // done
@@ -130,7 +130,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             var regEx = new Regex(@"Error: (?<error>.+).", RegexOptions.IgnoreCase);
 
-            var match = regEx.Match(cliOutput);
+            Match match = regEx.Match(cliOutput);
 
             if (match.Success)
             {
@@ -157,20 +157,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // show CLI output, if verbosity is diagnostic
             if (Verbosity == VerbosityLevel.Diagnostic)
             {
-                Console.WriteLine(">>>>>>>>");
-                Console.WriteLine($"{cliOutput}");
-                Console.WriteLine(">>>>>>>>");
+                OutputWriter.WriteLine(">>>>>>>>");
+                OutputWriter.WriteLine($"{cliOutput}");
+                OutputWriter.WriteLine(">>>>>>>>");
             }
 
             // show error message from CLI, if there is one
             if (!string.IsNullOrEmpty(_stCLIErrorMessage))
             {
                 // show error detail, if available
-                Console.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
 
-                Console.WriteLine(_stCLIErrorMessage);
+                OutputWriter.WriteLine(_stCLIErrorMessage);
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
         }
 
@@ -192,15 +192,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Mass erase device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Mass erase device...");
             }
 
-            var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} mode=UR -e all");
+            string cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} mode=UR -e all");
 
             if (!cliOutput.Contains("Mass erase successfully achieved"))
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
 
                 ShowCLIOutput(cliOutput);
 
@@ -209,15 +209,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine(" OK");
             }
             else
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -241,7 +241,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // erase flash
             if (DoMassErase)
             {
-                var eraseResult = ExecuteMassErase(connectDetails);
+                ExitCodes eraseResult = ExecuteMassErase(connectDetails);
 
                 if (eraseResult != ExitCodes.OK)
                 {
@@ -254,30 +254,30 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Flashing device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Flashing device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine("Flashing device...");
             }
 
             // program HEX file(s)
             foreach (string hexFile in files)
             {
                 // make sure path is absolute
-                var hexFilePath = Utilities.MakePathAbsolute(
+                string hexFilePath = Utilities.MakePathAbsolute(
                     Environment.CurrentDirectory,
                     hexFile);
 
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"{Path.GetFileName(hexFile)}");
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine($"{Path.GetFileName(hexFile)}");
                 }
 
-                var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} -w \"{hexFilePath}\"");
+                string cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} -w \"{hexFilePath}\"");
 
                 if (!cliOutput.Contains("File download complete"))
                 {
@@ -289,16 +289,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine(" OK");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Flashing completed...");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("Flashing completed...");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -353,7 +353,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // erase flash
             if (DoMassErase)
             {
-                var eraseResult = ExecuteMassErase(connectDetails);
+                ExitCodes eraseResult = ExecuteMassErase(connectDetails);
 
                 if (eraseResult != ExitCodes.OK)
                 {
@@ -366,13 +366,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Flashing device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Flashing device...");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Flashing device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine("Flashing device...");
             }
 
             // program BIN file(s)
@@ -380,17 +380,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             foreach (string binFile in files)
             {
                 // make sure path is absolute
-                var binFilePath = Utilities.MakePathAbsolute(
+                string binFilePath = Utilities.MakePathAbsolute(
                     Environment.CurrentDirectory,
                     binFile);
 
                 if (Verbosity >= VerbosityLevel.Detailed)
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{Path.GetFileName(binFilePath)} @ {addresses.ElementAt(index)}");
+                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                    OutputWriter.WriteLine($"{Path.GetFileName(binFilePath)} @ {addresses.ElementAt(index)}");
                 }
 
-                var cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} mode=UR -w \"{binFilePath}\" {addresses.ElementAt(index++)}");
+                string cliOutput = RunSTM32ProgrammerCLI($"-c {connectDetails} mode=UR -w \"{binFilePath}\" {addresses.ElementAt(index++)}");
 
                 if (!cliOutput.Contains("File download complete"))
                 {
@@ -402,16 +402,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine(" OK");
             }
             else if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Flashing completed...");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("Flashing completed...");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }

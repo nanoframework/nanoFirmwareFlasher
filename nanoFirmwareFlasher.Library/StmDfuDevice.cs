@@ -49,7 +49,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (string.IsNullOrEmpty(dfuId))
             {
                 // no DFU id supplied, list available
-                var jtagDevices = ListDevices();
+                List<(string serial, string device)> jtagDevices = ListDevices();
 
                 if (jtagDevices.Count > 0)
                 {
@@ -69,13 +69,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // DFU id was supplied
 
                 // list available to find out the device ID
-                var jtagDevices = ListDevices();
+                List<(string serial, string device)> jtagDevices = ListDevices();
 
                 // sanity check
                 if (jtagDevices.Any())
                 {
                     // find the one we're looking for
-                    var dfuDevice = jtagDevices.FirstOrDefault(d => d.serial == dfuId);
+                    (string serial, string device) dfuDevice = jtagDevices.FirstOrDefault(d => d.serial == dfuId);
 
                     if (dfuDevice == default)
                     {
@@ -98,11 +98,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // try to connect to JTAG ID device to check availability
             // connect to device with RESET
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port={_deviceId}");
+            string cliOutput = RunSTM32ProgrammerCLI($"-c port={_deviceId}");
 
             if (cliOutput.Contains("Error"))
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
 
                 ShowCLIOutput(cliOutput);
 
@@ -110,7 +110,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // parse the output to fill in the details
-            var match = Regex.Match(cliOutput, $"(Device name :)(?<devicename>.*)(.*?[\r\n]*)*(Device CPU  :)(?<devicecpu>.*)");
+            Match match = Regex.Match(cliOutput, $"(Device name :)(?<devicename>.*)(.*?[\r\n]*)*(Device CPU  :)(?<devicecpu>.*)");
             if (match.Success)
             {
                 // grab details
@@ -152,16 +152,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Starting execution on device...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Starting execution on device...");
             }
 
             // connect to device and perform command
-            var cliOutput = RunSTM32ProgrammerCLI($"-c port={_deviceId} --start 0x{startAddress}");
+            string cliOutput = RunSTM32ProgrammerCLI($"-c port={_deviceId} --start 0x{startAddress}");
 
             if (cliOutput.Contains("Error"))
             {
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
 
                 ShowCLIOutput(cliOutput);
 
@@ -170,24 +170,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!cliOutput.Contains("Start operation achieved successfully"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ERROR");
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine("ERROR");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.E1006;
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK");
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine(" OK");
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine("");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
         }
@@ -198,7 +198,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>A collection of connected STM DFU devices.</returns>
         public static List<(string serial, string device)> ListDevices()
         {
-            var cliOutput = ExecuteListDevices();
+            string cliOutput = ExecuteListDevices();
 
             // (successful) output from the above is
             //===== DFU Interface =====
@@ -217,7 +217,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             const string regexPattern = @"(?>Device Index           : )(?<device>\w+)(.*?[\r\n]*)*(?>Serial number          : )(?<serial>\d+)";
 
             var myRegex1 = new Regex(regexPattern, RegexOptions.Multiline);
-            var dfuMatches = myRegex1.Matches(cliOutput);
+            MatchCollection dfuMatches = myRegex1.Matches(cliOutput);
 
             if (dfuMatches.Count == 0)
             {

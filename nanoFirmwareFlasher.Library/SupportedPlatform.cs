@@ -22,9 +22,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// TI Simplelink.
         /// </summary>
         ti_simplelink = 2,
+
         /// <summary>
-        /// Silabs GG11.
+        /// Silabs EFM32 Gecko.
         /// </summary>
-        gg11
+        efm32,
+
+        /// <summary>
+        /// NXP.
+        /// </summary>
+        nxp
     }
 }

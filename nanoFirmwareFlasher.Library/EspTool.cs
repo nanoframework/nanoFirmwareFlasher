@@ -1,7 +1,5 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -104,16 +102,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
-                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        OutputWriter.ForegroundColor = ConsoleColor.DarkRed;
 
-                        Console.WriteLine("");
-                        Console.WriteLine("******************** EXCEPTION ******************");
-                        Console.WriteLine($"Exception occurred while trying to open <{serialPort}>:");
-                        Console.WriteLine($"{ex.Message}");
-                        Console.WriteLine("*************************************************");
-                        Console.WriteLine("");
+                        OutputWriter.WriteLine("");
+                        OutputWriter.WriteLine("******************** EXCEPTION ******************");
+                        OutputWriter.WriteLine($"Exception occurred while trying to open <{serialPort}>:");
+                        OutputWriter.WriteLine($"{ex.Message}");
+                        OutputWriter.WriteLine("*************************************************");
+                        OutputWriter.WriteLine("");
 
-                        Console.ForegroundColor = ConsoleColor.White;
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
                     }
 
                     // presume any exception here is caused by the serial not existing or not possible to open
@@ -130,7 +128,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine($"Using {serialPort} @ {baudRate} baud to connect to ESP32.");
+                OutputWriter.WriteLine($"Using {serialPort} @ {baudRate} baud to connect to ESP32.");
             }
 
             // set properties
@@ -146,35 +144,36 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public Esp32DeviceInfo GetDeviceDetails(
             string targetName,
             bool requireFlashSize = true,
-            bool forcePsRamCheck = false)
+            bool forcePsRamCheck = false,
+            bool hardResetAfterCommand = false)
         {
             string messages;
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write($"Reading details from chip...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write($"Reading details from chip...");
             }
 
             // execute flash_id command and parse the result
             if (!RunEspTool(
-                "flash_id",
+                "flash-id",
                 false,
                 true,
-                false,
+                hardResetAfterCommand && !requireFlashSize,
                 null,
                 out messages))
             {
                 if (messages.Contains("A fatal error occurred: Failed to connect to Espressif device: No serial data received."))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
 
-                    Console.WriteLine("");
-                    Console.WriteLine("Can't connect to ESP32 bootloader. Try to put the board in bootloader manually.");
-                    Console.WriteLine("For troubleshooting steps visit: https://docs.espressif.com/projects/esptool/en/latest/troubleshooting.html.");
-                    Console.WriteLine("");
+                    OutputWriter.WriteLine("");
+                    OutputWriter.WriteLine("Can't connect to ESP32 bootloader. Try to put the board in bootloader manually.");
+                    OutputWriter.WriteLine("For troubleshooting steps visit: https://docs.espressif.com/projects/esptool/en/latest/troubleshooting.html.");
+                    OutputWriter.WriteLine("");
 
-                    Console.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 throw new EspToolExecutionException(messages);
@@ -182,14 +181,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // check if we got flash size (in case we need it)
             if (requireFlashSize
-                && messages.Contains("Detected flash size: Unknown"))
+                && (messages.Contains("Detected flash size: Unknown") || hardResetAfterCommand))
             {
                 // try again now without the stub
+                // Also run this for the hardResetAfterCommand, as there is no way to use the tool for a reset only (esptool issue 910).
                 if (!RunEspTool(
-                    "flash_id",
+                    "flash-id",
                     true,
                     true,
-                    false,
+                    hardResetAfterCommand,
                     null,
                     out messages))
                 {
@@ -197,8 +197,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            var match = Regex.Match(messages,
-                                    $"(Detecting chip type... )(?<type>[ESP32\\-ICOCH6]+)(.*?[\r\n]*)*(Chip is )(?<name>.*)(.*?[\r\n]*)*(Features: )(?<features>.*)(.*?[\r\n]*)*(Crystal is )(?<crystal>.*)(.*?[\r\n]*)*(MAC: )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
+            Match match = Regex.Match(messages,
+                                    $"(Detecting chip type... )(?<type>[ESP32\\-ICOCH6]+)(.*?[\r\n]*)*(Chip type:          )(?<name>.*)(.*?[\r\n]*)*(Features:           )(?<features>.*)(.*?[\r\n]*)*(Crystal frequency:  )(?<crystal>.*)(.*?[\r\n]*)*(MAC:                )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
 
             if (!match.Success)
             {
@@ -249,22 +249,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else if (_chipType == "esp32s3")
             {
-                // For now assuming all S3 have PSRAM.
-                // TODO: following https://github.com/espressif/esptool/issues/970
-		// The download mode register is not cleared so a reset/run command does not work on the S3. We should retest this after depending on what will be the fix for that issue.
+                // check device features for PSRAM mention and size
+                // features should look like this: "Features WiFi, BLE, Embedded PSRAM 8MB (AP_3v3)"
+
+                Regex regex = new(@"Embedded PSRAM (?<size>\d+)MB");
+
+                Match psRamMatch = regex.Match(features);
+                if (psRamMatch.Success)
+                {
+                    psRamSize = int.Parse(psRamMatch.Groups["size"].Value);
+                    psramIsAvailable = PSRamAvailability.Yes;
+                }
+            }
+            else if (_chipType == "esp32s2")
+            {
+                // these devices usually require boot into bootloader which prevents running the app to get psram details.
                 psramIsAvailable = PSRamAvailability.Undetermined;
             }
-            else
+
+            if (psramIsAvailable == PSRamAvailability.Undetermined)
             {
-                //try to find out if PSRAM is present
+                // try to find out if PSRAM is present
                 psramIsAvailable = FindPSRamAvailable(out psRamSize, forcePsRamCheck);
             }
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("OK");
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("OK".PadRight(110));
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
             return new Esp32DeviceInfo(
@@ -292,7 +305,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             // don't want to output anything from esptool
             // backup current verbosity setting
-            var bkpVerbosity = Verbosity;
+            VerbosityLevel bkpVerbosity = Verbosity;
             Verbosity = VerbosityLevel.Quiet;
 
             // default to no PSRAM
@@ -305,7 +318,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // adjust flash size according to the series
                     // defautl to 2MB for ESP32 series
-                    var flashSize = 2 * 1024 * 1024;
+                    int flashSize = 2 * 1024 * 1024;
 
                     if (_chipType == "esp32s2"
                        || _chipType == "esp32s3")
@@ -317,13 +330,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     var bootloaderPartition = new Dictionary<int, string>
                     {
                         // bootloader goes to 0x1000, except for ESP32_S3, which goes to 0x0
-				        { _chipType == "esp32s3" ? 0x0 : 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
+                        { _chipType == "esp32s3" ? 0x0 : 0x1000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "bootloader.bin") },
 
-				        // nanoCLR goes to 0x10000
-				        { 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
+                        // nanoCLR goes to 0x10000
+                        { 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
 
                         // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
-				        { 0x8000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
+                        { 0x8000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
                     };
 
                     // need to use standard baud rate here because of boards put in download mode
@@ -373,7 +386,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Thread.Sleep(TimeSpan.FromSeconds(2));
 
                         // ... read output from bootloader
-                        var bootloaderOutput = espDevice.ReadExisting();
+                        string bootloaderOutput = espDevice.ReadExisting();
 
                         espDevice.Close();
 
@@ -387,7 +400,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             // I(209) esp_psram: PSRAM initialized, cache is in low / high(2 - core) mode.
 
                             // extract PSRAM size
-                            var match = Regex.Match(bootloaderOutput, @"Found (?<size>\d+)MB PSRAM device");
+                            Match match = Regex.Match(bootloaderOutput, @"Found (?<size>\d+)MB PSRAM device");
                             if (match.Success)
                             {
                                 psRamSize = int.Parse(match.Groups["size"].Value);
@@ -428,23 +441,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="backupFilename">Backup file including full path</param>
         /// <param name="flashSize">Flash size in bytes</param>
+        /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
         /// <returns>true if successful</returns>
         internal void BackupFlash(string backupFilename,
-            int flashSize)
+            int flashSize,
+            bool hardResetAfterCommand = false)
         {
-            // execute read_flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
+            // execute read-flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
             if (!RunEspTool(
-                $"read_flash 0 0x{flashSize:X} \"{backupFilename}\"",
+                $"read-flash 0 0x{flashSize:X} \"{backupFilename}\"",
                 true,
                 false,
-                false,
+                hardResetAfterCommand,
                 (char)8,
                 out string messages))
             {
                 throw new ReadEsp32FlashException(messages);
             }
 
-            var match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
+            Match match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new ReadEsp32FlashException(messages);
@@ -452,7 +467,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine(match.Groups["message"].ToString().Trim());
+                OutputWriter.WriteLine(match.Groups["message"].ToString().Trim());
             }
         }
 
@@ -468,19 +483,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
             int address,
             int size)
         {
-            // execute dump_mem  command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
+            // execute dump-mem command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
             if (!RunEspTool(
-                $"read_flash 0x{address:X} 0x{size:X} \"{backupFilename}\"",
+                $"read-flash 0x{address:X} 0x{size:X} \"{backupFilename}\"",
                 false,
                 true,
                 false,
-                null,
+                (char)8,
                 out string messages))
             {
                 throw new ReadEsp32FlashException(messages);
             }
 
-            var match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
+            Match match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new ReadEsp32FlashException(messages);
@@ -488,7 +503,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine(match.Groups["message"].ToString().Trim());
+                OutputWriter.WriteLine(match.Groups["message"].ToString().Trim());
             }
 
             return ExitCodes.OK;
@@ -502,7 +517,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             // execute erase_flash command and parse the result
             if (!RunEspTool(
-                "erase_flash",
+                "erase-flash",
                 false,
                 true,
                 false,
@@ -512,7 +527,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EraseEsp32FlashException(messages);
             }
 
-            var match = Regex.Match(messages, "(?<message>Chip erase completed successfully.*)(.*?\n)*");
+            Match match = Regex.Match(messages, "(?<message>Flash memory erased successfully.*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new EraseEsp32FlashException(messages);
@@ -532,7 +547,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // execute erase_flash command and parse the result
             if (!RunEspTool(
-                $"erase_region 0x{startAddress:X} 0x{length:X}",
+                $"erase-region 0x{startAddress:X} 0x{length:X}",
                 false,
                 false,
                 false,
@@ -542,7 +557,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 throw new EraseEsp32FlashException(messages);
             }
 
-            var match = Regex.Match(messages, "(?<message>Erase completed successfully.*)(.*?\n)*");
+            Match match = Regex.Match(messages, "(?<message>Flash memory erased successfully.*)(.*?\n)*");
             if (!match.Success)
             {
                 throw new EraseEsp32FlashException(messages);
@@ -550,7 +565,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                Console.WriteLine(match.Groups["message"].ToString().Trim());
+                OutputWriter.WriteLine(match.Groups["message"].ToString().Trim());
             }
 
             return ExitCodes.OK;
@@ -572,7 +587,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             int counter = 1;
             var regexGroupNames = new List<string>();
 
-            foreach (var part in partsToWrite)
+            foreach (KeyValuePair<int, string> part in partsToWrite)
             {
                 // start address followed by filename
                 partsArguments.Append($"0x{part.Key:X} \"{part.Value}\" ");
@@ -582,7 +597,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 counter++;
             }
 
-            // if flash size was detected already use it for the --flash_size parameter; otherwise use the default "detect"
+            // if flash size was detected already use it for the --flash-size parameter; otherwise use the default "detect"
             string flashSize = _flashSize switch
             {
                 >= 0x100000 => $"{_flashSize / 0x100000}MB",
@@ -592,7 +607,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             // execute write_flash command and parse the result; progress message can be found be searching for linefeed
             if (!RunEspTool(
-                $"write_flash --flash_size {flashSize} {partsArguments.ToString().Trim()}",
+                $"write-flash --flash-size {flashSize} {partsArguments.ToString().Trim()}",
                 false,
                 useStandardBaudrate,
                 true,
@@ -612,7 +627,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Run the esptool one time
         /// </summary>
         /// <param name="commandWithArguments">the esptool command (e.g. write_flash) incl. all arguments (if needed)</param>
-        /// <param name="noStub">if true --no-stub will be added; the chip_id, read_mac and flash_id commands can be quicker executes without uploading the stub program to the chip</param>
+        /// <param name="noStub">if true --no-stub will be added; the chip_id, read_mac and flash-id commands can be quicker executes without uploading the stub program to the chip</param>
         /// <param name="useStandardBaudRate">If <see langword="true"/> the tool will use the standard baud rate to connect to the chip.</param>
         /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
         /// <param name="progressTestChar">If not null: After each of this char a progress message will be printed out</param>
@@ -635,7 +650,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string noStubParameter = null;
             string baudRateParameter = null;
             string beforeParameter = null;
-            string afterParameter = hardResetAfterCommand ? "hard_reset" : "no_reset_stub";
+            string afterParameter = hardResetAfterCommand ? "hard-reset" : "no-reset";
 
             if (noStub)
             {
@@ -702,12 +717,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity == VerbosityLevel.Diagnostic)
             {
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
 
-                Console.WriteLine("");
-                Console.WriteLine("Executing esptool with the following parameters:");
-                Console.WriteLine($"'{parameter}'");
-                Console.WriteLine("");
+                OutputWriter.WriteLine("");
+                OutputWriter.WriteLine("Executing esptool with the following parameters:");
+                OutputWriter.WriteLine($"'{parameter}'");
+                OutputWriter.WriteLine("");
             }
 
             // start esptool and wait for exit
@@ -722,7 +737,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             connectPromptShown = false;
             connectPatternFound = false;
             connectTimeStamp = DateTime.UtcNow;
-            var progressStarted = false;
+            bool progressStarted = false;
 
             // showing progress is a little bit tricky
             if (Verbosity > VerbosityLevel.Quiet)
@@ -745,31 +760,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                                 // try to find a progress message
                                 string progress = FindProgress(messageBuilder, progressTestChar.Value);
-                                if (progress != null && Verbosity >= VerbosityLevel.Detailed)
+                                if (progress != null && Verbosity >= VerbosityLevel.Normal)
                                 {
                                     if (!progressStarted)
                                     {
                                         // need to print the first line of the progress message
-                                        Console.Write("\r");
+                                        OutputWriter.Write("\r");
 
                                         progressStarted = true;
                                     }
 
                                     // print progress... and set the cursor to the beginning of the line (\r)
-                                    Console.Write(progress);
-                                    Console.Write("\r");
+                                    OutputWriter.Write(progress);
+                                    OutputWriter.Write("\r");
                                 }
 
                                 ProcessConnectPattern(messageBuilder);
                             }
                             else
                             {
-                                if (Verbosity >= VerbosityLevel.Detailed)
+                                if (Verbosity >= VerbosityLevel.Normal)
                                 {
                                     // need to clear all progress lines
                                     for (int i = 0; i < messageBuilder.Length; i++)
                                     {
-                                        Console.Write("\b");
+                                        OutputWriter.Write("\b");
                                     }
                                 }
 
@@ -850,7 +865,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // try to find a connect pattern
             connectPatternFound = FindConnectPattern(messageBuilder);
 
-            var timeToConnect = DateTime.UtcNow.Subtract(connectTimeStamp).TotalSeconds;
+            double timeToConnect = DateTime.UtcNow.Subtract(connectTimeStamp).TotalSeconds;
 
             // if esptool is struggling to connect for more than 5 seconds
 
@@ -859,11 +874,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 connectPatternFound &&
                 timeToConnect > 5)
             {
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                OutputWriter.ForegroundColor = ConsoleColor.Magenta;
 
-                Console.WriteLine("*** Hold down the BOOT/FLASH button in ESP32 board ***");
+                OutputWriter.WriteLine("*** Hold down the BOOT/FLASH button in ESP32 board ***");
 
-                Console.ForegroundColor = ConsoleColor.White;
+                OutputWriter.ForegroundColor = ConsoleColor.White;
 
                 // set flag
                 connectPromptShown = true;
@@ -874,8 +889,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (messageBuilder.Length > 2)
             {
-                var previousChar = messageBuilder[messageBuilder.Length - 2];
-                var newChar = messageBuilder[messageBuilder.Length - 1];
+                char previousChar = messageBuilder[messageBuilder.Length - 2];
+                char newChar = messageBuilder[messageBuilder.Length - 1];
 
                 // don't look for double dot (..) sequence so it doesn't mistake it with an ellipsis (...)
                 return ((previousChar == '.'

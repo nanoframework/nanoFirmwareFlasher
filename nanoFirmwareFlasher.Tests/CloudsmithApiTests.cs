@@ -1,3 +1,6 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace nanoFirmwareFlasher.Tests
@@ -8,26 +11,26 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void CheckApiUriExists()
         {
-            Assert.IsTrue(false);
+            Assert.Inconclusive();
         }
 
         [TestMethod]
         public void CheckApiVersionExists()
         {
             // And is not deprecated?!
-            Assert.IsTrue(false);
+            Assert.Inconclusive();
         }
 
         [TestMethod]
         public void DecodePackageDetails()
         {
-            Assert.IsTrue(false);
+            Assert.Inconclusive();
         }
 
         [TestMethod]
         public void DecodePackageInformation()
         {
-            Assert.IsTrue(false);
+            Assert.Inconclusive();
         }
     }
 }
