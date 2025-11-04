@@ -13,13 +13,6 @@ jobs:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - uses: actions/setup-dotnet@v3
-      #   with:
-      #     dotnet-version: | 
-      #       4.7.2
-      #       4.8
-      #       6.0
-
       - run: dotnet restore --force-evaluate
       - id: diff
         continue-on-error: true
