@@ -28,9 +28,9 @@
       },
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.5.10, )",
-        "resolved": "2.5.10",
-        "contentHash": "ETpK8oihKti7iCV6GkJhvExj3FT66wD8djRj/qWglMl8UaWQhJ4g+j2st5bOqmBrMf2llwOu5qk9wnkTbPAAVA==",
+        "requested": "[3.0.0-preview.5, )",
+        "resolved": "3.0.0-preview.5",
+        "contentHash": "mhHaP4NDEfDneiR5lzPpwAmnJbTFUS7bIGNRPNgFkdQ4AaunbPbURACmKxh/4FdupjRnIxOyNNAffq2X7tyFLg==",
         "dependencies": {
           "Polly": "7.2.4",
           "System.IO.Ports": "8.0.0"
@@ -733,7 +733,7 @@
           "System.IO.Ports": "[8.0.0, )",
           "System.Net.Http": "[4.3.4, )",
           "System.Text.Json": "[8.0.5, )",
-          "nanoFramework.Tools.Debugger.Net": "[2.5.10, )"
+          "nanoFramework.Tools.Debugger.Net": "[3.0.0-preview.5, )"
         }
       }
     },
