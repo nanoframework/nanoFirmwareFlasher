@@ -9,13 +9,13 @@ using System.Runtime.Serialization;
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// Error executing an esptool command.
+    /// Error executing an ESP32 serial protocol command.
     /// </summary>
     [Serializable]
     public class EspToolExecutionException : Exception
     {
         /// <summary>
-        /// Error message from esptool.
+        /// Error message from ESP32 serial operation.
         /// </summary>
         public string ExecutionError;
 

@@ -50,7 +50,7 @@ foreach (string deviceId in connecteDevices)
 
 This console application updates the firmware of an ESP32 device connected through a COM port.
 
-ESP32 updates rely on `esptool`, so this needs to be instantiated first:
+ESP32 updates rely on `EspTool`, so this needs to be instantiated first:
 
 ```csharp
 EspTool espTool  = new EspTool(

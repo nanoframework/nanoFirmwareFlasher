@@ -582,7 +582,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (verbosity >= VerbosityLevel.Normal)
                         {
-                            // clear output of the progress from esptool, move cursor up and clear line
+                            // clear output of the progress, move cursor up and clear line
                             Console.SetCursorPosition(0, Console.CursorTop);
                             Console.Write(new string(' ', Console.WindowWidth));
                             int currentLineCursor = Console.CursorTop;
@@ -605,7 +605,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     // output the start of operation message for verbosity normal and above
-                    // otherwise the progress from esptool is shown
+                    // otherwise the progress is shown
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                     OutputWriter.WriteLine($"Flashing firmware...");
                 }
@@ -619,7 +619,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         // output the start of operation message for verbosity normal and above
 
-                        // clear output of the progress from esptool, move cursor up and clear line
+                        // clear output of the progress, move cursor up and clear line
                         Console.SetCursorPosition(0, Console.CursorTop);
                         Console.Write(new string(' ', Console.WindowWidth));
                         int currentLineCursor = Console.CursorTop;
@@ -628,7 +628,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Console.SetCursorPosition(0, currentLineCursor - 1);
 
                         // operation completed output
-                        // output the full message as usual after the progress from esptool
+                        // output the full message as usual after the progress completes
                         OutputWriter.ForegroundColor = ConsoleColor.White;
                         OutputWriter.Write($"Flashing firmware...");
                         OutputWriter.ForegroundColor = ConsoleColor.Green;

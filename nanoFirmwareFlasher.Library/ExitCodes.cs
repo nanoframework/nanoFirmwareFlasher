@@ -89,9 +89,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         ////////////////////////
 
         /// <summary>
-        /// Error executing esptool command
+        /// Error executing ESP32 serial command
         /// </summary>
-        [Display(Name = "Error executing esptool command.")]
+        [Display(Name = "Error executing ESP32 serial command.")]
         E4000 = 4000,
 
         /// <summary>

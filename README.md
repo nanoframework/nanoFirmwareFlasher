@@ -13,8 +13,6 @@ Is part of .NET **nanoFramework** toolbox, along with other various tools that a
 
 It makes use of several 3rd party tools:
 
-- Espressif esptool
-   You can find the esptool and licensing information on the repository [here](http://github.com/espressif/esptool).
 - STM32 Cube Programmer
    You can find the source, licensing information and documentation [here](https://www.st.com/en/development-tools/stm32cubeprog.html).
 - Texas Instruments Uniflash

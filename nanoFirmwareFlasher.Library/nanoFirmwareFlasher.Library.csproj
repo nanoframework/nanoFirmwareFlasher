@@ -83,14 +83,9 @@
     <!-- WARNING: when changing or adding any include path for an external tool, make sure to add/update in 'nugetcontent.targets' -->
     <!-- ************************************************************************************************************************* -->
 
-    <!-- esptool executables for all platforms -->
+    <!-- Stub loader images embedded as resources (run update-stubs.ps1 to download) -->
     <ItemGroup>
-        <None Include="..\lib\esptool\esptoolWin\**" Link="esptool\esptoolWin\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\esptool\esptoolMac\**" Link="esptool\esptoolMac\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\esptool\esptoolLinux\**" Link="esptool\esptoolLinux\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
+        <EmbeddedResource Include="Esp32Serial\StubImages\*.json" />
     </ItemGroup>
 
     <!-- ESP32 nanoFramework bootloader files -->

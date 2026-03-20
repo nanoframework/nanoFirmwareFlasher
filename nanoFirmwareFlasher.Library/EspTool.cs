@@ -3,31 +3,28 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// Class the handles all the calls to the esptool.exe.
+    /// Native C# implementation of ESP32 serial bootloader communication.
+    /// Replaces the former process-wrapper around the external esptool binary.
     /// </summary>
-    public partial class EspTool
+    public partial class EspTool : IDisposable
     {
-        private string _esptoolMessage;
-
         /// <summary>
-        /// The serial port over which all the communication goes
+        /// The serial port over which all the communication goes.
         /// </summary>
         private readonly string _serialPort = null;
 
         /// <summary>
-        /// The baud rate for the serial port. The default comming from CLI Options.BaudRate./>.
+        /// The baud rate for the serial port.
         /// </summary>
         private int _baudRate = 0;
 
@@ -37,17 +34,48 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly PartitionTableSize? _partitionTableSize = null;
 
         /// <summary>
-        /// The size of the flash in bytes; 4 MB = 0x40000 bytes
+        /// The size of the flash in bytes; 4 MB = 0x400000 bytes.
         /// </summary>
         private int _flashSize = -1;
 
+        /// <summary>
+        /// Flash mode setting (e.g. "dio", "qio", "dout", "qout").
+        /// Used to patch the bootloader image header before flashing.
+        /// </summary>
+        private readonly string _flashMode;
 
+        /// <summary>
+        /// Flash frequency in MHz (e.g. 40, 80).
+        /// Used to patch the bootloader image header before flashing.
+        /// </summary>
+        private readonly int _flashFrequency;
 
-        private bool connectPatternFound;
+        /// <summary>
+        /// Native bootloader protocol client.
+        /// </summary>
+        private Esp32BootloaderClient _client;
 
-        private DateTime connectTimeStamp;
+        /// <summary>
+        /// Chip detector for reading device info from registers.
+        /// </summary>
+        private Esp32ChipDetector _chipDetector;
 
-        private bool connectPromptShown;
+        /// <summary>
+        /// Flash controller for read/write/erase operations.
+        /// </summary>
+        private Esp32FlashController _flashController;
+
+        /// <summary>
+        /// Whether the client is currently connected to the bootloader.
+        /// </summary>
+        private bool _isConnected;
+
+        /// <summary>
+        /// Whether the stub loader has been uploaded to the chip.
+        /// </summary>
+        private bool _stubUploaded;
+
+        private bool _disposed;
 
         /// <summary>
         /// This property is <see langword="true"/> if the specified COM port is valid.
@@ -74,10 +102,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="serialPort">The serial port over which all the communication goes.</param>
         /// <param name="baudRate">The baud rate for the serial port.</param>
-        /// <param name="flashMode">The flash mode for the esptool</param>
-        /// <param name="flashFrequency">The flash frequency for the esptool</param>
-        /// <param name="partitionTableSize">Partition table size to use</param>
-        /// <param name="verbosity">The verbosity level of messages</param>
+        /// <param name="flashMode">The flash mode (e.g. "dio", "qio"). Used to patch bootloader header.</param>
+        /// <param name="flashFrequency">The flash frequency in MHz (e.g. 40, 80). Used to patch bootloader header.</param>
+        /// <param name="partitionTableSize">Partition table size to use.</param>
+        /// <param name="verbosity">The verbosity level of messages.</param>
         public EspTool(
             string serialPort,
             int baudRate,
@@ -120,7 +148,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else
             {
-                if (!System.IO.File.Exists(serialPort))
+                if (!File.Exists(serialPort))
                 {
                     throw new EspToolExecutionException();
                 }
@@ -134,37 +162,229 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // set properties
             _serialPort = serialPort;
             _baudRate = baudRate;
+            _flashMode = flashMode;
+            _flashFrequency = flashFrequency;
             _partitionTableSize = partitionTableSize;
+        }
+
+        /// <summary>
+        /// Ensure the bootloader client is connected. Creates and connects if needed.
+        /// After connection, attempts to upload the stub loader for faster operations.
+        /// </summary>
+        /// <param name="useStandardBaudrate">If true, stay at 115200 baud (skip baud rate change).</param>
+        private void EnsureConnected(bool useStandardBaudrate = false)
+        {
+            if (_isConnected && _client != null)
+            {
+                // If caller needs standard baud rate and we're currently at a higher rate, change back.
+                if (useStandardBaudrate && _stubUploaded && _client.CurrentBaudRate != Esp32BootloaderClient.DefaultBaudRate)
+                {
+                    _client.ChangeBaudRate(Esp32BootloaderClient.DefaultBaudRate);
+                }
+
+                return;
+            }
+
+            _client = new Esp32BootloaderClient(_serialPort, verbosity: Verbosity);
+            _client.Connect();
+
+            _chipDetector = new Esp32ChipDetector(_client);
+            _isConnected = true;
+
+            // Try to upload the stub loader for faster operations
+            if (_chipType != "auto")
+            {
+                TryUploadStub(useStandardBaudrate);
+            }
+        }
+
+        /// <summary>
+        /// Disconnect the current bootloader session and release the serial port.
+        /// </summary>
+        private void Disconnect()
+        {
+            _flashController = null;
+            _chipDetector = null;
+            _stubUploaded = false;
+
+            try
+            {
+                _client?.Dispose();
+            }
+            finally
+            {
+                _client = null;
+                _isConnected = false;
+            }
+        }
+
+        /// <summary>
+        /// Try to upload the stub loader and optionally change baud rate.
+        /// Failures are silently ignored — ROM bootloader continues to work.
+        /// </summary>
+        private void TryUploadStub(bool useStandardBaudrate)
+        {
+            try
+            {
+                _stubUploaded = Esp32StubLoader.UploadStub(_client, _chipType, Verbosity);
+
+                if (_stubUploaded && !useStandardBaudrate && _baudRate != Esp32BootloaderClient.DefaultBaudRate)
+                {
+                    // Change to user-requested baud rate for faster transfers
+                    _client.ChangeBaudRate(_baudRate);
+
+                    if (Verbosity >= VerbosityLevel.Detailed)
+                    {
+                        OutputWriter.WriteLine($"Changed baud rate to {_baudRate}.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Stub upload failed — fall back to ROM mode
+                _stubUploaded = false;
+
+                if (Verbosity >= VerbosityLevel.Detailed)
+                {
+                    OutputWriter.WriteLine($"Stub upload failed ({ex.Message}), using ROM bootloader.");
+                }
+            }
         }
 
         /// <summary>
         /// Tries reading ESP32 device details.
         /// </summary>
-        /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occured</returns>
+        /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occurred.</returns>
         public Esp32DeviceInfo GetDeviceDetails(
             string targetName,
             bool requireFlashSize = true,
             bool forcePsRamCheck = false,
             bool hardResetAfterCommand = false)
         {
-            string messages;
-
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 OutputWriter.ForegroundColor = ConsoleColor.White;
                 OutputWriter.Write($"Reading details from chip...");
             }
 
-            // execute flash_id command and parse the result
-            if (!RunEspTool(
-                "flash-id",
-                false,
-                true,
-                hardResetAfterCommand && !requireFlashSize,
-                null,
-                out messages))
+            try
             {
-                if (messages.Contains("A fatal error occurred: Failed to connect to Espressif device: No serial data received."))
+                EnsureConnected();
+
+                // Detect chip type via magic register
+                string chipType = _chipDetector.DetectChipType();
+                _chipType = chipType;
+
+                var config = _chipDetector.Config;
+
+                // Now that we know the chip type, try uploading the stub
+                // (was skipped during EnsureConnected if _chipType was "auto")
+                if (!_stubUploaded)
+                {
+                    TryUploadStub(useStandardBaudrate: false);
+                }
+
+                // Read chip info
+                string chipName = _chipDetector.ReadChipName();
+                string features = _chipDetector.ReadFeatures();
+                string crystal = _chipDetector.ReadCrystalFrequency();
+                string mac = _chipDetector.ReadMacAddress();
+
+                // Read flash ID via SPI
+                var (manufacturerId, deviceId) = _chipDetector.ReadFlashId();
+
+                // Detect flash size from JEDEC ID
+                int flashSize = Esp32ChipDetector.DetectFlashSizeFromId(deviceId);
+
+                if (flashSize <= 0 && requireFlashSize)
+                {
+                    throw new EspToolExecutionException("Can't read flash size from device");
+                }
+
+                if (flashSize > 0)
+                {
+                    _flashSize = flashSize;
+                }
+
+                // Initialize flash controller now that we know the chip config
+                _flashController = new Esp32FlashController(_client, config);
+
+                // Determine PSRAM availability
+                PSRamAvailability psramIsAvailable = PSRamAvailability.Undetermined;
+                int psRamSize = 0;
+
+                if (_chipType == "esp32c3"
+                   || _chipType == "esp32c6"
+                   || _chipType == "esp32h2")
+                {
+                    // these series don't have PSRAM
+                    psramIsAvailable = PSRamAvailability.No;
+                }
+                else if (_chipType == "esp32s3")
+                {
+                    // check device features for PSRAM mention and size
+                    Regex regex = new(@"Embedded PSRAM (?<size>\d+)MB");
+                    Match psRamMatch = regex.Match(features);
+
+                    if (psRamMatch.Success)
+                    {
+                        psRamSize = int.Parse(psRamMatch.Groups["size"].Value);
+                        psramIsAvailable = PSRamAvailability.Yes;
+                    }
+                }
+                else if (_chipType == "esp32s2")
+                {
+                    // these devices usually require boot into bootloader which prevents running the app to get psram details.
+                    psramIsAvailable = PSRamAvailability.Undetermined;
+                }
+
+                if (psramIsAvailable == PSRamAvailability.Undetermined)
+                {
+                    // try to find out if PSRAM is present
+                    psramIsAvailable = FindPSRamAvailable(out psRamSize, forcePsRamCheck);
+                }
+
+                // Hard reset after command if requested (and we don't need the connection for anything else)
+                if (hardResetAfterCommand && _client != null)
+                {
+                    _client.HardReset();
+                    Disconnect();
+                }
+
+                if (Verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine("OK".PadRight(110));
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+
+                // Map chip type to display format with hyphen (e.g. "esp32s3" → "ESP32-S3")
+                string displayChipType = chipType switch
+                {
+                    "esp32" => "ESP32",
+                    "esp32s2" => "ESP32-S2",
+                    "esp32s3" => "ESP32-S3",
+                    "esp32c3" => "ESP32-C3",
+                    "esp32c6" => "ESP32-C6",
+                    "esp32h2" => "ESP32-H2",
+                    _ => chipType.ToUpperInvariant(),
+                };
+
+                return new Esp32DeviceInfo(
+                    displayChipType,
+                    chipName,
+                    features,
+                    crystal,
+                    mac.ToUpperInvariant(),
+                    manufacturerId,
+                    deviceId,
+                    _flashSize,
+                    psramIsAvailable,
+                    psRamSize);
+            }
+            catch (Exception ex) when (ex is not EspToolExecutionException)
+            {
+                if (ex.Message.Contains("Failed to connect") || ex is TimeoutException)
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Red;
 
@@ -176,140 +396,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
-                throw new EspToolExecutionException(messages);
+                throw new EspToolExecutionException(ex.Message);
             }
-
-            // check if we got flash size (in case we need it)
-            if (requireFlashSize
-                && (messages.Contains("Detected flash size: Unknown") || hardResetAfterCommand))
-            {
-                // try again now without the stub
-                // Also run this for the hardResetAfterCommand, as there is no way to use the tool for a reset only (esptool issue 910).
-                if (!RunEspTool(
-                    "flash-id",
-                    true,
-                    true,
-                    hardResetAfterCommand,
-                    null,
-                    out messages))
-                {
-                    throw new EspToolExecutionException(messages);
-                }
-            }
-
-            Match match = Regex.Match(messages,
-                                    $"(Detecting chip type... )(?<type>[ESP32\\-ICOCH6]+)(.*?[\r\n]*)*(Chip type:          )(?<name>.*)(.*?[\r\n]*)*(Features:           )(?<features>.*)(.*?[\r\n]*)*(Crystal frequency:  )(?<crystal>.*)(.*?[\r\n]*)*(MAC:                )(?<mac>.*)(.*?[\r\n]*)*(Manufacturer: )(?<manufacturer>.*)(.*?[\r\n]*)*(Device: )(?<device>.*)(.*?[\r\n]*)*(Detected flash size: )(?<size>.*)");
-
-            if (!match.Success)
-            {
-                throw new EspToolExecutionException(messages);
-            }
-
-            // grab details
-            string chipType = match.Groups["type"].ToString().Trim();
-            string name = match.Groups["name"].ToString().Trim();
-            string features = match.Groups["features"].ToString().Trim();
-            string mac = match.Groups["mac"].ToString().Trim();
-            string crystal = match.Groups["crystal"].ToString().Trim();
-            string manufacturer = match.Groups["manufacturer"].ToString().Trim();
-            string device = match.Groups["device"].ToString().Trim();
-            string size = match.Groups["size"].ToString().Trim();
-
-            // collect and return all information
-            // try to convert the flash size into bytes
-            string unit = size.Substring(size.Length - 2).ToUpperInvariant();
-
-            if (int.TryParse(size.Remove(size.Length - 2), out _flashSize))
-            {
-                _flashSize *= unit switch
-                {
-                    "MB" => 0x100000,
-                    "KB" => 0x400,
-                    _ => 1,
-                };
-            }
-            else
-            {
-                throw new EspToolExecutionException("Can't read flash size from device");
-            }
-
-            // Chip name shows as ESP32_P (ESP32_P4) so correct
-            if (chipType == "ESP32-P")
-            {
-                chipType = "ESP32-P4";
-            }
-
-            // update chip type
-            // lower case, no hifen
-            _chipType = chipType.ToLower().Replace("-", "");
-
-            PSRamAvailability psramIsAvailable = PSRamAvailability.Undetermined;
-            int psRamSize = 0;
-
-            if (_chipType == "esp32c3"
-               || _chipType == "esp32c6"
-               || _chipType == "esp32h2")
-            {
-                // these series doesn't have PSRAM
-                psramIsAvailable = PSRamAvailability.No;
-            }
-            else if (_chipType == "esp32s3")
-            {
-                // check device features for PSRAM mention and size
-                // features should look like this: "Features WiFi, BLE, Embedded PSRAM 8MB (AP_3v3)"
-
-                Regex regex = new(@"Embedded PSRAM (?<size>\d+)MB");
-
-                Match psRamMatch = regex.Match(features);
-                if (psRamMatch.Success)
-                {
-                    psRamSize = int.Parse(psRamMatch.Groups["size"].Value);
-                    psramIsAvailable = PSRamAvailability.Yes;
-                }
-            }
-            else if (_chipType == "esp32s2")
-            {
-                // these devices usually require boot into bootloader which prevents running the app to get psram details.
-                psramIsAvailable = PSRamAvailability.Undetermined;
-            }
-
-            if (psramIsAvailable == PSRamAvailability.Undetermined)
-            {
-                // try to find out if PSRAM is present
-                psramIsAvailable = FindPSRamAvailable(out psRamSize, forcePsRamCheck);
-            }
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.Green;
-                OutputWriter.WriteLine("OK".PadRight(110));
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-            }
-
-            return new Esp32DeviceInfo(
-                chipType,
-                name,
-                features,
-                crystal,
-                mac.ToUpperInvariant(),
-                byte.Parse(manufacturer, NumberStyles.AllowHexSpecifier),
-                short.Parse(device, NumberStyles.HexNumber),
-                _flashSize,
-                psramIsAvailable,
-                psRamSize);
         }
 
         /// <summary>
         /// Perform detection of PSRAM availability on connected device.
         /// </summary>
         /// <param name="force">Force the detection of PSRAM availability.</param>
-        /// <param name="psRamSize">Size of the PSRAM device, if detection was succesfull.</param>
+        /// <param name="psRamSize">Size of the PSRAM device, if detection was successful.</param>
         /// <returns>Information about availability of PSRAM, if that was possible to determine.</returns>
         private PSRamAvailability FindPSRamAvailable(
             out int psRamSize,
             bool force = false)
         {
-            // don't want to output anything from esptool
             // backup current verbosity setting
             VerbosityLevel bkpVerbosity = Verbosity;
             Verbosity = VerbosityLevel.Quiet;
@@ -319,11 +419,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             try
             {
-                // if forced, run the test app to determine PSRAM availability
                 if (force)
                 {
                     // adjust flash size according to the series
-                    // defautl to 2MB for ESP32 series
+                    // default to 2MB for ESP32 series
                     int flashSize = 2 * 1024 * 1024;
 
                     if (_chipType == "esp32s2"
@@ -341,7 +440,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // nanoCLR goes to 0x10000
                         { 0x10000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", "test_startup.bin") },
 
-                        // partition table goes to 0x8000; there are partition tables for 2MB, 4MB, 8MB and 16MB flash sizes
+                        // partition table goes to 0x8000
                         { 0x8000, Path.Combine(Utilities.ExecutingPath, $"{_chipType}bootloader", $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
                     };
 
@@ -354,31 +453,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else
                 {
-                    // execute run command to force soft reset
-                    // if the device is running a nanoFramework image, it will output information about the PSRAM
-                    if (!RunEspTool(
-                        $" run ",
-                        true,
-                        true,
-                        true,
-                        '\r',
-                        out _))
+                    // Soft reset the device to read bootloader output
+                    try
                     {
-                        // something went wrong, can't determine PSRAM availability
+                        EnsureConnected();
+                        _client.HardReset();
+                        Disconnect();
+                    }
+                    catch
+                    {
                         return PSRamAvailability.Undetermined;
                     }
                 }
 
-                // check if the
-                if (_esptoolMessage.Contains("esptool.py can not exit the download mode over USB"))
-                {
-                    // this board was put on download mode manually, can't run the test app...
-                    return PSRamAvailability.Undetermined;
-                }
-
                 try
                 {
-                    // force baud rate to 115200 (standard baud rate for boootloader)
+                    // force baud rate to 115200 (standard baud rate for bootloader)
                     SerialPort espDevice = new(
                         _serialPort,
                         115200);
@@ -388,7 +478,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     if (espDevice.IsOpen)
                     {
-                        // wait 2 seconds... 
+                        // wait 2 seconds...
                         Thread.Sleep(TimeSpan.FromSeconds(2));
 
                         // ... read output from bootloader
@@ -400,11 +490,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (bootloaderOutput.Contains("PSRAM initialized"))
                         {
-                            // output similiar to this:
-                            // I(206) esp_psram: Found 4MB PSRAM device
-                            // I(206) esp_psram: Speed: 40MHz
-                            // I(209) esp_psram: PSRAM initialized, cache is in low / high(2 - core) mode.
-
                             // extract PSRAM size
                             Match match = Regex.Match(bootloaderOutput, @"Found (?<size>\d+)MB PSRAM device");
                             if (match.Success)
@@ -416,21 +501,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
                         else if (bootloaderOutput.Contains("PSRAM ID read error"))
                         {
-                            // output similiar to this:
-                            // E(206) quad_psram: PSRAM ID read error: 0xffffffff, PSRAM chip not found or not supported
-                            // E(210) esp_psram: PSRAM enabled but initialization failed.Bailing out.
                             return PSRamAvailability.No;
                         }
                         else
                         {
-                            // can't determine PSRAM availability
                             return PSRamAvailability.Undetermined;
                         }
                     }
                 }
                 catch
                 {
-                    // don't care about any exceptions 
+                    // don't care about any exceptions
                 }
             }
             finally
@@ -443,73 +524,86 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
-        /// Backup the entire flash into a bin file
+        /// Backup the entire flash into a bin file.
         /// </summary>
-        /// <param name="backupFilename">Backup file including full path</param>
-        /// <param name="flashSize">Flash size in bytes</param>
-        /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
-        /// <returns>true if successful</returns>
+        /// <param name="backupFilename">Backup file including full path.</param>
+        /// <param name="flashSize">Flash size in bytes.</param>
+        /// <param name="hardResetAfterCommand">If true the chip will execute a hard reset via DTR signal.</param>
         internal void BackupFlash(string backupFilename,
             int flashSize,
             bool hardResetAfterCommand = false)
         {
-            // execute read-flash command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
-            if (!RunEspTool(
-                $"read-flash 0 0x{flashSize:X} \"{backupFilename}\"",
-                true,
-                false,
-                hardResetAfterCommand,
-                (char)8,
-                out string messages))
-            {
-                throw new ReadEsp32FlashException(messages);
-            }
-
-            Match match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
-            if (!match.Success)
-            {
-                throw new ReadEsp32FlashException(messages);
-            }
+            EnsureConnected();
+            EnsureFlashController();
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                OutputWriter.WriteLine(match.Groups["message"].ToString().Trim());
+                OutputWriter.WriteLine($"Reading flash ({flashSize} bytes) to {backupFilename}...");
+            }
+
+            _flashController.ReadFlashToFile(
+                backupFilename,
+                0,
+                flashSize,
+                (bytesRead, totalBytes) =>
+                {
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        int percent = (int)((long)bytesRead * 100 / totalBytes);
+                        OutputWriter.Write($"\rReading flash... {percent}%".PadRight(110));
+                        OutputWriter.Write("\r");
+                    }
+                });
+
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.WriteLine($"\rRead {flashSize} bytes from flash.".PadRight(110));
+            }
+
+            if (hardResetAfterCommand)
+            {
+                _client.HardReset();
+                Disconnect();
             }
         }
 
         /// <summary>
-        /// Backup the entire flash into a bin file
+        /// Backup the config partition to a file.
         /// </summary>
-        /// <param name="backupFilename">Backup file including full path</param>
+        /// <param name="backupFilename">Backup file including full path.</param>
         /// <param name="address">Start address of the config partition.</param>
         /// <param name="size">Size of the config partition.</param>
-        /// <returns>true if successful</returns>
+        /// <returns>Exit code indicating success or failure.</returns>
         internal ExitCodes BackupConfigPartition(
             string backupFilename,
             int address,
             int size)
         {
-            // execute dump-mem command and parse the result; progress message can be found be searching for backspaces (ASCII code 8)
-            if (!RunEspTool(
-                $"read-flash 0x{address:X} 0x{size:X} \"{backupFilename}\"",
-                false,
-                true,
-                false,
-                (char)8,
-                out string messages))
-            {
-                throw new ReadEsp32FlashException(messages);
-            }
-
-            Match match = Regex.Match(messages, "(?<message>Read .*)(.*?\n)*");
-            if (!match.Success)
-            {
-                throw new ReadEsp32FlashException(messages);
-            }
+            EnsureConnected();
+            EnsureFlashController();
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                OutputWriter.WriteLine(match.Groups["message"].ToString().Trim());
+                OutputWriter.WriteLine($"Reading config partition (0x{address:X}, {size} bytes) to {backupFilename}...");
+            }
+
+            _flashController.ReadFlashToFile(
+                backupFilename,
+                (uint)address,
+                size,
+                (bytesRead, totalBytes) =>
+                {
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        int percent = (int)((long)bytesRead * 100 / totalBytes);
+                        OutputWriter.Write($"\rBacking up config partition... {percent}%".PadRight(110));
+                        OutputWriter.Write("\r");
+                    }
+                });
+
+            if (Verbosity >= VerbosityLevel.Detailed)
+            {
+                OutputWriter.WriteLine($"\rRead {size} bytes from config partition.".PadRight(110));
             }
 
             return ExitCodes.OK;
@@ -518,25 +612,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Erase the entire flash of the ESP32 chip.
         /// </summary>
-        /// <returns>true if successful</returns>
+        /// <returns>Exit code indicating success or failure.</returns>
         internal ExitCodes EraseFlash()
         {
-            // execute erase_flash command and parse the result
-            if (!RunEspTool(
-                "erase-flash",
-                false,
-                true,
-                false,
-                null,
-                out string messages))
+            EnsureConnected();
+            EnsureFlashController();
+
+            if (Verbosity >= VerbosityLevel.Normal)
             {
-                throw new EraseEsp32FlashException(messages);
+                OutputWriter.Write("Erasing flash...");
             }
 
-            Match match = Regex.Match(messages, "(?<message>Flash memory erased successfully.*)(.*?\n)*");
-            if (!match.Success)
+            _flashController.EraseFlash();
+
+            if (Verbosity >= VerbosityLevel.Normal)
             {
-                throw new EraseEsp32FlashException(messages);
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine(" OK");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
             return ExitCodes.OK;
@@ -545,407 +638,171 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Erase flash segment on the ESP32 chip.
         /// </summary>
-        /// <returns>true if successful</returns>
+        /// <returns>Exit code indicating success or failure.</returns>
         internal ExitCodes EraseFlashSegment(uint startAddress, uint length)
         {
-            // startAddress and length must both be multiples of the SPI flash erase sector size. This is 0x1000 (4096) bytes for supported flash chips.
-            // esptool takes care of validating this so no need to perform any sanity check before executing the command
+            EnsureConnected();
+            EnsureFlashController();
 
-            // execute erase_flash command and parse the result
-            if (!RunEspTool(
-                $"erase-region 0x{startAddress:X} 0x{length:X}",
-                false,
-                false,
-                false,
-                null,
-                out string messages))
-            {
-                throw new EraseEsp32FlashException(messages);
-            }
-
-            Match match = Regex.Match(messages, "(?<message>Flash memory erased successfully.*)(.*?\n)*");
-            if (!match.Success)
-            {
-                throw new EraseEsp32FlashException(messages);
-            }
+            _flashController.EraseRegion(startAddress, length);
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                OutputWriter.WriteLine(match.Groups["message"].ToString().Trim());
+                OutputWriter.WriteLine($"Erased flash region at 0x{startAddress:X}, length 0x{length:X}.");
             }
 
             return ExitCodes.OK;
         }
 
         /// <summary>
-        /// Write to the flash
+        /// Write to the flash.
         /// </summary>
-        /// <param name="partsToWrite">dictionary which keys are the start addresses and the values are the complete filenames (the bin files)</param>
+        /// <param name="partsToWrite">Dictionary which keys are the start addresses and the values are the complete filenames (the bin files).</param>
         /// <param name="useStandardBaudrate">Use the standard baud rate (default is false).</param>
-        /// <returns>true if successful</returns>
+        /// <returns>Exit code indicating success or failure.</returns>
         internal ExitCodes WriteFlash(
             Dictionary<int, string> partsToWrite,
             bool useStandardBaudrate = false)
         {
-            // put the parts to flash together and prepare the regex for parsing the output
-            var partsArguments = new StringBuilder();
-            var regexPattern = new StringBuilder();
-            int counter = 1;
-            var regexGroupNames = new List<string>();
+            EnsureConnected(useStandardBaudrate);
+            EnsureFlashController();
 
-            foreach (KeyValuePair<int, string> part in partsToWrite)
+            CouldntResetTarget = false;
+
+            // Configure flash chip parameters (SPI_SET_PARAMS)
+            // This tells the stub/ROM the flash geometry so writes work correctly.
+            if (_flashSize > 0)
             {
-                // start address followed by filename
-                partsArguments.Append($"0x{part.Key:X} \"{part.Value}\" ");
-                // test for message in output
-                regexPattern.Append($"(?<wrote{counter}>Wrote.*[\r\n]*Hash of data verified.)(.*?[\r\n]*)*");
-                regexGroupNames.Add($"wrote{counter}");
-                counter++;
+                _flashController.SendSpiSetParams(_flashSize);
             }
 
-            // if flash size was detected already use it for the --flash-size parameter; otherwise use the default "detect"
-            string flashSize = _flashSize switch
-            {
-                >= 0x100000 => $"{_flashSize / 0x100000}MB",
-                > 0 => $"{_flashSize / 0x400}KB",
-                _ => "detect",
-            };
+            // Pre-process partitions: patch bootloader image header with flash parameters
+            var processedParts = new Dictionary<int, string>(partsToWrite.Count);
+            var tempFiles = new List<string>();
 
-            // execute write_flash command and parse the result; progress message can be found be searching for linefeed
-            if (!RunEspTool(
-                $"write-flash --flash-size {flashSize} {partsArguments.ToString().Trim()}",
-                false,
-                useStandardBaudrate,
-                true,
-                '\r',
-                out string messages))
+            try
             {
-                throw new WriteEsp32FlashException(messages);
+                foreach (var part in partsToWrite)
+                {
+                    uint address = (uint)part.Key;
+                    string filePath = part.Value;
+
+                    // Only attempt header patching on the bootloader partition
+                    if (_flashSize > 0
+                        && address == (uint)_chipDetector.Config.BootloaderAddress
+                        && !string.IsNullOrEmpty(_flashMode))
+                    {
+                        byte[] imageData = File.ReadAllBytes(filePath);
+                        byte[] patched = _flashController.PatchBootloaderImageHeader(
+                            address, imageData, _flashMode, _flashFrequency, _flashSize);
+
+                        if (patched != imageData)
+                        {
+                            // Write patched image to a temp file
+                            string tempPath = Path.GetTempFileName();
+                            File.WriteAllBytes(tempPath, patched);
+                            tempFiles.Add(tempPath);
+                            processedParts[part.Key] = tempPath;
+
+                            if (Verbosity >= VerbosityLevel.Detailed)
+                            {
+                                OutputWriter.WriteLine(
+                                    $"Flash params set to 0x{patched[2]:X2}{patched[3]:X2}.");
+                            }
+
+                            continue;
+                        }
+                    }
+
+                    processedParts[part.Key] = filePath;
+                }
+
+                Action<string, int, int> progressCallback = (fileName, bytesWritten, totalBytes) =>
+                {
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        int percent = (int)((long)bytesWritten * 100 / totalBytes);
+                        OutputWriter.Write($"\rWriting {fileName}... {percent}%".PadRight(110));
+                        OutputWriter.Write("\r");
+                    }
+                };
+
+                // Use compressed writes when stub is running (significantly faster)
+                if (_stubUploaded && _client.IsStubRunning)
+                {
+                    _flashController.WriteFlashCompressed(processedParts, progressCallback);
+                }
+                else
+                {
+                    _flashController.WriteFlash(processedParts, progressCallback);
+                }
+            }
+            finally
+            {
+                // Clean up temp files
+                foreach (string tempFile in tempFiles)
+                {
+                    try { File.Delete(tempFile); }
+                    catch { /* ignore cleanup errors */ }
+                }
             }
 
-            // check if there is any mention of not being able to run the app
-            CouldntResetTarget = messages.Contains("To run the app, reset the chip manually");
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("\rFlash write complete.".PadRight(110));
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+            }
+
+            // Try to reset the target after flashing
+            try
+            {
+                _client.HardReset();
+            }
+            catch
+            {
+                CouldntResetTarget = true;
+            }
+
+            // Disconnect so next operation starts fresh
+            Disconnect();
 
             return ExitCodes.OK;
         }
 
         /// <summary>
-        /// Run the esptool one time
+        /// Ensure the flash controller is initialized.
         /// </summary>
-        /// <param name="commandWithArguments">the esptool command (e.g. write_flash) incl. all arguments (if needed)</param>
-        /// <param name="noStub">if true --no-stub will be added; the chip_id, read_mac and flash-id commands can be quicker executes without uploading the stub program to the chip</param>
-        /// <param name="useStandardBaudRate">If <see langword="true"/> the tool will use the standard baud rate to connect to the chip.</param>
-        /// <param name="hardResetAfterCommand">if true the chip will execute a hard reset via DTR signal</param>
-        /// <param name="progressTestChar">If not null: After each of this char a progress message will be printed out</param>
-        /// <param name="messages">StandardOutput and StandardError messages that the esptool prints out</param>
-        /// <returns>true if the esptool exit code was 0; false otherwise</returns>
-        private bool RunEspTool(
-            string commandWithArguments,
-            bool noStub,
-            bool useStandardBaudRate,
-            bool hardResetAfterCommand,
-            char? progressTestChar,
-            out string messages)
+        private void EnsureFlashController()
         {
-            // reset message
-            _esptoolMessage = string.Empty;
-
-            // create the process start info
-            // if we can directly talk to the ROM bootloader without a stub program use the --no-stub option
-            // --nostub requires to not change the baudrate (ROM doesn't support changing baud rate. Keeping initial baud rate 115200)
-            string noStubParameter = null;
-            string baudRateParameter = null;
-            string beforeParameter = null;
-            string afterParameter = hardResetAfterCommand ? "hard-reset" : "no-reset";
-
-            if (noStub)
+            if (_flashController != null)
             {
-                // using no stub and can't change the baud rate
-                noStubParameter = "--no-stub";
-            }
-            else
-            {
-                if (!useStandardBaudRate)
-                {
-                    // using the stub that supports changing the baudrate
-                    baudRateParameter = $"--baud {_baudRate}";
-                }
+                return;
             }
 
-            // prepare the process start of the esptool
-            string appName;
-            string appDir;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // Chip detector must exist (created by EnsureConnected)
+            if (_chipDetector == null)
             {
-                appName = "esptool.exe";
-                appDir = Path.Combine(Utilities.ExecutingPath, "esptool", "esptoolWin");
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                appName = "esptool";
-                appDir = Path.Combine(Utilities.ExecutingPath, "esptool", "esptoolMac");
-            }
-            else
-            {
-                appName = "esptool";
-                appDir = Path.Combine(Utilities.ExecutingPath, "esptool", "esptoolLinux");
-                Process espToolExex = new Process();
-                // Making sure the esptool is executable
-                espToolExex.StartInfo = new ProcessStartInfo("chmod", $"+x {Path.Combine(appDir, appName)}")
-                {
-                    WorkingDirectory = appDir,
-                    UseShellExecute = false,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true
-                };
-                if (!espToolExex.Start())
-                {
-                    throw new EspToolExecutionException("Error changing permissions for esptool!");
-                }
-
-                while (!espToolExex.HasExited)
-                {
-                    Thread.Sleep(10);
-                }
+                throw new InvalidOperationException("Cannot create flash controller: not connected to bootloader.");
             }
 
-            Process espTool = new Process();
-            string parameter = $"--port {_serialPort} {baudRateParameter} --chip {_chipType} {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
-            espTool.StartInfo = new ProcessStartInfo(Path.Combine(appDir, appName), parameter)
+            if (_chipDetector.Config == null)
             {
-                WorkingDirectory = appDir,
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
-            };
-
-
-            if (Verbosity == VerbosityLevel.Diagnostic)
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                OutputWriter.WriteLine("");
-                OutputWriter.WriteLine("Executing esptool with the following parameters:");
-                OutputWriter.WriteLine($"'{parameter}'");
-                OutputWriter.WriteLine("");
+                // Need to detect chip type first to get the config
+                _chipDetector.DetectChipType();
             }
 
-            // start esptool and wait for exit
-            if (!espTool.Start())
-            {
-                throw new EspToolExecutionException("Error starting esptool!");
-            }
-
-            var messageBuilder = new StringBuilder();
-
-            // reset these
-            connectPromptShown = false;
-            connectPatternFound = false;
-            connectTimeStamp = DateTime.UtcNow;
-            bool progressStarted = false;
-
-            // showing progress is a little bit tricky
-            if (Verbosity > VerbosityLevel.Quiet)
-            {
-                if (progressTestChar.HasValue)
-                {
-                    // need to look for progress test char
-
-                    // loop until esptool exit
-                    while (!espTool.HasExited)
-                    {
-                        // loop until there is no next char to read from standard output
-                        while (true)
-                        {
-                            int next = espTool.StandardOutput.Read();
-                            if (next != -1)
-                            {
-                                // append the char to the message buffer
-                                messageBuilder.Append((char)next);
-
-                                // try to find a progress message
-                                string progress = FindProgress(messageBuilder, progressTestChar.Value);
-                                if (progress != null && Verbosity >= VerbosityLevel.Normal)
-                                {
-                                    if (!progressStarted)
-                                    {
-                                        // need to print the first line of the progress message
-                                        OutputWriter.Write("\r");
-
-                                        progressStarted = true;
-                                    }
-
-                                    // print progress... and set the cursor to the beginning of the line (\r)
-                                    OutputWriter.Write(progress);
-                                    OutputWriter.Write("\r");
-                                }
-
-                                ProcessConnectPattern(messageBuilder);
-                            }
-                            else
-                            {
-                                if (Verbosity >= VerbosityLevel.Normal)
-                                {
-                                    // need to clear all progress lines
-                                    for (int i = 0; i < messageBuilder.Length; i++)
-                                    {
-                                        OutputWriter.Write("\b");
-                                    }
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-
-                    // collect the last messages
-                    messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
-                    messageBuilder.Append(espTool.StandardError.ReadToEnd());
-                }
-                else
-                {
-                    // when not looking for progress char, look for connect pattern
-
-                    // loop until esptool exit
-                    while (!espTool.HasExited)
-                    {
-                        // loop until there is no next char to read from standard output
-                        while (true)
-                        {
-                            int next = espTool.StandardOutput.Read();
-                            if (next != -1)
-                            {
-                                // append the char to the message buffer
-                                messageBuilder.Append((char)next);
-
-                                ProcessConnectPattern(messageBuilder);
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                    }
-
-                    // collect the last messages
-                    messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
-                    messageBuilder.Append(espTool.StandardError.ReadToEnd());
-                }
-            }
-            else
-            {
-                // collect all messages
-                messageBuilder.AppendLine(espTool.StandardOutput.ReadToEnd());
-                messageBuilder.Append(espTool.StandardError.ReadToEnd());
-            }
-
-            messages = messageBuilder.ToString();
-
-            // save output messages
-            _esptoolMessage = messages;
-
-            if (espTool.ExitCode == 0)
-            {
-                // exit code was 0 (success), all good
-                return true;
-            }
-            else
-            {
-                // need to look for specific error messages to do a safe guess if execution is as expected
-                if (messages.Contains("esptool.py can not exit the download mode over USB") ||
-                   messages.Contains("Staying in bootloader."))
-                {
-                    // we are probably good with this as we can't do much about it...
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
+            _flashController = new Esp32FlashController(_client, _chipDetector.Config);
         }
 
-        private void ProcessConnectPattern(StringBuilder messageBuilder)
+        /// <inheritdoc/>
+        public void Dispose()
         {
-            // try to find a connect pattern
-            connectPatternFound = FindConnectPattern(messageBuilder);
-
-            double timeToConnect = DateTime.UtcNow.Subtract(connectTimeStamp).TotalSeconds;
-
-            // if esptool is struggling to connect for more than 5 seconds
-
-            // prompt user
-            if (!connectPromptShown &&
-                connectPatternFound &&
-                timeToConnect > 5)
+            if (!_disposed)
             {
-                OutputWriter.ForegroundColor = ConsoleColor.Magenta;
-
-                OutputWriter.WriteLine("*** Hold down the BOOT/FLASH button in ESP32 board ***");
-
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                // set flag
-                connectPromptShown = true;
+                Disconnect();
+                _disposed = true;
             }
-        }
-
-        private bool FindConnectPattern(StringBuilder messageBuilder)
-        {
-            if (messageBuilder.Length > 2)
-            {
-                char previousChar = messageBuilder[messageBuilder.Length - 2];
-                char newChar = messageBuilder[messageBuilder.Length - 1];
-
-                // don't look for double dot (..) sequence so it doesn't mistake it with an ellipsis (...)
-                return ((previousChar == '.'
-                         && newChar == '_') ||
-                        (previousChar == '_'
-                         && newChar == '_') ||
-                        (previousChar == '_'
-                         && newChar == '.'));
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Try to find a progress message in the esptool output
-        /// </summary>
-        /// <param name="messageBuilder">esptool output</param>
-        /// <param name="progressTestChar">search char for the progress message delimiter (backspace or linefeed)</param>
-        /// <returns></returns>
-        private string FindProgress(
-            StringBuilder messageBuilder,
-            char progressTestChar)
-        {
-            // search for the given char (backspace or linefeed)
-            // only if we have 100 chars at minimum and only if the last char is the test char
-            if (messageBuilder.Length > 100 &&
-                messageBuilder[messageBuilder.Length - 1] == progressTestChar &&
-                messageBuilder[messageBuilder.Length - 2] != progressTestChar)
-            {
-                // trim the test char and convert \r\n into \r
-                string progress = messageBuilder.ToString().Trim(progressTestChar).Replace("\r\n", "\r");
-
-                // trim initial message with device features
-                int startIndex = progress.LastIndexOf("MAC:");
-
-                // another test char in the message?
-                int delimiter = progress.LastIndexOf(progressTestChar, progress.Length - 1);
-                if (startIndex > 0
-                    && delimiter > 0
-                    && delimiter > startIndex)
-                {
-                    //var nextDelimiter = progress.LastIndexOf(progressTestChar, delimiter);
-                    // then we found a progress message; pad the message to 110 chars because no message is longer than 110 chars
-                    return progress.Substring(delimiter + 1).PadRight(110);
-                }
-            }
-
-            // no progress message found
-            return null;
         }
     }
 }
