@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
@@ -618,19 +619,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             EnsureConnected();
             EnsureFlashController();
 
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                OutputWriter.Write("Erasing flash...");
-            }
-
             _flashController.EraseFlash();
-
-            if (Verbosity >= VerbosityLevel.Normal)
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.Green;
-                OutputWriter.WriteLine(" OK");
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-            }
 
             return ExitCodes.OK;
         }
@@ -717,24 +706,84 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     processedParts[part.Key] = filePath;
                 }
 
-                Action<string, int, int> progressCallback = (fileName, bytesWritten, totalBytes) =>
+                bool useCompressed = _stubUploaded && _client.IsStubRunning;
+
+                foreach (var part in processedParts)
                 {
+                    uint partAddress = (uint)part.Key;
+                    byte[] fileData = File.ReadAllBytes(part.Value);
+                    int uncompressedSize = fileData.Length;
+                    byte[] compressedData = null;
+
+                    if (useCompressed)
+                    {
+                        compressedData = Esp32FlashController.CompressZlib(fileData);
+
+                        if (Verbosity >= VerbosityLevel.Normal)
+                        {
+                            OutputWriter.WriteLine(
+                                $"Compressed {uncompressedSize} bytes to {compressedData.Length}...");
+                        }
+                    }
+
+                    var sw = Stopwatch.StartNew();
+
+                    if (useCompressed)
+                    {
+                        int compTotal = compressedData.Length;
+
+                        _flashController.WriteFlashCompressed(
+                            partAddress,
+                            fileData,
+                            compressedData,
+                            (compSent, compLen) =>
+                            {
+                                if (Verbosity >= VerbosityLevel.Normal)
+                                {
+                                    long uncompEst = (long)compSent * uncompressedSize / compLen;
+                                    uint curAddr = partAddress + (uint)uncompEst;
+                                    WriteProgressBar(curAddr, compSent, compLen);
+                                }
+                            });
+                    }
+                    else
+                    {
+                        _flashController.WriteFlash(
+                            partAddress,
+                            fileData,
+                            (bytesSent, total) =>
+                            {
+                                if (Verbosity >= VerbosityLevel.Normal)
+                                {
+                                    uint curAddr = partAddress + (uint)bytesSent;
+                                    WriteProgressBar(curAddr, bytesSent, total);
+                                }
+                            });
+                    }
+
+                    sw.Stop();
+
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
-                        int percent = (int)((long)bytesWritten * 100 / totalBytes);
-                        OutputWriter.Write($"\rWriting {fileName}... {percent}%".PadRight(110));
-                        OutputWriter.Write("\r");
-                    }
-                };
+                        double secs = sw.Elapsed.TotalSeconds;
+                        int written = useCompressed ? uncompressedSize : uncompressedSize;
+                        int compSize = compressedData?.Length ?? uncompressedSize;
+                        double kbits = secs > 0 ? (compSize * 8.0 / 1000.0) / secs : 0;
 
-                // Use compressed writes when stub is running (significantly faster)
-                if (_stubUploaded && _client.IsStubRunning)
-                {
-                    _flashController.WriteFlashCompressed(processedParts, progressCallback);
-                }
-                else
-                {
-                    _flashController.WriteFlash(processedParts, progressCallback);
+                        OutputWriter.Write("\r".PadRight(110));
+                        OutputWriter.Write("\r");
+
+                        if (useCompressed)
+                        {
+                            OutputWriter.WriteLine(
+                                $"Wrote {written} bytes ({compSize} compressed) at 0x{partAddress:X8} in {secs:F1} seconds ({kbits:F1} kbit/s).");
+                        }
+                        else
+                        {
+                            OutputWriter.WriteLine(
+                                $"Wrote {written} bytes at 0x{partAddress:X8} in {secs:F1} seconds ({kbits:F1} kbit/s).");
+                        }
+                    }
                 }
             }
             finally
@@ -793,6 +842,47 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             _flashController = new Esp32FlashController(_client, _chipDetector.Config);
+        }
+
+        /// <summary>
+        /// Write an esptool-style progress bar to the console.
+        /// Format: Writing at 0xADDR [=====>                        ]  XX.X% sent/total bytes...
+        /// </summary>
+        private static void WriteProgressBar(uint address, int bytesSent, int totalBytes)
+        {
+            const int BarWidth = 30;
+
+            double fraction = totalBytes > 0 ? (double)bytesSent / totalBytes : 0;
+            if (fraction > 1)
+            {
+                fraction = 1;
+            }
+
+            int filled = (int)(fraction * BarWidth);
+            double pct = fraction * 100.0;
+
+            // Build bar: '=' for filled, '>' for tip (unless 100%), ' ' for rest
+            var bar = new char[BarWidth];
+
+            for (int i = 0; i < BarWidth; i++)
+            {
+                if (i < filled)
+                {
+                    bar[i] = '=';
+                }
+                else if (i == filled && filled < BarWidth)
+                {
+                    bar[i] = '>';
+                }
+                else
+                {
+                    bar[i] = ' ';
+                }
+            }
+
+            string line = $"\rWriting at 0x{address:X8} [{new string(bar)}] {pct,5:F1}% {bytesSent}/{totalBytes} bytes...";
+            OutputWriter.Write(line.PadRight(110));
+            OutputWriter.Write("\r");
         }
 
         /// <inheritdoc/>

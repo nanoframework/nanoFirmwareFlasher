@@ -212,14 +212,27 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             byte[] data,
             Action<int, int> progress = null)
         {
+            byte[] compressed = CompressZlib(data);
+            WriteFlashCompressed(address, data, compressed, progress);
+        }
+
+        /// <summary>
+        /// Write pre-compressed binary data to flash using deflate compression (requires stub loader).
+        /// The caller supplies both uncompressed and compressed data so that compression
+        /// does not need to be repeated when the caller already has the compressed form.
+        /// Progress callback receives (compressedBytesSent, compressedTotal).
+        /// </summary>
+        internal void WriteFlashCompressed(
+            uint address,
+            byte[] data,
+            byte[] compressed,
+            Action<int, int> progress = null)
+        {
             if (!_client.IsStubRunning)
             {
                 throw new InvalidOperationException(
                     "Compressed flash writes require the stub loader to be running.");
             }
-
-            // Compress the entire image with zlib
-            byte[] compressed = CompressZlib(data);
 
             int blockSize = CompressedBlockSize;
             int totalBlocks = (compressed.Length + blockSize - 1) / blockSize;
@@ -239,9 +252,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                 SendFlashDeflData(block, seq);
 
-                // Report progress based on compressed bytes sent
-                int uncompressedProgress = (int)((long)(offset + chunkSize) * data.Length / compressed.Length);
-                progress?.Invoke(Math.Min(uncompressedProgress, data.Length), data.Length);
+                // Report compressed bytes sent
+                progress?.Invoke(Math.Min(offset + chunkSize, compressed.Length), compressed.Length);
             }
 
             // FLASH_DEFL_END
