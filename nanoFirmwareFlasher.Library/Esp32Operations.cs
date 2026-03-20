@@ -528,7 +528,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (verbosity >= VerbosityLevel.Normal)
                     {
                         OutputWriter.ForegroundColor = ConsoleColor.Green;
-                        OutputWriter.WriteLine("OK".PadRight(110));
+                        OutputWriter.WriteLine("OK");
                     }
                     else
                     {
@@ -593,7 +593,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             OutputWriter.ForegroundColor = ConsoleColor.White;
                             OutputWriter.Write($"Backup configuration...");
                             OutputWriter.ForegroundColor = ConsoleColor.Green;
-                            OutputWriter.WriteLine("OK".PadRight(110));
+                            OutputWriter.WriteLine("OK");
                         }
 
                         firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
@@ -775,7 +775,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine("OK".PadRight(110));
+                    OutputWriter.WriteLine("OK");
 
                     // warn user if reboot is not possible
                     if (espTool.CouldntResetTarget)

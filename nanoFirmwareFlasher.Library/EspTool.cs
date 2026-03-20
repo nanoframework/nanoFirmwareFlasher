@@ -355,7 +355,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine("OK".PadRight(110));
+                    OutputWriter.WriteLine("OK");
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
@@ -551,14 +551,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
                         int percent = (int)((long)bytesRead * 100 / totalBytes);
-                        OutputWriter.Write($"\rReading flash... {percent}%".PadRight(110));
-                        OutputWriter.Write("\r");
+                        int tw = GetTerminalWidth();
+                        string msg = $"\rReading flash... {percent}%";
+                        OutputWriter.Write(msg.PadRight(tw + 1));
                     }
                 });
 
             if (Verbosity >= VerbosityLevel.Normal)
             {
-                OutputWriter.WriteLine($"\rRead {flashSize} bytes from flash.".PadRight(110));
+                ClearLine();
+                OutputWriter.WriteLine($"Read {flashSize} bytes from flash.");
             }
 
             if (hardResetAfterCommand)
@@ -597,14 +599,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (Verbosity >= VerbosityLevel.Normal)
                     {
                         int percent = (int)((long)bytesRead * 100 / totalBytes);
-                        OutputWriter.Write($"\rBacking up config partition... {percent}%".PadRight(110));
-                        OutputWriter.Write("\r");
+                        int tw = GetTerminalWidth();
+                        string msg = $"\rBacking up config partition... {percent}%";
+                        OutputWriter.Write(msg.PadRight(tw + 1));
                     }
                 });
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                OutputWriter.WriteLine($"\rRead {size} bytes from config partition.".PadRight(110));
+                ClearLine();
+                OutputWriter.WriteLine($"Read {size} bytes from config partition.");
             }
 
             return ExitCodes.OK;
@@ -770,8 +774,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         int compSize = compressedData?.Length ?? uncompressedSize;
                         double kbits = secs > 0 ? (compSize * 8.0 / 1000.0) / secs : 0;
 
-                        OutputWriter.Write("\r".PadRight(110));
-                        OutputWriter.Write("\r");
+                        ClearLine();
 
                         if (useCompressed)
                         {
@@ -799,7 +802,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (Verbosity >= VerbosityLevel.Normal)
             {
                 OutputWriter.ForegroundColor = ConsoleColor.Green;
-                OutputWriter.WriteLine("\rFlash write complete.".PadRight(110));
+                ClearLine();
+                OutputWriter.WriteLine("Flash write complete.");
                 OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
@@ -850,7 +854,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         private static void WriteProgressBar(uint address, int bytesSent, int totalBytes)
         {
-            const int BarWidth = 30;
+            // Determine usable terminal width (must not exceed it or \r won't rewind properly)
+            int maxWidth = GetTerminalWidth();
+
+            if (maxWidth < 40)
+            {
+                maxWidth = 40;
+            }
 
             double fraction = totalBytes > 0 ? (double)bytesSent / totalBytes : 0;
             if (fraction > 1)
@@ -858,19 +868,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 fraction = 1;
             }
 
-            int filled = (int)(fraction * BarWidth);
             double pct = fraction * 100.0;
 
-            // Build bar: '=' for filled, '>' for tip (unless 100%), ' ' for rest
-            var bar = new char[BarWidth];
+            // Fixed-width parts: "Writing at 0xADDRESS [" + "] XXX.X% sent/total bytes..."
+            string prefix = $"Writing at 0x{address:X8} [";
+            string suffix = $"] {pct,5:F1}% {bytesSent}/{totalBytes} bytes...";
 
-            for (int i = 0; i < BarWidth; i++)
+            // Remaining space determines bar width
+            int barWidth = maxWidth - prefix.Length - suffix.Length;
+
+            if (barWidth < 10)
+            {
+                barWidth = 10;
+            }
+
+            int filled = (int)(fraction * barWidth);
+
+            var bar = new char[barWidth];
+
+            for (int i = 0; i < barWidth; i++)
             {
                 if (i < filled)
                 {
                     bar[i] = '=';
                 }
-                else if (i == filled && filled < BarWidth)
+                else if (i == filled && filled < barWidth)
                 {
                     bar[i] = '>';
                 }
@@ -880,9 +902,41 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            string line = $"\rWriting at 0x{address:X8} [{new string(bar)}] {pct,5:F1}% {bytesSent}/{totalBytes} bytes...";
-            OutputWriter.Write(line.PadRight(110));
-            OutputWriter.Write("\r");
+            string line = $"\r{prefix}{new string(bar)}{suffix}";
+
+            // Pad to maxWidth to clear any leftover characters, but never exceed terminal width
+            if (line.Length - 1 < maxWidth)
+            {
+                line = line.PadRight(maxWidth + 1);
+            }
+
+            OutputWriter.Write(line);
+        }
+
+        /// <summary>
+        /// Get the maximum safe line width for carriage-return based progress.
+        /// Returns Console.WindowWidth - 1 (to avoid auto-wrap), with a reasonable fallback.
+        /// </summary>
+        private static int GetTerminalWidth()
+        {
+            try
+            {
+                int w = Console.WindowWidth;
+                return w > 1 ? w - 1 : 79;
+            }
+            catch
+            {
+                return 79;
+            }
+        }
+
+        /// <summary>
+        /// Clear the current console line (overwrite with spaces) and return cursor to start.
+        /// </summary>
+        private static void ClearLine()
+        {
+            int width = GetTerminalWidth();
+            OutputWriter.Write("\r" + new string(' ', width) + "\r");
         }
 
         /// <inheritdoc/>
