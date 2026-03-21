@@ -84,6 +84,58 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Error executing file deployment on nano device.")]
         E2003 = 2003,
 
+        //////////////////////////////
+        // Raspberry Pi Pico Errors //
+        //////////////////////////////
+
+        /// <summary>
+        /// Generic Pico flashing error.
+        /// </summary>
+        [Display(Name = "Error flashing Raspberry Pi Pico device.")]
+        E3000 = 3000,
+
+        /// <summary>
+        /// UF2 drive not found (device not in BOOTSEL mode).
+        /// </summary>
+        [Display(Name = "Pico UF2 drive not found. Make sure the device is connected in BOOTSEL mode (hold BOOTSEL button while connecting USB).")]
+        E3001 = 3001,
+
+        /// <summary>
+        /// Failed to copy UF2 file to device.
+        /// </summary>
+        [Display(Name = "Failed to copy firmware file to Pico UF2 drive.")]
+        E3002 = 3002,
+
+        /// <summary>
+        /// Invalid or corrupt UF2 file.
+        /// </summary>
+        [Display(Name = "Invalid or corrupt UF2 file.")]
+        E3003 = 3003,
+
+        /// <summary>
+        /// Device not recognized as RP2040/RP2350.
+        /// </summary>
+        [Display(Name = "Connected device not recognized as RP2040 or RP2350.")]
+        E3004 = 3004,
+
+        /// <summary>
+        /// Timeout waiting for UF2 drive to appear.
+        /// </summary>
+        [Display(Name = "Timeout waiting for Pico UF2 drive to appear. Make sure the device is in BOOTSEL mode.")]
+        E3005 = 3005,
+
+        /// <summary>
+        /// GET_INFO command failed (RP2350 only).
+        /// </summary>
+        [Display(Name = "Failed to query device info via PICOBOOT GET_INFO command. This command is only supported on RP2350 devices.")]
+        E3006 = 3006,
+
+        /// <summary>
+        /// OTP access error (RP2350 only).
+        /// </summary>
+        [Display(Name = "Failed to read OTP memory via PICOBOOT. This command is only supported on RP2350 devices.")]
+        E3007 = 3007,
+
         ////////////////////////
         // ESP32 tools Errors //
         ////////////////////////

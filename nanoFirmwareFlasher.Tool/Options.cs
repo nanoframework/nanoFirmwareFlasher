@@ -216,7 +216,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "platform",
             Required = false,
             Default = null,
-            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2, efm32.")]
+            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2, efm32, rpi_pico.")]
         public SupportedPlatform? Platform { get; set; }
 
         /// <summary>
@@ -394,6 +394,46 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = false,
             HelpText = $"Do not check whether a new version of {_APPLICATIONALIAS} is available.")]
         public bool SuppressNanoFFVersionCheck { get; set; }
+
+        #endregion
+
+        #region Raspberry Pi Pico options
+
+        [Option(
+            "forcebootsel",
+            Required = false,
+            Default = false,
+            HelpText = "Force a running Pico device into BOOTSEL mode via USB (requires nanoCLR with USB stdio). No need to press the physical button.")]
+        public bool ForceBootsel { get; set; }
+
+        [Option(
+            "picoboot",
+            Required = false,
+            Default = false,
+            HelpText = "Use the PICOBOOT USB protocol for direct flash (no UF2 conversion). Enables verify and mass erase operations.")]
+        public bool UsePicoBoot { get; set; }
+
+        [Option(
+            "verify",
+            Required = false,
+            Default = false,
+            HelpText = "Verify firmware after flashing by reading back flash contents (Pico PICOBOOT mode only).")]
+        public bool VerifyAfterFlash { get; set; }
+
+        [Option(
+            "readflash",
+            Required = false,
+            Default = null,
+            HelpText = "Read/backup flash contents to a file (Pico PICOBOOT mode only).")]
+        public string ReadFlashFile { get; set; }
+
+        [Option(
+            "otpdump",
+            Required = false,
+            Default = null,
+            HelpText = "Dump OTP memory contents to a file (RP2350 PICOBOOT mode only).")]
+        public string OtpDumpFile { get; set; }
+
         #endregion
 
 
@@ -405,9 +445,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("- Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { Platform = SupportedPlatform.esp32, Update = true, SerialPort = "COM31" }),
                 new("- Update specific ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP_WROVER_KIT" , DeploymentImage = "<location of file>.bin"}),
                 new("- Update specific Silabs device (Giant Gecko EVK) with latest available firmware", new Options { TargetName = "SL_STK3701A", Update = true }),
+                new("- Update Raspberry Pi Pico device with latest available firmware", new Options { Platform = SupportedPlatform.rpi_pico, TargetName = "RASPBERRY_PI_PICO", Update = true }),
+                new("- Update Raspberry Pi Pico with PICOBOOT direct flash and verification", new Options { Platform = SupportedPlatform.rpi_pico, TargetName = "RASPBERRY_PI_PICO", Update = true, UsePicoBoot = true, VerifyAfterFlash = true }),
                 new("- List all STM32 devices connected through JTAG", new Options { Platform = SupportedPlatform.stm32, ListJtagDevices = true}),
                 new("- Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
                 new("- List all available STM32 targets", new Options { ListTargets = true, Platform =  SupportedPlatform.stm32 }),
+                new("- List all available Raspberry Pi Pico targets", new Options { ListTargets = true, Platform = SupportedPlatform.rpi_pico }),
+                new("- Show details of connected Raspberry Pi Pico device", new Options { Platform = SupportedPlatform.rpi_pico, DeviceDetails = true }),
                 new("- List all available COM ports", new Options { ListComPorts = true }),
             ];
         private const string _APPLICATIONALIAS = "nanoff";

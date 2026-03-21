@@ -162,3 +162,29 @@ UpdateDeviceClrAsync(
     "COM55",
     VerbosityLevel.Nornal);
 ```
+
+### Update Raspberry Pi Pico firmware
+
+This console application updates the firmware of a Raspberry Pi Pico (RP2040 or RP2350) device. The device must be in BOOTSEL mode (hold the BOOTSEL button while connecting USB).
+
+No COM port or external tools are needed — the device appears as a USB drive:
+
+```csharp
+string drivePath = PicoUf2Utility.FindUf2Drive();
+PicoDeviceInfo deviceInfo = PicoUf2Utility.DetectDevice(drivePath);
+```
+
+And the firmware can be updated in a single call:
+
+```csharp
+await PicoOperations.UpdateFirmwareAsync(
+    deviceInfo,
+    null,     // auto-detect target name
+    true,
+    null,     // latest version
+    false,    // stable release
+    null,     // no archive
+    VerbosityLevel.Normal);
+```
+
+The operation returns an exit code reporting success or failure of the update operation.

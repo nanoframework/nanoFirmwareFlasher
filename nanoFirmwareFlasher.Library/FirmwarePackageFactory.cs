@@ -43,6 +43,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     fwVersion,
                     false);
             }
+            else if (nanoDevice.Platform.StartsWith("RP2")
+                || nanoDevice.Platform.StartsWith("PICO")
+                || nanoDevice.Platform.StartsWith("RASPBERRY"))
+            {
+                return new PicoFirmware(
+                    nanoDevice.TargetName,
+                    fwVersion,
+                    false);
+            }
             else
             {
                 throw new NotSupportedException($"FirmwarePackageFactory doesn't support generating packages for {nanoDevice.Platform} platform");

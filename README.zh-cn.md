@@ -90,6 +90,7 @@ nanoff --help
 - [STM32](#stm32-使用示例)
 - [TI CC13x2](#ti-cc13x2-使用示例)
 - [Silabs Giant Gecko](#silabs-giant-gecko-使用示例)
+- [Raspberry Pi Pico](#raspberry-pi-pico-使用示例)
 - [普通连接使用示例](#普通连接使用示例)
 - [常用选项](#常用选项)
 
@@ -309,6 +310,122 @@ nanoff --update --target SL_STK3701A --binfile "c:\dev\my awesome app\bin\debug\
 ```console
 nanoff --listjlink
 ```
+
+## Raspberry Pi Pico 使用示例
+
+Raspberry Pi Pico 开发板（RP2040 和 RP2350）使用 UF2 大容量存储进行固件部署。设备必须处于 **BOOTSEL 模式** —— 在连接 USB 线缆时按住 BOOTSEL 按钮。开发板将显示为 USB 驱动器（标签为 `RPI-RP2` 或 `RP2350`）。
+
+无需外部工具或驱动程序。nanoff 会自动处理 UF2 转换。
+
+如果未检测到设备，nanoff 将等待最多 30 秒以等待 Pico 进入 BOOTSEL 模式。如果同时有多个 Pico 设备处于 BOOTSEL 模式，nanoff 将使用第一个找到的设备并显示警告。
+
+### 更新 Raspberry Pi Pico 的固件
+
+将 Raspberry Pi Pico（RP2040）的固件更新到最新可用的稳定版本。
+
+```console
+nanoff --update --target RASPBERRY_PI_PICO
+```
+
+### 更新 Raspberry Pi Pico 2 的固件
+
+将 Raspberry Pi Pico 2（RP2350）的固件更新到最新可用的预览版本。
+
+```console
+nanoff --update --target RASPBERRY_PI_PICO2 --preview
+```
+
+### 显示已连接的 Pico 设备详情
+
+显示处于 BOOTSEL 模式的 Pico 设备的详细信息（芯片类型、板卡 ID、引导加载程序版本）。
+
+```console
+nanoff --platform rpi_pico --devicedetails
+```
+
+### 列出可用的 Raspberry Pi Pico 目标
+
+列出 Raspberry Pi Pico 平台的所有可用固件目标。
+
+```console
+nanoff --listtargets --platform rpi_pico
+```
+
+### 高级功能：PICOBOOT 直接烧录
+
+nanoff 支持 **PICOBOOT** 原生 USB 协议进行直接烧录操作。这跳过了 UF2 大容量存储路径，直接与 RP2040/RP2350 ROM 引导加载程序通信。设备必须处于 BOOTSEL 模式，使用 `LibUsbDotNet` 进行 USB 通信。
+
+使用 PICOBOOT 协议更新固件（直接二进制烧录，无需 UF2 转换）：
+
+```console
+nanoff --update --target RASPBERRY_PI_PICO --picoboot
+```
+
+更新固件并在写入后验证闪存内容：
+
+```console
+nanoff --update --target RASPBERRY_PI_PICO --picoboot --verify
+```
+
+在烧录前强制将运行中的设备进入 BOOTSEL 模式（要求运行中的固件支持 nanoFramework USB stdio）：
+
+```console
+nanoff --update --target RASPBERRY_PI_PICO --forcebootsel
+```
+
+擦除设备上的所有闪存内容：
+
+```console
+nanoff --platform rpi_pico --picoboot --masserase
+```
+
+将当前闪存内容备份到文件：
+
+```console
+nanoff --platform rpi_pico --picoboot --readflash backup.bin
+```
+
+使用自定义 CLR 二进制文件烧录（而非从 Cloudsmith 下载）：
+
+```console
+nanoff --update --target RASPBERRY_PI_PICO --clrfile path/to/nanoCLR.bin
+```
+
+也适用于 PICOBOOT 路径：
+
+```console
+nanoff --update --target RASPBERRY_PI_PICO --picoboot --clrfile path/to/nanoCLR.bin --verify
+```
+
+通过 PICOBOOT 在指定地址烧录原始二进制文件（高级用法）：
+
+```console
+nanoff --platform rpi_pico --picoboot --binfile firmware.bin --address 0x10000000
+```
+
+可以在不同地址烧录多个文件，并可选择验证：
+
+```console
+nanoff --platform rpi_pico --picoboot --binfile bootloader.bin --address 0x10000000 --binfile app.bin --address 0x10010000 --verify
+```
+
+### 高级功能：RP2350 设备信息和 OTP（PICOBOOT）
+
+在 RP2350 设备上，nanoff 可以通过 PICOBOOT 协议查询扩展设备信息，包括闪存 JEDEC ID、安全启动状态和 OTP 配置。
+
+显示处于 BOOTSEL 模式的 RP2350 的扩展设备详情：
+
+```console
+nanoff --platform rpi_pico --devicedetails --picoboot
+```
+
+将 OTP（一次性可编程）内存转储到文件以供检查（仅限 RP2350）：
+
+```console
+nanoff --platform rpi_pico --picoboot --otpdump otp.bin
+```
+
+> **注意：** `--picoboot` 选项需要适当的 USB 驱动程序（Windows 上为 WinUSB，Linux/macOS 上为 libusb）。在 Linux 上，非 root 用户访问可能需要 udev 规则：`SUBSYSTEM=="usb", ATTR{idVendor}=="2e8a", MODE="0666"`。`--verify`、`--readflash` 和 `--otpdump` 选项需要 `--picoboot`。OTP 转储和扩展设备信息仅在 RP2350 设备上可用。
 
 ## 普通连接使用示例
 
