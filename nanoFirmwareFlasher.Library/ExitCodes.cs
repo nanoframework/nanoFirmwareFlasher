@@ -124,18 +124,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Timeout waiting for Pico UF2 drive to appear. Make sure the device is in BOOTSEL mode.")]
         E3005 = 3005,
 
-        /// <summary>
-        /// GET_INFO command failed (RP2350 only).
-        /// </summary>
-        [Display(Name = "Failed to query device info via PICOBOOT GET_INFO command. This command is only supported on RP2350 devices.")]
-        E3006 = 3006,
-
-        /// <summary>
-        /// OTP access error (RP2350 only).
-        /// </summary>
-        [Display(Name = "Failed to read OTP memory via PICOBOOT. This command is only supported on RP2350 devices.")]
-        E3007 = 3007,
-
         ////////////////////////
         // ESP32 tools Errors //
         ////////////////////////

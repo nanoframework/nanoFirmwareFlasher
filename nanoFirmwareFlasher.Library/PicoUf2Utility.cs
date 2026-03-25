@@ -175,6 +175,70 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
+        /// Extract raw binary data from UF2-formatted data.
+        /// Reconstructs the binary by reading each block's target address and data payload,
+        /// placing data at the correct offsets relative to the lowest address.
+        /// </summary>
+        /// <param name="uf2Data">Raw UF2 file data.</param>
+        /// <returns>Extracted binary data, or <c>null</c> if the UF2 data is invalid.</returns>
+        public static byte[] ExtractBinFromUf2(byte[] uf2Data)
+        {
+            if (uf2Data == null || uf2Data.Length < UF2_BLOCK_SIZE || uf2Data.Length % UF2_BLOCK_SIZE != 0)
+            {
+                return null;
+            }
+
+            int blockCount = uf2Data.Length / UF2_BLOCK_SIZE;
+
+            // first pass: find address range
+            uint minAddress = uint.MaxValue;
+            uint maxAddress = 0;
+
+            for (int i = 0; i < blockCount; i++)
+            {
+                int offset = i * UF2_BLOCK_SIZE;
+                uint targetAddr = BitConverter.ToUInt32(uf2Data, offset + 12);
+                uint dataLen = BitConverter.ToUInt32(uf2Data, offset + 16);
+
+                if (targetAddr < minAddress)
+                {
+                    minAddress = targetAddr;
+                }
+
+                uint end = targetAddr + dataLen;
+
+                if (end > maxAddress)
+                {
+                    maxAddress = end;
+                }
+            }
+
+            if (minAddress >= maxAddress)
+            {
+                return null;
+            }
+
+            // second pass: copy data into output buffer
+            byte[] result = new byte[maxAddress - minAddress];
+
+            for (int i = 0; i < blockCount; i++)
+            {
+                int offset = i * UF2_BLOCK_SIZE;
+                uint targetAddr = BitConverter.ToUInt32(uf2Data, offset + 12);
+                uint dataLen = BitConverter.ToUInt32(uf2Data, offset + 16);
+
+                if (dataLen > UF2_DATA_SIZE)
+                {
+                    dataLen = UF2_DATA_SIZE;
+                }
+
+                Array.Copy(uf2Data, offset + 32, result, targetAddr - minAddress, dataLen);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Validate the integrity of UF2 data. Checks magic bytes, block numbering,
         /// total block count consistency, family ID, and dataLen alignment.
         /// </summary>
@@ -360,6 +424,77 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return uf2Data;
+        }
+
+        /// <summary>
+        /// Pad existing UF2 data with zero-filled blocks so that the entire flash is covered.
+        /// Any 256-byte region not already present in the UF2 gets a zero-filled block,
+        /// causing the bootloader to erase and write zeros to those sectors.
+        /// </summary>
+        /// <param name="uf2Data">Existing UF2 data (firmware or application).</param>
+        /// <param name="flashBase">Flash base address (typically 0x10000000).</param>
+        /// <param name="flashSize">Total flash size in bytes.</param>
+        /// <param name="familyId">UF2 family ID.</param>
+        /// <returns>New UF2 data covering the entire flash range.</returns>
+        public static byte[] PadUf2ToFullFlash(byte[] uf2Data, uint flashBase, uint flashSize, uint familyId)
+        {
+            int totalBlocks = (int)(flashSize / UF2_DATA_SIZE);
+
+            // track which 256-byte regions are already in the UF2
+            var coveredAddresses = new System.Collections.Generic.HashSet<uint>();
+            var existingBlocks = new System.Collections.Generic.Dictionary<uint, byte[]>();
+
+            if (uf2Data != null && uf2Data.Length >= UF2_BLOCK_SIZE)
+            {
+                int inputBlocks = uf2Data.Length / UF2_BLOCK_SIZE;
+
+                for (int i = 0; i < inputBlocks; i++)
+                {
+                    int off = i * UF2_BLOCK_SIZE;
+                    uint addr = BitConverter.ToUInt32(uf2Data, off + 12);
+
+                    coveredAddresses.Add(addr);
+
+                    // extract the full 512-byte block for later re-use
+                    byte[] block = new byte[UF2_BLOCK_SIZE];
+                    Array.Copy(uf2Data, off, block, 0, UF2_BLOCK_SIZE);
+                    existingBlocks[addr] = block;
+                }
+            }
+
+            // build the full UF2 with all addresses covered
+            byte[] result = new byte[totalBlocks * UF2_BLOCK_SIZE];
+            int blockIndex = 0;
+
+            for (uint addr = flashBase; addr < flashBase + flashSize; addr += UF2_DATA_SIZE)
+            {
+                int offset = blockIndex * UF2_BLOCK_SIZE;
+
+                if (existingBlocks.TryGetValue(addr, out byte[] existingBlock))
+                {
+                    // copy existing block and update block numbering
+                    Array.Copy(existingBlock, 0, result, offset, UF2_BLOCK_SIZE);
+                }
+                else
+                {
+                    // create zero-filled block (data area stays zero from array init)
+                    WriteUInt32(result, offset + 0, UF2_MAGIC_START0);
+                    WriteUInt32(result, offset + 4, UF2_MAGIC_START1);
+                    WriteUInt32(result, offset + 8, UF2_FLAG_FAMILY_ID);
+                    WriteUInt32(result, offset + 12, addr);
+                    WriteUInt32(result, offset + 16, UF2_DATA_SIZE);
+                    WriteUInt32(result, offset + 28, familyId);
+                    WriteUInt32(result, offset + UF2_BLOCK_SIZE - 4, UF2_MAGIC_END);
+                }
+
+                // fix block numbering for all blocks
+                WriteUInt32(result, offset + 20, (uint)blockIndex);
+                WriteUInt32(result, offset + 24, (uint)totalBlocks);
+
+                blockIndex++;
+            }
+
+            return result;
         }
 
         /// <summary>

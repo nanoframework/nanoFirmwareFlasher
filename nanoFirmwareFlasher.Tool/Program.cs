@@ -804,30 +804,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if ((_exitCode == ExitCodes.OK) && !string.IsNullOrEmpty(o.FileDeployment))
                 {
-                    // file deployment requires a serial port and is not supported for Pico platform
-                    if (o.Platform == SupportedPlatform.rpi_pico)
+                    FileDeploymentManager deploy = new FileDeploymentManager(o.FileDeployment, o.SerialPort, _verbosityLevel);
+                    try
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-                        OutputWriter.WriteLine("File deployment is not supported for the Raspberry Pi Pico platform.");
-                        OutputWriter.WriteLine("Pico devices use UF2 mass storage or PICOBOOT USB for firmware deployment.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        _exitCode = ExitCodes.E3000;
+                        _exitCode = await deploy.DeployAsync();
+                        operationPerformed = true;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        FileDeploymentManager deploy = new FileDeploymentManager(o.FileDeployment, o.SerialPort, _verbosityLevel);
-                        try
-                        {
-                            _exitCode = await deploy.DeployAsync();
-                            operationPerformed = true;
-                        }
-                        catch (Exception ex)
-                        {
-                            // exception with 
-                            _exitCode = ExitCodes.E2003;
-                            _extraMessage = ex.Message;
-                        }
+                        // exception with 
+                        _exitCode = ExitCodes.E2003;
+                        _extraMessage = ex.Message;
                     }
                 }
             }
@@ -841,28 +828,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if ((_exitCode == ExitCodes.OK) && !string.IsNullOrEmpty(o.NetworkDeployment))
                 {
-                    // network deployment requires a serial port and is not supported for Pico platform
-                    if (o.Platform == SupportedPlatform.rpi_pico)
+                    NetworkDeploymentManager deploy = new NetworkDeploymentManager(o.NetworkDeployment, o.SerialPort, _verbosityLevel);
+                    try
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-                        OutputWriter.WriteLine("Network deployment is not supported for the Raspberry Pi Pico platform.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        _exitCode = ExitCodes.E3000;
+                        _exitCode = await deploy.DeployAsync();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        NetworkDeploymentManager deploy = new NetworkDeploymentManager(o.NetworkDeployment, o.SerialPort, _verbosityLevel);
-                        try
-                        {
-                            _exitCode = await deploy.DeployAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            // exception with 
-                            _exitCode = ExitCodes.E2003;
-                            _extraMessage = ex.Message;
-                        }
+                        // exception with 
+                        _exitCode = ExitCodes.E2003;
+                        _extraMessage = ex.Message;
                     }
                 }
             }

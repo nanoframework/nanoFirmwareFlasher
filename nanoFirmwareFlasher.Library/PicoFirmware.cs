@@ -18,6 +18,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal const uint DefaultBaseAddress = 0x10000000;
 
         /// <summary>
+        /// Default flash size for RP2040 Pico (2 MB).
+        /// </summary>
+        internal const uint DefaultFlashSize = 2 * 1024 * 1024;
+
+        /// <summary>
+        /// Default deployment region address for managed application.
+        /// This must match the deployment region start defined in the nanoFramework target's flash map.
+        /// </summary>
+        internal const uint DefaultDeploymentAddress = 0x10080000;
+
+        /// <summary>
         /// Path to the nanoCLR binary file for this firmware package.
         /// </summary>
         internal string BinFilePath { get; private set; }

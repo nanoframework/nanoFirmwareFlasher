@@ -189,100 +189,6 @@ namespace nanoFirmwareFlasher.Tests
 
         [TestMethod]
         [DoNotParallelize]
-        public void PicoManager_BinFileWithoutPicoBoot_Constructs()
-        {
-            using var output = new OutputWriterHelper();
-
-            var options = new Options
-            {
-                Platform = SupportedPlatform.rpi_pico,
-                Update = true,
-                TargetName = "RASPBERRY_PI_PICO",
-                BinFile = new List<string> { "test.bin" },
-                UsePicoBoot = false
-            };
-
-            // --binfile without --picoboot: construction succeeds, warning at ProcessAsync
-            var manager = new PicoManager(options, VerbosityLevel.Normal);
-            Assert.IsNotNull(manager);
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
-        public void PicoManager_VerifyWithoutPicoBoot_Constructs()
-        {
-            using var output = new OutputWriterHelper();
-
-            var options = new Options
-            {
-                Platform = SupportedPlatform.rpi_pico,
-                Update = true,
-                TargetName = "RASPBERRY_PI_PICO",
-                VerifyAfterFlash = true,
-                UsePicoBoot = false
-            };
-
-            var manager = new PicoManager(options, VerbosityLevel.Normal);
-            Assert.IsNotNull(manager);
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
-        public void PicoManager_ReadFlashWithoutPicoBoot_Constructs()
-        {
-            using var output = new OutputWriterHelper();
-
-            var options = new Options
-            {
-                Platform = SupportedPlatform.rpi_pico,
-                ReadFlashFile = "backup.bin",
-                UsePicoBoot = false
-            };
-
-            // --readflash without --picoboot: construction succeeds, warning at ProcessAsync
-            var manager = new PicoManager(options, VerbosityLevel.Normal);
-            Assert.IsNotNull(manager);
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
-        public void PicoManager_OtpDumpWithoutPicoBoot_Constructs()
-        {
-            using var output = new OutputWriterHelper();
-
-            var options = new Options
-            {
-                Platform = SupportedPlatform.rpi_pico,
-                OtpDumpFile = "otp.bin",
-                UsePicoBoot = false
-            };
-
-            // --otpdump without --picoboot: construction succeeds, warning at ProcessAsync
-            var manager = new PicoManager(options, VerbosityLevel.Normal);
-            Assert.IsNotNull(manager);
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
-        public void PicoManager_BinFileWithPicoBoot_NoWarning()
-        {
-            using var output = new OutputWriterHelper();
-
-            var options = new Options
-            {
-                Platform = SupportedPlatform.rpi_pico,
-                UsePicoBoot = true,
-                BinFile = new List<string> { "test.bin" },
-                FlashAddress = new List<string> { "0x10000000" },
-                TargetName = "RASPBERRY_PI_PICO"
-            };
-
-            var manager = new PicoManager(options, VerbosityLevel.Normal);
-            Assert.IsNotNull(manager);
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
         public void PicoManager_ClrFileOption_Constructs()
         {
             using var output = new OutputWriterHelper();
@@ -293,26 +199,6 @@ namespace nanoFirmwareFlasher.Tests
                 Update = true,
                 TargetName = "RASPBERRY_PI_PICO",
                 ClrFile = "nanoCLR.bin"
-            };
-
-            var manager = new PicoManager(options, VerbosityLevel.Quiet);
-            Assert.IsNotNull(manager);
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
-        public void PicoManager_ClrFileWithPicoBoot_Constructs()
-        {
-            using var output = new OutputWriterHelper();
-
-            var options = new Options
-            {
-                Platform = SupportedPlatform.rpi_pico,
-                Update = true,
-                UsePicoBoot = true,
-                TargetName = "RASPBERRY_PI_PICO",
-                ClrFile = "nanoCLR.bin",
-                VerifyAfterFlash = true
             };
 
             var manager = new PicoManager(options, VerbosityLevel.Quiet);
@@ -416,21 +302,7 @@ namespace nanoFirmwareFlasher.Tests
         #region Exit Codes
 
         [TestMethod]
-        public void ExitCodes_E3006_GetInfoFailed_Exists()
-        {
-            var code = ExitCodes.E3006;
-            Assert.AreEqual(3006, (int)code);
-        }
-
-        [TestMethod]
-        public void ExitCodes_E3007_OtpAccessError_Exists()
-        {
-            var code = ExitCodes.E3007;
-            Assert.AreEqual(3007, (int)code);
-        }
-
-        [TestMethod]
-        public void ExitCodes_PicoRange_E3000_Through_E3007()
+        public void ExitCodes_PicoRange_E3000_Through_E3005()
         {
             // verify the full range of Pico exit codes exists
             Assert.AreEqual(3000, (int)ExitCodes.E3000);
@@ -439,8 +311,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(3003, (int)ExitCodes.E3003);
             Assert.AreEqual(3004, (int)ExitCodes.E3004);
             Assert.AreEqual(3005, (int)ExitCodes.E3005);
-            Assert.AreEqual(3006, (int)ExitCodes.E3006);
-            Assert.AreEqual(3007, (int)ExitCodes.E3007);
         }
 
         #endregion

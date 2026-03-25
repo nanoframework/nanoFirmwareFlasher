@@ -400,39 +400,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         #region Raspberry Pi Pico options
 
         [Option(
-            "forcebootsel",
+            "uf2deploy",
             Required = false,
             Default = false,
-            HelpText = "Force a running Pico device into BOOTSEL mode via USB (requires nanoCLR with USB stdio). No need to press the physical button.")]
-        public bool ForceBootsel { get; set; }
-
-        [Option(
-            "picoboot",
-            Required = false,
-            Default = false,
-            HelpText = "Use the PICOBOOT USB protocol for direct flash (no UF2 conversion). Enables verify and mass erase operations.")]
-        public bool UsePicoBoot { get; set; }
-
-        [Option(
-            "verify",
-            Required = false,
-            Default = false,
-            HelpText = "Verify firmware after flashing by reading back flash contents (Pico PICOBOOT mode only).")]
-        public bool VerifyAfterFlash { get; set; }
-
-        [Option(
-            "readflash",
-            Required = false,
-            Default = null,
-            HelpText = "Read/backup flash contents to a file (Pico PICOBOOT mode only).")]
-        public string ReadFlashFile { get; set; }
-
-        [Option(
-            "otpdump",
-            Required = false,
-            Default = null,
-            HelpText = "Dump OTP memory contents to a file (RP2350 PICOBOOT mode only).")]
-        public string OtpDumpFile { get; set; }
+            HelpText = "Use UF2 mass storage to deploy the application instead of wire protocol. Requires the device to be in BOOTSEL mode.")]
+        public bool Uf2Deploy { get; set; }
 
         #endregion
 
@@ -446,7 +418,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("- Update specific ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP_WROVER_KIT" , DeploymentImage = "<location of file>.bin"}),
                 new("- Update specific Silabs device (Giant Gecko EVK) with latest available firmware", new Options { TargetName = "SL_STK3701A", Update = true }),
                 new("- Update Raspberry Pi Pico device with latest available firmware", new Options { Platform = SupportedPlatform.rpi_pico, TargetName = "RASPBERRY_PI_PICO", Update = true }),
-                new("- Update Raspberry Pi Pico with PICOBOOT direct flash and verification", new Options { Platform = SupportedPlatform.rpi_pico, TargetName = "RASPBERRY_PI_PICO", Update = true, UsePicoBoot = true, VerifyAfterFlash = true }),
+                new("- Update Raspberry Pi Pico with latest firmware and mass erase", new Options { Platform = SupportedPlatform.rpi_pico, TargetName = "RASPBERRY_PI_PICO", Update = true, MassErase = true }),
                 new("- List all STM32 devices connected through JTAG", new Options { Platform = SupportedPlatform.stm32, ListJtagDevices = true}),
                 new("- Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
                 new("- List all available STM32 targets", new Options { ListTargets = true, Platform =  SupportedPlatform.stm32 }),

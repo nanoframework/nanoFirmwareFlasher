@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -17,6 +17,119 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private const int DriveWaitTimeoutMs = 30_000;
 
         /// <summary>
+        /// Perform a mass erase via UF2 by writing a zero-filled UF2 that covers
+        /// the entire flash. The bootloader will write zeros to every sector,
+        /// effectively erasing all firmware and application data.
+        /// </summary>
+        /// <param name="deviceInfo">Device info from the detected Pico device.</param>
+        /// <param name="verbosity">Verbosity level.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
+        public static ExitCodes MassEraseViaUf2(
+            PicoDeviceInfo deviceInfo,
+            VerbosityLevel verbosity)
+        {
+            uint flashSize = PicoFirmware.DefaultFlashSize;
+            uint familyId = deviceInfo.FamilyId;
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine($"Generating erase image for {flashSize / 1024}KB flash...");
+            }
+
+            // create a zero-filled binary the size of the entire flash
+            byte[] zeroData = new byte[flashSize];
+            byte[] uf2Data = PicoUf2Utility.ConvertBinToUf2(zeroData, PicoFirmware.DefaultBaseAddress, familyId);
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.WriteLine($"Erase UF2: {uf2Data.Length:N0} bytes ({uf2Data.Length / 512} blocks)");
+            }
+
+            // find the UF2 drive
+            string drivePath = deviceInfo.DrivePath;
+
+            if (string.IsNullOrEmpty(drivePath) || !Directory.Exists(drivePath))
+            {
+                drivePath = PicoUf2Utility.FindUf2Drive();
+
+                if (drivePath == null)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine("UF2 drive not found. Please ensure device is in BOOTSEL mode.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    drivePath = PicoUf2Utility.WaitForDrive(DriveWaitTimeoutMs, verbosity);
+
+                    if (drivePath == null)
+                    {
+                        return ExitCodes.E3005;
+                    }
+                }
+            }
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.WriteLine($"Erasing flash via {drivePath}... This may take a moment.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+            }
+
+            ExitCodes operationResult = PicoUf2Utility.DeployUf2File(uf2Data, drivePath, "flash_erase.uf2");
+
+            if (operationResult != ExitCodes.OK)
+            {
+                return operationResult;
+            }
+
+            // wait for device to reboot
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine("Waiting for device to reboot after erase...");
+            }
+
+            bool driveRemoved = PicoUf2Utility.WaitForDriveRemoval(drivePath, 30_000, verbosity);
+
+            if (!driveRemoved)
+            {
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine("Drive still present. Ejecting...");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+
+                bool ejected = PicoUf2Utility.EjectDrive(drivePath);
+
+                if (ejected)
+                {
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine("Drive ejected successfully. Please unplug and replug the device to reboot it.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                    }
+                }
+                else
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine("WARNING: Could not eject drive. Please safely remove the device manually.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+            }
+
+            if (verbosity > VerbosityLevel.Quiet)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("Mass erase complete.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+            }
+
+            return ExitCodes.OK;
+        }
+
+        /// <summary>
         /// Perform firmware update on a Raspberry Pi Pico device via UF2 mass storage.
         /// </summary>
         /// <param name="deviceInfo">Device info from the detected Pico device.</param>
@@ -26,6 +139,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="preview">Set to <see langword="true"/> to use preview version to update.</param>
         /// <param name="archiveDirectoryPath">Path to the archive directory. Pass <c>null</c> if there is no archive.</param>
         /// <param name="clrFile">Path to a custom CLR binary file. Pass <c>null</c> to download from Cloudsmith.</param>
+        /// <param name="massErase">When <c>true</c>, pad the UF2 with zero-filled blocks to erase the entire flash.</param>
         /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
@@ -36,6 +150,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool preview,
             string archiveDirectoryPath,
             string clrFile,
+            bool massErase,
             VerbosityLevel verbosity)
         {
             // if target name was not provided, try to infer from device
@@ -175,6 +290,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
+            // if mass erase requested, pad the UF2 to cover the entire flash
+            if (massErase)
+            {
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.WriteLine($"Mass erase: padding UF2 to cover full {PicoFirmware.DefaultFlashSize / 1024}KB flash...");
+                }
+
+                uf2Data = PicoUf2Utility.PadUf2ToFullFlash(uf2Data, PicoFirmware.DefaultBaseAddress, PicoFirmware.DefaultFlashSize, familyId);
+            }
+
             if (verbosity >= VerbosityLevel.Normal)
             {
                 OutputWriter.ForegroundColor = ConsoleColor.White;
@@ -231,7 +358,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!driveRemoved)
             {
-                // drive still present after 5s — force eject
+                // drive still present after 5s â€” force eject
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Yellow;
@@ -269,6 +396,231 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
+        /// Deploy a managed application to a Raspberry Pi Pico device via UF2 mass storage.
+        /// The application binary is converted to UF2 format and written to the deployment region.
+        /// </summary>
+        /// <param name="deviceInfo">Device info from the detected Pico device.</param>
+        /// <param name="applicationPath">Path to the application binary or UF2 file.</param>
+        /// <param name="deploymentAddress">Deployment flash address. If <c>null</c> or empty, uses the default deployment address.</param>
+        /// <param name="massErase">When <c>true</c>, pad the UF2 with zero-filled blocks to erase the entire flash.</param>
+        /// <param name="verbosity">Verbosity level.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
+        public static ExitCodes DeployApplication(
+            PicoDeviceInfo deviceInfo,
+            string applicationPath,
+            string deploymentAddress,
+            bool massErase,
+            VerbosityLevel verbosity)
+        {
+            if (string.IsNullOrEmpty(applicationPath))
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine("No deployment image specified. Use --image to provide the application binary.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E9008;
+            }
+
+            if (!File.Exists(applicationPath))
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine($"Deployment image not found: {applicationPath}");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E9008;
+            }
+
+            // determine deployment address
+            uint address = PicoFirmware.DefaultDeploymentAddress;
+
+            if (!string.IsNullOrEmpty(deploymentAddress))
+            {
+                string hexStr = deploymentAddress.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                    ? deploymentAddress.Substring(2)
+                    : deploymentAddress;
+
+                if (!uint.TryParse(hexStr, System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out address))
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine($"Invalid deployment address: {deploymentAddress}. Use hexadecimal format (e.g. 0x10080000).");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E9009;
+                }
+            }
+
+            // read the application file
+            byte[] appData;
+
+            try
+            {
+                appData = File.ReadAllBytes(applicationPath);
+            }
+            catch (Exception ex)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine($"Error reading deployment image: {ex.Message}");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E9008;
+            }
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine($"Deployment image: {applicationPath} ({appData.Length:N0} bytes)");
+                OutputWriter.WriteLine($"Target address: 0x{address:X8}");
+            }
+
+            byte[] uf2Data;
+
+            // check if the file is already in UF2 format
+            if (PicoUf2Utility.IsUf2Data(appData))
+            {
+                uf2Data = appData;
+
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.WriteLine("File is already in UF2 format, skipping conversion.");
+                }
+
+                if (!PicoUf2Utility.ValidateUf2Data(uf2Data, verbosity))
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine("UF2 validation failed. The file may be corrupt.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E3003;
+                }
+            }
+            else
+            {
+                // convert to UF2 at the deployment address
+                uint familyId = deviceInfo.FamilyId;
+
+                try
+                {
+                    uf2Data = PicoUf2Utility.ConvertBinToUf2(appData, address, familyId);
+                }
+                catch (Exception ex)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine($"Error converting application to UF2: {ex.Message}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E3003;
+                }
+
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.WriteLine($"Converted to UF2: {uf2Data.Length:N0} bytes ({uf2Data.Length / 512} blocks)");
+                }
+            }
+
+            // if mass erase requested, pad the UF2 to cover the entire flash
+            if (massErase)
+            {
+                uint famId = deviceInfo.FamilyId;
+
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                    OutputWriter.WriteLine($"Mass erase: padding UF2 to cover full {PicoFirmware.DefaultFlashSize / 1024}KB flash...");
+                }
+
+                uf2Data = PicoUf2Utility.PadUf2ToFullFlash(uf2Data, PicoFirmware.DefaultBaseAddress, PicoFirmware.DefaultFlashSize, famId);
+
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.WriteLine($"UF2 size after padding: {uf2Data.Length:N0} bytes ({uf2Data.Length / 512} blocks)");
+                }
+            }
+
+            // find the UF2 drive
+            string drivePath = deviceInfo.DrivePath;
+
+            if (string.IsNullOrEmpty(drivePath) || !Directory.Exists(drivePath))
+            {
+                drivePath = PicoUf2Utility.FindUf2Drive();
+
+                if (drivePath == null)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine("UF2 drive not found. Please ensure device is in BOOTSEL mode.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    drivePath = PicoUf2Utility.WaitForDrive(DriveWaitTimeoutMs, verbosity);
+
+                    if (drivePath == null)
+                    {
+                        return ExitCodes.E3005;
+                    }
+                }
+            }
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.WriteLine($"Deploying application to {drivePath}...");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+            }
+
+            string deployFileName = Path.GetFileName(applicationPath);
+            ExitCodes operationResult = PicoUf2Utility.DeployUf2File(uf2Data, drivePath, deployFileName);
+
+            if (operationResult != ExitCodes.OK)
+            {
+                return operationResult;
+            }
+
+            // wait for device to reboot
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.WriteLine("Waiting for device to reboot...");
+            }
+
+            bool driveRemoved = PicoUf2Utility.WaitForDriveRemoval(drivePath, 10_000, verbosity);
+
+            if (!driveRemoved)
+            {
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine("Drive still present. Ejecting...");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+
+                bool ejected = PicoUf2Utility.EjectDrive(drivePath);
+
+                if (ejected)
+                {
+                    if (verbosity >= VerbosityLevel.Normal)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine("Drive ejected successfully. Please unplug and replug the device to reboot it.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                    }
+                }
+                else
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine("WARNING: Could not eject drive. Please safely remove the device manually.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+            }
+
+            if (verbosity > VerbosityLevel.Quiet)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("Application deployed successfully.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+            }
+
+            return ExitCodes.OK;
+        }
+
+        /// <summary>
         /// Infer target name from detecting device characteristics.
         /// </summary>
         private static string InferTargetName(PicoDeviceInfo deviceInfo)
@@ -284,164 +636,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return "RASPBERRY_PI_PICO";
-        }
-
-        /// <summary>
-        /// Perform firmware update via the PICOBOOT USB protocol (direct flash, no UF2 conversion).
-        /// </summary>
-        /// <param name="picobootDevice">Connected PICOBOOT device.</param>
-        /// <param name="targetName">Target name to update.</param>
-        /// <param name="fwVersion">Firmware version.</param>
-        /// <param name="preview"><see langword="true"/> for preview version.</param>
-        /// <param name="archiveDirectoryPath">Path to firmware archive, or <c>null</c>.</param>
-        /// <param name="clrFile">Path to a custom CLR binary file. Pass <c>null</c> to download from Cloudsmith.</param>
-        /// <param name="verify">Set to <see langword="true"/> to verify after writing.</param>
-        /// <param name="reboot">Set to <see langword="true"/> to reboot device after flashing.</param>
-        /// <param name="verbosity">Verbosity level.</param>
-        /// <returns>Exit code indicating result.</returns>
-        public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareViaPicoBootAsync(
-            PicoBootDevice picobootDevice,
-            string targetName,
-            string fwVersion,
-            bool preview,
-            string archiveDirectoryPath,
-            string clrFile,
-            bool verify,
-            bool reboot,
-            VerbosityLevel verbosity)
-        {
-            if (picobootDevice == null)
-            {
-                return ExitCodes.E3001;
-            }
-
-            // infer target name from chip type if not provided
-            if (string.IsNullOrEmpty(targetName))
-            {
-                targetName = picobootDevice.ChipType == "RP2350"
-                    ? "RASPBERRY_PI_PICO2"
-                    : "RASPBERRY_PI_PICO";
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                    OutputWriter.WriteLine($"Inferred target: {targetName}");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                }
-            }
-
-            string binFilePath;
-            ExitCodes result;
-
-            // if a custom CLR file was provided, use it directly
-            if (!string.IsNullOrEmpty(clrFile))
-            {
-                if (!File.Exists(clrFile))
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Red;
-                    OutputWriter.WriteLine($"CLR file not found: {clrFile}");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                    return ExitCodes.E3003;
-                }
-
-                binFilePath = clrFile;
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                    OutputWriter.WriteLine($"Using custom CLR file: {binFilePath}");
-                }
-            }
-            else
-            {
-                // download and extract firmware
-                PicoFirmware firmware = new PicoFirmware(targetName, fwVersion, preview);
-                firmware.Verbosity = verbosity;
-
-                ExitCodes downloadResult = await firmware.DownloadAndExtractAsync(archiveDirectoryPath);
-
-                if (downloadResult != ExitCodes.OK)
-                {
-                    return downloadResult;
-                }
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                    OutputWriter.WriteLine($"Firmware: {firmware.Version}");
-                    OutputWriter.WriteLine($"Binary: {firmware.BinFilePath}");
-                }
-
-                binFilePath = firmware.BinFilePath;
-            }
-
-            // read the raw binary (no UF2 conversion needed for PICOBOOT)
-            byte[] binData;
-
-            try
-            {
-                binData = File.ReadAllBytes(binFilePath);
-            }
-            catch (Exception ex)
-            {
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Red;
-                    OutputWriter.WriteLine($"Error reading firmware binary: {ex.Message}");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                }
-
-                return ExitCodes.E3003;
-            }
-
-            if (verbosity >= VerbosityLevel.Normal)
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-                OutputWriter.WriteLine($"Binary size: {binData.Length} bytes");
-                OutputWriter.WriteLine("Using PICOBOOT direct flash...");
-            }
-
-            // flash directly via PICOBOOT protocol
-            result = picobootDevice.UpdateFirmware(binData, PicoFirmware.DefaultBaseAddress, verbosity);
-
-            if (result != ExitCodes.OK)
-            {
-                return result;
-            }
-
-            // verify if requested
-            if (verify)
-            {
-                result = picobootDevice.VerifyFirmware(binData, PicoFirmware.DefaultBaseAddress, verbosity);
-
-                if (result != ExitCodes.OK)
-                {
-                    return result;
-                }
-            }
-
-            // reboot the device if requested
-            if (reboot)
-            {
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                    OutputWriter.WriteLine("Rebooting device...");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                }
-
-                picobootDevice.Reboot();
-            }
-
-            if (verbosity > VerbosityLevel.Quiet)
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.Green;
-                OutputWriter.WriteLine("Firmware updated successfully via PICOBOOT.");
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-            }
-
-            return ExitCodes.OK;
         }
     }
 }

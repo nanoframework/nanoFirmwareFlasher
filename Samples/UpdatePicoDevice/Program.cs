@@ -79,45 +79,6 @@ namespace UpdatePicoDevice
             Console.WriteLine($"Pico device ({deviceInfo.ChipType}) flashed successfully!");
             Console.ResetColor();
 
-            // ===== Method 2: PICOBOOT Direct Flash (advanced) =====
-            // Uncomment the code below to use PICOBOOT protocol instead.
-            // This requires the device to be in BOOTSEL mode and proper USB drivers.
-            //
-            // Console.WriteLine();
-            // Console.WriteLine("=== PICOBOOT Direct Flash ===");
-            //
-            // // discover device via PICOBOOT USB
-            // PicoBootDevice picoboot = PicoBootDevice.OpenFirst();
-            //
-            // if (picoboot == null)
-            // {
-            //     Console.WriteLine("No PICOBOOT device found.");
-            //     return;
-            // }
-            //
-            // using (picoboot)
-            // {
-            //     Console.WriteLine($"PICOBOOT device: {picoboot.ChipType}");
-            //
-            //     // query extended device info (RP2350 only)
-            //     PicoDeviceExtendedInfo extInfo = picoboot.QueryExtendedInfo();
-            //     Console.WriteLine(extInfo.ToString());
-            //
-            //     // update firmware via direct flash with verification
-            //     var result = await PicoOperations.UpdateFirmwareViaPicoBootAsync(
-            //         picoboot,
-            //         null,     // auto-detect target
-            //         null,     // latest version
-            //         false,    // stable
-            //         null,     // no archive
-            //         null,     // no custom CLR file
-            //         true,     // verify after flash
-            //         true,     // reboot after flash
-            //         VerbosityLevel.Normal);
-            //
-            //     Console.WriteLine($"PICOBOOT result: {result}");
-            // }
-
             Console.Read();
         }
     }
