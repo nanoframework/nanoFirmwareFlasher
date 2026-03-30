@@ -1,6 +1,25 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- 
+        Optional CLI tool inclusion properties.
+        Set to 'false' to exclude external CLI tools from the package.
+        All default to 'true' for backward compatibility.
+        
+        STM32 CLI tools (STM32_Programmer_CLI) are optional when using native transports:
+          native ST-LINK, CMSIS-DAP SWD, native USB DFU, or UART bootloader.
+        
+        Example: dotnet pack /p:IncludeStLinkCli=false /p:IncludeJLinkCli=false
+    -->
+    <PropertyGroup>
+        <IncludeStLinkCli Condition="'$(IncludeStLinkCli)' == ''">true</IncludeStLinkCli>
+        <IncludeJLinkCli Condition="'$(IncludeJLinkCli)' == ''">true</IncludeJLinkCli>
+        <IncludeSilinkCli Condition="'$(IncludeSilinkCli)' == ''">true</IncludeSilinkCli>
+        <IncludeUniflashCli Condition="'$(IncludeUniflashCli)' == ''">true</IncludeUniflashCli>
+        <IncludeEspTool Condition="'$(IncludeEspTool)' == ''">true</IncludeEspTool>
+    </PropertyGroup>
+
     <!-- esptool executables for all platforms -->
-	<ItemGroup>
+	<ItemGroup Condition="'$(IncludeEspTool)' == 'true'">
         <Content Include="..\lib\esptool\esptoolWin\**">
             <Pack>true</Pack>
 			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolWin</PackagePath>
@@ -27,8 +46,8 @@
         </Content>
     </ItemGroup>
 
-    <!-- STLink executables for all platforms -->
-    <ItemGroup>
+    <!-- STLink executables for all platforms (optional — native transports available) -->
+    <ItemGroup Condition="'$(IncludeStLinkCli)' == 'true'">
         <Content Include="..\lib\stlink\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\stlink</PackagePath>
@@ -44,7 +63,7 @@
     </ItemGroup>
 
     <!-- J-Link executables for all platforms -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(IncludeJLinkCli)' == 'true'">
         <Content Include="..\lib\jlinkCmds\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\jlinkCmds</PackagePath>
@@ -61,6 +80,10 @@
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\jlinkLinux</PackagePath>  
         </Content>
+    </ItemGroup>
+
+    <!-- silink executable (Windows only, for Silabs VCP baud rate) -->
+    <ItemGroup Condition="'$(IncludeSilinkCli)' == 'true'">
         <Content Include="..\lib\silink\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\silink</PackagePath>  
@@ -68,7 +91,7 @@
     </ItemGroup>
 
     <!-- TI Uniflash tool -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(IncludeUniflashCli)' == 'true'">
         <Content Include="..\lib\uniflash\**">
             <Pack>true</Pack>
            <PackagePath>tools\$(PackageTfmSubFolder)any\uniflash</PackagePath>  

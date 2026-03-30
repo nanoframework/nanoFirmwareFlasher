@@ -279,9 +279,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                     OutputWriter.Write($"Extracting {Path.GetFileName(fwFilePath)}...");
                 }
-                ZipFile.ExtractToDirectory(
-                    fwFilePath,
-                    LocationPath);
+
+                SafeExtractZipToDirectory(fwFilePath, LocationPath);
+
                 if (Verbosity >= VerbosityLevel.Normal)
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Green;
@@ -837,6 +837,45 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal record struct DownloadUrlResult(string Url, string Version, ExitCodes Outcome)
         {
+        }
+
+        /// <summary>
+        /// Extracts a zip file to the specified directory, validating each entry path
+        /// to prevent Zip Slip (path traversal) attacks.
+        /// </summary>
+        internal static void SafeExtractZipToDirectory(string zipPath, string destinationDirectory)
+        {
+            string fullDestination = Path.GetFullPath(destinationDirectory);
+
+            using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+            {
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    // skip directory entries
+                    if (string.IsNullOrEmpty(entry.Name))
+                    {
+                        continue;
+                    }
+
+                    string destinationPath = Path.GetFullPath(Path.Combine(fullDestination, entry.FullName));
+
+                    // Zip Slip guard: ensure the resolved path stays within the destination
+                    if (!destinationPath.StartsWith(fullDestination + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                        && !destinationPath.Equals(fullDestination, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new IOException($"Zip entry '{entry.FullName}' would extract outside the target directory.");
+                    }
+
+                    // ensure subdirectory exists
+                    string entryDirectory = Path.GetDirectoryName(destinationPath);
+                    if (entryDirectory != null)
+                    {
+                        Directory.CreateDirectory(entryDirectory);
+                    }
+
+                    entry.ExtractToFile(destinationPath, overwrite: true);
+                }
+            }
         }
 
         private static uint FindStartAddressInHexFile(string hexFilePath)

@@ -690,9 +690,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 appName = "esptool";
                 appDir = Path.Combine(Utilities.ExecutingPath, "esptool", "esptoolLinux");
+            }
+
+            string exePath = Path.Combine(appDir, appName);
+
+            if (!File.Exists(exePath))
+            {
+                throw new EspToolExecutionException(
+                    $"esptool not found at '{exePath}'. " +
+                    "The esptool binary is not installed or was excluded from the package.");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
                 Process espToolExex = new Process();
                 // Making sure the esptool is executable
-                espToolExex.StartInfo = new ProcessStartInfo("chmod", $"+x {Path.Combine(appDir, appName)}")
+                espToolExex.StartInfo = new ProcessStartInfo("chmod", $"+x {exePath}")
                 {
                     WorkingDirectory = appDir,
                     UseShellExecute = false,
@@ -712,7 +726,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             Process espTool = new Process();
             string parameter = $"--port {_serialPort} {baudRateParameter} --chip {_chipType} {noStubParameter} {beforeParameter} --after {afterParameter} {commandWithArguments}";
-            espTool.StartInfo = new ProcessStartInfo(Path.Combine(appDir, appName), parameter)
+            espTool.StartInfo = new ProcessStartInfo(exePath, parameter)
             {
                 WorkingDirectory = appDir,
                 UseShellExecute = false,
