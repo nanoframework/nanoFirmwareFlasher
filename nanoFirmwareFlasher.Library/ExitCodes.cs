@@ -23,7 +23,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// No DFU device found
         /// </summary>
-        [Display(Name = "No DFU device found. Make sure it's connected and has booted in DFU mode")]
+        [Display(Name = "No DFU device found. Make sure it's connected and has booted in DFU mode. Try --nativedfu for tool-free DFU or --uart for serial bootloader.")]
         E1000 = 1000,
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// No JTAG device found
         /// </summary>
-        [Display(Name = "No JTAG device found. Make sure it's connected")]
+        [Display(Name = "No JTAG device found. Make sure it's connected. Try --nativestlink or --nativeswd for tool-free flashing.")]
         E5001 = 5001,
 
         /// <summary>
@@ -193,6 +193,60 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Failed to reset MCU on connected device.")]
         E5010 = 5010,
+
+        ///////////////////////////////
+        // UART Bootloader Errors //
+        ///////////////////////////////
+
+        /// <summary>
+        /// Failed to connect to STM32 UART bootloader.
+        /// </summary>
+        [Display(Name = "Failed to connect to STM32 UART bootloader. Make sure the device is in bootloader mode (BOOT0 high) and the serial port is correct.")]
+        E5020 = 5020,
+
+        /// <summary>
+        /// UART bootloader communication error.
+        /// </summary>
+        [Display(Name = "UART bootloader communication error.")]
+        E5021 = 5021,
+
+        /// <summary>
+        /// Flash verification failed — read-back data does not match written data.
+        /// </summary>
+        [Display(Name = "Flash verification failed — read-back data does not match the written data.")]
+        E5022 = 5022,
+
+        //////////////////////////////
+        // Native DFU Errors //
+        //////////////////////////////
+
+        /// <summary>
+        /// Native USB DFU not supported on this platform.
+        /// </summary>
+        [Display(Name = "Native USB DFU is only supported on Windows. Use --dfu for CLI-based DFU or --uart for serial bootloader.")]
+        E5030 = 5030,
+
+        /// <summary>
+        /// Native USB DFU protocol error.
+        /// </summary>
+        [Display(Name = "DFU protocol error during native USB transfer.")]
+        E5031 = 5031,
+
+        //////////////////////////////
+        // Native SWD (CMSIS-DAP)   //
+        //////////////////////////////
+
+        /// <summary>
+        /// Native SWD not supported on this platform.
+        /// </summary>
+        [Display(Name = "Native SWD via CMSIS-DAP is only supported on Windows.")]
+        E5040 = 5040,
+
+        /// <summary>
+        /// Native SWD protocol error.
+        /// </summary>
+        [Display(Name = "SWD protocol error during native CMSIS-DAP transfer.")]
+        E5041 = 5041,
 
         ////////////////
         // COM Errors //
@@ -315,7 +369,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Couldn't find any device connected
         /// </summary>
-        [Display(Name = "Couldn't find any device connected.")]
+        [Display(Name = "Couldn't find any device connected. For STM32, try: --nativestlink, --nativeswd, --nativedfu, or --uart.")]
         E9010 = 9010,
 
         /// <summary>
