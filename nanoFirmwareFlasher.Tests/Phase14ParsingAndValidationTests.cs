@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -160,21 +160,6 @@ namespace nanoFirmwareFlasher.Tests
             StringAssert.Contains(error, "--nativestlink");
         }
 
-        [TestMethod]
-        public void ValidateInterfaceOptions_UartPlusNativeStLink_ReturnsError()
-        {
-            var o = new Options
-            {
-                UartUpdate = true,
-                NativeStLinkUpdate = true
-            };
-
-            string error = Options.ValidateInterfaceOptions(o);
-            Assert.IsNotNull(error);
-            StringAssert.Contains(error, "--uart");
-            StringAssert.Contains(error, "--nativestlink");
-        }
-
         #endregion
 
         // ======================================================================
@@ -187,24 +172,6 @@ namespace nanoFirmwareFlasher.Tests
         public void ValidateEarlyConstraints_NoIssues_ReturnsNull()
         {
             var o = new Options();
-            Assert.IsNull(Options.ValidateEarlyConstraints(o));
-        }
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_UartWithoutSerialPort_ReturnsE6001()
-        {
-            var o = new Options { UartUpdate = true };
-            var result = Options.ValidateEarlyConstraints(o);
-            Assert.IsNotNull(result);
-            Assert.AreEqual(ExitCodes.E6001, result.Value.Code);
-            StringAssert.Contains(result.Value.Message, "--uart");
-            StringAssert.Contains(result.Value.Message, "--serialport");
-        }
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_UartWithSerialPort_ReturnsNull()
-        {
-            var o = new Options { UartUpdate = true, SerialPort = "COM3" };
             Assert.IsNull(Options.ValidateEarlyConstraints(o));
         }
 
@@ -257,16 +224,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(ExitCodes.E9000, result.Value.Code);
             StringAssert.Contains(result.Value.Message, "--fromarchive");
             StringAssert.Contains(result.Value.Message, "--updatearchive");
-        }
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_MultipleViolations_ReturnsFirstViolation()
-        {
-            // uart without serial port AND deploy without image — should return the first one (uart)
-            var o = new Options { UartUpdate = true, Deploy = true };
-            var result = Options.ValidateEarlyConstraints(o);
-            Assert.IsNotNull(result);
-            Assert.AreEqual(ExitCodes.E6001, result.Value.Code);
         }
 
         #endregion
@@ -492,24 +449,6 @@ namespace nanoFirmwareFlasher.Tests
 
             var platform = SupportedPlatformExtensions.InferFromTargetName("SL_STK3701A");
             Assert.AreEqual(SupportedPlatform.efm32, platform);
-        }
-
-        [TestMethod]
-        public void Integration_UartWithoutSerialPort_FailsEarlyConstraints()
-        {
-            var o = new Options
-            {
-                TargetName = "ST_NUCLEO144_F746ZG",
-                UartUpdate = true
-                // SerialPort is not set
-            };
-
-            string ifError = Options.ValidateInterfaceOptions(o);
-            Assert.IsNull(ifError); // interface OK (only one)
-
-            var earlyError = Options.ValidateEarlyConstraints(o);
-            Assert.IsNotNull(earlyError);
-            Assert.AreEqual(ExitCodes.E6001, earlyError.Value.Code);
         }
 
         #endregion

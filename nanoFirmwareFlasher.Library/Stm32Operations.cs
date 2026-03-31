@@ -28,7 +28,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="deploymentAddress">The start memory address.</param>
         /// <param name="dfuDeviceId">The DFU device ID.</param>
         /// <param name="jtagId">The JTAG ID.</param>
-        /// <param name="serialPort">Serial port for UART bootloader connection (e.g. COM3).</param>
         /// <param name="fitCheck">Checks whether the firmware will fit.</param>
         /// <param name="updateInterface">The connection interface.</param>
         /// <param name="verbosity">The verbosity level to use.</param>
@@ -43,7 +42,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string deploymentAddress,
             string dfuDeviceId,
             string jtagId,
-            string serialPort,
             bool fitCheck,
             Interface updateInterface,
             VerbosityLevel verbosity,
@@ -140,15 +138,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if (updateInterface == Interface.Uart)
-            {
-                // UART bootloader path — requires serial port
-                if (string.IsNullOrEmpty(serialPort))
-                {
-                    return ExitCodes.E6001;
-                }
-            }
-            else if (updateInterface == Interface.NativeDfu)
+            if (updateInterface == Interface.NativeDfu)
             {
                 // Native USB DFU — cross-platform, no CLI needed
             }
@@ -349,8 +339,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if (updateInterface != Interface.Uart
-                && updateInterface != Interface.NativeDfu
+            if (updateInterface != Interface.NativeDfu
                 && updateInterface != Interface.NativeSwd
                 && updateInterface != Interface.NativeStLink
                 && !connectedStDfuDevices.Any()
@@ -361,81 +350,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // update using DFU
-            if (updateInterface == Interface.Uart)
-            {
-                // UART bootloader update — no external tools required
-
-                try
-                {
-                    using Stm32UartDevice uartDevice = new Stm32UartDevice(serialPort);
-
-                    if (!uartDevice.DevicePresent)
-                    {
-                        return ExitCodes.E5020;
-                    }
-
-                    if (verbosity >= VerbosityLevel.Normal)
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-
-                        OutputWriter.WriteLine($"Connected to STM32 via UART bootloader on {serialPort}");
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"{uartDevice}");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-                    }
-
-                    if (fitCheck)
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine("Image fit check is not supported for UART bootloader connections.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-                    }
-
-                    ExitCodes operationResult = ExitCodes.OK;
-
-                    // set verbosity
-                    uartDevice.Verbosity = verbosity;
-
-                    // UART bootloader requires flash to be erased before writing.
-                    // Mass erase when performing firmware update.
-                    uartDevice.DoMassErase = updateFw;
-
-                    uartDevice.Verify = verify;
-
-                    // write HEX files to flash
-                    if (filesToFlash.Any(f => f.EndsWith(".hex")))
-                    {
-                        operationResult = uartDevice.FlashHexFiles(filesToFlash);
-                    }
-
-                    if (operationResult == ExitCodes.OK && isApplicationBinFile)
-                    {
-                        operationResult = uartDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
-                    }
-
-                    if (updateFw
-                        && operationResult == ExitCodes.OK)
-                    {
-                        // start execution from bootloader address
-                        uartDevice.StartExecution($"{firmware.BooterStartAddress:X8}");
-                    }
-
-                    return operationResult;
-                }
-                catch (Stm32UartBootloaderException)
-                {
-                    return ExitCodes.E5020;
-                }
-                catch (Exception)
-                {
-                    return ExitCodes.E5021;
-                }
-            }
-            else if (updateInterface == Interface.NativeDfu)
+            if (updateInterface == Interface.NativeDfu)
             {
                 // Native USB DFU update — no external tools required (Windows only)
 
@@ -1292,10 +1207,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// DFU.
         /// </summary>
         Dfu,
-        /// <summary>
-        /// UART bootloader (native, no external tools required).
-        /// </summary>
-        Uart,
         /// <summary>
         /// Native USB DFU (WinUSB, no external tools required). Windows only.
         /// </summary>

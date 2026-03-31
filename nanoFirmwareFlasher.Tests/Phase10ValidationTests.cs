@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -44,13 +44,6 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void ValidateInterface_SingleFlag_Uart_ReturnsNull()
-        {
-            var o = new Options { UartUpdate = true };
-            Assert.IsNull(Options.ValidateInterfaceOptions(o));
-        }
-
-        [TestMethod]
         public void ValidateInterface_SingleFlag_NativeDfu_ReturnsNull()
         {
             var o = new Options { NativeDfuUpdate = true };
@@ -82,34 +75,12 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void ValidateInterface_TwoFlags_UartAndNativeSwd_ReturnsError()
-        {
-            var o = new Options { UartUpdate = true, NativeSwdUpdate = true };
-            string error = Options.ValidateInterfaceOptions(o);
-            Assert.IsNotNull(error);
-            StringAssert.Contains(error, "--uart");
-            StringAssert.Contains(error, "--nativeswd");
-        }
-
-        [TestMethod]
-        public void ValidateInterface_ThreeFlags_ReturnsError()
-        {
-            var o = new Options { JtagUpdate = true, DfuUpdate = true, UartUpdate = true };
-            string error = Options.ValidateInterfaceOptions(o);
-            Assert.IsNotNull(error);
-            StringAssert.Contains(error, "--jtag");
-            StringAssert.Contains(error, "--dfu");
-            StringAssert.Contains(error, "--uart");
-        }
-
-        [TestMethod]
         public void ValidateInterface_AllSixFlags_ReturnsError()
         {
             var o = new Options
             {
                 JtagUpdate = true,
                 DfuUpdate = true,
-                UartUpdate = true,
                 NativeDfuUpdate = true,
                 NativeSwdUpdate = true,
                 NativeStLinkUpdate = true
@@ -118,7 +89,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsNotNull(error);
             StringAssert.Contains(error, "--jtag");
             StringAssert.Contains(error, "--dfu");
-            StringAssert.Contains(error, "--uart");
             StringAssert.Contains(error, "--nativedfu");
             StringAssert.Contains(error, "--nativeswd");
             StringAssert.Contains(error, "--nativestlink");
@@ -169,31 +139,6 @@ namespace nanoFirmwareFlasher.Tests
         public void ExitCode_E5022_ValueIs5022()
         {
             Assert.AreEqual(5022, (int)ExitCodes.E5022);
-        }
-
-        #endregion
-
-        #region UART VerifyMemoryBlock tests
-
-        [TestMethod]
-        public void UartBootloader_VerifyMemoryBlock_Exists()
-        {
-            // Verify the method exists and is public
-            var method = typeof(Stm32UartBootloader).GetMethod(
-                "VerifyMemoryBlock",
-                new[] { typeof(uint), typeof(byte[]), typeof(Action<int, int>) });
-            Assert.IsNotNull(method, "VerifyMemoryBlock method should exist on Stm32UartBootloader");
-            Assert.IsTrue(method.ReturnType == typeof(bool), "VerifyMemoryBlock should return bool");
-        }
-
-        [TestMethod]
-        public void UartDevice_VerifyProperty_DefaultIsFalse()
-        {
-            // Stm32UartDevice constructor requires a port - we can't construct without hardware
-            // but we can verify the property exists via reflection
-            var prop = typeof(Stm32UartDevice).GetProperty("Verify");
-            Assert.IsNotNull(prop, "Verify property should exist on Stm32UartDevice");
-            Assert.AreEqual(typeof(bool), prop.PropertyType);
         }
 
         #endregion
