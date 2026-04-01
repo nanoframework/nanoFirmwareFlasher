@@ -14,8 +14,7 @@ using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// Native C# implementation of ESP32 serial bootloader communication.
-    /// Replaces the former process-wrapper around the external esptool binary.
+    /// Native C# implementation of ESP32 serial bootloader communication.    
     /// </summary>
     public partial class EspTool : IDisposable
     {

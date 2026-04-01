@@ -22,6 +22,8 @@ It makes use of several 3rd party tools:
 
 We are also distributing this tool as a .NET library so it can be integrated in 3rd party applications. Please check the [README](Samples\README.md) in the Samples folder for more details along with sample applications.
 
+> [!Note]: we are implementing the Espressif communication protocol in C# and we are not using the `esptool` to flash the devices. If you are looking at using the `esptool` from Espressif to flash .NET nanoFramework, you'll find before April 2026 in this repository.
+
 ## Install .NET **nanoFramework** Firmware Flasher
 
 Perform a one-time install of the .NET **nanoFramework** Firmware Flasher tool using the following .NET Core CLI command:

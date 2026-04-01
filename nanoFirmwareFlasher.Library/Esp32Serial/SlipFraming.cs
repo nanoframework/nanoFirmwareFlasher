@@ -147,6 +147,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                     if (b == FrameEnd)
                     {
+                        if (inEscape)
+                        {
+                            throw new InvalidOperationException("SLIP frame contains incomplete escape sequence (0xDB followed by end-of-frame 0xC0).");
+                        }
+
                         // End of frame — but only if we have data
                         // (consecutive 0xC0 bytes are treated as a single delimiter)
                         if (body.Length > 0)
