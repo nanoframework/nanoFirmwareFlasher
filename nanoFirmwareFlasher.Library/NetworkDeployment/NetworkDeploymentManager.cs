@@ -385,7 +385,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// </summary>
         /// <param name="authentication">The authentication type as a string.</param>
         /// <returns>The authentication type.</returns>
-        private AuthenticationType GetConfigureAuthentication(string authentication) => authentication.ToUpper() switch
+        internal AuthenticationType GetConfigureAuthentication(string authentication) => authentication.ToUpper() switch
         {
             "EAP" => AuthenticationType.EAP,
             "PEAP" => AuthenticationType.PEAP,
@@ -404,7 +404,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// </summary>
         /// <param name="configurationOpton">The configuration option as a string.</param>
         /// <returns>The cifiguraiton option.</returns>
-        private Wireless80211_ConfigurationOptions GetConfigurationOptions(string configurationOpton) => configurationOpton.ToUpper() switch
+        internal Wireless80211_ConfigurationOptions GetConfigurationOptions(string configurationOpton) => configurationOpton.ToUpper() switch
         {
             "NONE" => Wireless80211_ConfigurationOptions.None,
             "DISABLE" => Wireless80211_ConfigurationOptions.Disable,
@@ -419,7 +419,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// </summary>
         /// <param name="radioType">The radio type as a string</param>
         /// <returns>The radio type.</returns>
-        private RadioType GetRadioType(string radioType) => radioType.ToUpper() switch
+        internal RadioType GetRadioType(string radioType) => radioType.ToUpper() switch
         {
             "802.11A" => RadioType._802_11a,
             "802.11B" => RadioType._802_11b,
@@ -433,7 +433,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// </summary>
         /// <param name="encryptionType">The encryption type as a string.</param>
         /// <returns>The encryption type.</returns>
-        private EncryptionType GetEncryptionType(string encryptionType) => encryptionType.ToUpper() switch
+        internal EncryptionType GetEncryptionType(string encryptionType) => encryptionType.ToUpper() switch
         {
             "WEP" => EncryptionType.WEP,
             "WPA" => EncryptionType.WPA,
@@ -444,7 +444,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
             _ => EncryptionType.None,
         };
 
-        private WirelessAP_ConfigurationOptions GetWirelessAPOptions(string wirelessAPOptions) => wirelessAPOptions.ToUpper() switch
+        internal WirelessAP_ConfigurationOptions GetWirelessAPOptions(string wirelessAPOptions) => wirelessAPOptions.ToUpper() switch
         {
             "NONE" => WirelessAP_ConfigurationOptions.None,
             "DISABLE" => WirelessAP_ConfigurationOptions.Disable,
@@ -459,7 +459,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// </summary>
         /// <param name="macAddress">The MAC address as a string.</param>
         /// <returns>The MAC address as a byte array.</returns>
-        private byte[] GetMacAddress(string macAddress)
+        internal byte[] GetMacAddress(string macAddress)
         {
             byte[] mac = new byte[6];
             if (macAddress.Contains(":"))
@@ -552,7 +552,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// Checks if the PEM certificate has a null termination and add it if needed.
         /// </summary>
         /// <param name="cert">The cert byte array.</param>
-        private void CheckNullPemTermination(byte[] cert)
+        internal void CheckNullPemTermination(byte[] cert)
         {
             // Check if it's a PEM certificate starting with -----BEGIN CERTIFICATE-----
             if(Encoding.ASCII.GetString(cert).Contains("-----BEGIN CERTIFICATE-----"))

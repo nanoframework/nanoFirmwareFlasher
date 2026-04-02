@@ -558,6 +558,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
+            #region validate interface options
+
+            string interfaceError = Options.ValidateInterfaceOptions(o);
+
+            if (interfaceError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = interfaceError;
+                return;
+            }
+
+            // --deploy requires --image
+            if (o.Deploy && string.IsNullOrEmpty(o.DeploymentImage))
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = "--deploy requires --image to specify the deployment image path.";
+                return;
+            }
+
+            #endregion
+
             #region firmware archive update if no device is required
             if (o.UpdateFwArchive)
             {
