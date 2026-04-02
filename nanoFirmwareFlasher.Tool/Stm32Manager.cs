@@ -494,10 +494,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         updateInterface = Interface.Jtag;
                     }
-                    else if (_options.UartUpdate)
-                    {
-                        updateInterface = Interface.Uart;
-                    }
 
                     var exitCode = await Stm32Operations.UpdateFirmwareAsync(
                         _options.TargetName,
@@ -570,10 +566,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     else if (_options.JtagUpdate)
                     {
                         updateInterface = Interface.Jtag;
-                    }
-                    else if (_options.UartUpdate)
-                    {
-                        updateInterface = Interface.Uart;
                     }
 
                     var exitCode = await Stm32Operations.UpdateFirmwareAsync(
