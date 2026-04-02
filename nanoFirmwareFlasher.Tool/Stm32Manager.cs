@@ -49,10 +49,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 stlink.Verify = _options.Verify;
             }
-            else if (device is Stm32UartDevice uart)
-            {
-                uart.Verify = _options.Verify;
-            }
 
             if (_options.HexFile.Any())
             {
@@ -322,34 +318,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 #endregion
             }
-            else if (_options.UartUpdate &&
-                (_options.BinFile.Any() ||
-                 _options.HexFile.Any()))
-            {
-                #region STM32 UART bootloader options
-
-                if (string.IsNullOrEmpty(_options.SerialPort))
-                {
-                    return ExitCodes.E6001;
-                }
-
-                using var uartDevice = new Stm32UartDevice(_options.SerialPort);
-
-                if (!uartDevice.DevicePresent)
-                {
-                    return ExitCodes.E5020;
-                }
-
-                if (_verbosityLevel >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.WriteLine($"Connected to STM32 via UART bootloader on {_options.SerialPort}");
-                }
-
-                return FlashDeviceFiles(uartDevice);
-
-                #endregion
-            }
-            else if (!_options.NativeDfuUpdate && !_options.NativeSwdUpdate && !_options.NativeStLinkUpdate && !_options.UartUpdate &&
+            else if (!_options.NativeDfuUpdate && !_options.NativeSwdUpdate && !_options.NativeStLinkUpdate &&
                 (_options.BinFile.Any() || _options.HexFile.Any()) &&
                 connectedStDfuDevices.Count == 0 && connectedStJtagDevices.Count == 0)
             {
@@ -498,7 +467,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     Interface updateInterface = Interface.None;
 
-                    int selectedInterfaces = (_options.DfuUpdate ? 1 : 0) + (_options.JtagUpdate ? 1 : 0) + (_options.UartUpdate ? 1 : 0) + (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
+                    int selectedInterfaces = (_options.DfuUpdate ? 1 : 0) + (_options.JtagUpdate ? 1 : 0) + (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
 
                     if (selectedInterfaces > 1)
                     {
@@ -575,7 +544,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     Interface updateInterface = Interface.None;
 
-                    int selectedInterfacesDeploy = (_options.DfuUpdate ? 1 : 0) + (_options.JtagUpdate ? 1 : 0) + (_options.UartUpdate ? 1 : 0) + (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
+                    int selectedInterfacesDeploy = (_options.DfuUpdate ? 1 : 0) + (_options.JtagUpdate ? 1 : 0) + (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
 
                     if (selectedInterfacesDeploy > 1)
                     {
@@ -681,24 +650,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     swdDevice.Verbosity = _verbosityLevel;
                     return swdDevice.MassErase();
                 }
-                else if (_options.UartUpdate)
-                {
-                    // UART mass erase
-                    if (string.IsNullOrEmpty(_options.SerialPort))
-                    {
-                        return ExitCodes.E6001;
-                    }
-
-                    using var uartDevice = new Stm32UartDevice(_options.SerialPort);
-
-                    if (!uartDevice.DevicePresent)
-                    {
-                        return ExitCodes.E5020;
-                    }
-
-                    uartDevice.Verbosity = _verbosityLevel;
-                    return uartDevice.MassErase();
-                }
+            
 
                 return Stm32Operations.MassErase(
                                 _options.JtagDeviceId,

@@ -125,7 +125,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreNotEqual(Interface.None, Interface.NativeStLink);
             Assert.AreNotEqual(Interface.Jtag, Interface.NativeStLink);
             Assert.AreNotEqual(Interface.Dfu, Interface.NativeStLink);
-            Assert.AreNotEqual(Interface.Uart, Interface.NativeStLink);
             Assert.AreNotEqual(Interface.NativeDfu, Interface.NativeStLink);
             Assert.AreNotEqual(Interface.NativeSwd, Interface.NativeStLink);
         }
@@ -390,7 +389,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.None));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.Jtag));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.Dfu));
-            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.Uart));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeDfu));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeSwd));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeStLink));

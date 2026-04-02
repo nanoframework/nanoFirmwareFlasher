@@ -1,39 +1,4 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-    <!-- 
-        Optional CLI tool inclusion properties.
-        Set to 'false' to exclude external CLI tools from the package.
-        All default to 'true' for backward compatibility.
-        
-        STM32 CLI tools (STM32_Programmer_CLI) are optional when using native transports:
-          native ST-LINK, CMSIS-DAP SWD, native USB DFU, or UART bootloader.
-        
-        Example: dotnet pack /p:IncludeStLinkCli=false /p:IncludeJLinkCli=false
-    -->
-    <PropertyGroup>
-        <IncludeStLinkCli Condition="'$(IncludeStLinkCli)' == ''">true</IncludeStLinkCli>
-        <IncludeJLinkCli Condition="'$(IncludeJLinkCli)' == ''">true</IncludeJLinkCli>
-        <IncludeSilinkCli Condition="'$(IncludeSilinkCli)' == ''">true</IncludeSilinkCli>
-        <IncludeUniflashCli Condition="'$(IncludeUniflashCli)' == ''">true</IncludeUniflashCli>
-        <IncludeEspTool Condition="'$(IncludeEspTool)' == ''">true</IncludeEspTool>
-    </PropertyGroup>
-
-    <!-- esptool executables for all platforms -->
-	<ItemGroup Condition="'$(IncludeEspTool)' == 'true'">
-        <Content Include="..\lib\esptool\esptoolWin\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolWin</PackagePath>
-        </Content>
-        <Content Include="..\lib\esptool\esptoolMac\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolMac</PackagePath>
-        </Content>
-        <Content Include="..\lib\esptool\esptoolLinux\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolLinux</PackagePath>
-        </Content>
-    </ItemGroup>
-
     <!-- ESP32 nanoFramework bootloader files -->
     <ItemGroup>
         <Content Include="..\lib\esp32bootloader\**">

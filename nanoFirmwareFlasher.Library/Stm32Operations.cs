@@ -140,15 +140,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if (updateInterface == Interface.Uart)
-            {
-                // UART bootloader path — requires serial port
-                if (string.IsNullOrEmpty(serialPort))
-                {
-                    return ExitCodes.E6001;
-                }
-            }
-            else if (updateInterface == Interface.NativeDfu)
+            if (updateInterface == Interface.NativeDfu)
             {
                 // Native USB DFU — cross-platform, no CLI needed
             }
@@ -260,16 +252,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else
             {
                 // Interface.None — auto-detect the best available interface
-                // Priority: Native ST-LINK → Native CMSIS-DAP → Native DFU → CLI JTAG → CLI DFU
-                bool foundNative = false;
+                // Priority: CLI JTAG/DFU (already enumerated) → Native ST-LINK → Native CMSIS-DAP → Native DFU
 
-                var nativeStLinkProbes = new List<string>();
-
-                try
-                {
-                    nativeStLinkProbes = StmStLinkDevice.ListDevices();
-                }
-                catch
+                // If CLI enumeration already found devices, use them directly without probing native transports
+                if (jtagId != null || connectedStJtagDevices.Any())
                 {
                     // Native ST-LINK enumeration not available
                 }
@@ -353,10 +339,89 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         updateInterface = Interface.Jtag;
                     }
                 }
+                else if (dfuDeviceId != null || connectedStDfuDevices.Any())
+                {
+                    updateInterface = Interface.Dfu;
+                }
+                else
+                {
+                    // No CLI devices found — try native transports
+                    bool foundNative = false;
+
+                    try
+                    {
+                        var nativeStLinkProbes = StmStLinkDevice.ListDevices();
+
+                        if (nativeStLinkProbes.Count > 0)
+                        {
+                            if (verbosity >= VerbosityLevel.Detailed)
+                            {
+                                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                                OutputWriter.WriteLine("Auto-detected ST-LINK probe — using native transport.");
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
+                            }
+
+                            updateInterface = Interface.NativeStLink;
+                            foundNative = true;
+                        }
+                    }
+                    catch
+                    {
+                        // Native ST-LINK enumeration not available
+                    }
+
+                    if (!foundNative)
+                    {
+                        try
+                        {
+                            var nativeSwdProbes = StmSwdDevice.ListDevices();
+
+                            if (nativeSwdProbes.Count > 0)
+                            {
+                                if (verbosity >= VerbosityLevel.Detailed)
+                                {
+                                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                                    OutputWriter.WriteLine("Auto-detected CMSIS-DAP probe — using native SWD transport.");
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                                }
+
+                                updateInterface = Interface.NativeSwd;
+                                foundNative = true;
+                            }
+                        }
+                        catch
+                        {
+                            // Native SWD enumeration not available
+                        }
+                    }
+
+                    if (!foundNative)
+                    {
+                        try
+                        {
+                            var nativeDfuDevices = StmNativeDfuDevice.ListDevices();
+
+                            if (nativeDfuDevices.Count > 0)
+                            {
+                                if (verbosity >= VerbosityLevel.Detailed)
+                                {
+                                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                                    OutputWriter.WriteLine("Auto-detected DFU device — using native USB DFU.");
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                                }
+
+                                updateInterface = Interface.NativeDfu;
+                            }
+                        }
+                        catch
+                        {
+                            // Native DFU enumeration not available on this platform
+                        }
+                    }
+                }
             }
 
-            if (updateInterface != Interface.Uart
-                && updateInterface != Interface.NativeDfu
+            if (updateInterface != Interface.NativeDfu
                 && updateInterface != Interface.NativeSwd
                 && updateInterface != Interface.NativeStLink
                 && !connectedStDfuDevices.Any()
@@ -367,81 +432,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // update using DFU
-            if (updateInterface == Interface.Uart)
-            {
-                // UART bootloader update — no external tools required
-
-                try
-                {
-                    using Stm32UartDevice uartDevice = new Stm32UartDevice(serialPort);
-
-                    if (!uartDevice.DevicePresent)
-                    {
-                        return ExitCodes.E5020;
-                    }
-
-                    if (verbosity >= VerbosityLevel.Normal)
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-
-                        OutputWriter.WriteLine($"Connected to STM32 via UART bootloader on {serialPort}");
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"{uartDevice}");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-                    }
-
-                    if (fitCheck)
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine("Image fit check is not supported for UART bootloader connections.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-                    }
-
-                    ExitCodes operationResult = ExitCodes.OK;
-
-                    // set verbosity
-                    uartDevice.Verbosity = verbosity;
-
-                    // UART bootloader requires flash to be erased before writing.
-                    // Mass erase when performing firmware update.
-                    uartDevice.DoMassErase = updateFw;
-
-                    uartDevice.Verify = verify;
-
-                    // write HEX files to flash
-                    if (filesToFlash.Any(f => f.EndsWith(".hex")))
-                    {
-                        operationResult = uartDevice.FlashHexFiles(filesToFlash);
-                    }
-
-                    if (operationResult == ExitCodes.OK && isApplicationBinFile)
-                    {
-                        operationResult = uartDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
-                    }
-
-                    if (updateFw
-                        && operationResult == ExitCodes.OK)
-                    {
-                        // start execution from bootloader address
-                        uartDevice.StartExecution($"{firmware.BooterStartAddress:X8}");
-                    }
-
-                    return operationResult;
-                }
-                catch (Stm32UartBootloaderException)
-                {
-                    return ExitCodes.E5020;
-                }
-                catch (Exception)
-                {
-                    return ExitCodes.E5021;
-                }
-            }
-            else if (updateInterface == Interface.NativeDfu)
+            if (updateInterface == Interface.NativeDfu)
             {
                 // Native USB DFU update — no external tools required (Windows only)
 
@@ -664,7 +655,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 try
                 {
-                    dfuDeviceId = dfuDeviceId == null ? connectedStDfuDevices[0].serial : dfuDeviceId;
+                    if (dfuDeviceId != null)
+                    {
+                        // verify the specified ID exists in the list
+                        if (!connectedStDfuDevices.Any(d => d.serial == dfuDeviceId))
+                        {
+                            return ExitCodes.E1005;
+                        }
+                    }
+                    else
+                    {
+                        // no ID specified — use the first available device
+                        dfuDeviceId = connectedStDfuDevices[0].serial;
+                    }
+
                     dfuDevice = new StmDfuDevice(dfuDeviceId);
 
                     if (!dfuDevice.DevicePresent)
@@ -741,6 +745,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 try
                 {
+                    if (jtagId != null)
+                    {
+                        // verify the specified ID exists in the list
+                        if (!connectedStJtagDevices.Contains(jtagId))
+                        {
+                            return ExitCodes.E5002;
+                        }
+                    }
+                    else
+                    {
+                        // no ID specified — use the first available device
+                        jtagId = connectedStJtagDevices[0];
+                    }
+
                     jtagDevice = new StmJtagDevice(jtagId);
 
                     if (!jtagDevice.DevicePresent)
@@ -1271,10 +1289,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// DFU.
         /// </summary>
         Dfu,
-        /// <summary>
-        /// UART bootloader (native, no external tools required).
-        /// </summary>
-        Uart,
         /// <summary>
         /// Native USB DFU (WinUSB, no external tools required). Windows only.
         /// </summary>

@@ -77,12 +77,6 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void Stm32UartDevice_ImplementsIStmFlashableDevice()
-        {
-            Assert.IsTrue(typeof(IStmFlashableDevice).IsAssignableFrom(typeof(Stm32UartDevice)));
-        }
-
-        [TestMethod]
         public void StmDfuDevice_ImplementsIStmFlashableDevice()
         {
             Assert.IsTrue(typeof(IStmFlashableDevice).IsAssignableFrom(typeof(StmDfuDevice)));
@@ -220,18 +214,6 @@ namespace nanoFirmwareFlasher.Tests
         #region Program.cs early validation tests
 
         [TestMethod]
-        public void ValidateInterface_UartWithoutSerialPort_Fails()
-        {
-            // This tests that --uart without --serialport would be caught
-            // by early validation in Program.cs.
-            // We verify the validation logic via Options properties.
-            var o = new Options { UartUpdate = true };
-            // SerialPort is null by default
-            Assert.IsTrue(o.UartUpdate);
-            Assert.IsNull(o.SerialPort);
-        }
-
-        [TestMethod]
         public void ValidateInterface_DeployWithoutImage_Fails()
         {
             // This tests that --deploy without --image would be caught
@@ -247,14 +229,6 @@ namespace nanoFirmwareFlasher.Tests
             var o = new Options { Deploy = true, DeploymentImage = "app.bin" };
             Assert.IsTrue(o.Deploy);
             Assert.IsNotNull(o.DeploymentImage);
-        }
-
-        [TestMethod]
-        public void Options_UartWithSerialPort_IsValid()
-        {
-            var o = new Options { UartUpdate = true, SerialPort = "COM3" };
-            Assert.IsTrue(o.UartUpdate);
-            Assert.IsNotNull(o.SerialPort);
         }
 
         #endregion

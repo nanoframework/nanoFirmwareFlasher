@@ -88,18 +88,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         #endregion
 
 
-        #region STM32 UART bootloader options
-
-        [Option(
-            "uart",
-            Required = false,
-            Default = false,
-            HelpText = "Use UART bootloader to update the device. Requires --serialport. No external tools needed.")]
-        public bool UartUpdate { get; set; }
-
-        #endregion
-
-
         #region STM32 Native DFU options
 
         [Option(
@@ -495,7 +483,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             int count =
                 (o.DfuUpdate ? 1 : 0) +
                 (o.JtagUpdate ? 1 : 0) +
-                (o.UartUpdate ? 1 : 0) +
                 (o.NativeDfuUpdate ? 1 : 0) +
                 (o.NativeSwdUpdate ? 1 : 0) +
                 (o.NativeStLinkUpdate ? 1 : 0);
@@ -508,7 +495,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         {
                             o.DfuUpdate ? "--dfu" : null,
                             o.JtagUpdate ? "--jtag" : null,
-                            o.UartUpdate ? "--uart" : null,
                             o.NativeDfuUpdate ? "--nativedfu" : null,
                             o.NativeSwdUpdate ? "--nativeswd" : null,
                             o.NativeStLinkUpdate ? "--nativestlink" : null,
@@ -525,12 +511,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         internal static (ExitCodes Code, string Message)? ValidateEarlyConstraints(Options o)
         {
-            // --uart requires --serialport
-            if (o.UartUpdate && string.IsNullOrEmpty(o.SerialPort))
-            {
-                return (ExitCodes.E6001, "--uart requires --serialport to be specified.");
-            }
-
             // --deploy requires --image
             if (o.Deploy && string.IsNullOrEmpty(o.DeploymentImage))
             {

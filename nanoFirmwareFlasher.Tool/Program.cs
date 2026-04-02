@@ -569,14 +569,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return;
             }
 
-            // --uart requires --serialport
-            if (o.UartUpdate && string.IsNullOrEmpty(o.SerialPort))
-            {
-                _exitCode = ExitCodes.E6001;
-                _extraMessage = "--uart requires --serialport to be specified.";
-                return;
-            }
-
             // --deploy requires --image
             if (o.Deploy && string.IsNullOrEmpty(o.DeploymentImage))
             {

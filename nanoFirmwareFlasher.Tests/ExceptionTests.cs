@@ -393,7 +393,6 @@ namespace nanoFirmwareFlasher.Tests
                 typeof(ReadEsp32FlashException),
                 typeof(SilinkExecutionException),
                 typeof(StLinkCliExecutionException),
-                typeof(Stm32UartBootloaderException),
                 typeof(UniflashCliExecutionException),
                 typeof(WriteEsp32FlashException),
             };

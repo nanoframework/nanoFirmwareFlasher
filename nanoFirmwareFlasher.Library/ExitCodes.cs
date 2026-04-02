@@ -89,9 +89,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         ////////////////////////
 
         /// <summary>
-        /// Error executing esptool command
+        /// Error executing ESP32 serial command
         /// </summary>
-        [Display(Name = "Error executing esptool command.")]
+        [Display(Name = "Error executing ESP32 serial command.")]
         E4000 = 4000,
 
         /// <summary>
@@ -193,22 +193,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Failed to reset MCU on connected device.")]
         E5010 = 5010,
-
-        ///////////////////////////////
-        // UART Bootloader Errors //
-        ///////////////////////////////
-
-        /// <summary>
-        /// Failed to connect to STM32 UART bootloader.
-        /// </summary>
-        [Display(Name = "Failed to connect to STM32 UART bootloader. Make sure the device is in bootloader mode (BOOT0 high) and the serial port is correct.")]
-        E5020 = 5020,
-
-        /// <summary>
-        /// UART bootloader communication error.
-        /// </summary>
-        [Display(Name = "UART bootloader communication error.")]
-        E5021 = 5021,
 
         /// <summary>
         /// Flash verification failed — read-back data does not match written data.
