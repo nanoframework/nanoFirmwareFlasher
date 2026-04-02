@@ -260,6 +260,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // Native ST-LINK enumeration not available
                 }
 
+                bool foundNative = false;
+                var nativeStLinkProbes = new List<string>();
+
+                try
+                {
+                    nativeStLinkProbes = StmStLinkDevice.ListDevices();
+                }
+                catch
+                {
+                    // Native ST-LINK enumeration not available on this platform
+                }
+
                 if (nativeStLinkProbes.Count > 0)
                 {
                     if (verbosity >= VerbosityLevel.Detailed)
