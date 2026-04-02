@@ -382,9 +382,9 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Interface_HasAllExpectedValues()
         {
-            // Verify all 7 interface values exist
+            // Verify all 6 interface values exist
             var values = Enum.GetValues(typeof(Interface));
-            Assert.AreEqual(7, values.Length, "Interface enum should have exactly 7 values");
+            Assert.AreEqual(6, values.Length, "Interface enum should have exactly 6 values");
 
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.None));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.Jtag));
