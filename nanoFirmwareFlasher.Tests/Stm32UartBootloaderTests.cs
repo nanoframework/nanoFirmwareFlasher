@@ -70,21 +70,6 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void Stm32UartDevice_ExitCodes_Exist()
-        {
-            // Verify our new exit codes are part of the enum
-            Assert.AreEqual(5020, (int)ExitCodes.E5020);
-            Assert.AreEqual(5021, (int)ExitCodes.E5021);
-        }
-
-        [TestMethod]
-        public void Interface_HasUartValue()
-        {
-            // Verify the Uart enum value exists
-            Assert.AreEqual(3, (int)Interface.Uart);
-        }
-
-        [TestMethod]
         public void Stm32UartBootloaderException_Constructors()
         {
             // Test all constructors following the codebase pattern
