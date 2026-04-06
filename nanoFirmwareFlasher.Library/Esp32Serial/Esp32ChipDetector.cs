@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -27,22 +27,50 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal Esp32ChipConfig Config => _config;
 
         /// <summary>
-        /// Detect the chip family by reading the magic value register.
-        /// Must be called first before other detection methods.
+        /// Detect the chip family by
+        /// 1. Getting security info to detect newer chips with chip_id (s3 on wards)
+        /// 2. if not newer chip then read the magic value register for older chips.
         /// </summary>
         /// <returns>Chip type string (e.g. "esp32", "esp32s3").</returns>
         /// <exception cref="EspToolExecutionException">Chip type not recognized.</exception>
         internal string DetectChipType()
         {
-            // Try reading magic from the standard address first (0x40001000)
+            //
+            // 1. All chips newer then esp32_s3 have a chipID in the SecurityInfo
+            //    read and check.
+            //
+            var sec = _client.TryGetSecurityInfo();
+            if (sec != null)
+            {
+                _config = Esp32ChipConfigs.GetByChipId(sec?.chipId);
+
+                if (_config != null)
+                {
+                    // handle special case for esp32_P4 revs less than 3 requiring different stub image
+                    if (_config.ChipType == "esp32p4" && sec.Value.ecoVersion < 3)
+                    {
+                        _config.StubVariant = "rev0_1_2";
+                    }
+
+                    if (!_config.UseMagicValue)
+                    {
+                        return _config.ChipType;
+                    }
+                }
+            }
+
+            // No chipID or unrecognized chipID.
+            // Esp32 or ESp32S2
+            // Use magic value detection as a fallback for these older chips
+            //
+            // 3. Legacy magic‑value detection LAST
+            //
             uint magic = _client.ReadRegister(0x40001000);
-
             _config = Esp32ChipConfigs.GetByMagicValue(magic);
-
             if (_config == null)
             {
                 throw new EspToolExecutionException(
-                    $"Unknown ESP32 chip magic value: 0x{magic:X8}. Device may not be supported.");
+                    $"Unknown ESP32 chip. Magic=0x{magic:X8}. Device may require SecurityInfo or eFuse‑based detection.");
             }
 
             return _config.ChipType;
@@ -179,6 +207,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             uint uartClkDivAddr;
 
+            // These are fixed at 40
+            if (_config.ChipType == "esp32s3" || _config.ChipType == "esp32c5" || _config.ChipType == "esp32c6" || _config.ChipType == "esp32c61" || _config.ChipType == "esp32p4")
+            {
+                return "40MHz";
+            }
+
             if (_config.ChipType == "esp32")
             {
                 uartClkDivAddr = 0x3FF40014;
@@ -227,7 +261,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     "esp32c3" => ReadEsp32C3ChipDescription(),
                     "esp32c6" => ReadEsp32C6ChipDescription(),
                     "esp32h2" => ReadEsp32H2ChipDescription(),
-                    _ => _config.Name
+                    "esp32c5" => ReadEsp32C5ChipDescription(),  
+                    "esp32c61" => ReadEsp32C61ChipDescription(), 
+                    "esp32p4" => ReadEsp32P4ChipDescription(),  
                 };
             }
             catch
@@ -245,15 +281,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             // Feature detection requires reading chip-specific eFuse registers.
             // For now, return basic features based on chip family.
-            // The detailed feature string will match what the existing code expects.
             return _config.ChipType switch
             {
                 "esp32" => ReadEsp32Features(),
                 "esp32s2" => ReadEsp32S2Features(),
                 "esp32s3" => ReadEsp32S3Features(),
                 "esp32c3" => ReadEsp32C3Features(),
-                "esp32c6" => "Wi-Fi 6, BLE 5, 802.15.4",
-                "esp32h2" => "BLE 5, 802.15.4",
+                "esp32c6" => ReadEsp32C6Features(),
+                "esp32h2" => ReadEsp32H2Features(),
+                "esp32c5" => ReadEsp32C5Features(),
+                "esp32c61" => ReadEsp32C61Features(),
+                "esp32p4" => ReadEsp32P4Features(),
                 _ => "Unknown"
             };
         }
@@ -548,11 +586,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             return $"{chipName} (revision v{majorRev}.{minorRev})";
         }
 
-        private string ReadEsp32S2Features()
-        {
-            return "Wi-Fi";
-        }
-
         /// <summary>
         /// Read common chip revision from BLOCK1 eFuse for RISC-V and Xtensa-S3 chips.
         /// Common layout: pkg_version at word3[23:21], minor at word5[23]+word3[20:18], major at word5[25:24].
@@ -659,6 +692,57 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         }
 
         /// <summary>
+        /// ESP32-C5 chip description.
+        /// </summary>
+        private string ReadEsp32C5ChipDescription()
+        {
+            int pkgVersion = ReadBlock1PkgVersion();
+            var (majorRev, minorRev) = ReadRiscVChipRevision();
+
+            string chipName = pkgVersion switch
+            {
+                0 => "ESP32-C5",
+                _ => "Unknown ESP32-C5"
+            };
+
+            return $"{chipName} (revision v{majorRev}.{minorRev})";
+        }
+
+        /// <summary>
+        /// ESP32-C61 chip description.
+        /// </summary>
+        private string ReadEsp32C61ChipDescription()
+        {
+            int pkgVersion = ReadBlock1PkgVersion();
+            var (majorRev, minorRev) = ReadRiscVChipRevision();
+
+            string chipName = pkgVersion switch
+            {
+                0 => "ESP32-C61",
+                _ => "Unknown ESP32-C61"
+            };
+
+            return $"{chipName} (revision v{majorRev}.{minorRev})";
+        }
+
+        /// <summary>
+        /// ESP32-P4 chip description.
+        /// </summary>
+        private string ReadEsp32P4ChipDescription()
+        {
+            int pkgVersion = ReadBlock1PkgVersion();
+            var (majorRev, minorRev) = ReadRiscVChipRevision();
+
+            string chipName = pkgVersion switch
+            {
+                0 => "ESP32-P4",
+                _ => "Unknown ESP32-P4"
+            };
+
+            return $"{chipName} (revision v{majorRev}.{minorRev})";
+        }
+
+        /// <summary>
         /// ESP32-H2 chip description.
         /// </summary>
         private string ReadEsp32H2ChipDescription()
@@ -674,6 +758,49 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             };
 
             return $"{chipName} (revision v{majorRev}.{minorRev})";
+        }
+
+        /// <summary>
+        /// ESP32-S2 features 
+        /// </summary>
+        private string ReadEsp32S2Features()
+        {
+            try
+            {
+                var features = new System.Collections.Generic.List<string>
+                    { "Wi-Fi", "Single Core", "240MHz" };
+
+                uint block1Word3 = ReadBlock1Word(3);
+
+                // Flash cap: block1_word2
+                int flashCap = (int)((block1Word3 >> 21) & 0x0F);
+                string flash = flashCap switch
+                {
+                    0 => "No embedded flash",
+                    1 => "Embedded Flash 2MB",
+                    2 => "Embedded Flash 4MB",
+                    _ => null
+                };
+
+                features.Add(flash);
+
+                // PSRAM cap
+                int psramCap = (int)((block1Word3 >> 28) & 0x0F);
+                string psram = psramCap switch
+                {
+                    0 => "No embedded PSRAM",
+                    1 => "Embedded PSRAM 2MB",
+                    2 => "Embedded PSRAM 4MB",
+                    _ => "Unknown Embedded PSRAM"
+                };
+                features.Add(psram);
+
+                return string.Join(", ", features);
+            }
+            catch
+            {
+                return "Wi-Fi";
+            }
         }
 
         /// <summary>
@@ -782,6 +909,86 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             {
                 return "Wi-Fi, BLE";
             }
+        }
+
+        /// <summary>
+        /// ESP32-C5 features.
+        /// </summary>
+        private string ReadEsp32C5Features()
+        {
+            var features = new System.Collections.Generic.List<string>
+            {
+                "Wi-Fi 6 (dual-band)",
+                "BT 5 (LE)",
+                "IEEE802.15.4",
+                "Single Core + LP Core",
+                "240MHz"
+            };
+
+            return string.Join(", ", features);
+        }
+
+        /// <summary>
+        /// ESP32-C6 features with embedded flash detection.
+        /// Matches esptool.py ESP32C3ROM.get_chip_features().
+        /// </summary>
+        private string ReadEsp32C6Features()
+        {
+            try
+            {
+                var features = new System.Collections.Generic.List<string>
+                    { "Wi-Fi 6", "BT 5 (LE)", "IEEE802.15.4", "Single Core + LP Core", "160MHz" };
+
+                uint block1Word1 = ReadBlock1Word(3);
+
+                // Flash cap: block1_word3[2:0]
+                int flashCap = (int)((block1Word1) & 0x07);
+                string flash = flashCap switch
+                {
+                    1 => "Embedded Flash 4MB",
+                    2 => "Embedded Flash 8MB",
+                    _ => null
+                };
+
+                return string.Join(", ", features);
+            }
+            catch
+            {
+                return "Wi-Fi 6, BT 5 (LE), IEEE802.15.4";
+            }
+        }
+
+        /// <summary>
+        /// ESP32-C61 features.
+        /// </summary>
+        private string ReadEsp32C61Features()
+        {
+            var features = new System.Collections.Generic.List<string>
+                { "Wi-Fi 6", "BT 5 (LE)", "Single Core", "160MHz" };
+
+            return string.Join(", ", features);
+        }
+
+        /// <summary>
+        /// ESP32-H2 features.
+        /// </summary>
+        private string ReadEsp32H2Features()
+        {
+            var features = new System.Collections.Generic.List<string>
+                { "BT 5 (LE)", "IEEE802.15.4", "Single Core", "96MHz" };
+
+            return string.Join(", ", features);
+        }
+
+        /// <summary>
+        /// ESP32-P4 features with embedded flash detection.
+        /// </summary>
+        private string ReadEsp32P4Features()
+        {
+            var features = new System.Collections.Generic.List<string>
+            { "Dual Core + LP Core", "400MHz" };
+
+            return string.Join(", ", features);
         }
 
         #endregion

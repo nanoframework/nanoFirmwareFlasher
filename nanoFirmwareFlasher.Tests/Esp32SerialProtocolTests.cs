@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using nanoFramework.Tools.Debugger;
 using nanoFramework.Tools.FirmwareFlasher;
 using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
 
@@ -1725,8 +1726,10 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void StubImage_TryLoad_UnknownChip_ReturnsNull()
         {
+            var unknownConfig = new Esp32ChipConfig("Unknown", "esp32_nonexistent_xyz", 0, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
+
             // No stub should exist for a non-existent chip type
-            var result = Esp32StubImage.TryLoad("esp32_nonexistent_xyz");
+            var result = Esp32StubImage.TryLoad(unknownConfig);
             Assert.IsNull(result, "Should return null for unknown chip types");
         }
 

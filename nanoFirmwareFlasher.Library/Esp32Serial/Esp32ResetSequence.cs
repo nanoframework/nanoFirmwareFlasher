@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Ports;
@@ -33,6 +33,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// 
         /// Matches esptool.py's ClassicReset:
         ///   D0|R1|W0.1|D1|R0|W{resetDelay}|D0
+        ///
+        ///   Each dev board has logic to map DTR and RTS to EN and IO0 pins for putting into bootloader mode.
+        ///   It uses following logic not a direct mapping from DTR/RTS to EN/IO0:
+        ///   DTR RTS --> EN IO0
+        ///    1   1       1  1   idle
+        ///    0   0       1  1   idle
+        ///    1   0       0  1   reset (EN low), GPIO0 high (normal boot)
+        ///    0   1       1  0   EN high (chip starts), GPIO0 low (bootloader mode)
+        ///
+        ///    Note: When RtsEnable or DtrEnable are false the lines are high(1)
+        ///    
         /// </summary>
         /// <param name="port">Serial port.</param>
         /// <param name="resetDelayMs">Delay in ms after EN release while GPIO0 is held low.

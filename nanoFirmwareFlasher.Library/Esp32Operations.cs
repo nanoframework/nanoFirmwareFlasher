@@ -136,7 +136,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
                 esp32Device.ChipType != "ESP32-C3" &&
+                esp32Device.ChipType != "ESP32-C5" &&
                 esp32Device.ChipType != "ESP32-C6" &&
+                esp32Device.ChipType != "ESP32-C61" &&
                 esp32Device.ChipType != "ESP32-H2" &&
                 esp32Device.ChipType != "ESP32-S2" &&
                 esp32Device.ChipType != "ESP32-S3" &&
@@ -266,59 +268,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // compose target name
                     targetName = $"ESP32_C3{revisionSuffix}";
                 }
+                else if (esp32Device.ChipType == "ESP32-C5")
+                {
+                    
+                    // compose target name
+                    targetName = $"ESP32_C5_THREAD_USB";
+                }
                 else if (esp32Device.ChipType == "ESP32-C6")
                 {
-                    // version schema for ESP32-C6
-
-                    string revisionSuffix;
-
                     // so far we are only offering a single ESP32_C6 build
-                    if (esp32Device.ChipName.Contains("revision v0.0") || esp32Device.ChipName.Contains("revision v0.1"))
-                    {
-                        revisionSuffix = "";
-                    }
-                    else
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"Unsupported ESP32_C6 revision.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
-                    }
-
-                    // compose target name
-                    targetName = $"ESP32_C6{revisionSuffix}";
+                    targetName = $"ESP32_C6_THREAD";
+                }
+                else if (esp32Device.ChipType == "ESP32-C61")
+                {
+                    targetName = $"ESP32_C61_USB";
                 }
                 else if (esp32Device.ChipType == "ESP32-H2")
                 {
-                    // version schema for ESP32-H2
-
-                    string revisionSuffix;
-
                     // so far we are only offering a single ESP32_H2 build
-                    if (esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v0.2"))
-                    {
-                        revisionSuffix = "";
-                    }
-                    else
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"Unsupported ESP32_H2 revision.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
-                    }
-
-                    // compose target name
-                    targetName = $"ESP32_H2{revisionSuffix}";
+                    targetName = $"ESP32_H2_THREAD";
                 }
                 else if (esp32Device.ChipType == "ESP32-S2")
                 {
@@ -378,8 +346,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     string revisionSuffix;
 
                     // so far we are only offering a single ESP32_P4 build
-                    if (esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v1.0"))
+                    if (esp32Device.ChipName.Contains("revision v0.") || esp32Device.ChipName.Contains("revision v1."))
                     {
+                        revisionSuffix = "_REV_LESS3";
+                    }
+                    else if(esp32Device.ChipName.Contains("revision v3."))
+                    {
+                        // Latest revisions don't include the revision in the target name
                         revisionSuffix = "";
                     }
                     else
@@ -396,7 +369,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
 
                     // compose target name
-                    targetName = $"ESP32_P4{revisionSuffix}";
+                    targetName = $"ESP32_P4_UART{revisionSuffix}";
                 }
 
                 if (showFwOnly)

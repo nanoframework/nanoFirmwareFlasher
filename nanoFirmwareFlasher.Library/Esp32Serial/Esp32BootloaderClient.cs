@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -414,6 +414,46 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 Esp32ResetSequence.HardReset(_port, _isUsbJtag);
             }
         }
+
+        /// <summary>
+        /// Tries to get security information (chip ID and Eco version) from the boot loader.
+        /// </summary>
+        /// <returns>A tuple containing the chip ID and sub-ID, or null if unavailable.</returns>
+        internal (uint chipId, uint ecoVersion)? TryGetSecurityInfo()
+        {
+            byte[] data;
+
+            if (IsStubRunning)
+                return null;
+
+            try
+            {
+                // Check if the GetSecurityInfo command is supported by trying to send it
+                var resp = SendCommand(Esp32Command.GetSecurityInfo, Array.Empty<byte>());
+                if (!resp.IsSuccess || resp.Data.Length < 20)
+                    return null;
+
+                data = resp.Data;
+            }
+            catch (TimeoutException)
+            {
+                // Command not supported or no response — treat as unavailable
+                return null;
+            }
+
+            // Layout:
+            // 0..3   = flags (ignored)
+            // 4      = flash_crypt_cnt (ignored)
+            // 5..11  = key_purposes (ignored)
+            // 12..15 = chip_id (uint32, LE)
+            // 16..19 = eco_version/api_version (uint32, LE)
+
+            uint chipId = BitConverter.ToUInt32(data, 12);
+            uint ecoVersion = BitConverter.ToUInt32(data, 16);
+
+            return (chipId, ecoVersion);
+        }
+
 
         /// <summary>
         /// Get the underlying serial port (for direct serial reading, e.g. PSRAM detection).
