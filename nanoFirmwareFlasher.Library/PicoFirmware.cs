@@ -55,7 +55,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="archiveDirectoryPath">Path for the archive cache directory.</param>
         /// <returns>Exit code indicating result.</returns>
-        internal new async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
+        internal override async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
         {
             // perform download and extract
             ExitCodes result = await base.DownloadAndExtractAsync(archiveDirectoryPath);

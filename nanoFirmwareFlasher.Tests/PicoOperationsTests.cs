@@ -56,7 +56,7 @@ namespace nanoFirmwareFlasher.Tests
 
         [TestMethod]
         [DoNotParallelize]
-        public void PicoManager_NoDevice_ReturnsTimeout()
+        public void PicoManager_UpdateOptions_Constructs()
         {
             using var output = new OutputWriterHelper();
 
@@ -69,15 +69,12 @@ namespace nanoFirmwareFlasher.Tests
 
             var manager = new PicoManager(options, VerbosityLevel.Quiet);
 
-            // without a device connected, ProcessAsync should return E3005 (timeout)
-            // since there's no UF2 drive and the wait timeout will pass
-            // We can't easily test this in CI without a device, so we verify construction
             Assert.IsNotNull(manager);
         }
 
         [TestMethod]
         [DoNotParallelize]
-        public void PicoManager_NoUpdateOrDetails_ThrowsNoOperation()
+        public void PicoManager_MinimalOptions_Constructs()
         {
             using var output = new OutputWriterHelper();
 
@@ -89,7 +86,6 @@ namespace nanoFirmwareFlasher.Tests
 
             var manager = new PicoManager(options, VerbosityLevel.Quiet);
 
-            // can't run ProcessAsync without a device, but verify construction is correct
             Assert.IsNotNull(manager);
         }
 
@@ -99,37 +95,6 @@ namespace nanoFirmwareFlasher.Tests
             // verify the E3005 timeout exit code exists
             var code = ExitCodes.E3005;
             Assert.AreEqual(3005, (int)code);
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
-        public void PicoOperations_TargetNamePrefixes_MapToRpiPico()
-        {
-            using var output = new OutputWriterHelper();
-
-            // verify that the Program.cs prefix detection works for various target names
-            string[] picoTargetNames =
-            [
-                "RP_PICO_RP2040",
-                "RP_PICO_W_RP2040",
-                "RP_PICO_RP2350",
-                "RPI_PICO",
-                "RPI_PICO_W",
-                "RP2040_CUSTOM_BOARD",
-                "RP2350_MY_BOARD",
-                "PICO_SOMETHING"
-            ];
-
-            foreach (string targetName in picoTargetNames)
-            {
-                Assert.IsTrue(
-                    targetName.StartsWith("RP_PICO")
-                    || targetName.StartsWith("RPI_PICO")
-                    || targetName.StartsWith("RP2040")
-                    || targetName.StartsWith("RP2350")
-                    || targetName.StartsWith("PICO"),
-                    $"Target name '{targetName}' should match Pico prefix detection");
-            }
         }
 
         [TestMethod]

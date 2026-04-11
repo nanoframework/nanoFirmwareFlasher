@@ -411,7 +411,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 WriteUInt32(uf2Data, offset + 4, UF2_MAGIC_START1);
                 WriteUInt32(uf2Data, offset + 8, UF2_FLAG_FAMILY_ID);
                 WriteUInt32(uf2Data, offset + 12, baseAddress + (uint)dataOffset);
-                WriteUInt32(uf2Data, offset + 16, UF2_DATA_SIZE);
+                WriteUInt32(uf2Data, offset + 16, (uint)dataLength);
                 WriteUInt32(uf2Data, offset + 20, (uint)blockIndex);
                 WriteUInt32(uf2Data, offset + 24, (uint)numBlocks);
                 WriteUInt32(uf2Data, offset + 28, familyId);

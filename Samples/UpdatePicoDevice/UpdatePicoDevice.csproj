@@ -53,9 +53,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="nanoFramework.Tools.FirmwareFlasher">
-      <Version>2.2.2</Version>
-    </PackageReference>
+    <ProjectReference Include="..\..\nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -767,16 +767,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     _exitCode = await manager.ProcessAsync();
                 }
-                catch (PicoUf2DriveNotFoundException ex)
-                {
-                    _exitCode = ExitCodes.E3001;
-                    _extraMessage = ex.Message;
-                }
-                catch (PicoFlashException ex)
-                {
-                    _exitCode = ExitCodes.E3000;
-                    _extraMessage = ex.Message;
-                }
                 catch (NoOperationPerformedException)
                 {
                     DisplayNoOperationMessage();

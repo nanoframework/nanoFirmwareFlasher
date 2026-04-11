@@ -358,7 +358,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!driveRemoved)
             {
-                // drive still present after 5s â€” force eject
+                // drive still present after 5s - force eject
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Yellow;

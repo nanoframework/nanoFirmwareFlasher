@@ -45,8 +45,8 @@ namespace nanoFirmwareFlasher.Tests
             // verify address
             Assert.AreEqual(0x10000000u, BitConverter.ToUInt32(result, 12));
 
-            // verify payload size (always padded to 256)
-            Assert.AreEqual(256u, BitConverter.ToUInt32(result, 16));
+            // verify payload size (actual data length for partial block)
+            Assert.AreEqual(1u, BitConverter.ToUInt32(result, 16));
 
             // verify block index and total
             Assert.AreEqual(0u, BitConverter.ToUInt32(result, 20)); // block 0
@@ -128,7 +128,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(2u, BitConverter.ToUInt32(result, block2 + 20));
             Assert.AreEqual(3u, BitConverter.ToUInt32(result, block2 + 24));
             Assert.AreEqual(0x10000200u, BitConverter.ToUInt32(result, block2 + 12)); // base + 512
-            Assert.AreEqual(256u, BitConverter.ToUInt32(result, block2 + 16)); // always padded to 256
+            Assert.AreEqual(1u, BitConverter.ToUInt32(result, block2 + 16)); // actual data length for final partial block
             Assert.AreEqual(0x03, result[block2 + 32]);
 
             // verify end magic on all blocks

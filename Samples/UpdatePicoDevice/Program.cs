@@ -65,6 +65,7 @@ namespace UpdatePicoDevice
                 false,    // stable release
                 null,     // no archive
                 null,     // no custom CLR file
+                massErase: false,
                 VerbosityLevel.Normal);
 
             if (exitCode != ExitCodes.OK)

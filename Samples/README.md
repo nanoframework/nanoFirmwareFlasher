@@ -160,7 +160,7 @@ A couple of lines of code is all it takes.
 var nanoDeviceOperations = new NanoDeviceOperations();
 UpdateDeviceClrAsync(
     "COM55",
-    VerbosityLevel.Nornal);
+    VerbosityLevel.Normal);
 ```
 
 ### Update Raspberry Pi Pico firmware
@@ -184,6 +184,8 @@ await PicoOperations.UpdateFirmwareAsync(
     null,     // latest version
     false,    // stable release
     null,     // no archive
+    null,     // no CLR file
+    false,    // no mass erase
     VerbosityLevel.Normal);
 ```
 

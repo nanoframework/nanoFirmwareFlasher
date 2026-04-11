@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Text;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -65,8 +66,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // assign family ID based on chip type
             FamilyId = chipType switch
             {
-                "RP2350" => 0xE48BFF59,
-                _ => 0xE48BFF56, // RP2040
+                "RP2040" => PicoUf2Utility.FAMILY_ID_RP2040,
+                "RP2350" => PicoUf2Utility.FAMILY_ID_RP2350_ARM,
+                _ => throw new NotSupportedException($"Unknown Pico chip type '{chipType}'. Supported types: RP2040, RP2350."),
             };
         }
 

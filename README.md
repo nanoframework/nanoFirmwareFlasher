@@ -323,7 +323,7 @@ Raspberry Pi Pico boards (RP2040 and RP2350) use UF2 mass storage for firmware d
 
 No external tools or drivers are required. nanoff handles UF2 conversion automatically.
 
-If no device is detected, nanoff will wait up to 30 seconds for a Pico to enter BOOTSEL mode. If multiple Pico devices are connected in BOOTSEL mode simultaneously, nanoff will use the first one found and display a warning.
+If no device is detected, nanoff will wait up to 30 seconds for a Pico to enter BOOTSEL mode. During Pico firmware update and mass-erase operations, if multiple Pico devices are connected in BOOTSEL mode simultaneously, nanoff will use the first one found and display a warning.
 
 ### Update the firmware of a Raspberry Pi Pico
 

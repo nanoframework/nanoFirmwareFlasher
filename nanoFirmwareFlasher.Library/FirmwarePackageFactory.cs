@@ -43,9 +43,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     fwVersion,
                     false);
             }
-            else if (nanoDevice.Platform.StartsWith("RP2")
-                || nanoDevice.Platform.StartsWith("PICO")
-                || nanoDevice.Platform.StartsWith("RASPBERRY"))
+            else if (nanoDevice.Platform.StartsWith("RP_PICO"))
             {
                 return new PicoFirmware(
                     nanoDevice.TargetName,

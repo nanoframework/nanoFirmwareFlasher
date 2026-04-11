@@ -11,8 +11,6 @@ namespace nanoFirmwareFlasher.Tests
     [TestClass]
     public class PicoFirmwareTests
     {
-        public TestContext TestContext { get; set; } = null!;
-
         [TestMethod]
         public void PicoFirmware_Constructor_SetsProperties()
         {
@@ -37,10 +35,8 @@ namespace nanoFirmwareFlasher.Tests
         public void PicoFirmware_GetUf2Bytes_ProducesValidUf2()
         {
             using var output = new OutputWriterHelper();
-            string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
 
             // simulate a downloaded firmware by creating a nanoCLR.bin file
-            string binContent = testDirectory;
             string locationPath = Path.Combine(
                 FirmwarePackage.LocationPathBase,
                 "RP_PICO_RP2040");
@@ -52,17 +48,19 @@ namespace nanoFirmwareFlasher.Tests
                 testBinData[i] = (byte)(i & 0xFF);
             }
 
-            File.WriteAllBytes(Path.Combine(locationPath, "nanoCLR.bin"), testBinData);
+            string binFilePath = Path.Combine(locationPath, "nanoCLR.bin");
+            File.WriteAllBytes(binFilePath, testBinData);
 
-            // create a firmware and manually set the BinFilePath via reflection
+            // create a firmware and set BinFilePath via reflection
             // since we can't call DownloadAndExtractAsync without a real Cloudsmith package
             var firmware = new PicoFirmware("RP_PICO_RP2040", "1.0.0.0", false);
 
-            // set the internal BinFilePath using file-based approach
-            string binFilePath = Path.Combine(locationPath, "nanoCLR.bin");
+            typeof(PicoFirmware)
+                .GetProperty("BinFilePath", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(firmware, binFilePath);
 
-            // use the ConvertBinToUf2 directly to verify the conversion is correct
-            byte[] uf2Data = PicoUf2Utility.ConvertBinToUf2(testBinData, 0x10000000, PicoUf2Utility.FAMILY_ID_RP2040);
+            // exercise GetUf2Bytes
+            byte[] uf2Data = firmware.GetUf2Bytes(PicoUf2Utility.FAMILY_ID_RP2040);
 
             Assert.IsNotNull(uf2Data);
             Assert.AreEqual(2 * 512, uf2Data.Length); // 512 bytes / 256 per block = 2 blocks
