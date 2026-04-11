@@ -190,6 +190,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             int blockCount = uf2Data.Length / UF2_BLOCK_SIZE;
 
+            // maximum plausible reconstructed binary size (16 MB covers all known Pico flash sizes)
+            const uint MaxReconstructedSize = 16 * 1024 * 1024;
+
             // first pass: find address range
             uint minAddress = uint.MaxValue;
             uint maxAddress = 0;
@@ -199,6 +202,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 int offset = i * UF2_BLOCK_SIZE;
                 uint targetAddr = BitConverter.ToUInt32(uf2Data, offset + 12);
                 uint dataLen = BitConverter.ToUInt32(uf2Data, offset + 16);
+
+                // reject oversized payload lengths
+                if (dataLen > UF2_DATA_SIZE)
+                {
+                    return null;
+                }
+
+                // check for overflow in targetAddr + dataLen
+                if (targetAddr > uint.MaxValue - dataLen)
+                {
+                    return null;
+                }
 
                 if (targetAddr < minAddress)
                 {
@@ -218,8 +233,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return null;
             }
 
+            // cap the reconstructed span to prevent excessive allocation
+            uint span = maxAddress - minAddress;
+
+            if (span > MaxReconstructedSize)
+            {
+                return null;
+            }
+
             // second pass: copy data into output buffer
-            byte[] result = new byte[maxAddress - minAddress];
+            byte[] result = new byte[span];
 
             for (int i = 0; i < blockCount; i++)
             {
@@ -677,7 +700,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     ? $"eject \"{drivePath}\""
                     : $"\"{drivePath}\"";
 
-                var process = Process.Start(new ProcessStartInfo
+                using var process = Process.Start(new ProcessStartInfo
                 {
                     FileName = command,
                     Arguments = arguments,
@@ -687,9 +710,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     CreateNoWindow = true,
                 });
 
-                process?.WaitForExit(5000);
+                if (process == null)
+                {
+                    return false;
+                }
 
-                return process?.ExitCode == 0;
+                if (!process.WaitForExit(5000))
+                {
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch
+                    {
+                        // process may have exited between the timeout and the kill
+                    }
+
+                    return false;
+                }
+
+                return process.ExitCode == 0;
             }
             catch
             {

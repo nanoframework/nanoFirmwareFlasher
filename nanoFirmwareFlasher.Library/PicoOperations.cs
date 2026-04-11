@@ -402,14 +402,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="deviceInfo">Device info from the detected Pico device.</param>
         /// <param name="applicationPath">Path to the application binary or UF2 file.</param>
         /// <param name="deploymentAddress">Deployment flash address. If <c>null</c> or empty, uses the default deployment address.</param>
-        /// <param name="massErase">When <c>true</c>, pad the UF2 with zero-filled blocks to erase the entire flash.</param>
         /// <param name="verbosity">Verbosity level.</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static ExitCodes DeployApplication(
             PicoDeviceInfo deviceInfo,
             string applicationPath,
             string deploymentAddress,
-            bool massErase,
             VerbosityLevel verbosity)
         {
             if (string.IsNullOrEmpty(applicationPath))
@@ -514,25 +512,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     OutputWriter.WriteLine($"Converted to UF2: {uf2Data.Length:N0} bytes ({uf2Data.Length / 512} blocks)");
-                }
-            }
-
-            // if mass erase requested, pad the UF2 to cover the entire flash
-            if (massErase)
-            {
-                uint famId = deviceInfo.FamilyId;
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                    OutputWriter.WriteLine($"Mass erase: padding UF2 to cover full {PicoFirmware.DefaultFlashSize / 1024}KB flash...");
-                }
-
-                uf2Data = PicoUf2Utility.PadUf2ToFullFlash(uf2Data, PicoFirmware.DefaultBaseAddress, PicoFirmware.DefaultFlashSize, famId);
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.WriteLine($"UF2 size after padding: {uf2Data.Length:N0} bytes ({uf2Data.Length / 512} blocks)");
                 }
             }
 

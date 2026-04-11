@@ -60,6 +60,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (_options.Uf2Deploy)
                 {
+                    // if mass erase is also requested, perform firmware update + erase first
+                    if (_options.MassErase)
+                    {
+                        var eraseResult = await ProcessUf2OperationsAsync();
+
+                        if (eraseResult != ExitCodes.OK)
+                        {
+                            return eraseResult;
+                        }
+                    }
+
                     // UF2 mass storage deployment — requires BOOTSEL mode
                     return await DeployViaUf2Async();
                 }
@@ -138,6 +149,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
+            // reject ambiguous target when multiple devices are in BOOTSEL mode
+            List<string> allDrives = PicoUf2Utility.FindAllUf2Drives();
+
+            if (allDrives.Count > 1)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine($"{allDrives.Count} Pico devices found in BOOTSEL mode. Cannot determine deploy target.");
+                OutputWriter.WriteLine("Disconnect extra devices so only the intended target remains.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E3006;
+            }
+
             PicoDeviceInfo deviceInfo = PicoUf2Utility.DetectDevice(uf2Drive);
 
             if (deviceInfo == null)
@@ -162,7 +186,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 deviceInfo,
                 _options.DeploymentImage,
                 deployAddress,
-                _options.MassErase,
                 _verbosityLevel);
         }
 

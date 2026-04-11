@@ -124,6 +124,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Timeout waiting for Pico UF2 drive to appear. Make sure the device is in BOOTSEL mode.")]
         E3005 = 3005,
 
+        /// <summary>
+        /// Multiple Pico devices in BOOTSEL mode — cannot determine deploy target.
+        /// </summary>
+        [Display(Name = "Multiple Pico devices found in BOOTSEL mode. Disconnect extra devices so only the target remains.")]
+        E3006 = 3006,
+
         ////////////////////////
         // ESP32 tools Errors //
         ////////////////////////

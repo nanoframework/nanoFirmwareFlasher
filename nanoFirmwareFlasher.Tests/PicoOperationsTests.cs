@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using nanoFirmwareFlasher.Tests.Helpers;
 using nanoFramework.Tools.FirmwareFlasher;
@@ -56,37 +58,57 @@ namespace nanoFirmwareFlasher.Tests
 
         [TestMethod]
         [DoNotParallelize]
-        public void PicoManager_UpdateOptions_Constructs()
+        public void PicoUf2Utility_WaitForDrive_NoDrive_ReturnsNull()
         {
             using var output = new OutputWriterHelper();
 
-            var options = new Options
-            {
-                Platform = SupportedPlatform.rpi_pico,
-                Update = true,
-                TargetName = "RP_PICO_RP2040"
-            };
+            // WaitForDrive polls for a mounted UF2 volume; with a short timeout
+            // and no Pico in BOOTSEL mode it must return null.
+            string result = PicoUf2Utility.WaitForDrive(100, VerbosityLevel.Quiet);
 
-            var manager = new PicoManager(options, VerbosityLevel.Quiet);
-
-            Assert.IsNotNull(manager);
+            Assert.IsNull(result);
         }
 
         [TestMethod]
         [DoNotParallelize]
-        public void PicoManager_MinimalOptions_Constructs()
+        public async Task PicoManager_NoUpdateOrDetails_ThrowsNoOperation()
         {
             using var output = new OutputWriterHelper();
 
             var options = new Options
             {
                 Platform = SupportedPlatform.rpi_pico,
-                // neither Update nor DeviceDetails set
+                // neither Update, Deploy, MassErase, nor DeviceDetails set
             };
 
             var manager = new PicoManager(options, VerbosityLevel.Quiet);
 
-            Assert.IsNotNull(manager);
+            await Assert.ThrowsExceptionAsync<NoOperationPerformedException>(
+                () => manager.ProcessAsync());
+        }
+
+        [TestMethod]
+        public void PicoOperations_InferTargetName_MapsChipTypes()
+        {
+            MethodInfo method = typeof(PicoOperations).GetMethod(
+                "InferTargetName",
+                BindingFlags.NonPublic | BindingFlags.Static);
+
+            Assert.IsNotNull(method, "InferTargetName method not found");
+
+            // null device defaults to RP2040
+            string result = (string)method.Invoke(null, new object[] { null });
+            Assert.AreEqual("RP_PICO_RP2040", result);
+
+            // RP2040 chip maps to RP_PICO_RP2040
+            var rp2040 = new PicoDeviceInfo("RP2040", "", "", "", "");
+            result = (string)method.Invoke(null, new object[] { rp2040 });
+            Assert.AreEqual("RP_PICO_RP2040", result);
+
+            // RP2350 chip maps to RP_PICO_RP2350
+            var rp2350 = new PicoDeviceInfo("RP2350", "", "", "", "");
+            result = (string)method.Invoke(null, new object[] { rp2350 });
+            Assert.AreEqual("RP_PICO_RP2350", result);
         }
 
         [TestMethod]
