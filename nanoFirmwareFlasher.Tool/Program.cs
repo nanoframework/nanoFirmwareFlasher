@@ -497,8 +497,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // candidates for Silabs EFM32 Gecko
                         o.Platform = SupportedPlatform.efm32;
                     }
-                    else if (o.TargetName.StartsWith("RASPBERRY_PI_PICO")
-                        || o.TargetName.StartsWith("RPI_PICO")
+                    else if (o.TargetName.StartsWith("RP_PICO")
                         || o.TargetName.StartsWith("RP2040")
                         || o.TargetName.StartsWith("RP2350")
                         || o.TargetName.StartsWith("PICO"))

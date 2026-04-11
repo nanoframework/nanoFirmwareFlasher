@@ -330,7 +330,7 @@ If no device is detected, nanoff will wait up to 30 seconds for a Pico to enter 
 To update the firmware of a Raspberry Pi Pico (RP2040) to the latest available stable version.
 
 ```console
-nanoff --update --target RASPBERRY_PI_PICO
+nanoff --update --target RP_PICO_RP2040
 ```
 
 ### Update the firmware of a Raspberry Pi Pico 2
@@ -338,7 +338,7 @@ nanoff --update --target RASPBERRY_PI_PICO
 To update the firmware of a Raspberry Pi Pico 2 (RP2350) to the latest available preview version.
 
 ```console
-nanoff --update --target RASPBERRY_PI_PICO2 --preview
+nanoff --update --target RP_PICO_RP2350 --preview
 ```
 
 ### Show details of the connected Pico device

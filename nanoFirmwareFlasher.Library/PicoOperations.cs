@@ -627,15 +627,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (deviceInfo == null)
             {
-                return "RASPBERRY_PI_PICO";
+                return "RP_PICO_RP2040";
             }
 
             if (deviceInfo.ChipType == "RP2350")
             {
-                return "RASPBERRY_PI_PICO2";
+                return "RP_PICO_RP2350";
             }
 
-            return "RASPBERRY_PI_PICO";
+            return "RP_PICO_RP2040";
         }
     }
 }

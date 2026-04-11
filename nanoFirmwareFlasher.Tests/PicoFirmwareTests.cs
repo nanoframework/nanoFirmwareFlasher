@@ -18,7 +18,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             using var output = new OutputWriterHelper();
 
-            var firmware = new PicoFirmware("RASPBERRY_PI_PICO", "1.0.0.0", false);
+            var firmware = new PicoFirmware("RP_PICO_RP2040", "1.0.0.0", false);
 
             Assert.IsNotNull(firmware);
         }
@@ -28,7 +28,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             using var output = new OutputWriterHelper();
 
-            var firmware = new PicoFirmware("RASPBERRY_PI_PICO2", "1.0.0.0", true);
+            var firmware = new PicoFirmware("RP_PICO_RP2350", "1.0.0.0", true);
 
             Assert.IsNotNull(firmware);
         }
@@ -43,7 +43,7 @@ namespace nanoFirmwareFlasher.Tests
             string binContent = testDirectory;
             string locationPath = Path.Combine(
                 FirmwarePackage.LocationPathBase,
-                "RASPBERRY_PI_PICO");
+                "RP_PICO_RP2040");
             Directory.CreateDirectory(locationPath);
 
             byte[] testBinData = new byte[512];
@@ -56,7 +56,7 @@ namespace nanoFirmwareFlasher.Tests
 
             // create a firmware and manually set the BinFilePath via reflection
             // since we can't call DownloadAndExtractAsync without a real Cloudsmith package
-            var firmware = new PicoFirmware("RASPBERRY_PI_PICO", "1.0.0.0", false);
+            var firmware = new PicoFirmware("RP_PICO_RP2040", "1.0.0.0", false);
 
             // set the internal BinFilePath using file-based approach
             string binFilePath = Path.Combine(locationPath, "nanoCLR.bin");

@@ -64,7 +64,7 @@ namespace nanoFirmwareFlasher.Tests
             {
                 Platform = SupportedPlatform.rpi_pico,
                 Update = true,
-                TargetName = "RASPBERRY_PI_PICO"
+                TargetName = "RP_PICO_RP2040"
             };
 
             var manager = new PicoManager(options, VerbosityLevel.Quiet);
@@ -110,8 +110,9 @@ namespace nanoFirmwareFlasher.Tests
             // verify that the Program.cs prefix detection works for various target names
             string[] picoTargetNames =
             [
-                "RASPBERRY_PI_PICO",
-                "RASPBERRY_PI_PICO2",
+                "RP_PICO_RP2040",
+                "RP_PICO_W_RP2040",
+                "RP_PICO_RP2350",
                 "RPI_PICO",
                 "RPI_PICO_W",
                 "RP2040_CUSTOM_BOARD",
@@ -122,7 +123,7 @@ namespace nanoFirmwareFlasher.Tests
             foreach (string targetName in picoTargetNames)
             {
                 Assert.IsTrue(
-                    targetName.StartsWith("RASPBERRY_PI_PICO")
+                    targetName.StartsWith("RP_PICO")
                     || targetName.StartsWith("RPI_PICO")
                     || targetName.StartsWith("RP2040")
                     || targetName.StartsWith("RP2350")
@@ -177,7 +178,7 @@ namespace nanoFirmwareFlasher.Tests
             {
                 Platform = SupportedPlatform.rpi_pico,
                 Update = true,
-                TargetName = "RASPBERRY_PI_PICO",
+                TargetName = "RP_PICO_RP2040",
                 HexFile = new List<string> { "test.hex" }
             };
 
@@ -197,7 +198,7 @@ namespace nanoFirmwareFlasher.Tests
             {
                 Platform = SupportedPlatform.rpi_pico,
                 Update = true,
-                TargetName = "RASPBERRY_PI_PICO",
+                TargetName = "RP_PICO_RP2040",
                 ClrFile = "nanoCLR.bin"
             };
 
