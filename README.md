@@ -13,8 +13,6 @@ Is part of .NET **nanoFramework** toolbox, along with other various tools that a
 
 It makes use of several 3rd party tools:
 
-- Espressif esptool
-   You can find the esptool and licensing information on the repository [here](http://github.com/espressif/esptool).
 - STM32 Cube Programmer
    You can find the source, licensing information and documentation [here](https://www.st.com/en/development-tools/stm32cubeprog.html).
 - Texas Instruments Uniflash
@@ -23,6 +21,8 @@ It makes use of several 3rd party tools:
    You can find the J-Link, licensing information and documentation [here](https://www.segger.com/downloads/jlink/).
 
 We are also distributing this tool as a .NET library so it can be integrated in 3rd party applications. Please check the [README](Samples\README.md) in the Samples folder for more details along with sample applications.
+
+> [!Note]: we are implementing the Espressif communication protocol in C# and we are not using the `esptool` to flash the devices. If you are looking at using the `esptool` from Espressif to flash .NET nanoFramework, you'll find before April 2026 in this repository.
 
 ## Install .NET **nanoFramework** Firmware Flasher
 

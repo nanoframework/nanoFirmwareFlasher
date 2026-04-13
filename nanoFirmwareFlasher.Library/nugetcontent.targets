@@ -1,20 +1,4 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <!-- esptool executables for all platforms -->
-	<ItemGroup>
-        <Content Include="..\lib\esptool\esptoolWin\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolWin</PackagePath>
-        </Content>
-        <Content Include="..\lib\esptool\esptoolMac\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolMac</PackagePath>
-        </Content>
-        <Content Include="..\lib\esptool\esptoolLinux\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolLinux</PackagePath>
-        </Content>
-    </ItemGroup>
-
     <!-- ESP32 nanoFramework bootloader files -->
     <ItemGroup>
         <Content Include="..\lib\esp32bootloader\**">
