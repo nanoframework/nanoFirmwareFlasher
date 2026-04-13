@@ -280,6 +280,37 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     return ExitCodes.E3003;
                 }
+
+                // reject UF2 images built for the wrong chip family
+                uint uf2Flags = BitConverter.ToUInt32(uf2Data, 8);
+
+                if ((uf2Flags & 0x00002000) != 0)
+                {
+                    uint uf2FamilyId = BitConverter.ToUInt32(uf2Data, 28);
+
+                    if (uf2FamilyId != familyId)
+                    {
+                        string expected = familyId switch
+                        {
+                            PicoUf2Utility.FAMILY_ID_RP2040 => "RP2040",
+                            PicoUf2Utility.FAMILY_ID_RP2350_ARM => "RP2350-ARM",
+                            _ => $"0x{familyId:X8}"
+                        };
+
+                        string actual = uf2FamilyId switch
+                        {
+                            PicoUf2Utility.FAMILY_ID_RP2040 => "RP2040",
+                            PicoUf2Utility.FAMILY_ID_RP2350_ARM => "RP2350-ARM",
+                            _ => $"0x{uf2FamilyId:X8}"
+                        };
+
+                        OutputWriter.ForegroundColor = ConsoleColor.Red;
+                        OutputWriter.WriteLine($"UF2 family ID mismatch: file targets {actual}, but connected device is {expected}.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                        return ExitCodes.E3003;
+                    }
+                }
             }
             else
             {
@@ -483,18 +514,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E9008;
             }
 
-            // verify the image fits within the remaining flash
-            if ((ulong)address + (ulong)appData.Length > flashEnd)
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.Red;
-                OutputWriter.WriteLine(
-                    $"Deployment image ({appData.Length:N0} bytes) at 0x{address:X8} " +
-                    $"exceeds flash end (0x{flashEnd - 1:X8}).");
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                return ExitCodes.E9009;
-            }
-
             if (verbosity >= VerbosityLevel.Normal)
             {
                 OutputWriter.ForegroundColor = ConsoleColor.White;
@@ -522,9 +541,43 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     return ExitCodes.E3003;
                 }
+
+                // verify the UF2's own embedded addresses fall within flash
+                int blockCount = uf2Data.Length / 512;
+
+                for (int i = 0; i < blockCount; i++)
+                {
+                    uint blockAddr = BitConverter.ToUInt32(uf2Data, i * 512 + 12);
+                    uint blockLen = BitConverter.ToUInt32(uf2Data, i * 512 + 16);
+
+                    if (blockAddr < PicoFirmware.DefaultBaseAddress
+                        || (ulong)blockAddr + blockLen > flashEnd)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Red;
+                        OutputWriter.WriteLine(
+                            $"UF2 block {i} targets 0x{blockAddr:X8} ({blockLen} bytes), " +
+                            $"which is outside the flash range " +
+                            $"(0x{PicoFirmware.DefaultBaseAddress:X8}–0x{flashEnd - 1:X8}).");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                        return ExitCodes.E9009;
+                    }
+                }
             }
             else
             {
+                // verify the binary fits within the remaining flash
+                if ((ulong)address + (ulong)appData.Length > flashEnd)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine(
+                        $"Deployment image ({appData.Length:N0} bytes) at 0x{address:X8} " +
+                        $"exceeds flash end (0x{flashEnd - 1:X8}).");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E9009;
+                }
+
                 // convert to UF2 at the deployment address
                 uint familyId = deviceInfo.FamilyId;
 

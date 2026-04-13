@@ -171,7 +171,20 @@ No COM port or external tools are needed — the device appears as a USB drive:
 
 ```csharp
 string drivePath = PicoUf2Utility.FindUf2Drive();
+
+if (drivePath == null)
+{
+    Console.WriteLine("No Pico found in BOOTSEL mode.");
+    return;
+}
+
 PicoDeviceInfo deviceInfo = PicoUf2Utility.DetectDevice(drivePath);
+
+if (deviceInfo == null)
+{
+    Console.WriteLine("Could not identify the connected device.");
+    return;
+}
 ```
 
 And the firmware can be updated in a single call:

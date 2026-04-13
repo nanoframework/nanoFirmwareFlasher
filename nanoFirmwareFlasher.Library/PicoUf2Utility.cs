@@ -226,6 +226,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             for (int i = 0; i < blockCount; i++)
             {
                 int offset = i * UF2_BLOCK_SIZE;
+
+                // verify block magic bytes before trusting header fields
+                uint magic0 = BitConverter.ToUInt32(uf2Data, offset);
+                uint magic1 = BitConverter.ToUInt32(uf2Data, offset + 4);
+                uint magicEnd = BitConverter.ToUInt32(uf2Data, offset + UF2_BLOCK_SIZE - 4);
+
+                if (magic0 != UF2_MAGIC_START0 || magic1 != UF2_MAGIC_START1 || magicEnd != UF2_MAGIC_END)
+                {
+                    return null;
+                }
+
                 uint targetAddr = BitConverter.ToUInt32(uf2Data, offset + 12);
                 uint dataLen = BitConverter.ToUInt32(uf2Data, offset + 16);
 

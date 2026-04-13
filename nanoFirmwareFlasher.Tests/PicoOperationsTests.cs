@@ -57,16 +57,13 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [DoNotParallelize]
-        public void PicoUf2Utility_WaitForDrive_NoDrive_ReturnsNull()
+        public void DetectDevice_InvalidInputs_ReturnsNull()
         {
-            using var output = new OutputWriterHelper();
-
-            // WaitForDrive polls for a mounted UF2 volume; with a short timeout
-            // and no Pico in BOOTSEL mode it must return null.
-            string result = PicoUf2Utility.WaitForDrive(100, VerbosityLevel.Quiet);
-
-            Assert.IsNull(result);
+            // null, empty, and non-existent paths should all return null
+            // without throwing, exercising the guard clauses
+            Assert.IsNull(PicoUf2Utility.DetectDevice(null));
+            Assert.IsNull(PicoUf2Utility.DetectDevice(""));
+            Assert.IsNull(PicoUf2Utility.DetectDevice(@"Z:\no_such_drive_path_ever"));
         }
 
         [TestMethod]

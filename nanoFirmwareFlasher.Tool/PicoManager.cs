@@ -303,14 +303,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="drivePath">The already-detected UF2 drive path.</param>
         private async Task<ExitCodes> ProcessUf2Async(string drivePath)
         {
-            // check for multiple devices
+            // reject ambiguous target when multiple devices are in BOOTSEL mode
             List<string> allDrives = PicoUf2Utility.FindAllUf2Drives();
 
             if (allDrives.Count > 1)
             {
-                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                OutputWriter.WriteLine($"WARNING: {allDrives.Count} Pico devices found in BOOTSEL mode. Using first: {drivePath}");
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine($"{allDrives.Count} Pico devices found in BOOTSEL mode. Cannot determine target.");
+                OutputWriter.WriteLine("Disconnect extra devices so only the intended target remains.");
                 OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E3006;
             }
 
             // detect device
