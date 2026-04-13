@@ -15,7 +15,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     public class ReadEsp32FlashException : Exception
     {
         /// <summary>
-        /// Error message from esptool.
+        /// Error message from ESP32 serial operation.
         /// </summary>
         public string ExecutionError;
 

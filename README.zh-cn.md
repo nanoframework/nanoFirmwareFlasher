@@ -13,8 +13,6 @@
 
 它使用了几个第三方工具:
 
-- 乐鑫 esptool
-   您可以在存储库中找到esptool和许可信息 [链接](http://github.com/espressif/esptool).
 - STM32 Cube Programmer
    您可以找到源代码、许可信息和文档  [链接](https://www.st.com/en/development-tools/stm32cubeprog.html).
 - Texas Instruments Uniflash
