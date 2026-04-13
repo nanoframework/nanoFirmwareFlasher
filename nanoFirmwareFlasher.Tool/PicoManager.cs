@@ -55,22 +55,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
+            // update and mass erase require UF2 first, even when combined with deploy
+            if (_options.Update || _options.MassErase)
+            {
+                var uf2Result = await ProcessUf2OperationsAsync();
+
+                if (uf2Result != ExitCodes.OK)
+                {
+                    return uf2Result;
+                }
+            }
+
             // deployment via wire protocol (default) or UF2
             if (_options.Deploy)
             {
                 if (_options.Uf2Deploy)
                 {
-                    // if mass erase is also requested, perform firmware update + erase first
-                    if (_options.MassErase)
-                    {
-                        var eraseResult = await ProcessUf2OperationsAsync();
-
-                        if (eraseResult != ExitCodes.OK)
-                        {
-                            return eraseResult;
-                        }
-                    }
-
                     // UF2 mass storage deployment — requires BOOTSEL mode
                     return await DeployViaUf2Async();
                 }
@@ -81,10 +81,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            // update and mass erase always require UF2 mass storage (BOOTSEL mode)
+            // if update or mass erase already ran, we're done
             if (_options.Update || _options.MassErase)
             {
-                return await ProcessUf2OperationsAsync();
+                return ExitCodes.OK;
             }
 
             // device details via UF2 drive if available, or via serial

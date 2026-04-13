@@ -96,9 +96,9 @@ namespace nanoFirmwareFlasher.Tests
 
             Assert.IsNotNull(method, "InferTargetName method not found");
 
-            // null device defaults to RP2040
+            // null device returns null (caller must handle the error)
             string result = (string)method.Invoke(null, new object[] { null });
-            Assert.AreEqual("RP_PICO_RP2040", result);
+            Assert.IsNull(result);
 
             // RP2040 chip maps to RP_PICO_RP2040
             var rp2040 = new PicoDeviceInfo("RP2040", "", "", "", "");
@@ -198,91 +198,54 @@ namespace nanoFirmwareFlasher.Tests
         #region FlashAddress Parsing
 
         [TestMethod]
-        public void FlashAddress_HexParsing_WithPrefix()
+        public void TryParseHexAddress_WithPrefix()
         {
-            string addressStr = "0x10000000";
-            string stripped = addressStr.StartsWith("0x", System.StringComparison.OrdinalIgnoreCase)
-                ? addressStr.Substring(2)
-                : addressStr;
-
-            bool parsed = uint.TryParse(
-                stripped,
-                System.Globalization.NumberStyles.HexNumber,
-                null,
-                out uint result);
+            bool parsed = PicoOperations.TryParseHexAddress("0x10000000", out uint result);
 
             Assert.IsTrue(parsed);
             Assert.AreEqual(0x10000000u, result);
         }
 
         [TestMethod]
-        public void FlashAddress_HexParsing_WithoutPrefix()
+        public void TryParseHexAddress_WithoutPrefix()
         {
-            string addressStr = "10000000";
-            string stripped = addressStr.StartsWith("0x", System.StringComparison.OrdinalIgnoreCase)
-                ? addressStr.Substring(2)
-                : addressStr;
-
-            bool parsed = uint.TryParse(
-                stripped,
-                System.Globalization.NumberStyles.HexNumber,
-                null,
-                out uint result);
+            bool parsed = PicoOperations.TryParseHexAddress("10000000", out uint result);
 
             Assert.IsTrue(parsed);
             Assert.AreEqual(0x10000000u, result);
         }
 
         [TestMethod]
-        public void FlashAddress_HexParsing_UpperCase0X()
+        public void TryParseHexAddress_UpperCase0X()
         {
-            string addressStr = "0X10010000";
-            string stripped = addressStr.StartsWith("0x", System.StringComparison.OrdinalIgnoreCase)
-                ? addressStr.Substring(2)
-                : addressStr;
-
-            bool parsed = uint.TryParse(
-                stripped,
-                System.Globalization.NumberStyles.HexNumber,
-                null,
-                out uint result);
+            bool parsed = PicoOperations.TryParseHexAddress("0X10010000", out uint result);
 
             Assert.IsTrue(parsed);
             Assert.AreEqual(0x10010000u, result);
         }
 
         [TestMethod]
-        public void FlashAddress_HexParsing_InvalidAddress()
+        public void TryParseHexAddress_InvalidAddress()
         {
-            string addressStr = "not_an_address";
-            string stripped = addressStr.StartsWith("0x", System.StringComparison.OrdinalIgnoreCase)
-                ? addressStr.Substring(2)
-                : addressStr;
-
-            bool parsed = uint.TryParse(
-                stripped,
-                System.Globalization.NumberStyles.HexNumber,
-                null,
-                out uint _);
+            bool parsed = PicoOperations.TryParseHexAddress("not_an_address", out uint _);
 
             Assert.IsFalse(parsed);
         }
 
         [TestMethod]
-        public void FlashAddress_HexParsing_MaxFlashAddress()
+        public void TryParseHexAddress_MaxUInt32()
         {
-            // 0xFFFFFFFF is max uint32
-            string addressStr = "0xFFFFFFFF";
-            string stripped = addressStr.Substring(2);
-
-            bool parsed = uint.TryParse(
-                stripped,
-                System.Globalization.NumberStyles.HexNumber,
-                null,
-                out uint result);
+            bool parsed = PicoOperations.TryParseHexAddress("0xFFFFFFFF", out uint result);
 
             Assert.IsTrue(parsed);
             Assert.AreEqual(0xFFFFFFFFu, result);
+        }
+
+        [TestMethod]
+        public void TryParseHexAddress_NullOrEmpty_ReturnsFalse()
+        {
+            Assert.IsFalse(PicoOperations.TryParseHexAddress(null, out _));
+            Assert.IsFalse(PicoOperations.TryParseHexAddress("", out _));
         }
 
         #endregion
@@ -290,7 +253,7 @@ namespace nanoFirmwareFlasher.Tests
         #region Exit Codes
 
         [TestMethod]
-        public void ExitCodes_PicoRange_E3000_Through_E3005()
+        public void ExitCodes_PicoRange_E3000_Through_E3006()
         {
             // verify the full range of Pico exit codes exists
             Assert.AreEqual(3000, (int)ExitCodes.E3000);
@@ -299,6 +262,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(3003, (int)ExitCodes.E3003);
             Assert.AreEqual(3004, (int)ExitCodes.E3004);
             Assert.AreEqual(3005, (int)ExitCodes.E3005);
+            Assert.AreEqual(3006, (int)ExitCodes.E3006);
         }
 
         #endregion

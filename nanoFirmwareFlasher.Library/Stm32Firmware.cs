@@ -45,7 +45,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         }
 
-        internal override System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
+        internal new System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
         {
             // perform download and extract
             return base.DownloadAndExtractAsync(archiveDirectoryPath);

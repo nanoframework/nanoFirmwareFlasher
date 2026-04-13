@@ -96,16 +96,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>Device info, or <c>null</c> if detection failed.</returns>
         public static PicoDeviceInfo DetectDevice(string drivePath)
         {
-            string infoFilePath = Path.Combine(drivePath, "INFO_UF2.TXT");
-
-            if (!File.Exists(infoFilePath))
+            if (string.IsNullOrEmpty(drivePath))
             {
                 return null;
             }
 
-            string[] lines = File.ReadAllLines(infoFilePath);
+            string infoFilePath = Path.Combine(drivePath, "INFO_UF2.TXT");
 
-            string chipType = "RP2040";
+            string[] lines;
+
+            try
+            {
+                if (!File.Exists(infoFilePath))
+                {
+                    return null;
+                }
+
+                lines = File.ReadAllLines(infoFilePath);
+            }
+            catch (IOException)
+            {
+                // drive disappeared between check and read
+                return null;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return null;
+            }
+
+            string chipType = null;
             string boardId = "";
             string bootloaderVersion = "";
             string driveLabel = "";
@@ -120,7 +139,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         chipType = "RP2350";
                     }
-                    else
+                    else if (model.Contains("RP2040", StringComparison.OrdinalIgnoreCase)
+                             || model.Contains("Pico", StringComparison.OrdinalIgnoreCase))
                     {
                         chipType = "RP2040";
                     }
@@ -133,6 +153,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     bootloaderVersion = line.Trim();
                 }
+            }
+
+            // if chip type could not be positively identified, detection failed
+            if (chipType == null)
+            {
+                return null;
             }
 
             // try to get volume label
@@ -357,14 +383,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         OutputWriter.ForegroundColor = ConsoleColor.White;
                     }
                 }
-                else if (dataLen != UF2_DATA_SIZE)
+                else if (dataLen != UF2_DATA_SIZE && i < numBlocks - 1)
                 {
+                    // only warn for non-final blocks; the last block may legitimately
+                    // have a shorter payload when the binary isn't a multiple of 256
                     warnings++;
 
                     if (verbosity >= VerbosityLevel.Normal && warnings <= 3)
                     {
                         OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine($"WARNING: UF2 block {i}: dataLen={dataLen}, not aligned to {UF2_DATA_SIZE}. Some bootloaders may not process this correctly.");
+                        OutputWriter.WriteLine($"WARNING: UF2 block {i}: dataLen={dataLen}, expected {UF2_DATA_SIZE}.");
                         OutputWriter.ForegroundColor = ConsoleColor.White;
                     }
                 }

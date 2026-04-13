@@ -275,7 +275,7 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void DetectDevice_MinimalInfoFile_DefaultsToRP2040()
+        public void DetectDevice_UnknownModel_ReturnsNull()
         {
             string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
             string drivePath = Path.Combine(testDirectory, "minimal");
@@ -285,10 +285,7 @@ namespace nanoFirmwareFlasher.Tests
 
             PicoDeviceInfo result = PicoUf2Utility.DetectDevice(drivePath);
 
-            Assert.IsNotNull(result);
-            Assert.AreEqual("RP2040", result.ChipType);
-            Assert.AreEqual("", result.BoardId);
-            Assert.AreEqual("", result.BootloaderVersion);
+            Assert.IsNull(result);
         }
 
         #endregion
@@ -336,6 +333,144 @@ namespace nanoFirmwareFlasher.Tests
         public void FamilyId_RP2350_MatchesSpec()
         {
             Assert.AreEqual(0xE48BFF59u, PicoUf2Utility.FAMILY_ID_RP2350_ARM);
+        }
+
+        #endregion
+
+        #region PadUf2ToFullFlash tests
+
+        [TestMethod]
+        public void PadUf2ToFullFlash_NullInput_CoversEntireFlash()
+        {
+            uint flashBase = 0x10000000;
+            uint flashSize = 1024; // 4 blocks of 256
+            uint familyId = PicoUf2Utility.FAMILY_ID_RP2040;
+
+            byte[] result = PicoUf2Utility.PadUf2ToFullFlash(null, flashBase, flashSize, familyId);
+
+            int expectedBlocks = (int)(flashSize / 256);
+            Assert.AreEqual(expectedBlocks * 512, result.Length);
+
+            // every block should be valid UF2 with zero payload
+            for (int i = 0; i < expectedBlocks; i++)
+            {
+                int off = i * 512;
+                Assert.AreEqual(0x0A324655u, BitConverter.ToUInt32(result, off));       // magic start 0
+                Assert.AreEqual(0x9E5D5157u, BitConverter.ToUInt32(result, off + 4));   // magic start 1
+                Assert.AreEqual(0x0AB16F30u, BitConverter.ToUInt32(result, off + 508)); // magic end
+                Assert.AreEqual((uint)i, BitConverter.ToUInt32(result, off + 20));       // block index
+                Assert.AreEqual((uint)expectedBlocks, BitConverter.ToUInt32(result, off + 24)); // total blocks
+                Assert.AreEqual(flashBase + (uint)(i * 256), BitConverter.ToUInt32(result, off + 12)); // address
+                Assert.AreEqual(familyId, BitConverter.ToUInt32(result, off + 28));
+
+                // data area should be all zeros
+                for (int d = 0; d < 256; d++)
+                {
+                    Assert.AreEqual(0, result[off + 32 + d], $"Block {i} data byte {d} should be zero");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void PadUf2ToFullFlash_PreservesExistingBlockPayload()
+        {
+            uint flashBase = 0x10000000;
+            uint flashSize = 768; // 3 blocks of 256
+            uint familyId = PicoUf2Utility.FAMILY_ID_RP2040;
+
+            // create a 1-block UF2 at the second address (flashBase + 256)
+            byte[] firmware = new byte[256];
+            for (int i = 0; i < 256; i++)
+            {
+                firmware[i] = (byte)(i ^ 0xAA);
+            }
+
+            byte[] inputUf2 = PicoUf2Utility.ConvertBinToUf2(firmware, flashBase + 256, familyId);
+            Assert.AreEqual(512, inputUf2.Length); // sanity: 1 block
+
+            byte[] result = PicoUf2Utility.PadUf2ToFullFlash(inputUf2, flashBase, flashSize, familyId);
+
+            int expectedBlocks = 3;
+            Assert.AreEqual(expectedBlocks * 512, result.Length);
+
+            // block 1 (flashBase + 256) should carry the original payload
+            int block1Off = 1 * 512;
+            for (int i = 0; i < 256; i++)
+            {
+                Assert.AreEqual(firmware[i], result[block1Off + 32 + i],
+                    $"Preserved payload byte {i} mismatch");
+            }
+
+            // blocks 0 and 2 should be zero-filled data
+            foreach (int blockIdx in new[] { 0, 2 })
+            {
+                int off = blockIdx * 512;
+                for (int d = 0; d < 256; d++)
+                {
+                    Assert.AreEqual(0, result[off + 32 + d],
+                        $"Pad block {blockIdx} data byte {d} should be zero");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void PadUf2ToFullFlash_RenumbersAllBlocks()
+        {
+            uint flashBase = 0x10000000;
+            uint flashSize = 1024; // 4 blocks
+            uint familyId = PicoUf2Utility.FAMILY_ID_RP2040;
+
+            // input UF2 with 1 block — its original numbering is 0/1
+            byte[] inputUf2 = PicoUf2Utility.ConvertBinToUf2(new byte[256], flashBase, familyId);
+
+            byte[] result = PicoUf2Utility.PadUf2ToFullFlash(inputUf2, flashBase, flashSize, familyId);
+
+            int expectedBlocks = 4;
+
+            for (int i = 0; i < expectedBlocks; i++)
+            {
+                int off = i * 512;
+                uint blockNo = BitConverter.ToUInt32(result, off + 20);
+                uint totalBlocks = BitConverter.ToUInt32(result, off + 24);
+
+                Assert.AreEqual((uint)i, blockNo, $"Block {i} index mismatch");
+                Assert.AreEqual((uint)expectedBlocks, totalBlocks, $"Block {i} total mismatch");
+            }
+        }
+
+        [TestMethod]
+        public void PadUf2ToFullFlash_AddressesAreContiguous()
+        {
+            uint flashBase = 0x10000000;
+            uint flashSize = 2048; // 8 blocks
+            uint familyId = PicoUf2Utility.FAMILY_ID_RP2350_ARM;
+
+            byte[] result = PicoUf2Utility.PadUf2ToFullFlash(null, flashBase, flashSize, familyId);
+
+            int expectedBlocks = 8;
+
+            for (int i = 0; i < expectedBlocks; i++)
+            {
+                uint addr = BitConverter.ToUInt32(result, i * 512 + 12);
+                Assert.AreEqual(flashBase + (uint)(i * 256), addr, $"Block {i} address mismatch");
+            }
+        }
+
+        [TestMethod]
+        public void PadUf2ToFullFlash_ResultPassesValidation()
+        {
+            using var output = new OutputWriterHelper();
+
+            uint flashBase = 0x10000000;
+            uint flashSize = 1024;
+            uint familyId = PicoUf2Utility.FAMILY_ID_RP2040;
+
+            byte[] inputUf2 = PicoUf2Utility.ConvertBinToUf2(new byte[128], flashBase, familyId);
+            byte[] result = PicoUf2Utility.PadUf2ToFullFlash(inputUf2, flashBase, flashSize, familyId);
+
+            bool valid = PicoUf2Utility.ValidateUf2Data(result, VerbosityLevel.Diagnostic);
+
+            Assert.IsTrue(valid, "Padded UF2 should pass validation");
         }
 
         #endregion

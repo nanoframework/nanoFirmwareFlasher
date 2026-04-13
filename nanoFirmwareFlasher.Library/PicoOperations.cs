@@ -153,6 +153,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool massErase,
             VerbosityLevel verbosity)
         {
+            if (!updateFw
+                && string.IsNullOrEmpty(archiveDirectoryPath)
+                && string.IsNullOrEmpty(clrFile))
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine("Firmware download is disabled, but no local firmware source was provided. Specify an archive directory or CLR file, or enable firmware download.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                return ExitCodes.E9000;
+            }
+
             // if target name was not provided, try to infer from device
             if (string.IsNullOrEmpty(targetName))
             {
@@ -392,7 +402,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
-            return operationResult;
+            return ExitCodes.OK;
         }
 
         /// <summary>
@@ -433,11 +443,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (!string.IsNullOrEmpty(deploymentAddress))
             {
-                string hexStr = deploymentAddress.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-                    ? deploymentAddress.Substring(2)
-                    : deploymentAddress;
-
-                if (!uint.TryParse(hexStr, System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out address))
+                if (!TryParseHexAddress(deploymentAddress, out address))
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Red;
                     OutputWriter.WriteLine($"Invalid deployment address: {deploymentAddress}. Use hexadecimal format (e.g. 0x10080000).");
@@ -445,6 +451,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     return ExitCodes.E9009;
                 }
+            }
+
+            // validate address is within the Pico XIP flash window
+            uint flashEnd = PicoFirmware.DefaultBaseAddress + PicoFirmware.DefaultFlashSize;
+
+            if (address < PicoFirmware.DefaultBaseAddress || address >= flashEnd)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine(
+                    $"Deployment address 0x{address:X8} is outside the flash range " +
+                    $"(0x{PicoFirmware.DefaultBaseAddress:X8}–0x{flashEnd - 1:X8}).");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E9009;
             }
 
             // read the application file
@@ -461,6 +481,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.ForegroundColor = ConsoleColor.White;
 
                 return ExitCodes.E9008;
+            }
+
+            // verify the image fits within the remaining flash
+            if ((ulong)address + (ulong)appData.Length > flashEnd)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine(
+                    $"Deployment image ({appData.Length:N0} bytes) at 0x{address:X8} " +
+                    $"exceeds flash end (0x{flashEnd - 1:X8}).");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E9009;
             }
 
             if (verbosity >= VerbosityLevel.Normal)
@@ -606,7 +638,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (deviceInfo == null)
             {
-                return "RP_PICO_RP2040";
+                return null;
             }
 
             if (deviceInfo.ChipType == "RP2350")
@@ -615,6 +647,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return "RP_PICO_RP2040";
+        }
+
+        /// <summary>
+        /// Parse a hexadecimal address string, with or without a "0x" prefix.
+        /// </summary>
+        /// <param name="addressStr">The address string (e.g. "0x10080000" or "10080000").</param>
+        /// <param name="address">The parsed address value.</param>
+        /// <returns><c>true</c> if parsing succeeded.</returns>
+        internal static bool TryParseHexAddress(string addressStr, out uint address)
+        {
+            address = 0;
+
+            if (string.IsNullOrEmpty(addressStr))
+            {
+                return false;
+            }
+
+            string hexStr = addressStr.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                ? addressStr.Substring(2)
+                : addressStr;
+
+            return uint.TryParse(
+                hexStr,
+                System.Globalization.NumberStyles.AllowHexSpecifier,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out address);
         }
     }
 }
