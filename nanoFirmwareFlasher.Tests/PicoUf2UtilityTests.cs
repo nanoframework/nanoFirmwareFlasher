@@ -170,17 +170,11 @@ namespace nanoFirmwareFlasher.Tests
 
             byte[] uf2 = PicoUf2Utility.ConvertBinToUf2(input, 0x10000000, PicoUf2Utility.FAMILY_ID_RP2040);
 
-            // extract payload from UF2 and compare
-            int numBlocks = uf2.Length / 512;
-            Assert.AreEqual(4, numBlocks); // 1024 / 256 = 4 blocks
+            Assert.AreEqual(4 * 512, uf2.Length); // 1024 / 256 = 4 blocks
 
-            byte[] extracted = new byte[1024];
-            for (int b = 0; b < numBlocks; b++)
-            {
-                int payloadSize = (int)BitConverter.ToUInt32(uf2, b * 512 + 16);
-                Array.Copy(uf2, b * 512 + 32, extracted, b * 256, payloadSize);
-            }
+            byte[] extracted = PicoUf2Utility.ExtractBinFromUf2(uf2);
 
+            Assert.IsNotNull(extracted);
             CollectionAssert.AreEqual(input, extracted);
         }
 
