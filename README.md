@@ -96,6 +96,7 @@ List of usage examples per platform and common options:
 - [STM32](#stm32-usage-examples)
 - [TI CC13x2](#ti-cc13x2-usage-examples)
 - [Silabs Giant Gecko](#silabs-giant-gecko-usage-examples)
+- [Raspberry Pi Pico](#raspberry-pi-pico-usage-examples)
 - [Plain connection usage examples](#plain-connection-usage-examples)
 - [Common options](#common-options)
 
@@ -314,6 +315,46 @@ This useful to list all Silabs devices that are connected through J-Link.
 
 ```console
 nanoff --listjlink
+```
+
+## Raspberry Pi Pico usage examples
+
+Raspberry Pi Pico boards (RP2040 and RP2350) use UF2 mass storage for firmware deployment. The device must be in **BOOTSEL mode** — hold the BOOTSEL button while connecting the USB cable. The board will appear as a USB drive (labelled `RPI-RP2` or `RP2350`).
+
+No external tools or drivers are required. nanoff handles UF2 conversion automatically.
+
+If no device is detected, nanoff will wait up to 30 seconds for a Pico to enter BOOTSEL mode. During Pico firmware update and mass-erase operations, if multiple Pico devices are connected in BOOTSEL mode simultaneously, nanoff will use the first one found and display a warning.
+
+### Update the firmware of a Raspberry Pi Pico
+
+To update the firmware of a Raspberry Pi Pico (RP2040) to the latest available stable version.
+
+```console
+nanoff --update --target RP_PICO_RP2040
+```
+
+### Update the firmware of a Raspberry Pi Pico 2
+
+To update the firmware of a Raspberry Pi Pico 2 (RP2350) to the latest available preview version.
+
+```console
+nanoff --update --target RP_PICO_RP2350 --preview
+```
+
+### Show details of the connected Pico device
+
+To show the details of the Pico device in BOOTSEL mode (chip type, board ID, bootloader version).
+
+```console
+nanoff --platform rpi_pico --devicedetails
+```
+
+### List available Raspberry Pi Pico targets
+
+To list all available firmware targets for the Raspberry Pi Pico platform.
+
+```console
+nanoff --listtargets --platform rpi_pico
 ```
 
 ## Plain connection usage examples

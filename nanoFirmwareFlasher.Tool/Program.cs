@@ -497,6 +497,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // candidates for Silabs EFM32 Gecko
                         o.Platform = SupportedPlatform.efm32;
                     }
+                    else if (o.TargetName.StartsWith("RP_PICO")
+                        || o.TargetName.StartsWith("RP2040")
+                        || o.TargetName.StartsWith("RP2350")
+                        || o.TargetName.StartsWith("PICO"))
+                    {
+                        // candidates for Raspberry Pi Pico (RP2040/RP2350)
+                        o.Platform = SupportedPlatform.rpi_pico;
+                    }
                     else
                     {
                         // other supported platforms will go here
@@ -741,6 +749,31 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // exception with 
                     _exitCode = ExitCodes.E8000;
+                    _extraMessage = ex.Message;
+                }
+
+                operationPerformed = true;
+            }
+
+            #endregion
+
+            #region Raspberry Pi Pico platform options
+
+            if (o.Platform == SupportedPlatform.rpi_pico)
+            {
+                var manager = new PicoManager(o, _verbosityLevel);
+
+                try
+                {
+                    _exitCode = await manager.ProcessAsync();
+                }
+                catch (NoOperationPerformedException)
+                {
+                    DisplayNoOperationMessage();
+                }
+                catch (Exception ex)
+                {
+                    _exitCode = ExitCodes.E3000;
                     _extraMessage = ex.Message;
                 }
 

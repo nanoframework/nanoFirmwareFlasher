@@ -216,7 +216,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "platform",
             Required = false,
             Default = null,
-            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2, efm32.")]
+            HelpText = "Target platform. Acceptable values are: esp32, stm32, cc13x2, efm32, rpi_pico.")]
         public SupportedPlatform? Platform { get; set; }
 
         /// <summary>
@@ -394,6 +394,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = false,
             HelpText = $"Do not check whether a new version of {_APPLICATIONALIAS} is available.")]
         public bool SuppressNanoFFVersionCheck { get; set; }
+
+        #endregion
+
+        #region Raspberry Pi Pico options
+
+        [Option(
+            "uf2deploy",
+            Required = false,
+            Default = false,
+            HelpText = "Use UF2 mass storage to deploy the application instead of wire protocol. Requires the device to be in BOOTSEL mode.")]
+        public bool Uf2Deploy { get; set; }
+
         #endregion
 
 
@@ -405,9 +417,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("- Update ESP32 device with latest available firmware (stable version), device is connected to COM31", new Options { Platform = SupportedPlatform.esp32, Update = true, SerialPort = "COM31" }),
                 new("- Update specific ESP32 device with custom firmware (local bin file)", new Options { TargetName = "ESP_WROVER_KIT" , DeploymentImage = "<location of file>.bin"}),
                 new("- Update specific Silabs device (Giant Gecko EVK) with latest available firmware", new Options { TargetName = "SL_STK3701A", Update = true }),
+                new("- Update Raspberry Pi Pico device with latest available firmware", new Options { Platform = SupportedPlatform.rpi_pico, TargetName = "RP_PICO_RP2040", Update = true }),
+                new("- Update Raspberry Pi Pico W device with latest available firmware", new Options { Platform = SupportedPlatform.rpi_pico, TargetName = "RP_PICO_W_RP2040", Update = true }),
+                new("- Update Raspberry Pi Pico with latest firmware and mass erase", new Options { Platform = SupportedPlatform.rpi_pico, TargetName = "RP_PICO_RP2040", Update = true, MassErase = true }),
                 new("- List all STM32 devices connected through JTAG", new Options { Platform = SupportedPlatform.stm32, ListJtagDevices = true}),
                 new("- Install STM32 JTAG drivers", new Options { InstallJtagDrivers = true}),
                 new("- List all available STM32 targets", new Options { ListTargets = true, Platform =  SupportedPlatform.stm32 }),
+                new("- List all available Raspberry Pi Pico targets", new Options { ListTargets = true, Platform = SupportedPlatform.rpi_pico }),
+                new("- Show details of connected Raspberry Pi Pico device", new Options { Platform = SupportedPlatform.rpi_pico, DeviceDetails = true }),
                 new("- List all available COM ports", new Options { ListComPorts = true }),
             ];
         private const string _APPLICATIONALIAS = "nanoff";

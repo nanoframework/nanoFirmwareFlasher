@@ -236,7 +236,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="archiveDirectoryPath">Path to the archive directory where all targets are located. Pass <c>null</c> if there is no archive.
         /// If not <c>null</c>, the package will always be retrieved from the archive and never be downloaded.</param>
         /// <returns>The result of the download and extract operation</returns>
-        internal async Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
+        internal virtual async Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
         {
             // setup download folder
             // set download path

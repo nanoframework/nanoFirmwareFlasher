@@ -88,6 +88,7 @@ nanoff --help
 - [STM32](#stm32-使用示例)
 - [TI CC13x2](#ti-cc13x2-使用示例)
 - [Silabs Giant Gecko](#silabs-giant-gecko-使用示例)
+- [Raspberry Pi Pico](#raspberry-pi-pico-使用示例)
 - [普通连接使用示例](#普通连接使用示例)
 - [常用选项](#常用选项)
 
@@ -306,6 +307,46 @@ nanoff --update --target SL_STK3701A --binfile "c:\dev\my awesome app\bin\debug\
 
 ```console
 nanoff --listjlink
+```
+
+## Raspberry Pi Pico 使用示例
+
+Raspberry Pi Pico 开发板（RP2040 和 RP2350）使用 UF2 大容量存储进行固件部署。设备必须处于 **BOOTSEL 模式** —— 在连接 USB 线缆时按住 BOOTSEL 按钮。开发板将显示为 USB 驱动器（标签为 `RPI-RP2` 或 `RP2350`）。
+
+无需外部工具或驱动程序。nanoff 会自动处理 UF2 转换。
+
+对于 Pico 固件更新/擦除这类 UF2 刷写命令，如果未检测到设备，nanoff 将等待最多 30 秒以等待 Pico 进入 BOOTSEL 模式。如果同时有多个 Pico 设备处于 BOOTSEL 模式，nanoff 将使用第一个找到的设备并显示警告。
+
+### 更新 Raspberry Pi Pico 的固件
+
+将 Raspberry Pi Pico（RP2040）的固件更新到最新可用的稳定版本。
+
+```console
+nanoff --update --target RP_PICO_RP2040
+```
+
+### 更新 Raspberry Pi Pico 2 的固件
+
+将 Raspberry Pi Pico 2（RP2350）的固件更新到最新可用的预览版本。
+
+```console
+nanoff --update --target RP_PICO_RP2350 --preview
+```
+
+### 显示已连接的 Pico 设备详情
+
+显示处于 BOOTSEL 模式的 Pico 设备的详细信息（芯片类型、板卡 ID、引导加载程序版本）。
+
+```console
+nanoff --platform rpi_pico --devicedetails
+```
+
+### 列出可用的 Raspberry Pi Pico 目标
+
+列出 Raspberry Pi Pico 平台的所有可用固件目标。
+
+```console
+nanoff --listtargets --platform rpi_pico
 ```
 
 ## 普通连接使用示例
