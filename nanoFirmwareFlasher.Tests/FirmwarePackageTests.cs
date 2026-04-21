@@ -20,7 +20,59 @@ namespace nanoFirmwareFlasher.Tests
         [TestCategory("CloudSmith")]
         public void FirmwarePackage_ListReferenceTargets()
         {
-            #region Get the stable packages
+            #region Get the preview packages
+
+            List<CloudSmithPackageDetail> preview = FirmwarePackage.GetTargetList(
+                false,
+                true,
+                null,
+                VerbosityLevel.Quiet);
+
+            Assert.IsNotNull(preview);
+
+            #endregion
+
+            #region Get the platform-filtered stable packages
+
+            List<CloudSmithPackageDetail> stableEsp32 = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                SupportedPlatform.esp32,
+                VerbosityLevel.Diagnostic);
+
+            Assert.IsNotNull(stableEsp32);
+            Assert.AreNotEqual(0, stableEsp32.Count);
+
+            List<CloudSmithPackageDetail> stableTiSimpleLink = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                SupportedPlatform.ti_simplelink,
+                VerbosityLevel.Quiet);
+
+            Assert.IsNotNull(stableTiSimpleLink);
+            Assert.AreNotEqual(0, stableTiSimpleLink.Count);
+
+            List<CloudSmithPackageDetail> stableStm32 = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                SupportedPlatform.stm32,
+                VerbosityLevel.Quiet);
+
+            Assert.IsNotNull(stableStm32);
+            Assert.AreNotEqual(0, stableStm32.Count);
+
+            List<CloudSmithPackageDetail> stableEfm32 = FirmwarePackage.GetTargetList(
+                false,
+                false,
+                SupportedPlatform.efm32,
+                VerbosityLevel.Quiet);
+
+            Assert.IsNotNull(stableEfm32);
+            Assert.AreNotEqual(0, stableEfm32.Count);
+
+            #endregion
+
+            #region Get the stable packages (fetched last to guarantee it is a superset of the filtered lists)
 
             List<CloudSmithPackageDetail> stable = FirmwarePackage.GetTargetList(
                 false,
@@ -33,17 +85,8 @@ namespace nanoFirmwareFlasher.Tests
 
             #endregion
 
-            #region Get the preview packages
+            #region Assert preview packages are not in the stable list
 
-            List<CloudSmithPackageDetail> preview = FirmwarePackage.GetTargetList(
-                false,
-                true,
-                null,
-                VerbosityLevel.Quiet);
-
-            Assert.IsNotNull(preview);
-
-            // Assert that the preview packages are not part of the stable package list
             foreach (CloudSmithPackageDetail previewPackage in preview)
             {
                 Assert.IsFalse((from s in stable
@@ -53,21 +96,10 @@ namespace nanoFirmwareFlasher.Tests
 
             #endregion
 
-            #region Get the stable esp32 packages
+            #region Assert all esp32 packages are in the stable list
 
-            List<CloudSmithPackageDetail> stableEsp32 = FirmwarePackage.GetTargetList(
-                false,
-                false,
-                SupportedPlatform.esp32,
-                VerbosityLevel.Diagnostic);
-
-            Assert.IsNotNull(stableEsp32);
-            Assert.AreNotEqual(0, stableEsp32.Count);
-
-            // Assert that there are more stable packages than for the esp32
             Assert.IsTrue(stableEsp32.Count < stable.Count);
 
-            // Assert that all esp32 packages are in the stable list
             foreach (CloudSmithPackageDetail esp32Package in stableEsp32)
             {
                 Assert.IsTrue(stable.Any(s => s.Name == esp32Package.Name && s.Version == esp32Package.Version),
@@ -76,21 +108,10 @@ namespace nanoFirmwareFlasher.Tests
 
             #endregion
 
-            #region Get the stable ti_simplelink packages
+            #region Assert all ti_simplelink packages are in the stable list
 
-            List<CloudSmithPackageDetail> stableTiSimpleLink = FirmwarePackage.GetTargetList(
-                false,
-                false,
-                SupportedPlatform.ti_simplelink,
-                VerbosityLevel.Quiet);
-
-            Assert.IsNotNull(stableTiSimpleLink);
-            Assert.AreNotEqual(0, stableTiSimpleLink.Count);
-
-            // Assert that there are more stable packages than for the ti_simplelink
             Assert.IsTrue(stableTiSimpleLink.Count < stable.Count);
 
-            // Assert that all ti_simplelink packages are in the stable list
             foreach (CloudSmithPackageDetail tiSimpleLinkPackage in stableTiSimpleLink)
             {
                 Assert.IsTrue(stable.Any(s => s.Name == tiSimpleLinkPackage.Name && s.Version == tiSimpleLinkPackage.Version),
@@ -99,21 +120,10 @@ namespace nanoFirmwareFlasher.Tests
 
             #endregion
 
-            #region Get the stable stm32 packages
+            #region Assert all stm32 packages are in the stable list
 
-            List<CloudSmithPackageDetail> stableStm32 = FirmwarePackage.GetTargetList(
-                false,
-                false,
-                SupportedPlatform.stm32,
-                VerbosityLevel.Quiet);
-
-            Assert.IsNotNull(stableStm32);
-            Assert.AreNotEqual(0, stableStm32.Count);
-
-            // Assert that there are more stable packages than for the stm32
             Assert.IsTrue(stableStm32.Count < stable.Count);
 
-            // Assert that all stm32 packages are in the stable list
             foreach (CloudSmithPackageDetail stm32Package in stableStm32)
             {
                 Assert.IsTrue(stable.Any(s => s.Name == stm32Package.Name && s.Version == stm32Package.Version),
@@ -122,21 +132,10 @@ namespace nanoFirmwareFlasher.Tests
 
             #endregion
 
-            #region Get the stable efm32 packages
+            #region Assert all efm32 packages are in the stable list
 
-            List<CloudSmithPackageDetail> stableEfm32 = FirmwarePackage.GetTargetList(
-                false,
-                false,
-                SupportedPlatform.efm32,
-                VerbosityLevel.Quiet);
-
-            Assert.IsNotNull(stableEfm32);
-            Assert.AreNotEqual(0, stableEfm32.Count);
-
-            // Assert that there are more stable packages than for the efm32
             Assert.IsTrue(stableEfm32.Count < stable.Count);
 
-            // Assert that all efm32 packages are in the stable list
             foreach (CloudSmithPackageDetail efm32Package in stableEfm32)
             {
                 Assert.IsTrue(stable.Any(s => s.Name == efm32Package.Name && s.Version == efm32Package.Version),
