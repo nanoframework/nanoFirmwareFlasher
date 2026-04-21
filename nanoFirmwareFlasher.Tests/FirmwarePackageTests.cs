@@ -29,6 +29,7 @@ namespace nanoFirmwareFlasher.Tests
                 VerbosityLevel.Quiet);
 
             Assert.IsNotNull(preview);
+            Assert.AreNotEqual(0, preview.Count);
 
             #endregion
 
