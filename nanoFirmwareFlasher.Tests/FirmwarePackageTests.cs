@@ -38,7 +38,7 @@ namespace nanoFirmwareFlasher.Tests
                 false,
                 false,
                 SupportedPlatform.esp32,
-                VerbosityLevel.Diagnostic);
+                VerbosityLevel.Quiet);
 
             Assert.IsNotNull(stableEsp32);
             Assert.AreNotEqual(0, stableEsp32.Count);
