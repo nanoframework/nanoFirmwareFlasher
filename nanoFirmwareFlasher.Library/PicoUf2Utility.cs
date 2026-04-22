@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -35,7 +35,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public const uint FAMILY_ID_RP2350_ARM = 0xE48BFF59;
 
         // Known volume labels for Pico devices in BOOTSEL mode
-        private static readonly string[] KnownVolumeLabels = ["RPI-RP2", "RP2350"];
+        private static readonly string[] KnownVolumeLabels = new[] { "RPI-RP2", "RP2350" };
 
         /// <summary>
         /// Find a mounted UF2 drive for a Pico device in BOOTSEL mode.
@@ -135,12 +135,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     string model = line.Substring("Model:".Length).Trim();
 
-                    if (model.Contains("RP2350", StringComparison.OrdinalIgnoreCase))
+                    if (model.IndexOf("RP2350", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         chipType = "RP2350";
                     }
-                    else if (model.Contains("RP2040", StringComparison.OrdinalIgnoreCase)
-                             || model.Contains("Pico", StringComparison.OrdinalIgnoreCase))
+                    else if (model.IndexOf("RP2040", StringComparison.OrdinalIgnoreCase) >= 0
+                             || model.IndexOf("Pico", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         chipType = "RP2040";
                     }
@@ -456,7 +456,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (binaryData == null || binaryData.Length == 0)
             {
-                return [];
+                return Array.Empty<byte>();
             }
 
             int numBlocks = (binaryData.Length + UF2_DATA_SIZE - 1) / UF2_DATA_SIZE;
