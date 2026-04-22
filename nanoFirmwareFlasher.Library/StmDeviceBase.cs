@@ -89,9 +89,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     appDir = "stlinkLinux";
                 }
 
+                string exePath = Path.Combine(Utilities.ExecutingPath, appDir, "bin", appName);
+
+                if (!File.Exists(exePath))
+                {
+                    throw new StLinkCliExecutionException(
+                        $"STM32_Programmer_CLI not found at '{exePath}'. " +
+                        "The CLI tool is not installed or was excluded from the package. " +
+                        "Use native transport options instead: --nativestlink, --nativeswd, --nativedfu, or --uart.");
+                }
+
                 var stLinkCli = new Process
                 {
-                    StartInfo = new ProcessStartInfo(Path.Combine(Utilities.ExecutingPath, appDir, "bin", appName),
+                    StartInfo = new ProcessStartInfo(exePath,
                         arguments)
                     {
                         WorkingDirectory = Path.Combine(Utilities.ExecutingPath, appDir, "bin"),
