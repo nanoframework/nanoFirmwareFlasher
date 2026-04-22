@@ -24,6 +24,8 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Platforms>AnyCPU;x64</Platforms>
     <Deterministic>true</Deterministic>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'True' or '$(ContinuousIntegrationBuild)' == 'True'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <PropertyGroup>
