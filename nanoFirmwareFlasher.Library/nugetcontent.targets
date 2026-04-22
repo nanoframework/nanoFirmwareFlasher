@@ -1,6 +1,6 @@
-<Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <!-- ESP32 nanoFramework bootloader files -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' != ''">
         <Content Include="..\lib\esp32bootloader\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\esp32bootloader</PackagePath>
@@ -8,7 +8,7 @@
     </ItemGroup>
 
     <!-- STLink executables for all platforms -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' != ''">
         <Content Include="..\lib\stlink\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\stlink</PackagePath>
@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <!-- J-Link executables for all platforms -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' != ''">
         <Content Include="..\lib\jlinkCmds\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\jlinkCmds</PackagePath>
@@ -48,7 +48,7 @@
     </ItemGroup>
 
     <!-- TI Uniflash tool -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' != ''">
         <Content Include="..\lib\uniflash\**">
             <Pack>true</Pack>
            <PackagePath>tools\$(PackageTfmSubFolder)any\uniflash</PackagePath>  

@@ -15,7 +15,6 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
     <PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
-    <PackageIconUrl></PackageIconUrl>
     <Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
     <!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
     <NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
@@ -24,6 +23,7 @@
     <PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Platforms>AnyCPU;x64</Platforms>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <PropertyGroup>

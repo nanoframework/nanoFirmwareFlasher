@@ -15,13 +15,13 @@
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
-		<PackageIconUrl></PackageIconUrl>
 		<Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
 		<!-- need this to allow async Main() -->
 		<PackAsTool>true</PackAsTool>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<Platforms>AnyCPU;x64</Platforms>
 		<RuntimeIdentifiers>any</RuntimeIdentifiers>
+		<Deterministic>true</Deterministic>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>12.0</LangVersion>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -70,7 +70,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj" />
+		<ProjectReference Include="..\nanoFirmwareFlasher.Library\nanoFirmwareFlasher.Library.csproj">
+			<ExcludeAssets>contentFiles</ExcludeAssets>
+		</ProjectReference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -89,6 +91,8 @@
 	<PropertyGroup>
 		<!-- set this to 'net8.0\' to package contents in this TFM folder  -->
 		<PackageTfmSubFolder>net8.0\</PackageTfmSubFolder>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\Key.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
     <Import Project="..\nanoFirmwareFlasher.Library\nugetcontent.targets" />
