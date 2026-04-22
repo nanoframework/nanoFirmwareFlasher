@@ -46,59 +46,24 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     platform = "Windows (registry)";
-                    var result = GetUsbIdsWindows(portName);
-
-                    if (result.vid >= 0 && result.pid >= 0)
-                    {
-                        OutputWriter.WriteLine($"[USB] {portName}: lookup via {platform} → VID=0x{result.vid:X4} PID=0x{result.pid:X4}");
-                    }
-                    else
-                    {
-                        OutputWriter.WriteLine($"[USB] {portName}: lookup via {platform} → not a USB serial device (no VID/PID found)");
-                    }
-
-                    return result;
+                    return GetUsbIdsWindows(portName);
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     platform = "Linux (sysfs)";
-                    var result = GetUsbIdsLinux(portName);
-
-                    if (result.vid >= 0 && result.pid >= 0)
-                    {
-                        OutputWriter.WriteLine($"[USB] {portName}: lookup via {platform} → VID=0x{result.vid:X4} PID=0x{result.pid:X4}");
-                    }
-                    else
-                    {
-                        OutputWriter.WriteLine($"[USB] {portName}: lookup via {platform} → not a USB serial device (no VID/PID found)");
-                    }
-
-                    return result;
+                    return GetUsbIdsLinux(portName);
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     platform = "macOS (ioreg)";
-                    var result = GetUsbIdsMacOS(portName);
-
-                    if (result.vid >= 0 && result.pid >= 0)
-                    {
-                        OutputWriter.WriteLine($"[USB] {portName}: lookup via {platform} → VID=0x{result.vid:X4} PID=0x{result.pid:X4}");
-                    }
-                    else
-                    {
-                        OutputWriter.WriteLine($"[USB] {portName}: lookup via {platform} → not a USB serial device (no VID/PID found)");
-                    }
-
-                    return result;
+                    return GetUsbIdsMacOS(portName);
                 }
-
-                OutputWriter.WriteLine($"[USB] {portName}: unsupported OS, cannot detect VID/PID");
             }
-            catch (Exception ex)
+            catch
             {
-                OutputWriter.WriteLine($"[USB] {portName}: {platform} lookup failed: {ex.GetType().Name}: {ex.Message}");
+                // Silently ignore lookup failures — caller handles the (-1,-1) case
             }
 
             return (-1, -1);
