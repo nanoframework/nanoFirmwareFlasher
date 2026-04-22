@@ -92,10 +92,6 @@
     <ItemGroup>
         <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
-        <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\esp32s3bootloader\**" Link="esp32s3bootloader\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
     </ItemGroup>
 
     <!-- STLink executables for all platforms -->
@@ -135,24 +131,6 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="..\lib\esp32bootloader\test_startup.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s2bootloader\bootloader.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s2bootloader\partitions_4mb.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s2bootloader\test_startup.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s3bootloader\bootloader.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s3bootloader\partitions_4mb.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s3bootloader\test_startup.bin">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

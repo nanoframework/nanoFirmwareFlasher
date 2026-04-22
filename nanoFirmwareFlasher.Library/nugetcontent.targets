@@ -5,10 +5,6 @@
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\esp32bootloader</PackagePath>
         </Content>
-        <Content Include="..\lib\esp32s2bootloader\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\esp32s2bootloader</PackagePath>
-        </Content>
     </ItemGroup>
 
     <!-- STLink executables for all platforms -->
