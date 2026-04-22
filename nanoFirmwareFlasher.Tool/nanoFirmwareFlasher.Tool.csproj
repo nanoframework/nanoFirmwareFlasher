@@ -20,7 +20,6 @@
 		<PackAsTool>true</PackAsTool>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<Platforms>AnyCPU;x64</Platforms>
-		<RuntimeIdentifiers>any</RuntimeIdentifiers>
 		<Deterministic>true</Deterministic>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>12.0</LangVersion>
@@ -95,6 +94,6 @@
 		<AssemblyOriginatorKeyFile>..\Key.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
-    <Import Project="..\nanoFirmwareFlasher.Library\nugetcontent.targets" />
-	
+  <Import Project="..\nanoFirmwareFlasher.Library\nugetcontent.targets" />
+
 </Project>
