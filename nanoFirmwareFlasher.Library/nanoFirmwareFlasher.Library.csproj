@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>library</OutputType>
@@ -126,12 +126,15 @@
     <ItemGroup>
       <None Update="..\lib\esp32bootloader\bootloader.bin">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </None>
       <None Update="..\lib\esp32bootloader\partitions_2mb.bin">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </None>
       <None Update="..\lib\esp32bootloader\test_startup.bin">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </None>
     </ItemGroup>
 
