@@ -81,31 +81,41 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             _port.Open();
 
+            // Brief settle time for USB-to-UART bridge drivers to stabilize DTR/RTS lines
+            Thread.Sleep(50);
+
             // Flush any garbage in the buffers
             _port.DiscardInBuffer();
             _port.DiscardOutBuffer();
 
             bool synced = false;
             bool promptShown = false;
-            var stopwatch = Stopwatch.StartNew();
 
-            // Try connecting with alternating reset strategies:
-            // - First half: classic UART reset (works for boards with USB-to-UART bridge)
-            // - Second half: USB-JTAG/Serial reset (works for native USB chips like C3, S3, C6, H2)
-            // This way UART boards connect quickly (first 1-2 attempts),
-            // while USB-JTAG boards connect after a few extra seconds.
-            int classicAttempts = maxRetries / 2;
+            // Interleave classic UART and USB-JTAG reset strategies so both board
+            // types connect within the first few attempts:
+            //   Even attempts → classic UART reset (boards with USB-to-UART bridge)
+            //   Odd attempts  → USB-JTAG/Serial reset (native USB: C3, S3, C6, H2)
+            // Show the BOOT/FLASH prompt only after several rounds of both strategies
+            // have failed, meaning the board likely needs manual boot mode entry.
+            const int promptAfterAttempt = 6;
 
             for (int attempt = 0; attempt < maxRetries; attempt++)
             {
-                // Choose reset strategy based on attempt number
-                if (attempt < classicAttempts)
+                if (attempt % 2 == 0)
                 {
                     Esp32ResetSequence.EnterBootloader(_port);
                 }
                 else
                 {
                     Esp32ResetSequence.EnterBootloaderUsbJtag(_port);
+                }
+
+                if (!promptShown && attempt >= promptAfterAttempt)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Magenta;
+                    OutputWriter.WriteLine("*** Hold down the BOOT/FLASH button in ESP32 board ***");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                    promptShown = true;
                 }
 
                 // Small delay for the bootloader to initialize
@@ -119,15 +129,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 {
                     synced = true;
                     break;
-                }
-
-                // After 5 seconds of failed attempts, prompt the user
-                if (!promptShown && stopwatch.Elapsed.TotalSeconds > 5)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Magenta;
-                    OutputWriter.WriteLine("*** Hold down the BOOT/FLASH button in ESP32 board ***");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                    promptShown = true;
                 }
             }
 
@@ -314,14 +315,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             byte[] syncPacket = Esp32CommandPacket.BuildSync();
 
             // Try a few sync attempts per reset cycle
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
                 try
                 {
                     _port.Write(syncPacket, 0, syncPacket.Length);
 
                     // Try to read a response with a short timeout
-                    byte[] responsePayload = SlipFraming.ReadFrame(_port, 500);
+                    byte[] responsePayload = SlipFraming.ReadFrame(_port, 250);
 
                     if (responsePayload.Length >= Esp32ResponsePacket.MinimumPacketSize
                         && responsePayload[0] == Esp32ResponsePacket.ResponseDirection)
