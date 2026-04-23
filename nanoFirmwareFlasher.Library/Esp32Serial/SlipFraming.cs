@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 
@@ -125,6 +126,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             int originalTimeout = port.ReadTimeout;
             port.ReadTimeout = timeoutMs;
 
+            // Overall deadline timer. The per-byte ReadTimeout only guards
+            // individual ReadByte() calls. If the device is streaming data
+            // continuously (e.g. chip booted into user firmware instead of
+            // bootloader), every ReadByte() returns immediately and this
+            // method would loop forever searching for a valid SLIP frame.
+            var deadline = Stopwatch.StartNew();
+
             try
             {
                 // Skip leading garbage and find the start of a frame
@@ -133,6 +141,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                 do
                 {
+                    if (deadline.ElapsedMilliseconds > timeoutMs)
+                    {
+                        throw new TimeoutException();
+                    }
+
                     b = port.ReadByte();
                 }
                 while (b != FrameEnd);
@@ -143,6 +156,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                 while (true)
                 {
+                    if (deadline.ElapsedMilliseconds > timeoutMs)
+                    {
+                        throw new TimeoutException();
+                    }
+
                     b = port.ReadByte();
 
                     if (b == FrameEnd)

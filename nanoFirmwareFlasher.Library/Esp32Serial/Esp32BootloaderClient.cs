@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO.Ports;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
@@ -28,6 +29,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         private SerialPort _port;
         private bool _disposed;
+        private bool _isUsbJtag;
 
         /// <summary>Whether the stub loader is currently running (affects response parsing).</summary>
         internal bool IsStubRunning { get; set; }
@@ -81,8 +83,21 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             _port.Open();
 
-            // Brief settle time for USB-to-UART bridge drivers to stabilize DTR/RTS lines
-            Thread.Sleep(50);
+            if (Verbosity >= VerbosityLevel.Diagnostic)
+            {
+                OutputWriter.WriteLine($"[Connect] Port {_port.PortName} opened, initializing DTR/RTS...");
+            }
+
+            // Explicitly de-assert DTR/RTS after open to prevent spurious reset.
+            // On Windows, some USB CDC drivers (usbser.sys) may toggle DTR during
+            // CreateFile. esptool sets rts=False, dtr=False before open; .NET doesn't
+            // allow that, so we do it immediately after.
+            _port.DtrEnable = false;
+            _port.RtsEnable = false;
+
+            // Brief settle time for USB-to-UART bridge drivers
+            // Keeping this for debug pusposes, but esptool does NOT have a delay here after open and before reset.
+            // Thread.Sleep(50);
 
             // Flush any garbage in the buffers
             _port.DiscardInBuffer();
@@ -91,23 +106,122 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             bool synced = false;
             bool promptShown = false;
 
-            // Interleave classic UART and USB-JTAG reset strategies so both board
-            // types connect within the first few attempts:
-            //   Even attempts → classic UART reset (boards with USB-to-UART bridge)
-            //   Odd attempts  → USB-JTAG/Serial reset (native USB: C3, S3, C6, H2)
-            // Show the BOOT/FLASH prompt only after several rounds of both strategies
-            // have failed, meaning the board likely needs manual boot mode entry.
-            const int promptAfterAttempt = 6;
+            // Detect USB device type to choose the optimal reset strategy.
+            // Matches esptool's _construct_reset_strategy_sequence():
+            //   - If PID matches Espressif USB-JTAG (0x1001) → only USB-JTAG resets
+            //   - Otherwise (including unknown VID/PID) → only classic UART resets
+            // esptool NEVER interleaves USB-JTAG with classic resets because the
+            // USB-JTAG sequence disrupts the auto-reset circuit capacitors on
+            // boards with USB-to-UART bridges, causing subsequent classic resets
+            // to fail (chip boots normally instead of entering download mode).
+            var (usbVid, usbPid) = SerialPortUsbInfo.GetUsbIds(_port.PortName);
+            bool isUsbJtag = usbVid == SerialPortUsbInfo.EspressifVid
+                             && usbPid == SerialPortUsbInfo.UsbJtagSerialPid;
+            _isUsbJtag = isUsbJtag;
 
-            for (int attempt = 0; attempt < maxRetries; attempt++)
+            // Show the prompt after a few failed attempts
+            int promptAfterAttempt = 7;
+
+            if (Verbosity >= VerbosityLevel.Diagnostic)
             {
-                if (attempt % 2 == 0)
+                if (isUsbJtag)
                 {
-                    Esp32ResetSequence.EnterBootloader(_port);
+                    OutputWriter.WriteLine(
+                        $"USB device detected: VID=0x{usbVid:X4} PID=0x{usbPid:X4}"
+                        + " (Espressif USB-JTAG/Serial)");
+                }
+                else if (usbVid >= 0 && usbPid >= 0)
+                {
+                    OutputWriter.WriteLine(
+                        $"USB device detected: VID=0x{usbVid:X4} PID=0x{usbPid:X4}");
                 }
                 else
                 {
+                    OutputWriter.WriteLine("USB VID/PID not available, using classic reset sequence.");
+                }
+            }
+
+            for (int attempt = 0; attempt < maxRetries; attempt++)
+            {
+                // Clear buffer before reset so post-reset boot log is isolated.
+                // Matches esptool's reset_input_buffer() before reset_strategy().
+                _port.DiscardInBuffer();
+
+                // Select reset strategy based on detected USB type.
+                // Matches esptool: USB-JTAG resets ONLY when positively identified.
+                // For all other cases (known UART bridge OR unknown VID/PID),
+                // use ClassicReset with cycling delays (50ms / 550ms).
+                if (isUsbJtag)
+                {
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{maxRetries}: USB-JTAG reset");
+                    }
+
                     Esp32ResetSequence.EnterBootloaderUsbJtag(_port);
+                }
+                else
+                {
+                    int delay = (attempt % 2 == 0)
+                        ? Esp32ResetSequence.DefaultResetDelayMs
+                        : Esp32ResetSequence.ExtraResetDelayMs;
+
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{maxRetries}: ClassicReset (delay={delay}ms)");
+                    }
+
+                    Esp32ResetSequence.EnterBootloader(_port, delay);
+                }
+
+                // Read any boot log output from the ROM after reset.
+                // This serves two purposes:
+                //  1. Consumes boot log bytes so they don't confuse SYNC parsing.
+                //  2. Detects the boot mode (download vs normal) for better diagnostics.
+                // Matches esptool's boot log detection in _connect_attempt().
+                bool bootLogDetected = false;
+                bool downloadMode = false;
+                int waiting = _port.BytesToRead;
+
+                if (waiting > 0)
+                {
+                    byte[] bootBytes = new byte[waiting];
+                    int bytesRead = _port.Read(bootBytes, 0, waiting);
+
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine($"[Connect] Post-reset: {bytesRead} bytes in buffer");
+                    }
+
+                    // Look for the ROM boot log pattern: "boot:0x??(.*waiting for download)?"
+                    // ESP32-S2 and later output at 115200 baud, so this can match.
+                    // ESP32 (original) outputs at 74880 baud — will appear as garbage, no match.
+                    string bootText = System.Text.Encoding.ASCII.GetString(bootBytes, 0, bytesRead);
+                    Match bootMatch = Regex.Match(bootText, @"boot:(0x[0-9a-fA-F]+)(.*waiting for download)?", RegexOptions.Singleline);
+
+                    if (bootMatch.Success)
+                    {
+                        bootLogDetected = true;
+                        downloadMode = bootMatch.Groups[2].Success;
+
+                        if (Verbosity >= VerbosityLevel.Diagnostic)
+                        {
+                            OutputWriter.WriteLine(
+                                $"[Connect] Boot log: mode={bootMatch.Groups[1].Value}"
+                                + (downloadMode ? " (download mode)" : " (normal boot)"));
+                        }
+                    }
+                    else if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        // Show hex of first 32 bytes if no boot pattern matched
+                        int showLen = Math.Min(bytesRead, 32);
+                        string hex = BitConverter.ToString(bootBytes, 0, showLen).Replace("-", " ");
+                        OutputWriter.WriteLine($"[Connect] Post-reset data (no boot pattern): {hex}{(bytesRead > 32 ? "..." : "")}");
+                    }
+                }
+                else if (Verbosity >= VerbosityLevel.Diagnostic)
+                {
+                    OutputWriter.WriteLine("[Connect] Post-reset: 0 bytes in buffer (no boot log)");
                 }
 
                 if (!promptShown && attempt >= promptAfterAttempt)
@@ -118,17 +232,20 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     promptShown = true;
                 }
 
-                // Small delay for the bootloader to initialize
-                Thread.Sleep(50);
-
-                // Flush any boot output
-                _port.DiscardInBuffer();
-
                 // Try to sync
                 if (TrySync())
                 {
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine($"[Connect] Sync succeeded on attempt {attempt + 1}/{maxRetries}");
+                    }
+
                     synced = true;
                     break;
+                }
+                else if (Verbosity >= VerbosityLevel.Diagnostic)
+                {
+                    OutputWriter.WriteLine($"[Connect] Sync failed on attempt {attempt + 1}/{maxRetries}");
                 }
             }
 
@@ -294,7 +411,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             if (_port.IsOpen)
             {
-                Esp32ResetSequence.HardReset(_port);
+                Esp32ResetSequence.HardReset(_port, _isUsbJtag);
             }
         }
 
@@ -314,15 +431,27 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         {
             byte[] syncPacket = Esp32CommandPacket.BuildSync();
 
-            // Try a few sync attempts per reset cycle
-            for (int i = 0; i < 3; i++)
+            // esptool does 5 sync attempts per reset cycle, each with
+            // flush_input + flushOutput + sync(timeout=0.1).
+            for (int i = 0; i < 5; i++)
             {
                 try
                 {
+                    // Flush before each attempt, matching esptool's _connect_attempt loop
+                    _port.DiscardInBuffer();
+                    _port.BaseStream.Flush();
+
                     _port.Write(syncPacket, 0, syncPacket.Length);
 
-                    // Try to read a response with a short timeout
-                    byte[] responsePayload = SlipFraming.ReadFrame(_port, 250);
+                    // SYNC_TIMEOUT = 0.1s in esptool
+                    byte[] responsePayload = SlipFraming.ReadFrame(_port, 100);
+
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine(
+                            $"[Sync] Sub-attempt {i + 1}/5: got {responsePayload.Length} bytes,"
+                            + $" dir=0x{(responsePayload.Length > 0 ? responsePayload[0] : 0):X2}");
+                    }
 
                     if (responsePayload.Length >= Esp32ResponsePacket.MinimumPacketSize
                         && responsePayload[0] == Esp32ResponsePacket.ResponseDirection)
@@ -333,15 +462,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                         {
                             return true;
                         }
+
+                        if (Verbosity >= VerbosityLevel.Diagnostic)
+                        {
+                            OutputWriter.WriteLine(
+                                $"[Sync] Response: cmd=0x{(byte)response.Command:X2}"
+                                + $" success={response.IsSuccess} value=0x{response.Value:X8}");
+                        }
                     }
                 }
                 catch (TimeoutException)
                 {
-                    // No response — try again
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/5: timeout (no response)");
+                    }
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException ex)
                 {
-                    // Invalid frame — try again
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/5: invalid SLIP frame: {ex.Message}");
+                    }
                 }
 
                 Thread.Sleep(50);
@@ -356,11 +498,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// </summary>
         private void DrainSyncResponses()
         {
+            int drained = 0;
+
             for (int i = 0; i < SyncDrainCount; i++)
             {
                 try
                 {
                     SlipFraming.ReadFrame(_port, 200);
+                    drained++;
                 }
                 catch (TimeoutException)
                 {
@@ -371,6 +516,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 {
                     // Invalid frame — ignore
                 }
+            }
+
+            if (Verbosity >= VerbosityLevel.Diagnostic)
+            {
+                OutputWriter.WriteLine($"[Connect] Drained {drained} extra sync response(s)");
             }
 
             // Final buffer flush

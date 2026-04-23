@@ -337,8 +337,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // these devices usually require boot into bootloader which prevents running the app to get psram details.
                     psramIsAvailable = PSRamAvailability.Undetermined;
                 }
+                else if (_chipType == "esp32" && !forcePsRamCheck)
+                {
+                    // ESP32 (original) outputs boot log at 74880 baud, not 115200.
+                    // Non-forced PSRAM detection reads serial at 115200 so it can
+                    // never match the boot output — it always returns Undetermined.
+                    // Skip it to avoid a costly disconnect+reconnect cycle that
+                    // requires the user to manually re-enter download mode.
+                    psramIsAvailable = PSRamAvailability.Undetermined;
+                }
 
-                if (psramIsAvailable == PSRamAvailability.Undetermined)
+                if (psramIsAvailable == PSRamAvailability.Undetermined
+                    && forcePsRamCheck)
                 {
                     // try to find out if PSRAM is present
                     psramIsAvailable = FindPSRamAvailable(out psRamSize, forcePsRamCheck);
@@ -723,62 +733,128 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
                     }
 
-                    var sw = Stopwatch.StartNew();
+                    // Retry loop: if serial connection is lost during write,
+                    // reconnect and retry the partition (matches esptool behavior).
+                    bool written = false;
 
-                    if (useCompressed)
+                    for (int writeAttempt = 0; writeAttempt < 2; writeAttempt++)
                     {
-                        int compTotal = compressedData.Length;
-
-                        _flashController.WriteFlashCompressed(
-                            partAddress,
-                            fileData,
-                            compressedData,
-                            (compSent, compLen) =>
-                            {
-                                if (Verbosity >= VerbosityLevel.Normal)
-                                {
-                                    long uncompEst = (long)compSent * uncompressedSize / compLen;
-                                    uint curAddr = partAddress + (uint)uncompEst;
-                                    WriteProgressBar(curAddr, compSent, compLen);
-                                }
-                            });
-                    }
-                    else
-                    {
-                        _flashController.WriteFlash(
-                            partAddress,
-                            fileData,
-                            (bytesSent, total) =>
-                            {
-                                if (Verbosity >= VerbosityLevel.Normal)
-                                {
-                                    uint curAddr = partAddress + (uint)bytesSent;
-                                    WriteProgressBar(curAddr, bytesSent, total);
-                                }
-                            });
-                    }
-
-                    sw.Stop();
-
-                    if (Verbosity >= VerbosityLevel.Normal)
-                    {
-                        double secs = sw.Elapsed.TotalSeconds;
-                        int written = useCompressed ? uncompressedSize : uncompressedSize;
-                        int compSize = compressedData?.Length ?? uncompressedSize;
-                        double kbits = secs > 0 ? (compSize * 8.0 / 1000.0) / secs : 0;
-
-                        ClearLine();
-
-                        if (useCompressed)
+                        try
                         {
-                            OutputWriter.WriteLine(
-                                $"Wrote {written} bytes ({compSize} compressed) at 0x{partAddress:X8} in {secs:F1} seconds ({kbits:F1} kbit/s).");
+                            var sw = Stopwatch.StartNew();
+
+                            if (useCompressed)
+                            {
+                                int compTotal = compressedData.Length;
+
+                                _flashController.WriteFlashCompressed(
+                                    partAddress,
+                                    fileData,
+                                    compressedData,
+                                    (compSent, compLen) =>
+                                    {
+                                        if (Verbosity >= VerbosityLevel.Normal)
+                                        {
+                                            long uncompEst = (long)compSent * uncompressedSize / compLen;
+                                            uint curAddr = partAddress + (uint)uncompEst;
+                                            WriteProgressBar(curAddr, compSent, compLen);
+                                        }
+                                    });
+                            }
+                            else
+                            {
+                                _flashController.WriteFlash(
+                                    partAddress,
+                                    fileData,
+                                    (bytesSent, total) =>
+                                    {
+                                        if (Verbosity >= VerbosityLevel.Normal)
+                                        {
+                                            uint curAddr = partAddress + (uint)bytesSent;
+                                            WriteProgressBar(curAddr, bytesSent, total);
+                                        }
+                                    });
+                            }
+
+                            sw.Stop();
+
+                            if (Verbosity >= VerbosityLevel.Normal)
+                            {
+                                double secs = sw.Elapsed.TotalSeconds;
+                                int compSize = compressedData?.Length ?? uncompressedSize;
+                                double kbits = secs > 0 ? (compSize * 8.0 / 1000.0) / secs : 0;
+
+                                ClearLine();
+
+                                if (useCompressed)
+                                {
+                                    OutputWriter.WriteLine(
+                                        $"Wrote {uncompressedSize} bytes ({compSize} compressed) at 0x{partAddress:X8} in {secs:F1} seconds ({kbits:F1} kbit/s).");
+                                }
+                                else
+                                {
+                                    OutputWriter.WriteLine(
+                                        $"Wrote {uncompressedSize} bytes at 0x{partAddress:X8} in {secs:F1} seconds ({kbits:F1} kbit/s).");
+                                }
+                            }
+
+                            written = true;
+                            break;
                         }
-                        else
+                        catch (Exception ex) when (
+                            ex is IOException
+                            || ex is UnauthorizedAccessException
+                            || ex is InvalidOperationException
+                            || (ex is TimeoutException && writeAttempt == 0))
                         {
-                            OutputWriter.WriteLine(
-                                $"Wrote {written} bytes at 0x{partAddress:X8} in {secs:F1} seconds ({kbits:F1} kbit/s).");
+                            // Serial connection lost during write.
+                            // Attempt to reconnect and retry this partition.
+                            if (writeAttempt > 0)
+                            {
+                                throw;
+                            }
+
+                            if (Verbosity >= VerbosityLevel.Normal)
+                            {
+                                ClearLine();
+                                OutputWriter.WriteLine("Lost connection, retrying...");
+                            }
+
+                            // Close the dead connection
+                            Disconnect();
+
+                            // Wait for the USB device to re-enumerate
+                            Thread.Sleep(1000);
+
+                            // Reconnect (opens port, resets, syncs, uploads stub, changes baud)
+                            EnsureConnected(useStandardBaudrate);
+                            EnsureFlashController();
+
+                            if (_flashSize > 0)
+                            {
+                                _flashController.SendSpiSetParams(_flashSize);
+                            }
+
+                            // Update compressed flag in case stub status changed
+                             useCompressed = _stubUploaded && _client.IsStubRunning;
+
+                            if (useCompressed && compressedData == null)
+                            {
+                                compressedData = Esp32FlashController.CompressZlib(fileData);
+                            }
+                            else if (!useCompressed)
+                            {
+                                // Stub no longer running; discard stale compressed buffer
+                                // so logging and compSize reflect the uncompressed path.
+                                compressedData = null;
+                            }
                         }
+                    }
+
+                    if (!written)
+                    {
+                        throw new EspToolExecutionException(
+                            $"Failed to write partition at 0x{partAddress:X8} after retry.");
                     }
                 }
             }
