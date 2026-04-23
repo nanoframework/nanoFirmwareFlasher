@@ -153,6 +153,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool massErase,
             VerbosityLevel verbosity)
         {
+            targetName = NormalizeTargetName(targetName);
+
             if (!updateFw
                 && string.IsNullOrEmpty(archiveDirectoryPath)
                 && string.IsNullOrEmpty(clrFile))
@@ -233,10 +235,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                     OutputWriter.WriteLine($"Firmware: {firmware.Version}");
-                    OutputWriter.WriteLine($"Binary: {firmware.BinFilePath}");
+                    OutputWriter.WriteLine($"UF2: {firmware.Uf2FilePath}");
                 }
 
-                binFilePath = firmware.BinFilePath;
+                binFilePath = firmware.Uf2FilePath;
             }
 
             // read the binary and convert to UF2
@@ -380,7 +382,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
-            string deployFileName = Path.GetFileName(binFilePath);
+            string deployFileName = GetFirmwareDeployFileName(binFilePath, massErase);
             operationResult = PicoUf2Utility.DeployUf2File(uf2Data, drivePath, deployFileName);
 
             if (operationResult != ExitCodes.OK)
@@ -682,6 +684,53 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// Build the UF2 file name to copy to the BOOTSEL drive.
+        /// </summary>
+        /// <param name="sourceFilePath">Source firmware path.</param>
+        /// <param name="massErase">Whether the UF2 was padded for mass erase.</param>
+        /// <returns>File name to write on the UF2 drive.</returns>
+        internal static string GetFirmwareDeployFileName(string sourceFilePath, bool massErase)
+        {
+            string sourceFileName = string.IsNullOrWhiteSpace(sourceFilePath)
+                ? null
+                : Path.GetFileName(sourceFilePath);
+
+            string fileNameWithoutExtension = string.IsNullOrWhiteSpace(sourceFileName)
+                ? "nanoCLR"
+                : Path.GetFileNameWithoutExtension(sourceFileName);
+
+            return massErase
+                ? $"{fileNameWithoutExtension}-masserase.uf2"
+                : $"{fileNameWithoutExtension}.uf2";
+        }
+
+        /// <summary>
+        /// Normalize known Pico target aliases to canonical names used by firmware packages.
+        /// </summary>
+        /// <param name="targetName">Original target name.</param>
+        /// <returns>Canonical target name when recognized; otherwise the original string.</returns>
+        internal static string NormalizeTargetName(string targetName)
+        {
+            if (string.IsNullOrEmpty(targetName))
+            {
+                return targetName;
+            }
+
+            string normalized = targetName.Trim().ToUpperInvariant();
+
+            // A bit of flexibility to allow common variations of target names - map them to the canonical names used in firmware package metadata
+            return normalized switch
+            {
+                "RP_PICO_2040" => "RP_PICO_RP2040",
+                "RP_PICO_W_2040" => "RP_PICO_W_RP2040",
+                "RP_PICO_2040_W" => "RP_PICO_W_RP2040",
+                "RP_PICO_RP2040_W" => "RP_PICO_W_RP2040",
+                "RP_PICO_2350" => "RP_PICO_RP2350",
+                _ => normalized,
+            };
         }
 
         /// <summary>

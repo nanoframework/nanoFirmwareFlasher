@@ -34,6 +34,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal string BinFilePath { get; private set; }
 
         /// <summary>
+        /// Path to the nanoCLR UF2 file for this firmware package.
+        /// </summary>
+        internal string Uf2FilePath { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PicoFirmware"/> class.
         /// </summary>
         /// <param name="targetName">Name of the target for this <see cref="PicoFirmware"/> object.</param>
@@ -62,14 +67,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (result == ExitCodes.OK)
             {
-                // find nanoCLR.bin in the extracted content
-                string binFile = Directory.GetFiles(LocationPath, "nanoCLR.bin", SearchOption.AllDirectories).FirstOrDefault();
+                // find nanoCLR.uf2 in the extracted content
+                string uf2File = Directory.GetFiles(LocationPath, "nanoCLR.uf2", SearchOption.AllDirectories).FirstOrDefault();
 
-                if (binFile == null)
+                if (uf2File == null)
                 {
                     return ExitCodes.E3003;
                 }
 
+                Uf2FilePath = uf2File;
+
+                // also locate nanoCLR.bin if present
+                string binFile = Directory.GetFiles(LocationPath, "nanoCLR.bin", SearchOption.AllDirectories).FirstOrDefault();
                 BinFilePath = binFile;
             }
 

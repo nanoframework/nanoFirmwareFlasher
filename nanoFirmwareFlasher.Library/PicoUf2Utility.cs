@@ -35,7 +35,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public const uint FAMILY_ID_RP2350_ARM = 0xE48BFF59;
 
         // Known volume labels for Pico devices in BOOTSEL mode
-        private static readonly string[] KnownVolumeLabels = new[] { "RPI-RP2", "RP2350" };
+        private static readonly string[] KnownVolumeLabels = new[] { "RPI-RP2", "RP2040", "RP2350" };
 
         /// <summary>
         /// Find a mounted UF2 drive for a Pico device in BOOTSEL mode.
@@ -124,7 +124,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return null;
             }
 
-            string chipType = null;
+            string model = null;
+            string chipType;
             string boardId = "";
             string bootloaderVersion = "";
             string driveLabel = "";
@@ -133,17 +134,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (line.StartsWith("Model:", StringComparison.OrdinalIgnoreCase))
                 {
-                    string model = line.Substring("Model:".Length).Trim();
-
-                    if (model.IndexOf("RP2350", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        chipType = "RP2350";
-                    }
-                    else if (model.IndexOf("RP2040", StringComparison.OrdinalIgnoreCase) >= 0
-                             || model.IndexOf("Pico", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        chipType = "RP2040";
-                    }
+                    model = line.Substring("Model:".Length).Trim();
                 }
                 else if (line.StartsWith("Board-ID:", StringComparison.OrdinalIgnoreCase))
                 {
@@ -153,12 +144,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     bootloaderVersion = line.Trim();
                 }
-            }
-
-            // if chip type could not be positively identified, detection failed
-            if (chipType == null)
-            {
-                return null;
             }
 
             // try to get volume label
@@ -177,6 +162,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             catch (Exception)
             {
                 // ignore errors getting volume label
+            }
+
+            chipType = InferChipType(model, boardId, driveLabel);
+
+            // if chip type could not be positively identified, detection failed
+            if (chipType == null)
+            {
+                return null;
             }
 
             return new PicoDeviceInfo(chipType, boardId, bootloaderVersion, drivePath, driveLabel);
@@ -822,11 +815,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
             try
             {
                 if (drive.DriveType == DriveType.Removable
-                    && drive.IsReady
-                    && KnownVolumeLabels.Contains(drive.VolumeLabel, StringComparer.OrdinalIgnoreCase))
+                    && drive.IsReady)
                 {
-                    // verify INFO_UF2.TXT exists
-                    return File.Exists(Path.Combine(drive.RootDirectory.FullName, "INFO_UF2.TXT"));
+                    string infoUf2Path = Path.Combine(drive.RootDirectory.FullName, "INFO_UF2.TXT");
+
+                    if (!File.Exists(infoUf2Path))
+                    {
+                        return false;
+                    }
+
+                    // Fast path for known Pico volume labels.
+                    if (KnownVolumeLabels.Contains(drive.VolumeLabel, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    // Fall back to checking the INFO_UF2.TXT content so non-standard labels
+                    // (or localized labels) can still be identified correctly.
+                    return DetectDevice(drive.RootDirectory.FullName) != null;
                 }
             }
             catch (Exception)
@@ -972,6 +978,57 @@ namespace nanoFramework.Tools.FirmwareFlasher
             buffer[offset + 1] = (byte)((value >> 8) & 0xFF);
             buffer[offset + 2] = (byte)((value >> 16) & 0xFF);
             buffer[offset + 3] = (byte)((value >> 24) & 0xFF);
+        }
+
+        private static string InferChipType(string model, string boardId, string driveLabel)
+        {
+            // Prefer explicit model information when available.
+            if (!string.IsNullOrEmpty(model))
+            {
+                if (model.IndexOf("RP2350", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return "RP2350";
+                }
+
+                if (model.IndexOf("RP2040", StringComparison.OrdinalIgnoreCase) >= 0
+                    || model.IndexOf("Pico", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return "RP2040";
+                }
+            }
+
+            // Many bootloaders only expose Board-ID; treat any RP2350 board-id as RP2350.
+            if (!string.IsNullOrEmpty(boardId))
+            {
+                if (boardId.IndexOf("RP2350", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return "RP2350";
+                }
+
+                if (boardId.IndexOf("RP2040", StringComparison.OrdinalIgnoreCase) >= 0
+                    || boardId.IndexOf("RPI-RP2", StringComparison.OrdinalIgnoreCase) >= 0
+                    || boardId.IndexOf("PICO", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return "RP2040";
+                }
+            }
+
+            if (!string.IsNullOrEmpty(driveLabel))
+            {
+                if (driveLabel.IndexOf("RP2350", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return "RP2350";
+                }
+
+                if (driveLabel.IndexOf("RP2040", StringComparison.OrdinalIgnoreCase) >= 0
+                    || driveLabel.IndexOf("RPI-RP2", StringComparison.OrdinalIgnoreCase) >= 0
+                    || driveLabel.IndexOf("PICO", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return "RP2040";
+                }
+            }
+
+            return null;
         }
 
         #endregion
