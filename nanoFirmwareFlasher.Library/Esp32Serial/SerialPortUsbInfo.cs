@@ -284,8 +284,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 return (-1, -1);
             }
 
-            // Walk up the device tree looking for USB idVendor/idProduct files
-            string current = Path.GetFullPath(sysPath);
+            // Walk up the device tree looking for USB idVendor/idProduct files.
+            // Keep the original sysfs symlink in the path so the kernel resolves
+            // parent traversal against the real device tree under /sys/devices.
+            string current = sysPath;
 
             for (int i = 0; i < 6; i++)
             {
@@ -303,10 +305,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     return (vid, pid);
                 }
 
-                // Go up one directory level
-                current = Path.GetDirectoryName(current);
+                // Go up one directory level while preserving the symlinked path.
+                current = Path.Combine(current, "..");
 
-                if (string.IsNullOrEmpty(current) || current == "/")
+                if (string.IsNullOrEmpty(current))
                 {
                     break;
                 }
@@ -342,8 +344,21 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                         return (-1, -1);
                     }
 
-                    string output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit(3000);
+                    string output = string.Empty;
+                    if (!process.WaitForExit(3000))
+                    {
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch
+                        {
+                            // Ignore kill failures; fall back to unknown VID/PID.
+                        }
+                        return (-1, -1);
+                    }
+                    
+                    output = process.StandardOutput.ReadToEnd();
 
                     // Look for Espressif VID/PID in the ioreg output.
                     // This is a simplified check — if any Espressif USB-JTAG device is
