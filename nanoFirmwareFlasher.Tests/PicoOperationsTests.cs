@@ -109,6 +109,25 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void PicoOperations_NormalizeTargetName_MapsLegacyAliases()
+        {
+            Assert.AreEqual("RP_PICO_RP2040", PicoOperations.NormalizeTargetName("RP_PICO_2040"));
+            Assert.AreEqual("RP_PICO_RP2350", PicoOperations.NormalizeTargetName("RP_PICO_2350"));
+            Assert.AreEqual("RP_PICO_RP2040", PicoOperations.NormalizeTargetName("RP_PICO_RP2040"));
+            Assert.AreEqual("RP_PICO_W_RP2040", PicoOperations.NormalizeTargetName("RP_PICO_W_RP2040"));
+            Assert.AreEqual(null, PicoOperations.NormalizeTargetName(null));
+        }
+
+        [TestMethod]
+        public void PicoOperations_GetFirmwareDeployFileName_UsesMassEraseSuffix()
+        {
+            Assert.AreEqual("nanoCLR.uf2", PicoOperations.GetFirmwareDeployFileName("nanoCLR.bin", false));
+            Assert.AreEqual("nanoCLR.uf2", PicoOperations.GetFirmwareDeployFileName("c:\\fw\\nanoCLR.uf2", false));
+            Assert.AreEqual("nanoCLR-masserase.uf2", PicoOperations.GetFirmwareDeployFileName("nanoCLR.bin", true));
+            Assert.AreEqual("nanoCLR-masserase.uf2", PicoOperations.GetFirmwareDeployFileName("c:\\fw\\nanoCLR.uf2", true));
+        }
+
+        [TestMethod]
         public void ExitCodes_E3005_Timeout_Exists()
         {
             // verify the E3005 timeout exit code exists

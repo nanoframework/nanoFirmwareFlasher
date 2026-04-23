@@ -257,6 +257,44 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void DetectDevice_RP2040_NoModel_InfersFromBoardId()
+        {
+            string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string drivePath = Path.Combine(testDirectory, "RPI-RP2");
+            Directory.CreateDirectory(drivePath);
+
+            File.WriteAllText(Path.Combine(drivePath, "INFO_UF2.TXT"),
+                "UF2 Bootloader v3.0\r\n" +
+                "Board-ID: RPI-RP2\r\n");
+
+            PicoDeviceInfo result = PicoUf2Utility.DetectDevice(drivePath);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("RP2040", result.ChipType);
+            Assert.AreEqual("RPI-RP2", result.BoardId);
+            Assert.AreEqual(PicoUf2Utility.FAMILY_ID_RP2040, result.FamilyId);
+        }
+
+        [TestMethod]
+        public void DetectDevice_RP2350_NoModel_InfersFromBoardId()
+        {
+            string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string drivePath = Path.Combine(testDirectory, "RP2350");
+            Directory.CreateDirectory(drivePath);
+
+            File.WriteAllText(Path.Combine(drivePath, "INFO_UF2.TXT"),
+                "UF2 Bootloader v1.0\r\n" +
+                "Board-ID: SOME_BOARD_RP2350\r\n");
+
+            PicoDeviceInfo result = PicoUf2Utility.DetectDevice(drivePath);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("RP2350", result.ChipType);
+            Assert.AreEqual("SOME_BOARD_RP2350", result.BoardId);
+            Assert.AreEqual(PicoUf2Utility.FAMILY_ID_RP2350_ARM, result.FamilyId);
+        }
+
+        [TestMethod]
         public void DetectDevice_MissingInfoFile_ReturnsNull()
         {
             string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
