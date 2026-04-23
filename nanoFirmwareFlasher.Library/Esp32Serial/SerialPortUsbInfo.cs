@@ -39,25 +39,20 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// </summary>
         internal static (int vid, int pid) GetUsbIds(string portName)
         {
-            string platform = "unknown";
-
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    platform = "Windows (registry)";
                     return GetUsbIdsWindows(portName);
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    platform = "Linux (sysfs)";
                     return GetUsbIdsLinux(portName);
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    platform = "macOS (ioreg)";
                     return GetUsbIdsMacOS(portName);
                 }
             }
@@ -357,7 +352,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                         }
                         return (-1, -1);
                     }
-                    
+
                     output = process.StandardOutput.ReadToEnd();
 
                     // Look for Espressif VID/PID in the ioreg output.

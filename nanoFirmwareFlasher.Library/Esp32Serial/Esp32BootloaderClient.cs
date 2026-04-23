@@ -96,7 +96,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             _port.RtsEnable = false;
 
             // Brief settle time for USB-to-UART bridge drivers
-            //Thread.Sleep(50);
+            // Keeping this for debug pusposes, but esptool does NOT have a delay here after open and before reset.
+            // Thread.Sleep(50);
 
             // Flush any garbage in the buffers
             _port.DiscardInBuffer();

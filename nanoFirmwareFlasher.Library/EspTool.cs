@@ -836,11 +836,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             }
 
                             // Update compressed flag in case stub status changed
-                            useCompressed = _stubUploaded && _client.IsStubRunning;
+                             useCompressed = _stubUploaded && _client.IsStubRunning;
 
                             if (useCompressed && compressedData == null)
                             {
                                 compressedData = Esp32FlashController.CompressZlib(fileData);
+                            }
+                            else if (!useCompressed)
+                            {
+                                // Stub no longer running; discard stale compressed buffer
+                                // so logging and compSize reflect the uncompressed path.
+                                compressedData = null;
                             }
                         }
                     }
