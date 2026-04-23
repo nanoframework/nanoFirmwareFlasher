@@ -694,8 +694,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns>File name to write on the UF2 drive.</returns>
         internal static string GetFirmwareDeployFileName(string sourceFilePath, bool massErase)
         {
-            string sourceFileName = Path.GetFileName(sourceFilePath);
-            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFileName);
+            string sourceFileName = string.IsNullOrWhiteSpace(sourceFilePath)
+                ? null
+                : Path.GetFileName(sourceFilePath);
+
+            string fileNameWithoutExtension = string.IsNullOrWhiteSpace(sourceFileName)
+                ? "nanoCLR"
+                : Path.GetFileNameWithoutExtension(sourceFileName);
 
             return massErase
                 ? $"{fileNameWithoutExtension}-masserase.uf2"
@@ -724,7 +729,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 "RP_PICO_2040_W" => "RP_PICO_W_RP2040",
                 "RP_PICO_RP2040_W" => "RP_PICO_W_RP2040",
                 "RP_PICO_2350" => "RP_PICO_RP2350",
-                _ => targetName,
+                _ => normalized,
             };
         }
 

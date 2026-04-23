@@ -79,6 +79,9 @@ namespace nanoFirmwareFlasher.Tests
             string archiveDirectory = Path.Combine(testDirectory, "archive");
             Directory.CreateDirectory(archiveDirectory);
 
+            // isolate the firmware cache so the test doesn't touch ~/.nanoFramework/fw_cache
+            FirmwarePackage.LocationPathBase = Path.Combine(testDirectory, "cache");
+
             string targetName = "RP_PICO_RP2040";
             string version = "1.0.0.0";
             string zipFilePath = Path.Combine(archiveDirectory, $"{targetName}-{version}.zip");
@@ -89,14 +92,14 @@ namespace nanoFirmwareFlasher.Tests
 
                 using (var entryStream = binEntry.Open())
                 {
-                    entryStream.Write([0x01, 0x02, 0x03, 0x04]);
+                    entryStream.Write(new byte[] { 0x01, 0x02, 0x03, 0x04 }, 0, 4);
                 }
 
                 ZipArchiveEntry uf2Entry = archive.CreateEntry("nanoCLR.uf2");
 
                 using (var entryStream = uf2Entry.Open())
                 {
-                    entryStream.Write([0x55, 0x46, 0x32, 0x0A]);
+                    entryStream.Write(new byte[] { 0x55, 0x46, 0x32, 0x0A }, 0, 4);
                 }
             }
 
@@ -111,7 +114,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(ExitCodes.OK, exitCode);
             Assert.IsNotNull(firmware.Uf2FilePath);
             Assert.IsTrue(firmware.Uf2FilePath.EndsWith("nanoCLR.uf2"));
-
+            
             string cacheDirectory = Path.Combine(FirmwarePackage.LocationPathBase, targetName);
             Assert.IsTrue(File.Exists(Path.Combine(cacheDirectory, "nanoCLR.bin")));
             Assert.IsTrue(File.Exists(Path.Combine(cacheDirectory, "nanoCLR.uf2")));

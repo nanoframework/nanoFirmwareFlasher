@@ -125,6 +125,8 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual("nanoCLR.uf2", PicoOperations.GetFirmwareDeployFileName("c:\\fw\\nanoCLR.uf2", false));
             Assert.AreEqual("nanoCLR-masserase.uf2", PicoOperations.GetFirmwareDeployFileName("nanoCLR.bin", true));
             Assert.AreEqual("nanoCLR-masserase.uf2", PicoOperations.GetFirmwareDeployFileName("c:\\fw\\nanoCLR.uf2", true));
+            Assert.AreEqual("nanoCLR.uf2", PicoOperations.GetFirmwareDeployFileName(null, false));
+            Assert.AreEqual("nanoCLR-masserase.uf2", PicoOperations.GetFirmwareDeployFileName(string.Empty, true));
         }
 
         [TestMethod]
