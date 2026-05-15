@@ -541,7 +541,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 int configPartitionAddress = 0;
                 int configPartitionSize = 0;
-                string configPartitionBackup = Path.GetRandomFileName();
+                string configPartitionBackup = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
                 // if mass erase wasn't requested or skip backup config partitition
                 if (!massErase && !noBackupConfig)
