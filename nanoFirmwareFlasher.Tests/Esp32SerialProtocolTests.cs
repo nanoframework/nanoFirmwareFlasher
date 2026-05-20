@@ -975,10 +975,6 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         [DataRow(0x00F01D83u, "esp32", "ESP32")]
         [DataRow(0x000007C6u, "esp32s2", "ESP32-S2")]
-        [DataRow(0x00000009u, "esp32s3", "ESP32-S3")]
-        [DataRow(0x6921506Fu, "esp32c3", "ESP32-C3")]
-        [DataRow(0x2CE0806Fu, "esp32c6", "ESP32-C6")]
-        [DataRow(0xD7B73E80u, "esp32h2", "ESP32-H2")]
         public void ChipConfig_GetByMagicValue_ReturnsCorrectChip(uint magic, string expectedType, string expectedName)
         {
             var config = Esp32ChipConfigs.GetByMagicValue(magic);
@@ -989,20 +985,34 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void ChipConfig_GetByMagicValue_C3AltMagic_ReturnsC3()
-        {
-            // ESP8685 variant uses an alternative magic value
-            var config = Esp32ChipConfigs.GetByMagicValue(0x1B31506F);
-
-            Assert.IsNotNull(config);
-            Assert.AreEqual("esp32c3", config.ChipType);
-            Assert.AreEqual("ESP32-C3", config.Name);
-        }
-
-        [TestMethod]
         public void ChipConfig_GetByMagicValue_UnknownMagic_ReturnsNull()
         {
             Assert.IsNull(Esp32ChipConfigs.GetByMagicValue(0xDEADBEEF));
+        }
+
+        // ---- Esp32ChipConfigs: GetByChipId ----
+
+        [TestMethod]
+        [DataRow(9u, "esp32s3", "ESP32-S3")]
+        [DataRow(5u, "esp32c3", "ESP32-C3")]
+        [DataRow(23u, "esp32c5", "ESP32-C5")]
+        [DataRow(13u, "esp32c6", "ESP32-C6")]
+        [DataRow(20u, "esp32c61", "ESP32-C61")]
+        [DataRow(18u, "esp32p4", "ESP32-P4")]
+        [DataRow(16u, "esp32h2", "ESP32-H2")]
+        public void ChipConfig_GetByChipId_ReturnsCorrectChip(uint chip_id, string expectedType, string expectedName)
+        {
+            var config = Esp32ChipConfigs.GetByChipId(chip_id);
+
+            Assert.IsNotNull(config);
+            Assert.AreEqual(expectedType, config.ChipType);
+            Assert.AreEqual(expectedName, config.Name);
+        }
+
+        [TestMethod]
+        public void ChipConfig_GetByChipId_UnknownChipID_ReturnsNull()
+        {
+            Assert.IsNull(Esp32ChipConfigs.GetByChipId(999));
         }
 
         // ---- Esp32ChipConfigs: GetByType ----
@@ -1107,11 +1117,11 @@ namespace nanoFirmwareFlasher.Tests
         // ---- Esp32ChipConfigs.All ----
 
         [TestMethod]
-        public void ChipConfig_All_ReturnsSixConfigs()
+        public void ChipConfig_All_ReturnsNineConfigs()
         {
             var all = new System.Collections.Generic.List<Esp32ChipConfig>(Esp32ChipConfigs.All);
 
-            Assert.AreEqual(6, all.Count);
+            Assert.AreEqual(9, all.Count);
         }
 
         // ---- Esp32ChipConfig: MagicRegAddr ----
@@ -1560,6 +1570,9 @@ namespace nanoFirmwareFlasher.Tests
                 { "esp32c3", "ESP32-C3" },
                 { "esp32c6", "ESP32-C6" },
                 { "esp32h2", "ESP32-H2" },
+                { "esp32c5", "ESP32-C5" },
+                { "esp32c61", "ESP32-C61" },
+                { "esp32p4", "ESP32-P4" },
             };
 
             // Verify all chip configs map to known display names
