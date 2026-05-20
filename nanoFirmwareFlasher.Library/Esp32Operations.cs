@@ -346,7 +346,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     string revisionSuffix;
 
                     // so far we are only offering a single ESP32_P4 build
-                    if (esp32Device.ChipName.Contains("revision v0.") || esp32Device.ChipName.Contains("revision v1."))
+                    if (esp32Device.ChipName.Contains("revision v0.") || esp32Device.ChipName.Contains("revision v1.") || esp32Device.ChipName.Contains("revision v2."))
                     {
                         revisionSuffix = "_REV_LESS3";
                     }

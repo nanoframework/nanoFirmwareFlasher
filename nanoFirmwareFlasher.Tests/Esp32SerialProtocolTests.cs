@@ -1737,6 +1737,17 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void StubImage_TryLoad_knownChip_ReturnsNotNull()
+        {
+            var knownConfig = new Esp32ChipConfig("ESP32_S3", "esp32s3", 0, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
+
+            // A stub should exist for a known chip type
+            var result = Esp32StubImage.TryLoad(knownConfig);
+            Assert.IsNotNull(result, "Should return a stub for known chip types");
+        }
+
+
+        [TestMethod]
         public void StubImage_TryLoad_UnknownChip_ReturnsNull()
         {
             var unknownConfig = new Esp32ChipConfig("Unknown", "esp32_nonexistent_xyz", 0, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);

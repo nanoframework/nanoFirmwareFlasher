@@ -949,6 +949,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     2 => "Embedded Flash 8MB",
                     _ => null
                 };
+                features.Add(flash);
 
                 return string.Join(", ", features);
             }
