@@ -263,7 +263,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     "esp32h2" => ReadEsp32H2ChipDescription(),
                     "esp32c5" => ReadEsp32C5ChipDescription(),  
                     "esp32c61" => ReadEsp32C61ChipDescription(), 
-                    "esp32p4" => ReadEsp32P4ChipDescription(),  
+                    "esp32p4" => ReadEsp32P4ChipDescription(),
+                    _ => _config.Name
                 };
             }
             catch
