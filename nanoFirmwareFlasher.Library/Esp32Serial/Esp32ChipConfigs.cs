@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -17,6 +17,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         /// <summary>Internal chip type string matching existing convention (e.g. "esp32", "esp32s3").</summary>
         internal string ChipType { get; }
+
+        /// <summary>Numeric chip ID used with ESP32_S3 and later.</summary>
+        internal uint ChipId { get; }
+
+        /// <summary>Use magic value for detection. Esp32_S3 and later don't require it, but older chips do.</summary>
+        internal bool UseMagicValue { get; }
 
         /// <summary>Chip detection magic value from register at <see cref="MagicRegAddr"/>.</summary>
         internal uint MagicValue { get; }
@@ -57,7 +63,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Crystal clock divider (1 for ESP32, 2 for ESP8266).</summary>
         internal int XtalClkDivider { get; }
 
-        /// <summary>Address of the bootloader flash start. 0x1000 for ESP32, 0x0 for ESP32-S3/C3/C6/H2.</summary>
+        /// <summary>Address of the boot loader flash start. 0x1000 for ESP32, 0x0 for ESP32-S3/C3/C6/H2.</summary>
         internal int BootloaderAddress { get; }
 
         /// <summary>ROM flash write block size.</summary>
@@ -66,9 +72,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Whether this chip supports the old-style SPI MOSI/MISO length (ESP32 only).</summary>
         internal bool UsesOldSpiRegisters { get; }
 
+        /// <summary>Stub variant for the chips when loading a specific stub based on chip rev version. </summary>
+        public string StubVariant { get; set; } = null;
+
         internal Esp32ChipConfig(
             string name,
             string chipType,
+            uint chipId,
+            bool useMagicValue,
             uint magicValue,
             uint magicRegAddr,
             uint efuseMacWord0Addr,
@@ -88,6 +99,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         {
             Name = name;
             ChipType = chipType;
+            ChipId = chipId;
+            UseMagicValue = useMagicValue;
             MagicValue = magicValue;
             MagicRegAddr = magicRegAddr;
             EfuseMacWord0Addr = efuseMacWord0Addr;
@@ -138,6 +151,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal static Esp32ChipConfig ESP32 { get; } = new(
             name: "ESP32",
             chipType: "esp32",
+            chipId: 0x00000000, // Not used for ESP32
+            useMagicValue: true,
             magicValue: 0x00F01D83,
             magicRegAddr: 0x40001000,
             efuseMacWord0Addr: 0x3FF5A004,
@@ -160,6 +175,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal static Esp32ChipConfig ESP32_S2 { get; } = new(
             name: "ESP32-S2",
             chipType: "esp32s2",
+            chipId: 0x00000000, // Not used for ESP32-S2
+            useMagicValue: true,
             magicValue: 0x000007C6,
             magicRegAddr: 0x40001000,
             efuseMacWord0Addr: 0x60007044,
@@ -182,6 +199,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal static Esp32ChipConfig ESP32_S3 { get; } = new(
             name: "ESP32-S3",
             chipType: "esp32s3",
+            chipId: 9,
+            useMagicValue: false,
             magicValue: 0x00000009,
             magicRegAddr: 0x40001000,
             efuseMacWord0Addr: 0x60007044,
@@ -204,6 +223,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal static Esp32ChipConfig ESP32_C3 { get; } = new(
             name: "ESP32-C3",
             chipType: "esp32c3",
+            chipId: 5,
+            useMagicValue: false,
             magicValue: 0x6921506F,
             magicRegAddr: 0x40001000,
             efuseMacWord0Addr: 0x60008844,
@@ -226,6 +247,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal static Esp32ChipConfig ESP32_C6 { get; } = new(
             name: "ESP32-C6",
             chipType: "esp32c6",
+            chipId: 13,
+            useMagicValue: false,
             magicValue: 0x2CE0806F,
             magicRegAddr: 0x40001000,
             efuseMacWord0Addr: 0x600B0844,
@@ -248,6 +271,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal static Esp32ChipConfig ESP32_H2 { get; } = new(
             name: "ESP32-H2",
             chipType: "esp32h2",
+            chipId: 16,
+            useMagicValue: false,
             magicValue: 0xD7B73E80,
             magicRegAddr: 0x40001000,
             efuseMacWord0Addr: 0x600B0844,
@@ -266,8 +291,77 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             usesOldSpiRegisters: false
         );
 
-        /// <summary>Secondary magic value for ESP32-C3 (ESP8685 variant).</summary>
-        private const uint ESP32_C3_AltMagic = 0x1B31506F;
+        // ======================== ESP32-C5 ========================
+        internal static Esp32ChipConfig ESP32_C5 { get; } = new(
+            name: "ESP32-C5",
+            chipType: "esp32c5",
+            chipId: 23,
+            useMagicValue: false,
+            magicValue: 0x5FD1406F, 
+            magicRegAddr: 0x40001000,
+            efuseMacWord0Addr: 0x600B4844, 
+            efuseMacWord1Addr: 0x600B4848, 
+            spiRegBase: 0x60003000, 
+            spiUsrOffset: 0x18,
+            spiW0Offset: 0x58,
+            spiUsr1Offset: 0x1C,
+            spiUsr2Offset: 0x20,
+            spiMosiDlenOffset: 0x24,
+            spiMisoDlenOffset: 0x28,
+            efuseBaseAddr: 0x600B4800, 
+            xtalClkDivider: 1,
+            bootloaderAddress: 0x2000,
+            flashWriteBlockSize: 0x4000,
+            usesOldSpiRegisters: false
+        );
+
+        // ======================== ESP32-C61 ========================
+        internal static Esp32ChipConfig ESP32_C61 { get; } = new(
+            name: "ESP32-C61",
+            chipType: "esp32c61",
+            chipId: 20,
+            useMagicValue: false,
+            magicValue: 0x6F51316F,
+            magicRegAddr: 0x40001000,
+            efuseMacWord0Addr: 0x600B4844,
+            efuseMacWord1Addr: 0x600B4848,
+            spiRegBase: 0x60003000,
+            spiUsrOffset: 0x18,
+            spiW0Offset: 0x58,
+            spiUsr1Offset: 0x1C,
+            spiUsr2Offset: 0x20,
+            spiMosiDlenOffset: 0x24,
+            spiMisoDlenOffset: 0x28,
+            efuseBaseAddr: 0x600B0800,
+            xtalClkDivider: 1,
+            bootloaderAddress: 0x0,
+            flashWriteBlockSize: 0x4000,
+            usesOldSpiRegisters: false
+        );
+
+        // ======================== ESP32-P4 ========================
+        internal static Esp32ChipConfig ESP32_P4 { get; } = new(
+            name: "ESP32-P4",
+            chipType: "esp32p4",
+            chipId: 18,
+            useMagicValue: false,
+            magicValue: 0,
+            magicRegAddr: 0x40001000,
+            efuseMacWord0Addr: 0x5012D044, 
+            efuseMacWord1Addr: 0x5012D048, 
+            spiRegBase: 0x5008D000,
+            spiUsrOffset: 0x18,
+            spiW0Offset: 0x58,
+            spiUsr1Offset: 0x1C,
+            spiUsr2Offset: 0x20,
+            spiMosiDlenOffset: 0x24,
+            spiMisoDlenOffset: 0x28,
+            efuseBaseAddr: 0x5012D000,
+            xtalClkDivider: 1,
+            bootloaderAddress: 0x2000,
+            flashWriteBlockSize: 0x4000,
+            usesOldSpiRegisters: false
+        );
 
         /// <summary>
         /// All known chip configurations indexed by their primary magic value.
@@ -275,12 +369,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         private static readonly Dictionary<uint, Esp32ChipConfig> s_configsByMagic = new()
         {
             { ESP32.MagicValue, ESP32 },
-            { ESP32_S2.MagicValue, ESP32_S2 },
-            { ESP32_S3.MagicValue, ESP32_S3 },
-            { ESP32_C3.MagicValue, ESP32_C3 },
-            { ESP32_C3_AltMagic, ESP32_C3 },  // ESP8685 variant
-            { ESP32_C6.MagicValue, ESP32_C6 },
-            { ESP32_H2.MagicValue, ESP32_H2 },
+            { ESP32_S2.MagicValue, ESP32_S2 }
         };
 
         /// <summary>
@@ -294,6 +383,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             { "esp32c3", ESP32_C3 },
             { "esp32c6", ESP32_C6 },
             { "esp32h2", ESP32_H2 },
+            { "esp32c5", ESP32_C5 },
+            { "esp32c61", ESP32_C61 },
+            { "esp32p4", ESP32_P4 },
         };
 
         /// <summary>
@@ -317,6 +409,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         }
 
         /// <summary>
+        /// Get chip configuration by numeric chip ID (for ESP32-S3 and later).
+        /// </summary>
+        /// <param name="chipId">Numeric chip ID.</param>
+        /// <returns>Chip configuration, or null if not recognized.</returns>
+        internal static Esp32ChipConfig GetByChipId(uint? chipId)
+        {
+            if (chipId == null)
+            {
+                return null;
+            }
+
+            foreach (var config in All)
+            {
+                if (config.ChipId == chipId)
+                {
+                    return config;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Get all known chip configurations.
         /// </summary>
         internal static IEnumerable<Esp32ChipConfig> All
@@ -329,6 +443,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 yield return ESP32_C3;
                 yield return ESP32_C6;
                 yield return ESP32_H2;
+                yield return ESP32_C5;
+                yield return ESP32_C61;
+                yield return ESP32_P4;
             }
         }
     }

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
@@ -56,6 +56,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         /// <summary>Calculate MD5 hash of flash region (requires stub).</summary>
         SpiFlashMd5 = 0x13,
+
+        /// <summary>Get security info.</summary>
+        GetSecurityInfo = 0x14,  
 
         /// <summary>Erase entire flash memory.</summary>
         EraseFlash = 0xD0,
