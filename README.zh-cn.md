@@ -134,13 +134,13 @@ ESP32_S2 映像是 ESP32-S2 系列的通用目标，涵盖所有 S2 变体。
 nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31
 ```
 
-### 使用本地CLR文件更新ESP32-S2 KALUGA 1的固件  
+### 使用本地CLR文件更新ESP32-S2的固件  
 
-使用本地CLR文件(例如来自一个构建文件)更新连接到COM31的ESP32-S2 KALUGA 1设备的固件。  
+使用本地CLR文件(例如来自一个构建文件)更新连接到COM31的ESP32-S2设备的固件。  
 这个文件必须是一个二进制文件，且必须是有效且经过构建的CLR。 对文件内容不执行其他检查或验证。  
 
 ```shell
-nanoff --update --target KALUGA_1 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
+nanoff --update --target ESP32_S2 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
 ```
 
 您可以调整要使用的核心固件的名称。 请参阅前一节以获得完整的列表。  

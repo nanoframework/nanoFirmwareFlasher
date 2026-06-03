@@ -142,13 +142,13 @@ To update the firmware of an ESP32 target connected to COM31, to the latest avai
 nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31
 ```
 
-### Update the firmware of an ESP32-S2 KALUGA 1 with a local CLR file
+### Update the firmware of an ESP32-S2 with a local CLR file
 
-To update the firmware of an ESP32-S2 KALUGA 1 target connected to COM31 with a local CLR file (for example from a build).
+To update the firmware of an ESP32-S2 target connected to COM31 with a local CLR file (for example from a build).
 This file has to be a binary file with a valid CLR from a build. No other checks or validations are performed on the file content.
 
 ```console
-nanoff --update --target KALUGA_1 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
+nanoff --update --target ESP32_S2 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
 ```
 
 You can adjust the name of the core image you want to use. Refer to the previous section to get the full list.

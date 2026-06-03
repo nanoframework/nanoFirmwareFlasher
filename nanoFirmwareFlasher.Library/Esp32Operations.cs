@@ -642,8 +642,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
                 esp32Device.ChipType != "ESP32-C3" &&
+                esp32Device.ChipType != "ESP32-C5" &&
                 esp32Device.ChipType != "ESP32-C6" &&
+                esp32Device.ChipType != "ESP32-C61" &&
                 esp32Device.ChipType != "ESP32-H2" &&
+                esp32Device.ChipType != "ESP32-P4" &&
                 esp32Device.ChipType != "ESP32-S2" &&
                 esp32Device.ChipType != "ESP32-S3")
             {
