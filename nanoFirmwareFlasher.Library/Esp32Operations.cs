@@ -245,24 +245,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (esp32Device.ChipName.Contains("revision v0.2"))
                     {
                         // this is the "default" one we're offering
-                        revisionSuffix = "";
-                    }
-                    else if (esp32Device.ChipName.Contains("revision v0.3") || esp32Device.ChipName.Contains("revision v0.4"))
-                    {
-                        // all the others (rev3 and rev4) will take rev3
-                        revisionSuffix = "_REV3";
+                        revisionSuffix = "_BETA";
                     }
                     else
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"Unsupported ESP32_C3 revision.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
+                    { 
+                        // all the others (rev3, rev4, rev1.1 and above) will take default
+                        revisionSuffix = "";
                     }
 
                     // compose target name
@@ -272,7 +260,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     
                     // compose target name
-                    targetName = $"ESP32_C5_THREAD_USB";
+                    targetName = $"ESP32_C5_THREA";
                 }
                 else if (esp32Device.ChipType == "ESP32-C6")
                 {
@@ -281,7 +269,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else if (esp32Device.ChipType == "ESP32-C61")
                 {
-                    targetName = $"ESP32_C61_USB";
+                    targetName = $"ESP32_C61";
                 }
                 else if (esp32Device.ChipType == "ESP32-H2")
                 {
@@ -316,25 +304,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     //          V001          |     0 (bug in logs)       | v0.1
                     //          V002          |           n/a             | v0.2
 
-                    string revisionSuffix;
+                    string revisionSuffix = "_OCTAL";
 
                     // so far we are only offering a single ESP32_S3 build
                     if (esp32Device.ChipName.Contains("revision v0.0") || esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v0.2"))
                     {
                         revisionSuffix = "";
                     }
-                    else
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
 
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"Unsupported ESP32_S3 revision.");
-                        OutputWriter.WriteLine("");
+                    OutputWriter.WriteLine($"For ESP32-S3 series nanoff isn't able to make an educated guess on the type of psram your board is using.");
+                    OutputWriter.WriteLine($"If your target is no showing any psram than call nanoff again with the specific firmware name. i.e ESP32_S3_QUAD");
+                    OutputWriter.WriteLine($"Please provide a valid target name using this option '--target ESP32_S3_QUAD' instead of '--platform esp32'.");
+                    OutputWriter.WriteLine("");
 
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
-                    }
 
                     // compose target name
                     targetName = $"ESP32_S3{revisionSuffix}";
@@ -369,7 +351,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
 
                     // compose target name
-                    targetName = $"ESP32_P4_UART{revisionSuffix}";
+                    targetName = $"ESP32_P4{revisionSuffix}";
                 }
 
                 if (showFwOnly)
