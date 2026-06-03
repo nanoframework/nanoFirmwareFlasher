@@ -260,7 +260,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     
                     // compose target name
-                    targetName = $"ESP32_C5_THREA";
+                    targetName = $"ESP32_C5_THREAD";
                 }
                 else if (esp32Device.ChipType == "ESP32-C6")
                 {
@@ -283,18 +283,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     //           n/a          |           0               | v0.0
                     //           ECO1         |           1               | v1.0
 
-                    // can't guess with certainty for this series, better request a target name to the user
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                    OutputWriter.WriteLine("");
-                    OutputWriter.WriteLine($"For ESP32-S2 series nanoff isn't able to make an educated guess on the best target to use.");
-                    OutputWriter.WriteLine($"Please provide a valid target name using this option '--target MY_ESP32_S2_TARGET' instead of '--platform esp32'.");
-                    OutputWriter.WriteLine("");
-
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                    return ExitCodes.E9000;
+                    targetName = $"ESP32_S2";
                 }
                 else if (esp32Device.ChipType == "ESP32-S3")
                 {
@@ -304,22 +293,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     //          V001          |     0 (bug in logs)       | v0.1
                     //          V002          |           n/a             | v0.2
 
+                    // early silicon revisions had QUAD PSRAM; newer revisions default to OCTAL
                     string revisionSuffix = "_OCTAL";
 
-                    // so far we are only offering a single ESP32_S3 build
                     if (esp32Device.ChipName.Contains("revision v0.0") || esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v0.2"))
                     {
-                        revisionSuffix = "";
+                        revisionSuffix = "_QUAD";
                     }
 
-                    OutputWriter.WriteLine($"For ESP32-S3 series nanoff isn't able to make an educated guess on the type of psram your board is using.");
-                    OutputWriter.WriteLine($"If your target is no showing any psram than call nanoff again with the specific firmware name. i.e ESP32_S3_QUAD");
-                    OutputWriter.WriteLine($"Please provide a valid target name using this option '--target ESP32_S3_QUAD' instead of '--platform esp32'.");
-                    OutputWriter.WriteLine("");
-
-
-                    // compose target name
+                    // compose target name before printing the message
                     targetName = $"ESP32_S3{revisionSuffix}";
+
+                    string psRamAlternative = revisionSuffix == "_OCTAL" ? "ESP32_S3_QUAD" : "ESP32_S3_OCTAL";
+                    OutputWriter.WriteLine($"For ESP32-S3 series nanoff isn't able to make an educated guess on the type of PSRAM your board is using.");
+                    OutputWriter.WriteLine($"If PSRAM is not detected after flashing, rerun nanoff with this option '--target {psRamAlternative}' instead of '--platform esp32'.");
+                    OutputWriter.WriteLine("");
                 }
                 else if (esp32Device.ChipType == "ESP32-P4")
                 {
@@ -654,8 +642,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
                 esp32Device.ChipType != "ESP32-C3" &&
+                esp32Device.ChipType != "ESP32-C5" &&
                 esp32Device.ChipType != "ESP32-C6" &&
+                esp32Device.ChipType != "ESP32-C61" &&
                 esp32Device.ChipType != "ESP32-H2" &&
+                esp32Device.ChipType != "ESP32-P4" &&
                 esp32Device.ChipType != "ESP32-S2" &&
                 esp32Device.ChipType != "ESP32-S3")
             {
