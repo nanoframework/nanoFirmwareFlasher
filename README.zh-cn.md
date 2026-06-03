@@ -105,7 +105,7 @@ nanoff --listports
 ESP32_PSRAM_REV0 映像适用于任何变体的 ESP32 系列，无论是否带有 PSRAM，并且适用于所有硅片版本。
 您可以在[这里](https://docs.nanoframework.net/content/reference-targets/esp32.html)阅读有关各种映像之间差异的更多信息。
 
-FEATHER_S2 映像适用于几乎所有暴露嵌入式 USB CDC 引脚的 ESP32-S2 系列变体。
+ESP32_S2 映像是 ESP32-S2 系列的通用目标，涵盖所有 S2 变体。
 您可以在[这里](https://docs.nanoframework.net/content/reference-targets/esp32.html)阅读有关各种映像之间差异的更多信息。
 
 使用 `nanoff` 时，您可以添加 `--target MY_TARGET_NAME_HERE` 以使用特定映像。或者，您只需指定平台 `--platform esp32`，`nanoff` 将根据连接设备的功能选择最合适的映像。输出将类似于以下内容，以告知即将使用的映像：
@@ -114,7 +114,7 @@ FEATHER_S2 映像适用于几乎所有暴露嵌入式 USB CDC 引脚的 ESP32-S2
 未提供目标名称！根据设备特性使用 'ESP32_REV0'。
 ```
 
-> 注意：请注意，对于 ESP32-S2 目标，无法安全地确定最佳映像。因此，必须提供适当的目标名称 `--target MY_TARGET_NAME_HERE`。
+> 注意：对于 ESP32-S3 目标，`nanoff` 默认使用 `ESP32_S3_OCTAL`（早期硅片版本使用 `ESP32_S3_QUAD`），因为无法自动检测 PSRAM 类型。如有需要，将打印警告并建议使用替代目标。
 
 一些 ESP32 开发板在进入引导加载程序模式时有问题。通常可以通过按住开发板上的 BOOT/FLASH 按钮来解决此问题。
 如果 `nanoff` 检测到这种情况，将显示以下警告：
@@ -438,7 +438,7 @@ nanoff --listboards --platform stm32
 一些设备如 ESP32、Orgpal 和其他一些设备有可用的存储空间。文件可以部署到这个存储空间中。你需要使用 `filedeployment` 参数指向一个 JSON 文件，在刷写设备时部署文件：
 
 ```console
-nanoff --target XIAO_ESP32C3 --update --masserase --serialport COM21 --filedeployment C:\path\deploy.json
+nanoff --target ESP32_C3 --update --masserase --serialport COM21 --filedeployment C:\path\deploy.json
 ```
 
 JSON 文件中可以包含一个可选的 `SerialPort`，以防上传文件的端口与刷写设备的端口不同或未在主命令行中指定，并且必须包含一个 `Files` 条目的列表。每个条目必须包含 `DestinationFilePath`，即目标完整路径文件名，以及 `SourceFilePath`，即要部署的内容的源文件路径；否则，要删除文件时，必须包含要部署的源文件的完整路径和文件名：
@@ -493,7 +493,7 @@ nanoff --clearcache
 默认情况下，_nanoff_ 使用在线仓库来查找固件包。也可以使用本地目录作为固件的来源。可以通过 _--updatearchive_ 选项来填充固件存档：
 
 ```console
-nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
+nanoff --updatearchive --target ESP32_S3_OCTAL --archivepath c:\...\firmware 
 nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
 ```
 

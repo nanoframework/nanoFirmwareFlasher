@@ -113,7 +113,7 @@ nanoff --listports
 The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM, and for all silicon revisions.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
 
-The FEATHER_S2 image will just work for pretty much all variants of the ESP32-S2 series that expose the embedded USB CDC pins.
+The ESP32_S2 image is the generic target for the ESP32-S2 series and covers all S2 variants.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
 
 When using `nanoff` you can add `--target MY_TARGET_NAME_HERE` to use a specific image. If, instead, you just specify the platform with `--platform esp32` `nanoff` will choose the most appropriate image depending on the features of the device that's connected. Output similar to this one will show to advise what's the image about to be used:
@@ -122,7 +122,7 @@ When using `nanoff` you can add `--target MY_TARGET_NAME_HERE` to use a specific
 No target name was provided! Using 'ESP32_REV0' based on the device characteristics.
 ```
 
->Note: Please note that for ESP32-S2 targets is not possible to safely determine what's the best image to use. For this reason it's mandatory providing the appropriate target name with `--target MY_TARGET_NAME_HERE`.
+>Note: For ESP32-S3 targets, `nanoff` defaults to `ESP32_S3_OCTAL` (or `ESP32_S3_QUAD` for early silicon revisions) since it cannot detect the PSRAM type automatically. A warning is printed suggesting the alternative target if needed.
 
 Some ESP32 boards have issues entering bootloader mode. This can be usually overcome by holding down the BOOT/FLASH button in the board.
 In case `nanoff` detects this situation the following warning is shown:
@@ -505,7 +505,7 @@ If you use the `--listtargets` switch in conjunction with `--preview`, you'll ge
 Some devices like ESP32, Orgpal and few others have storage available. Files can be deployed in this storage. You have to use the `filedeployment` parameter pointing on a JSON file to deploy files while flashing the device:
 
 ```console
-nanoff --target XIAO_ESP32C3 --update --masserase --serialport COM21  --filedeployment C:\path\deploy.json
+nanoff --target ESP32_C3 --update --masserase --serialport COM21  --filedeployment C:\path\deploy.json
 ```
 
 The JSON an optional `SerialPort` in case the port to upload the files must be different than the one to flash the device or not specified in the main command line and a **mandatory** list of `Files` entries. Each entry must contains `DestinationFilePath`, the destination full path file name and `SourceFilePath` to deploy content, otherwise to delete the file, the full path with file name of the source file to be deployed:
@@ -799,7 +799,7 @@ nanoff --clearcache
 By default, _nanoff_ uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the _--updatearchive_ option:
 
 ```console
-nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
+nanoff --updatearchive --target ESP32_S3_OCTAL --archivepath c:\...\firmware 
 nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
 ```
 
