@@ -287,16 +287,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else if (esp32Device.ChipType == "ESP32-S3")
                 {
-                    // version schema for ESP32-S3
-                    //Previously Used Schemes | Previous Identification   | vM.X
-                    //          V000          |           n/a             | v0.0
-                    //          V001          |     0 (bug in logs)       | v0.1
-                    //          V002          |           n/a             | v0.2
-
-                    // early silicon revisions had QUAD PSRAM; newer revisions default to OCTAL
+                    // Most new esp32_s3 use octal PSRAM, but some older use quad PSRAM. These are normally 2Mb in size.
                     string revisionSuffix = "_OCTAL";
 
-                    if (esp32Device.ChipName.Contains("revision v0.0") || esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v0.2"))
+                    // Default to QUAD if a 2Mb PSRAM detected
+                    if (esp32Device.PSRamAvailable == PSRamAvailability.Yes && esp32Device.PsRamSize == 2)
                     {
                         revisionSuffix = "_QUAD";
                     }
@@ -305,7 +300,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     targetName = $"ESP32_S3{revisionSuffix}";
 
                     string psRamAlternative = revisionSuffix == "_OCTAL" ? "ESP32_S3_QUAD" : "ESP32_S3_OCTAL";
-                    OutputWriter.WriteLine($"For ESP32-S3 series nanoff isn't able to make an educated guess on the type of PSRAM your board is using.");
+                    OutputWriter.WriteLine($"For ESP32-S3 series nanoff isn't always able to guess the type of PSRAM your board is using.");
                     OutputWriter.WriteLine($"If PSRAM is not detected after flashing, rerun nanoff with this option '--target {psRamAlternative}' instead of '--platform esp32'.");
                     OutputWriter.WriteLine("");
                 }
