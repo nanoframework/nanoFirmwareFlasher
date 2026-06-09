@@ -12,7 +12,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// <summary>
     /// STM32 JTAG Device.
     /// </summary>
-    public class StmJtagDevice : StmDeviceBase
+    public class StmJtagDevice : StmDeviceBase, IStmFlashableDevice
     {
         /// <summary>
         /// This property is <see langword="true"/> if a JTAG device is connected.

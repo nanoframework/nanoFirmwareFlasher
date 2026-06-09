@@ -14,6 +14,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     public static class OutputWriter
     {
         private static readonly AsyncLocal<IOutputWriter> s_outputWriter = new();
+        private static readonly object s_consoleLock = new();
 
         #region Properties
         /// <summary>
@@ -26,7 +27,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (s_outputWriter.Value is null)
                 {
-                    Console.ForegroundColor = value;
+                    lock (s_consoleLock)
+                    {
+                        Console.ForegroundColor = value;
+                    }
                 }
                 else
                 {
@@ -45,7 +49,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (s_outputWriter.Value is null)
             {
-                Console.Write(text);
+                lock (s_consoleLock)
+                {
+                    Console.Write(text);
+                }
             }
             else
             {
@@ -61,13 +68,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             if (s_outputWriter.Value is null)
             {
-                if (text is null)
+                lock (s_consoleLock)
                 {
-                    Console.WriteLine();
-                }
-                else
-                {
-                    Console.WriteLine(text);
+                    if (text is null)
+                    {
+                        Console.WriteLine();
+                    }
+                    else
+                    {
+                        Console.WriteLine(text);
+                    }
                 }
             }
             else

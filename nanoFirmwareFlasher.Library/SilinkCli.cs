@@ -228,15 +228,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         internal static Process RunSilinkCLI(string probeId)
         {
-            // prepare the process start of J-Link
+            // prepare the process start of silink
             string appName = "silink.exe";
             string appDir = Path.Combine(Utilities.ExecutingPath, "silink");
 
+            string exePath = Path.Combine(appDir, appName);
+
+            if (!File.Exists(exePath))
+            {
+                throw new InvalidOperationException(
+                    $"silink.exe not found at '{exePath}'. " +
+                    "The silink tool is not installed or was excluded from the package.");
+            }
 
             Process silinkCli = new Process();
             string parameter = $" -sn {probeId} -automap {SilinkTelnetPort}";
 
-            silinkCli.StartInfo = new ProcessStartInfo(Path.Combine(appDir, appName), parameter)
+            silinkCli.StartInfo = new ProcessStartInfo(exePath, parameter)
             {
                 WorkingDirectory = appDir,
                 UseShellExecute = false,

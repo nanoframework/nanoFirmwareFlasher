@@ -14,7 +14,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// <summary>
     /// STM32 DFU Device.
     /// </summary>
-    public class StmDfuDevice : StmDeviceBase
+    public class StmDfuDevice : StmDeviceBase, IStmFlashableDevice
     {
         // Device ID of the connected DFU device.
         private string _deviceId;

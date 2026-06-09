@@ -50,35 +50,34 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E5003;
             }
 
-            // TODO
-            // use the -d switch
-            //// erase flash
-            //if (DoMassErase)
-            //{
-            //    if (Verbosity >= VerbosityLevel.Normal)
-            //    {
-            //        OutputWriter.Write("Mass erase device...");
-            //    }
+            // erase flash before programming if requested
+            if (DoMassErase)
+            {
+                if (Verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.Write("Mass erase device...");
+                }
 
-            //    cliOutput = RunUniflashCli($"-c SN={DeviceId} UR -ME");
+                string eraseOutput = RunUniflashCli($" flash -c {ConfigurationFile} -e");
 
-            //    if (!cliOutput.Contains("Flash memory erased."))
-            //    {
-            //        return ExitCodes.E5005;
-            //    }
+                if (!eraseOutput.Contains("Success"))
+                {
+                    OutputWriter.WriteLine("");
+                    return ExitCodes.E5005;
+                }
 
-            //    if (Verbosity >= VerbosityLevel.Normal)
-            //    {
-            //        OutputWriter.WriteLine(" OK");
-            //    }
-            //    else
-            //    {
-            //        OutputWriter.WriteLine("");
-            //    }
+                if (Verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.WriteLine(" OK");
+                }
+                else
+                {
+                    OutputWriter.WriteLine("");
+                }
 
-            //    // toggle mass erase so it's only performed before the first file is flashed
-            //    DoMassErase = false;
-            //}
+                // toggle mass erase so it's only performed before the first file is flashed
+                DoMassErase = false;
+            }
 
             if (Verbosity == VerbosityLevel.Normal)
             {
@@ -159,36 +158,34 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            // TODO
-            // use the -d switch
-            //// erase flash
-            //if (DoMassErase)
-            //{
-            //    if (Verbosity >= VerbosityLevel.Normal)
-            //    {
-            //        OutputWriter.Write("Mass erase device...");
-            //    }
+            // erase flash before programming if requested
+            if (DoMassErase)
+            {
+                if (Verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.Write("Mass erase device...");
+                }
 
-            //    cliOutput = RunUniflashCli($"-b");
+                string eraseOutput = RunUniflashCli($" flash -c {ConfigurationFile} -e");
 
-            //    if (!cliOutput.Contains("Flash memory erased."))
-            //    {
-            //        OutputWriter.WriteLine("");
-            //        return ExitCodes.E5005;
-            //    }
+                if (!eraseOutput.Contains("Success"))
+                {
+                    OutputWriter.WriteLine("");
+                    return ExitCodes.E5005;
+                }
 
-            //    if (Verbosity >= VerbosityLevel.Normal)
-            //    {
-            //        OutputWriter.WriteLine(" OK");
-            //    }
-            //    else
-            //    {
-            //        OutputWriter.WriteLine("");
-            //    }
+                if (Verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.WriteLine(" OK");
+                }
+                else
+                {
+                    OutputWriter.WriteLine("");
+                }
 
-            //    // toggle mass erase so it's only performed before the first file is flashed
-            //    DoMassErase = false;
-            //}
+                // toggle mass erase so it's only performed before the first file is flashed
+                DoMassErase = false;
+            }
 
             if (Verbosity == VerbosityLevel.Normal)
             {
@@ -256,12 +253,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static string RunUniflashCli(string arguments)
         {
+            string exePath = Path.Combine(Utilities.ExecutingPath, "uniflash\\DebugServer\\bin", "DSLite.exe");
+
+            if (!File.Exists(exePath))
+            {
+                throw new UniflashCliExecutionException(
+                    $"DSLite.exe not found at '{exePath}'. " +
+                    "The Uniflash tool is not installed or was excluded from the package.");
+            }
+
             try
             {
                 var uniflashCli = new Process
                 {
-                    StartInfo = new ProcessStartInfo(
-                        Path.Combine(Utilities.ExecutingPath, "uniflash\\DebugServer\\bin", "DSLite.exe"), arguments)
+                    StartInfo = new ProcessStartInfo(exePath, arguments)
                     {
                         WorkingDirectory = Path.Combine(Utilities.ExecutingPath, "uniflash"),
                         UseShellExecute = false,

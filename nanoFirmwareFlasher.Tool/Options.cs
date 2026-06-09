@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using CommandLine.Text;
 
@@ -84,6 +85,61 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = false,
             HelpText = "Install STM32 JTAG drivers.")]
         public bool InstallJtagDrivers { get; set; }
+        #endregion
+
+
+        #region STM32 Native DFU options
+
+        [Option(
+            "nativedfu",
+            Required = false,
+            Default = false,
+            HelpText = "Use native USB DFU to update the device. No external tools needed. Windows only.")]
+        public bool NativeDfuUpdate { get; set; }
+
+        [Option(
+            "listnativedfu",
+            Required = false,
+            Default = false,
+            HelpText = "List connected DFU devices using native USB enumeration (Windows only).")]
+        public bool ListNativeDfuDevices { get; set; }
+
+        #endregion
+
+        #region STM32 Native SWD (CMSIS-DAP) options
+
+        [Option(
+            "nativeswd",
+            Required = false,
+            Default = false,
+            HelpText = "Use native SWD via CMSIS-DAP to update the device. No external tools needed. Windows only.")]
+        public bool NativeSwdUpdate { get; set; }
+
+        [Option(
+            "listnativeswd",
+            Required = false,
+            Default = false,
+            HelpText = "List connected CMSIS-DAP debug probes using native USB HID enumeration (Windows only).")]
+        public bool ListNativeSwdDevices { get; set; }
+
+        #endregion
+
+        #region STM32 Native ST-LINK options
+
+        [Option(
+            "nativestlink",
+            Required = false,
+            Default = false,
+            HelpText = "Use native ST-LINK V2/V3 protocol to update the device via SWD. No external tools needed.")]
+        public bool NativeStLinkUpdate { get; set; }
+
+        [Option(
+            "listnativestlink",
+            Required = false,
+            Default = false,
+            HelpText = "List connected ST-LINK debug probes using native USB enumeration.")]
+        public bool ListNativeStLinkDevices { get; set; }
+
         #endregion
 
 
@@ -292,6 +348,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool MassErase { get; set; }
 
         [Option(
+            "verify",
+            Required = false,
+            Default = false,
+            HelpText = "Read back flash contents after programming and verify they match the source data. Supported for --uart, --nativeswd, and --nativestlink interfaces.")]
+        public bool Verify { get; set; }
+
+        [Option(
             "address",
             Required = false,
             HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with --binfile argument or flashing a deployment image with --deploy argument.")]
@@ -427,6 +490,101 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 new("- Show details of connected Raspberry Pi Pico device", new Options { Platform = SupportedPlatform.rpi_pico, DeviceDetails = true }),
                 new("- List all available COM ports", new Options { ListComPorts = true }),
             ];
+
+        /// <summary>
+        /// Validates that at most one flash interface option is selected.
+        /// Returns null if valid, or an error message string if conflicting options are found.
+        /// </summary>
+        internal static string ValidateInterfaceOptions(Options o)
+        {
+            int count =
+                (o.DfuUpdate ? 1 : 0) +
+                (o.JtagUpdate ? 1 : 0) +
+                (o.NativeDfuUpdate ? 1 : 0) +
+                (o.NativeSwdUpdate ? 1 : 0) +
+                (o.NativeStLinkUpdate ? 1 : 0);
+
+            if (count > 1)
+            {
+                return "Only one flash interface can be selected at a time. Conflicting options: "
+                    + string.Join(", ",
+                        new[]
+                        {
+                            o.DfuUpdate ? "--dfu" : null,
+                            o.JtagUpdate ? "--jtag" : null,
+                            o.NativeDfuUpdate ? "--nativedfu" : null,
+                            o.NativeSwdUpdate ? "--nativeswd" : null,
+                            o.NativeStLinkUpdate ? "--nativestlink" : null,
+                        }.Where(s => s != null))
+                    + ".";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Validates early constraints that should fail-fast before any hardware interaction.
+        /// Returns null if valid, or an error message string describing the constraint violation.
+        /// </summary>
+        internal static (ExitCodes Code, string Message)? ValidateEarlyConstraints(Options o)
+        {
+            // --deploy requires --image
+            if (o.Deploy && string.IsNullOrEmpty(o.DeploymentImage))
+            {
+                return (ExitCodes.E9000, "--deploy requires --image to specify the deployment image path.");
+            }
+
+            // --binfile requires --address
+            if (o.BinFile != null && o.BinFile.Count > 0
+                && (o.FlashAddress == null || o.FlashAddress.Count == 0))
+            {
+                return (ExitCodes.E9000, "--binfile requires --address to specify the flash address(es).");
+            }
+
+            // --updatearchive incompatible with --fromarchive
+            if (o.UpdateFwArchive && o.FromFwArchive)
+            {
+                return (ExitCodes.E9000, "Incompatible option --fromarchive combined with --updatearchive.");
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Parses a verbosity string (short or long form) into a <see cref="VerbosityLevel"/>.
+        /// </summary>
+        /// <param name="value">The verbosity string (e.g. "q", "quiet", "n", "normal", "diag").</param>
+        /// <returns>The parsed <see cref="VerbosityLevel"/>.</returns>
+        /// <exception cref="System.ArgumentException">Thrown when the value is not a recognized verbosity level.</exception>
+        internal static VerbosityLevel ParseVerbosity(string value)
+        {
+            switch (value)
+            {
+                case "q":
+                case "quiet":
+                    return VerbosityLevel.Quiet;
+
+                case "m":
+                case "minimal":
+                    return VerbosityLevel.Minimal;
+
+                case "n":
+                case "normal":
+                    return VerbosityLevel.Normal;
+
+                case "d":
+                case "detailed":
+                    return VerbosityLevel.Detailed;
+
+                case "diag":
+                case "diagnostic":
+                    return VerbosityLevel.Diagnostic;
+
+                default:
+                    throw new System.ArgumentException("Invalid option for Verbosity");
+            }
+        }
+
         private const string _APPLICATIONALIAS = "nanoff";
     }
 }
