@@ -96,6 +96,7 @@ List of usage examples per platform and common options:
 - [STM32](#stm32-usage-examples)
 - [TI CC13x2](#ti-cc13x2-usage-examples)
 - [Silabs Giant Gecko](#silabs-giant-gecko-usage-examples)
+- [Raspberry Pi Pico](#raspberry-pi-pico-usage-examples)
 - [Plain connection usage examples](#plain-connection-usage-examples)
 - [Common options](#common-options)
 
@@ -112,7 +113,7 @@ nanoff --listports
 The ESP32_PSRAM_REV0 image will just work for any variant of the ESP32 series, with or without PSRAM, and for all silicon revisions.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
 
-The FEATHER_S2 image will just work for pretty much all variants of the ESP32-S2 series that expose the embedded USB CDC pins.
+The ESP32_S2 image is the generic target for the ESP32-S2 series and covers all S2 variants.
 You can read more about the differences between the various images [here](https://docs.nanoframework.net/content/reference-targets/esp32.html).
 
 When using `nanoff` you can add `--target MY_TARGET_NAME_HERE` to use a specific image. If, instead, you just specify the platform with `--platform esp32` `nanoff` will choose the most appropriate image depending on the features of the device that's connected. Output similar to this one will show to advise what's the image about to be used:
@@ -121,7 +122,7 @@ When using `nanoff` you can add `--target MY_TARGET_NAME_HERE` to use a specific
 No target name was provided! Using 'ESP32_REV0' based on the device characteristics.
 ```
 
->Note: Please note that for ESP32-S2 targets is not possible to safely determine what's the best image to use. For this reason it's mandatory providing the appropriate target name with `--target MY_TARGET_NAME_HERE`.
+>Note: For ESP32-S3 targets, `nanoff` defaults to `ESP32_S3_OCTAL` (or `ESP32_S3_QUAD` for early silicon revisions) since it cannot detect the PSRAM type automatically. A warning is printed suggesting the alternative target if needed.
 
 Some ESP32 boards have issues entering bootloader mode. This can be usually overcome by holding down the BOOT/FLASH button in the board.
 In case `nanoff` detects this situation the following warning is shown:
@@ -141,13 +142,13 @@ To update the firmware of an ESP32 target connected to COM31, to the latest avai
 nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31
 ```
 
-### Update the firmware of an ESP32-S2 KALUGA 1 with a local CLR file
+### Update the firmware of an ESP32-S2 with a local CLR file
 
-To update the firmware of an ESP32-S2 KALUGA 1 target connected to COM31 with a local CLR file (for example from a build).
+To update the firmware of an ESP32-S2 target connected to COM31 with a local CLR file (for example from a build).
 This file has to be a binary file with a valid CLR from a build. No other checks or validations are performed on the file content.
 
 ```console
-nanoff --update --target KALUGA_1 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
+nanoff --update --target ESP32_S2 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
 ```
 
 You can adjust the name of the core image you want to use. Refer to the previous section to get the full list.
@@ -316,6 +317,46 @@ This useful to list all Silabs devices that are connected through J-Link.
 nanoff --listjlink
 ```
 
+## Raspberry Pi Pico usage examples
+
+Raspberry Pi Pico boards (RP2040 and RP2350) use UF2 mass storage for firmware deployment. The device must be in **BOOTSEL mode** — hold the BOOTSEL button while connecting the USB cable. The board will appear as a USB drive (labelled `RPI-RP2` or `RP2350`).
+
+No external tools or drivers are required. nanoff handles UF2 conversion automatically.
+
+If no device is detected, nanoff will wait up to 30 seconds for a Pico to enter BOOTSEL mode. During Pico firmware update and mass-erase operations, if multiple Pico devices are connected in BOOTSEL mode simultaneously, nanoff will use the first one found and display a warning.
+
+### Update the firmware of a Raspberry Pi Pico
+
+To update the firmware of a Raspberry Pi Pico (RP2040) to the latest available stable version.
+
+```console
+nanoff --update --target RP_PICO_RP2040
+```
+
+### Update the firmware of a Raspberry Pi Pico 2
+
+To update the firmware of a Raspberry Pi Pico 2 (RP2350) to the latest available preview version.
+
+```console
+nanoff --update --target RP_PICO_RP2350 --preview
+```
+
+### Show details of the connected Pico device
+
+To show the details of the Pico device in BOOTSEL mode (chip type, board ID, bootloader version).
+
+```console
+nanoff --platform rpi_pico --devicedetails
+```
+
+### List available Raspberry Pi Pico targets
+
+To list all available firmware targets for the Raspberry Pi Pico platform.
+
+```console
+nanoff --listtargets --platform rpi_pico
+```
+
 ## Plain connection usage examples
 
 It's possible to update a nano device using  the same connection that is used for Visual Studio connection, meaning that no specialized connection is required (like JTAG, or JLink). This is only possible if the device has previously been flashed with a working nanoFramework firmware.
@@ -464,7 +505,7 @@ If you use the `--listtargets` switch in conjunction with `--preview`, you'll ge
 Some devices like ESP32, Orgpal and few others have storage available. Files can be deployed in this storage. You have to use the `filedeployment` parameter pointing on a JSON file to deploy files while flashing the device:
 
 ```console
-nanoff --target XIAO_ESP32C3 --update --masserase --serialport COM21  --filedeployment C:\path\deploy.json
+nanoff --target ESP32_C3 --update --masserase --serialport COM21  --filedeployment C:\path\deploy.json
 ```
 
 The JSON an optional `SerialPort` in case the port to upload the files must be different than the one to flash the device or not specified in the main command line and a **mandatory** list of `Files` entries. Each entry must contains `DestinationFilePath`, the destination full path file name and `SourceFilePath` to deploy content, otherwise to delete the file, the full path with file name of the source file to be deployed:
@@ -758,7 +799,7 @@ nanoff --clearcache
 By default, _nanoff_ uses the online repository to look for firmware packages. It is also possible to use a local directory as the source of firmware. The firmware archive can be populated via the _--updatearchive_ option:
 
 ```console
-nanoff --updatearchive --target ESP32_S3_ALL --archivepath c:\...\firmware 
+nanoff --updatearchive --target ESP32_S3_OCTAL --archivepath c:\...\firmware 
 nanoff --updatearchive --platform esp32 --archivepath c:\...\firmware
 ```
 

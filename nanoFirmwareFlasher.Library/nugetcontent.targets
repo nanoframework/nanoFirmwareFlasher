@@ -1,13 +1,9 @@
-<Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <!-- ESP32 nanoFramework bootloader files -->
     <ItemGroup>
         <Content Include="..\lib\esp32bootloader\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\esp32bootloader</PackagePath>
-        </Content>
-        <Content Include="..\lib\esp32s2bootloader\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\esp32s2bootloader</PackagePath>
         </Content>
     </ItemGroup>
 

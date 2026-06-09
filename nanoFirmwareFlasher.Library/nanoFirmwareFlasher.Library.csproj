@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>library</OutputType>
@@ -15,7 +15,6 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nanoframework/nanoFirmwareFlasher</RepositoryUrl>
     <PackageProjectUrl>https://github.com/nanoframework/nanoFirmwareFlasher</PackageProjectUrl>
-    <PackageIconUrl></PackageIconUrl>
     <Description>.NET nanoFirmwareFlasher tool to flash firmware images to target devices.</Description>
     <!-- disable NuGet warning for DLLs outside the lib folder and for SemVer 2 package reference -->
     <NoWarn>$(NoWarn);NU5100;NU5105</NoWarn>
@@ -24,6 +23,9 @@
     <PackageTags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Platforms>AnyCPU;x64</Platforms>
+    <Deterministic>true</Deterministic>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'True' or '$(ContinuousIntegrationBuild)' == 'True'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -98,10 +100,6 @@
     <ItemGroup>
         <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)">
         </None>
-        <None Include="..\lib\esp32s2bootloader\**" Link="esp32s2bootloader\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\esp32s3bootloader\**" Link="esp32s3bootloader\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
     </ItemGroup>
 
     <!-- STLink executables for all platforms -->
@@ -136,30 +134,15 @@
     <ItemGroup>
       <None Update="..\lib\esp32bootloader\bootloader.bin">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </None>
       <None Update="..\lib\esp32bootloader\partitions_2mb.bin">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </None>
       <None Update="..\lib\esp32bootloader\test_startup.bin">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s2bootloader\bootloader.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s2bootloader\partitions_4mb.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s2bootloader\test_startup.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s3bootloader\bootloader.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s3bootloader\partitions_4mb.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="..\lib\esp32s3bootloader\test_startup.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </None>
     </ItemGroup>
 

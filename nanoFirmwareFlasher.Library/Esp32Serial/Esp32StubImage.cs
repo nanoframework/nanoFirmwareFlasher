@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -42,12 +42,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// Try to load a stub image for the given chip type from embedded JSON resources.
         /// Returns null if no stub is available for this chip.
         /// </summary>
-        /// <param name="chipType">Chip type string (e.g. "esp32", "esp32s3").</param>
+        /// <param name="config">Chip configuration object with Chip type string (e.g. "esp32", "esp32s3")</param>
         /// <returns>The stub image, or null if not found.</returns>
-        internal static Esp32StubImage TryLoad(string chipType)
+        internal static Esp32StubImage TryLoad(Esp32ChipConfig config)
         {
-            // Try embedded resource: "nanoFirmwareFlasher.Library.Esp32Serial.StubImages.stub_{chipType}.json"
-            string resourceName = $"nanoFramework.Tools.FirmwareFlasher.Esp32Serial.StubImages.stub_{chipType}.json";
+            // Try embedded resource 
+            string resourceName = config.StubVariant == null
+                ? $"nanoFramework.Tools.FirmwareFlasher.Esp32Serial.StubImages.stub_{config.ChipType}.json"
+                : $"nanoFramework.Tools.FirmwareFlasher.Esp32Serial.StubImages.stub_{config.ChipType}_{config.StubVariant}.json";
 
             var assembly = Assembly.GetExecutingAssembly();
 

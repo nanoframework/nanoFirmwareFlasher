@@ -40,6 +40,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Timeout for flash read operations.</summary>
         private const int FlashReadTimeoutMs = 30_000;
 
+        /// <summary>Maximum number of unacknowledged read blocks in flight.
+        /// Must be 1 for our synchronous reader — the stub sends one block, we ACK it,
+        /// then the stub sends the next. Higher values cause the stub to stream ahead
+        /// of our reads, overflowing the 64 KB serial receive buffer on larger partitions.</summary>
+        private const uint FlashReadMaxInFlight = 1;
+
         private readonly Esp32BootloaderClient _client;
         private readonly Esp32ChipConfig _config;
 
@@ -738,7 +744,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             Esp32CommandPacket.WriteUInt32LE(cmdData, 0, address);
             Esp32CommandPacket.WriteUInt32LE(cmdData, 4, (uint)length);
             Esp32CommandPacket.WriteUInt32LE(cmdData, 8, (uint)ReadBlockSize);
-            Esp32CommandPacket.WriteUInt32LE(cmdData, 12, 1); // max_in_flight = 1
+            Esp32CommandPacket.WriteUInt32LE(cmdData, 12, FlashReadMaxInFlight);
 
             var response = _client.SendCommand(
                 Esp32Command.ReadFlash,
@@ -747,20 +753,43 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             response.ThrowIfError();
 
-            // Read the data blocks from the serial port
+            // Read data blocks from the serial port.
+            // Protocol (matching esptool's read_flash):
+            //   1. Stub sends SLIP-framed data blocks (up to max_in_flight ahead)
+            //   2. After each block, client sends a 4-byte SLIP ACK with total bytes received
+            //   3. Stub uses ACK for flow control (won't exceed max_in_flight unacked blocks)
+            //   4. After all data, stub sends a 16-byte MD5 digest frame
             byte[] result = new byte[length];
             int bytesRead = 0;
+            int totalReceived = 0;
 
             while (bytesRead < length)
             {
-                int chunkSize = Math.Min(ReadBlockSize, length - bytesRead);
-
-                // The stub sends each block as a SLIP frame
                 byte[] block = SlipFraming.ReadFrame(_client.Port, FlashReadTimeoutMs);
 
-                int copyLen = Math.Min(block.Length, chunkSize);
+                // Track raw bytes received for ACK flow-control.
+                // This must match what the stub actually sent in the frame.
+                totalReceived += block.Length;
+
+                // Match esptool: if we still haven't received the full requested length,
+                // intermediate blocks must be full sector-size payloads.
+                if (totalReceived < length && block.Length < ReadBlockSize)
+                {
+                    throw new InvalidOperationException(
+                        $"Corrupt data: expected {ReadBlockSize} bytes but received {block.Length} bytes");
+                }
+
+                // Copy received data into the result buffer (cap at remaining length)
+                int copyLen = Math.Min(block.Length, length - bytesRead);
                 Buffer.BlockCopy(block, 0, result, bytesRead, copyLen);
                 bytesRead += copyLen;
+
+                // ACK: SLIP-encode the total bytes received so far
+                byte[] ack = new byte[4];
+                Esp32CommandPacket.WriteUInt32LE(ack, 0, (uint)totalReceived);
+                byte[] ackFrame = SlipFraming.Encode(ack);
+                _client.Port.Write(ackFrame, 0, ackFrame.Length);
+                _client.Port.BaseStream.Flush();
 
                 progress?.Invoke(bytesRead, length);
             }

@@ -136,7 +136,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
                 esp32Device.ChipType != "ESP32-C3" &&
+                esp32Device.ChipType != "ESP32-C5" &&
                 esp32Device.ChipType != "ESP32-C6" &&
+                esp32Device.ChipType != "ESP32-C61" &&
                 esp32Device.ChipType != "ESP32-H2" &&
                 esp32Device.ChipType != "ESP32-S2" &&
                 esp32Device.ChipType != "ESP32-S3" &&
@@ -243,82 +245,36 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (esp32Device.ChipName.Contains("revision v0.2"))
                     {
                         // this is the "default" one we're offering
-                        revisionSuffix = "";
-                    }
-                    else if (esp32Device.ChipName.Contains("revision v0.3") || esp32Device.ChipName.Contains("revision v0.4"))
-                    {
-                        // all the others (rev3 and rev4) will take rev3
-                        revisionSuffix = "_REV3";
+                        revisionSuffix = "_BETA";
                     }
                     else
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"Unsupported ESP32_C3 revision.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
+                    { 
+                        // all the others (rev3, rev4, rev1.1 and above) will take default
+                        revisionSuffix = "";
                     }
 
                     // compose target name
                     targetName = $"ESP32_C3{revisionSuffix}";
                 }
+                else if (esp32Device.ChipType == "ESP32-C5")
+                {
+                    
+                    // compose target name
+                    targetName = $"ESP32_C5_THREAD";
+                }
                 else if (esp32Device.ChipType == "ESP32-C6")
                 {
-                    // version schema for ESP32-C6
-
-                    string revisionSuffix;
-
                     // so far we are only offering a single ESP32_C6 build
-                    if (esp32Device.ChipName.Contains("revision v0.0") || esp32Device.ChipName.Contains("revision v0.1"))
-                    {
-                        revisionSuffix = "";
-                    }
-                    else
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"Unsupported ESP32_C6 revision.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
-                    }
-
-                    // compose target name
-                    targetName = $"ESP32_C6{revisionSuffix}";
+                    targetName = $"ESP32_C6_THREAD";
+                }
+                else if (esp32Device.ChipType == "ESP32-C61")
+                {
+                    targetName = $"ESP32_C61";
                 }
                 else if (esp32Device.ChipType == "ESP32-H2")
                 {
-                    // version schema for ESP32-H2
-
-                    string revisionSuffix;
-
                     // so far we are only offering a single ESP32_H2 build
-                    if (esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v0.2"))
-                    {
-                        revisionSuffix = "";
-                    }
-                    else
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"Unsupported ESP32_H2 revision.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
-                    }
-
-                    // compose target name
-                    targetName = $"ESP32_H2{revisionSuffix}";
+                    targetName = $"ESP32_H2_THREAD";
                 }
                 else if (esp32Device.ChipType == "ESP32-S2")
                 {
@@ -327,49 +283,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     //           n/a          |           0               | v0.0
                     //           ECO1         |           1               | v1.0
 
-                    // can't guess with certainty for this series, better request a target name to the user
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                    OutputWriter.WriteLine("");
-                    OutputWriter.WriteLine($"For ESP32-S2 series nanoff isn't able to make an educated guess on the best target to use.");
-                    OutputWriter.WriteLine($"Please provide a valid target name using this option '--target MY_ESP32_S2_TARGET' instead of '--platform esp32'.");
-                    OutputWriter.WriteLine("");
-
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                    return ExitCodes.E9000;
+                    targetName = $"ESP32_S2";
                 }
                 else if (esp32Device.ChipType == "ESP32-S3")
                 {
-                    // version schema for ESP32-S3
-                    //Previously Used Schemes | Previous Identification   | vM.X
-                    //          V000          |           n/a             | v0.0
-                    //          V001          |     0 (bug in logs)       | v0.1
-                    //          V002          |           n/a             | v0.2
+                    // Most new esp32_s3 use octal PSRAM, but some older use quad PSRAM. These are normally 2Mb in size.
+                    string revisionSuffix = "_OCTAL";
 
-                    string revisionSuffix;
-
-                    // so far we are only offering a single ESP32_S3 build
-                    if (esp32Device.ChipName.Contains("revision v0.0") || esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v0.2"))
+                    // Default to QUAD if a 2Mb PSRAM detected
+                    if (esp32Device.PSRamAvailable == PSRamAvailability.Yes && esp32Device.PsRamSize == 2)
                     {
-                        revisionSuffix = "";
-                    }
-                    else
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Red;
-
-                        OutputWriter.WriteLine("");
-                        OutputWriter.WriteLine($"Unsupported ESP32_S3 revision.");
-                        OutputWriter.WriteLine("");
-
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                        return ExitCodes.E9000;
+                        revisionSuffix = "_QUAD";
                     }
 
-                    // compose target name
+                    // compose target name before printing the message
                     targetName = $"ESP32_S3{revisionSuffix}";
+
+                    string psRamAlternative = revisionSuffix == "_OCTAL" ? "ESP32_S3_QUAD" : "ESP32_S3_OCTAL";
+                    OutputWriter.WriteLine($"For ESP32-S3 series nanoff isn't always able to guess the type of PSRAM your board is using.");
+                    OutputWriter.WriteLine($"If PSRAM is not detected after flashing, rerun nanoff with this option '--target {psRamAlternative}' instead of '--platform esp32'.");
+                    OutputWriter.WriteLine("");
                 }
                 else if (esp32Device.ChipType == "ESP32-P4")
                 {
@@ -378,8 +311,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     string revisionSuffix;
 
                     // so far we are only offering a single ESP32_P4 build
-                    if (esp32Device.ChipName.Contains("revision v0.1") || esp32Device.ChipName.Contains("revision v1.0"))
+                    if (esp32Device.ChipName.Contains("revision v0.") || esp32Device.ChipName.Contains("revision v1.") || esp32Device.ChipName.Contains("revision v2."))
                     {
+                        revisionSuffix = "_REV_LESS3";
+                    }
+                    else if(esp32Device.ChipName.Contains("revision v3."))
+                    {
+                        // Latest revisions don't include the revision in the target name
                         revisionSuffix = "";
                     }
                     else
@@ -541,7 +479,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 int configPartitionAddress = 0;
                 int configPartitionSize = 0;
-                string configPartitionBackup = Path.GetRandomFileName();
+                string configPartitionBackup = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
                 // if mass erase wasn't requested or skip backup config partitition
                 if (!massErase && !noBackupConfig)
@@ -699,8 +637,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
                 esp32Device.ChipType != "ESP32-C3" &&
+                esp32Device.ChipType != "ESP32-C5" &&
                 esp32Device.ChipType != "ESP32-C6" &&
+                esp32Device.ChipType != "ESP32-C61" &&
                 esp32Device.ChipType != "ESP32-H2" &&
+                esp32Device.ChipType != "ESP32-P4" &&
                 esp32Device.ChipType != "ESP32-S2" &&
                 esp32Device.ChipType != "ESP32-S3")
             {

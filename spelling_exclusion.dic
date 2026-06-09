@@ -12,3 +12,8 @@ esptool
 Uniflash
 Silabs
 Orgpal
+BOOTSEL
+PICOBOOT
+JEDEC
+OTP
+UF2

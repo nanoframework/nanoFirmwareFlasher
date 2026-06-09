@@ -31,7 +31,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// NXP.
         /// </summary>
-        nxp
+        nxp,
+
+        /// <summary>
+        /// Raspberry Pi Pico (RP2040/RP2350).
+        /// </summary>
+        rpi_pico
     }
 
     /// <summary>

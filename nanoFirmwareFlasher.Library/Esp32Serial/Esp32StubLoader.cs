@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -29,22 +29,22 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// Returns false if no stub is available for the chip (ROM mode continues).
         /// </summary>
         /// <param name="client">Connected bootloader client (must be synced).</param>
-        /// <param name="chipType">Chip type string (e.g. "esp32", "esp32s3").</param>
+        /// <param name="config">Chip configuration object with Chip type string (e.g. "esp32", "esp32s3").</param>
         /// <param name="verbosity">Verbosity level for output.</param>
         /// <returns>True if stub is now running; false if ROM-only mode.</returns>
         internal static bool UploadStub(
             Esp32BootloaderClient client,
-            string chipType,
+            Esp32ChipConfig config,
             VerbosityLevel verbosity = VerbosityLevel.Quiet)
         {
             // Try to load the stub image for this chip
-            var stub = Esp32StubImage.TryLoad(chipType);
+            var stub = Esp32StubImage.TryLoad(config);
 
             if (stub == null)
             {
                 if (verbosity >= VerbosityLevel.Detailed)
                 {
-                    OutputWriter.WriteLine($"No stub loader available for {chipType}, using ROM bootloader.");
+                    OutputWriter.WriteLine($"No stub loader available for {config.ChipType}, using ROM bootloader.");
                 }
 
                 return false;
@@ -52,7 +52,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             if (verbosity >= VerbosityLevel.Detailed)
             {
-                OutputWriter.WriteLine($"Uploading stub loader for {chipType}...");
+                OutputWriter.WriteLine($"Uploading stub loader for {config.ChipType}...");
             }
 
             // Upload text segment

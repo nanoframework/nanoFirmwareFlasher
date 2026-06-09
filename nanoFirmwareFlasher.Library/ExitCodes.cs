@@ -84,6 +84,52 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Error executing file deployment on nano device.")]
         E2003 = 2003,
 
+        //////////////////////////////
+        // Raspberry Pi Pico Errors //
+        //////////////////////////////
+
+        /// <summary>
+        /// Generic Pico flashing error.
+        /// </summary>
+        [Display(Name = "Error flashing Raspberry Pi Pico device.")]
+        E3000 = 3000,
+
+        /// <summary>
+        /// UF2 drive not found (device not in BOOTSEL mode).
+        /// </summary>
+        [Display(Name = "Pico UF2 drive not found. Make sure the device is connected in BOOTSEL mode (hold BOOTSEL button while connecting USB).")]
+        E3001 = 3001,
+
+        /// <summary>
+        /// Failed to copy UF2 file to device.
+        /// </summary>
+        [Display(Name = "Failed to copy firmware file to Pico UF2 drive.")]
+        E3002 = 3002,
+
+        /// <summary>
+        /// Invalid or corrupt UF2 file.
+        /// </summary>
+        [Display(Name = "Invalid or corrupt UF2 file.")]
+        E3003 = 3003,
+
+        /// <summary>
+        /// Device not recognized as RP2040/RP2350.
+        /// </summary>
+        [Display(Name = "Connected device not recognized as RP2040 or RP2350.")]
+        E3004 = 3004,
+
+        /// <summary>
+        /// Timeout waiting for UF2 drive to appear.
+        /// </summary>
+        [Display(Name = "Timeout waiting for Pico UF2 drive to appear. Make sure the device is in BOOTSEL mode.")]
+        E3005 = 3005,
+
+        /// <summary>
+        /// Multiple Pico devices in BOOTSEL mode — cannot determine deploy target.
+        /// </summary>
+        [Display(Name = "Multiple Pico devices found in BOOTSEL mode. Disconnect extra devices so only the target remains.")]
+        E3006 = 3006,
+
         ////////////////////////
         // ESP32 tools Errors //
         ////////////////////////
