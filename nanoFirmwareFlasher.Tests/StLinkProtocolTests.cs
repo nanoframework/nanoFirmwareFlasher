@@ -319,6 +319,31 @@ namespace nanoFirmwareFlasher.Tests
 
         #endregion
 
+        #region Bulk OUT endpoint selection by ST-LINK variant
+
+        [TestMethod]
+        public void GetWriteEndpointForPid_StandaloneV2_UsesEndpoint02()
+        {
+            // The standalone ST-LINK/V2 dongle (PID 0x3748) uses bulk OUT endpoint 0x02.
+            Assert.AreEqual((byte)0x02, LibUsbDotNetStLinkUsb.GetWriteEndpointForPid(0x3748));
+        }
+
+        [DataRow(0x374B)] // ST-LINK/V2-1 (embedded on Nucleo/Discovery, e.g. STM32F769I-DISCO)
+        [DataRow(0x3752)] // ST-LINK/V2-1 without mass storage
+        [DataRow(0x374D)] // ST-LINK/V3 bootloader
+        [DataRow(0x374E)] // ST-LINK/V3E
+        [DataRow(0x374F)] // ST-LINK/V3S
+        [DataRow(0x3753)] // ST-LINK/V3 (2 VCP)
+        [DataTestMethod]
+        public void GetWriteEndpointForPid_EmbeddedV2_1AndV3_UseEndpoint01(int pid)
+        {
+            // Embedded ST-LINK/V2-1 and all ST-LINK/V3 variants use bulk OUT endpoint 0x01.
+            // Regression test for boards with embedded ST-LINK failing to connect (E5002).
+            Assert.AreEqual((byte)0x01, LibUsbDotNetStLinkUsb.GetWriteEndpointForPid(pid));
+        }
+
+        #endregion
+
         #region Dispose safety
 
         [TestMethod]

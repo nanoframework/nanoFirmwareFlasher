@@ -715,11 +715,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const int StLinkVid = 0x0483;
         private static readonly int[] KnownPids = { 0x3748, 0x374B, 0x374D, 0x374E, 0x374F, 0x3752, 0x3753 };
 
+        // PID of the standalone ST-LINK/V2 dongle. This is the only variant that
+        // uses bulk OUT endpoint 0x02; the embedded ST-LINK/V2-1 (Nucleo/Discovery)
+        // and all ST-LINK/V3 variants use bulk OUT endpoint 0x01.
+        private const int StLinkV2Pid = 0x3748;
+
         private const int BulkTransferTimeout = 5000;
 
         private LibUsbDotNet.UsbDevice _device;
         private LibUsbDotNet.UsbEndpointWriter _writer;
         private LibUsbDotNet.UsbEndpointReader _reader;
+        private int _productId;
         private bool _disposed;
 
         public string ProductName { get; private set; }
@@ -732,6 +738,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 var finder = new LibUsbDotNet.Main.UsbDeviceFinder(StLinkVid, KnownPids[i]);
                 _device = LibUsbDotNet.UsbDevice.OpenUsbDevice(finder);
+
+                if (_device != null)
+                {
+                    _productId = KnownPids[i];
+                }
             }
 
             if (_device == null)
@@ -787,9 +798,25 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 SerialNumber = string.Empty;
             }
 
-            // Open bulk endpoints: OUT=0x02, IN=0x81
-            _writer = _device.OpenEndpointWriter(LibUsbDotNet.Main.WriteEndpointID.Ep02);
+            // Open bulk endpoints. The IN endpoint is 0x81 for all ST-LINK variants.
+            // The OUT endpoint depends on the probe (see GetWriteEndpointForPid).
+            // Using the wrong endpoint makes every USB transfer fail on connect.
+            _writer = _device.OpenEndpointWriter(
+                (LibUsbDotNet.Main.WriteEndpointID)GetWriteEndpointForPid(_productId));
             _reader = _device.OpenEndpointReader(LibUsbDotNet.Main.ReadEndpointID.Ep01);
+        }
+
+        /// <summary>
+        /// Gets the bulk OUT endpoint address to use for a given ST-LINK product ID.
+        /// The standalone ST-LINK/V2 dongle (PID 0x3748) uses endpoint 0x02, while the
+        /// embedded ST-LINK/V2-1 (found on Nucleo/Discovery boards such as the
+        /// STM32F769I-DISCO) and all ST-LINK/V3 variants use endpoint 0x01.
+        /// </summary>
+        /// <param name="productId">USB product ID of the ST-LINK probe.</param>
+        /// <returns>The bulk OUT endpoint address (0x01 or 0x02).</returns>
+        internal static byte GetWriteEndpointForPid(int productId)
+        {
+            return productId == StLinkV2Pid ? (byte)0x02 : (byte)0x01;
         }
 
         public void WriteBulk(byte endpoint, byte[] data, int length)
