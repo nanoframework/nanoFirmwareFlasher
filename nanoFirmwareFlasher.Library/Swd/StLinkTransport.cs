@@ -33,6 +33,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         // Debug sub-commands
         private const byte StLinkDebugEnterSwd = 0x30;
+
+        // Wire-protocol selector that follows the APIv2 debug-enter command (0x30).
+        // 0xA3 selects SWD; 0x00 would select JTAG. Most STM32 boards (Nucleo,
+        // Discovery) wire the debug port for SWD only, so SWD must be requested
+        // explicitly.
+        private const byte StLinkDebugEnterSwdMode = 0xA3;
+
         private const byte StLinkDebugExit = 0x21;
         private const byte StLinkDebugReadIdCodes = 0x31;
         private const byte StLinkDebugReadMemory32 = 0x36;
@@ -126,14 +133,29 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         public bool Connect()
         {
-            // Enter SWD debug mode
-            byte[] cmd = new byte[CmdSize];
-            cmd[0] = StLinkDebugCommand;
-            cmd[1] = StLinkDebugEnterSwd;
+            byte[] cmd = BuildEnterSwdCommand();
 
             byte[] resp = SendCommand(cmd, 2);
 
             return resp != null && resp.Length >= 2 && resp[0] == StLinkDebugErrOk;
+        }
+
+        /// <summary>
+        /// Builds the ST-LINK "enter debug" command for the SWD wire protocol.
+        /// 0xF2 0x30 is the STLINK_DEBUG_APIv2_ENTER command; the third byte
+        /// selects the wire protocol. It MUST be 0xA3 (SWD) — without it the probe
+        /// defaults to JTAG entry, which fails on the many STM32 boards
+        /// (Nucleo/Discovery, e.g. STM32F769I-DISCO) whose debug port is wired for
+        /// SWD only.
+        /// </summary>
+        internal static byte[] BuildEnterSwdCommand()
+        {
+            byte[] cmd = new byte[CmdSize];
+            cmd[0] = StLinkDebugCommand;
+            cmd[1] = StLinkDebugEnterSwd;
+            cmd[2] = StLinkDebugEnterSwdMode;
+
+            return cmd;
         }
 
         public void Disconnect()

@@ -344,6 +344,30 @@ namespace nanoFirmwareFlasher.Tests
 
         #endregion
 
+        #region Enter-SWD debug command encoding
+
+        [TestMethod]
+        public void EnterSwdCommand_UsesApiV2EnterCommand()
+        {
+            byte[] cmd = StLinkTransport.BuildEnterSwdCommand();
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x30, cmd[1], "byte 1 must be STLINK_DEBUG_APIV2_ENTER");
+        }
+
+        [TestMethod]
+        public void EnterSwdCommand_SelectsSwdWireProtocol_NotJtag()
+        {
+            // The third byte selects the wire protocol. It MUST be 0xA3 (SWD).
+            // A value of 0x00 would select JTAG and break every SWD-only board
+            // (Nucleo/Discovery, e.g. STM32F769I-DISCO). Regression test.
+            byte[] cmd = StLinkTransport.BuildEnterSwdCommand();
+
+            Assert.AreEqual((byte)0xA3, cmd[2], "byte 2 must be STLINK_DEBUG_ENTER_SWD (0xA3)");
+        }
+
+        #endregion
+
         #region Dispose safety
 
         [TestMethod]
