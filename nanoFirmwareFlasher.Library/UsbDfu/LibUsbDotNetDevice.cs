@@ -58,9 +58,16 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
 
             if (!success)
             {
-                throw new DfuOperationFailedException(
-                    $"USB control transfer OUT failed (request=0x{request:X2}, value=0x{value:X4}). " +
-                    $"Error: {UsbDevice.LastErrorString}");
+                string errorString = UsbDevice.LastErrorString;
+                string message = $"USB control transfer OUT failed (request=0x{request:X2}, value=0x{value:X4}). " +
+                    $"Error: {errorString}";
+
+                if (IsControlTimeout(errorString))
+                {
+                    throw new DfuControlTimeoutException(message);
+                }
+
+                throw new DfuOperationFailedException(message);
             }
         }
 
@@ -72,12 +79,38 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
 
             if (!success)
             {
-                throw new DfuOperationFailedException(
-                    $"USB control transfer IN failed (request=0x{request:X2}, value=0x{value:X4}). " +
-                    $"Error: {UsbDevice.LastErrorString}");
+                string errorString = UsbDevice.LastErrorString;
+                string message = $"USB control transfer IN failed (request=0x{request:X2}, value=0x{value:X4}). " +
+                    $"Error: {errorString}";
+
+                if (IsControlTimeout(errorString))
+                {
+                    throw new DfuControlTimeoutException(message);
+                }
+
+                throw new DfuOperationFailedException(message);
             }
 
             return transferred;
+        }
+
+        /// <summary>
+        /// Determines whether a failed control transfer was aborted because it timed out.
+        /// LibUsbDotNet embeds the underlying Win32 error number in the error string as
+        /// "&lt;code&gt;:&lt;message&gt;". ERROR_SEM_TIMEOUT (121) and WAIT_TIMEOUT (258) are
+        /// raised by WinUSB when the device stops servicing the control pipe, which happens
+        /// while an STM32 bootloader runs a long synchronous flash erase.
+        /// </summary>
+        internal static bool IsControlTimeout(string errorString)
+        {
+            if (string.IsNullOrEmpty(errorString))
+            {
+                return false;
+            }
+
+            return errorString.Contains("121")
+                || errorString.Contains("258")
+                || errorString.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public int GetDeviceDescriptor(byte[] buffer)

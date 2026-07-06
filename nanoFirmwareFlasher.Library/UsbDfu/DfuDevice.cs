@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
@@ -161,18 +163,36 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
             cmd[4] = (byte)((pageAddress >> 24) & 0xFF);
 
             Download(0, cmd);
-            WaitForIdle("ErasePage");
+            WaitForEraseComplete("ErasePage");
         }
 
         /// <summary>
-        /// Performs a DfuSe mass erase of the entire flash.
+        /// Performs a full-chip erase, one flash sector at a time.
         /// </summary>
+        /// <remarks>
+        /// The single DfuSe mass-erase command (0x41 with no address) makes the STM32
+        /// bootloader run the whole multi-second erase synchronously inside the
+        /// DFU_GETSTATUS handler, during which it stops servicing the USB control pipe.
+        /// The USB stack then aborts the transfer (WinUSB ERROR_SEM_TIMEOUT) and, once
+        /// aborted, the control pipe cannot be reused. Erasing one sector at a time keeps
+        /// every operation well within the control-transfer timeout, which is how
+        /// STM32CubeProgrammer and dfu-util perform a full erase over DFU.
+        /// </remarks>
         internal void MassErase()
         {
-            byte[] cmd = new byte[] { DfuConst.DfuSeErase };
+            List<(uint address, uint size)> sectors = GetInternalFlashSectors();
 
-            Download(0, cmd);
-            WaitForIdle("MassErase");
+            if (sectors.Count == 0)
+            {
+                throw new DfuOperationFailedException(
+                    "Could not determine the STM32 internal flash sector layout from the DFU " +
+                    "descriptor, so the device cannot be erased.");
+            }
+
+            foreach ((uint address, uint size) sector in sectors)
+            {
+                ErasePage(sector.address);
+            }
         }
 
         /// <summary>
@@ -378,6 +398,194 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
         }
 
         /// <summary>
+        /// Reads and parses the STM32 internal flash sector map from the DfuSe memory
+        /// layout string exposed in the alternate-setting interface descriptor
+        /// (for example <c>@Internal Flash /0x08000000/04*016Kg,01*064Kg,03*128Kg</c>).
+        /// </summary>
+        /// <returns>The ordered list of (address, size) flash sectors, or an empty list
+        /// if the layout could not be determined.</returns>
+        internal List<(uint address, uint size)> GetInternalFlashSectors()
+        {
+            var sectors = new List<(uint address, uint size)>();
+
+            // Read the configuration descriptor header to obtain wTotalLength.
+            byte[] header = new byte[9];
+            int transferred = _usb.ControlTransferIn(
+                0x80,             // Device-to-host, Standard, Device
+                0x06,             // GET_DESCRIPTOR
+                0x02 << 8,        // Configuration descriptor, index 0
+                0,
+                header,
+                header.Length);
+
+            if (transferred < 9)
+            {
+                return sectors;
+            }
+
+            int totalLength = header[2] | (header[3] << 8);
+
+            if (totalLength <= 9)
+            {
+                return sectors;
+            }
+
+            byte[] config = new byte[totalLength];
+            transferred = _usb.ControlTransferIn(
+                0x80,
+                0x06,
+                0x02 << 8,
+                0,
+                config,
+                config.Length);
+
+            if (transferred < totalLength)
+            {
+                return sectors;
+            }
+
+            // Walk the descriptor list looking for interface descriptors and their
+            // iInterface strings, which carry the DfuSe memory layout.
+            int offset = 0;
+
+            while (offset + 2 <= config.Length)
+            {
+                int bLength = config[offset];
+
+                if (bLength < 2)
+                {
+                    break;
+                }
+
+                int bDescriptorType = config[offset + 1];
+
+                // Interface descriptor (0x04) is 9 bytes; iInterface is at offset 8.
+                if (bDescriptorType == 0x04 && offset + 9 <= config.Length)
+                {
+                    byte iInterface = config[offset + 8];
+
+                    if (iInterface != 0)
+                    {
+                        string layout = GetStringDescriptor(iInterface);
+
+                        if (!string.IsNullOrEmpty(layout)
+                            && layout.StartsWith("@Internal Flash", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ParseDfuSeLayout(layout, sectors);
+
+                            if (sectors.Count > 0)
+                            {
+                                return sectors;
+                            }
+                        }
+                    }
+                }
+
+                offset += bLength;
+            }
+
+            return sectors;
+        }
+
+        /// <summary>
+        /// Parses a DfuSe memory layout string into a list of flash sectors.
+        /// </summary>
+        /// <param name="layout">The layout string, e.g.
+        /// <c>@Internal Flash /0x08000000/04*016Kg,01*064Kg,03*128Kg</c>.</param>
+        /// <param name="sectors">The list to populate with (address, size) sectors.</param>
+        internal static void ParseDfuSeLayout(string layout, List<(uint address, uint size)> sectors)
+        {
+            // Format: "@Name /<addr>/<spec>[,<spec>...][/<addr>/<spec>...]"
+            // where each spec is "<count>*<size><unit><type>", e.g. "04*016Kg".
+            string[] parts = layout.Split('/');
+
+            for (int i = 1; i + 1 < parts.Length; i += 2)
+            {
+                string addrText = parts[i].Trim();
+                string specText = parts[i + 1].Trim();
+
+                if (!addrText.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                    || !uint.TryParse(
+                        addrText.Substring(2),
+                        NumberStyles.HexNumber,
+                        CultureInfo.InvariantCulture,
+                        out uint address))
+                {
+                    continue;
+                }
+
+                foreach (string rawSpec in specText.Split(','))
+                {
+                    string spec = rawSpec.Trim();
+                    int star = spec.IndexOf('*');
+
+                    if (star <= 0)
+                    {
+                        continue;
+                    }
+
+                    if (!int.TryParse(
+                            spec.Substring(0, star),
+                            NumberStyles.Integer,
+                            CultureInfo.InvariantCulture,
+                            out int count)
+                        || count <= 0)
+                    {
+                        continue;
+                    }
+
+                    string sizeText = spec.Substring(star + 1);
+                    int digits = 0;
+
+                    while (digits < sizeText.Length && char.IsDigit(sizeText[digits]))
+                    {
+                        digits++;
+                    }
+
+                    if (digits == 0
+                        || !int.TryParse(
+                            sizeText.Substring(0, digits),
+                            NumberStyles.Integer,
+                            CultureInfo.InvariantCulture,
+                            out int sizeValue)
+                        || sizeValue <= 0)
+                    {
+                        continue;
+                    }
+
+                    uint multiplier = 1;
+
+                    if (digits < sizeText.Length)
+                    {
+                        char unit = char.ToUpperInvariant(sizeText[digits]);
+
+                        if (unit == 'K')
+                        {
+                            multiplier = 1024;
+                        }
+                        else if (unit == 'M')
+                        {
+                            multiplier = 1024 * 1024;
+                        }
+                    }
+
+                    uint sectorSize = (uint)sizeValue * multiplier;
+
+                    if (sectorSize == 0)
+                    {
+                        continue;
+                    }
+
+                    for (int c = 0; c < count; c++)
+                    {
+                        sectors.Add((address, sectorSize));
+                        address += sectorSize;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Waits for the device to return to dfuIDLE or dfuDN-LOAD-IDLE state after a command.
         /// </summary>
         private void WaitForIdle(string context)
@@ -406,6 +614,67 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
 
             throw new DfuOperationFailedException(
                 $"Timeout waiting for DFU idle state during {context}.");
+        }
+
+        /// <summary>
+        /// Waits for a flash erase (mass or page) to complete.
+        /// STM32 bootloaders run the erase synchronously inside the DFU_GETSTATUS
+        /// handler and stop servicing the USB control pipe while the flash is busy,
+        /// so the control transfer for GET_STATUS can be aborted by the USB stack
+        /// (WinUSB ERROR_SEM_TIMEOUT). Such timeouts are transient: we simply keep
+        /// polling GET_STATUS until the device answers with an idle state or the
+        /// overall erase budget elapses.
+        /// </summary>
+        /// <param name="context">Description of the operation, used in error messages.</param>
+        private void WaitForEraseComplete(string context)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            while (true)
+            {
+                DfuStatusResult status;
+
+                try
+                {
+                    status = GetStatus();
+                }
+                catch (DfuControlTimeoutException)
+                {
+                    // Device is still erasing and not servicing the control pipe yet.
+                    if (stopwatch.ElapsedMilliseconds >= DfuConst.EraseTimeout)
+                    {
+                        throw new DfuOperationFailedException(
+                            $"Timeout waiting for {context} to complete after {DfuConst.EraseTimeout} ms.");
+                    }
+
+                    // Brief pause so we don't busy-spin if the transport returns immediately.
+                    Thread.Sleep(DfuConst.StatusPollInterval);
+                    continue;
+                }
+
+                if (status.Status != DfuStatus.Ok)
+                {
+                    ClearStatus();
+                    throw new DfuOperationFailedException(
+                        $"DFU error during {context}: status={status.Status}, state={status.State}");
+                }
+
+                if (status.State == DfuState.DfuIdle ||
+                    status.State == DfuState.DfuDnloadIdle)
+                {
+                    return;
+                }
+
+                if (stopwatch.ElapsedMilliseconds >= DfuConst.EraseTimeout)
+                {
+                    throw new DfuOperationFailedException(
+                        $"Timeout waiting for {context} to complete after {DfuConst.EraseTimeout} ms.");
+                }
+
+                // Device is busy (dfuDNBUSY). Wait the advised poll timeout before retrying.
+                int pollMs = Math.Max(status.PollTimeout, DfuConst.StatusPollInterval);
+                Thread.Sleep(pollMs);
+            }
         }
 
         /// <summary>

@@ -66,6 +66,116 @@ namespace nanoFirmwareFlasher.Tests
 
         #endregion
 
+        #region Control transfer timeout detection
+
+        [TestMethod]
+        public void IsControlTimeout_WinUsbSemaphoreTimeout_IsDetected()
+        {
+            // Exact error string reported by WinUSB on a blocking STM32 mass erase
+            // (localized message, but the Win32 code 121 is not localized).
+            string error = "Win32Error:ControlTransfer\n121:Le délai de temporisation de sémaphore a expiré.";
+
+            Assert.IsTrue(LibUsbDotNetDevice.IsControlTimeout(error));
+        }
+
+        [DataRow("Win32Error:ControlTransfer\n258:The wait operation timed out.")]
+        [DataRow("libusb error: LIBUSB_ERROR_TIMEOUT (operation timeout)")]
+        [DataTestMethod]
+        public void IsControlTimeout_TimeoutVariants_AreDetected(string error)
+        {
+            Assert.IsTrue(LibUsbDotNetDevice.IsControlTimeout(error));
+        }
+
+        [DataRow("")]
+        [DataRow(null)]
+        [DataRow("Win32Error:ControlTransfer\n5:Access is denied.")]
+        [DataRow("Pipe error: endpoint stalled")]
+        [DataTestMethod]
+        public void IsControlTimeout_NonTimeoutErrors_AreNotDetected(string error)
+        {
+            Assert.IsFalse(LibUsbDotNetDevice.IsControlTimeout(error));
+        }
+
+        [TestMethod]
+        public void DfuControlTimeoutException_IsRetryableDfuOperationFailure()
+        {
+            // Must derive from DfuOperationFailedException so existing catch blocks
+            // still handle it as a fallback when it is not retried.
+            Assert.IsTrue(
+                typeof(DfuOperationFailedException).IsAssignableFrom(typeof(DfuControlTimeoutException)));
+        }
+
+        #endregion
+
+        #region DfuSe memory layout parsing
+
+        [TestMethod]
+        public void ParseDfuSeLayout_Stm32F411_ProducesExpectedSectors()
+        {
+            // Real layout string reported by the STM32F411 DFU bootloader.
+            string layout = "@Internal Flash /0x08000000/04*016Kg,01*064Kg,03*128Kg";
+
+            var sectors = new List<(uint address, uint size)>();
+            DfuDevice.ParseDfuSeLayout(layout, sectors);
+
+            // 4 + 1 + 3 = 8 sectors, total 512 KB.
+            Assert.AreEqual(8, sectors.Count);
+
+            Assert.AreEqual(0x08000000u, sectors[0].address);
+            Assert.AreEqual(16u * 1024, sectors[0].size);
+
+            // Sectors are contiguous and correctly sized.
+            Assert.AreEqual(0x08004000u, sectors[1].address);
+            Assert.AreEqual(0x08010000u, sectors[4].address);
+            Assert.AreEqual(64u * 1024, sectors[4].size);
+            Assert.AreEqual(0x08020000u, sectors[5].address);
+            Assert.AreEqual(128u * 1024, sectors[5].size);
+
+            uint totalSize = 0;
+            foreach ((uint address, uint size) in sectors)
+            {
+                totalSize += size;
+            }
+            Assert.AreEqual(512u * 1024, totalSize);
+        }
+
+        [TestMethod]
+        public void ParseDfuSeLayout_Stm32F769_DualBank_ProducesContiguousSectors()
+        {
+            // STM32F769 (2 MB) internal flash layout.
+            string layout = "@Internal Flash /0x08000000/04*032Kg,01*128Kg,07*256Kg";
+
+            var sectors = new List<(uint address, uint size)>();
+            DfuDevice.ParseDfuSeLayout(layout, sectors);
+
+            Assert.AreEqual(12, sectors.Count);
+            Assert.AreEqual(0x08000000u, sectors[0].address);
+
+            uint expectedAddress = 0x08000000u;
+            foreach ((uint address, uint size) in sectors)
+            {
+                Assert.AreEqual(expectedAddress, address);
+                expectedAddress += size;
+            }
+
+            // 4*32K + 128K + 7*256K = 2 MB.
+            Assert.AreEqual(0x08000000u + (2u * 1024 * 1024), expectedAddress);
+        }
+
+        [DataRow("garbage without slashes")]
+        [DataRow("@Internal Flash /notanaddress/04*016Kg")]
+        [DataRow("")]
+        [DataTestMethod]
+        public void ParseDfuSeLayout_InvalidInput_ProducesNoSectors(string layout)
+        {
+            var sectors = new List<(uint address, uint size)>();
+            DfuDevice.ParseDfuSeLayout(layout, sectors);
+
+            Assert.AreEqual(0, sectors.Count);
+        }
+
+        #endregion
+
         #region DfuState enum tests
 
         [TestMethod]
