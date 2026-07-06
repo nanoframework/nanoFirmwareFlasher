@@ -75,11 +75,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.OK;
             }
-            if (_options.InstallDfuDrivers)
-            {
-                return Stm32Operations.InstallDfuDrivers(_verbosityLevel);
-            }
-
             if (_options.InstallJtagDrivers)
             {
                 return Stm32Operations.InstallJtagDrivers(_verbosityLevel);

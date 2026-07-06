@@ -68,7 +68,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 throw new CantConnectToDfuDeviceException(
                     "No STM32 DFU devices found. Make sure the device is in DFU mode. " +
-                    "On Windows, install the WinUSB driver by running: nanoff --installdfudrivers (or use Zadig: https://zadig.akeo.ie). " +
+                    "On Windows, install the WinUSB driver using Zadig (https://zadig.akeo.ie). " +
                     "On Linux, install libusb: sudo apt install libusb-1.0-0, then add a udev rule: " +
                     "echo 'SUBSYSTEM==\"usb\", ATTR{idVendor}==\"0483\", ATTR{idProduct}==\"df11\", MODE=\"0666\"' | sudo tee /etc/udev/rules.d/70-st-dfu.rules && sudo udevadm control --reload-rules. " +
                     "On macOS, install libusb: brew install libusb.");

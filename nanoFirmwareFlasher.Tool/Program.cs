@@ -548,8 +548,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.Platform = SupportedPlatform.ti_simplelink;
                 }
                 else if (
-                    o.InstallDfuDrivers
-                    || o.InstallJtagDrivers)
+                    o.InstallJtagDrivers)
                 {
                     o.Platform = SupportedPlatform.stm32;
                 }

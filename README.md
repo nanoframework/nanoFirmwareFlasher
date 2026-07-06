@@ -244,14 +244,6 @@ To install the drivers for STM32 JTAG connected targets.
 nanoff --installjtagdrivers
 ```
 
-### Install STM32 DFU drivers
-
-To install the drivers for STM32 DFU connected targets.
-
-```console
-nanoff --installdfudrivers
-```
-
 ## TI CC13x2 usage examples
 
 ### Update the firmware of a specific TI CC13x2 target
