@@ -82,7 +82,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (_options.ListDevicesInDfuMode)
             {
-                var connecteDevices = StmDfuDevice.ListDevices();
+                var connecteDevices = StmNativeDfuDevice.ListDevices();
 
                 OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
@@ -140,7 +140,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (_options.ListJtagDevices)
             {
-                var connecteDevices = StmJtagDevice.ListDevices();
+                var connecteDevices = StmStLinkDevice.ListDevices();
 
                 OutputWriter.ForegroundColor = ConsoleColor.Cyan;
 
