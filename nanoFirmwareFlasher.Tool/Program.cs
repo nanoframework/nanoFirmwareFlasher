@@ -523,6 +523,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // JTAG related
                 if (
                     o.ListJtagDevices ||
+                    o.ListNativeStLinkDevices ||
+                    o.ListNativeSwdDevices ||
                     !string.IsNullOrEmpty(o.JtagDeviceId) ||
                     o.HexFile.Any() ||
                     o.BinFile.Any())
@@ -532,6 +534,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // DFU related
                 else if (
                     o.ListDevicesInDfuMode ||
+                    o.ListNativeDfuDevices ||
                     o.DfuUpdate ||
                     !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
