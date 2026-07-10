@@ -15,6 +15,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly Options _options;
         private readonly VerbosityLevel _verbosityLevel;
 
+        // ST vendor id and the ST-LINK / DFU product ids used to detect a probe that is
+        // physically connected but missing a WinUSB-compatible driver.
+        private const ushort StVendorId = 0x0483;
+        private const ushort StDfuProductId = 0xDF11;
+        private static readonly ushort[] s_stLinkProductIds = { 0x3748, 0x374B, 0x374D, 0x374E, 0x374F, 0x3752, 0x3753 };
+
         public Stm32Manager(Options options, VerbosityLevel verbosityLevel)
         {
             if (options == null)
@@ -61,6 +67,44 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// When a native ST-LINK enumeration comes up empty but an ST-LINK probe is physically
+        /// connected, prints guidance on installing a WinUSB-compatible driver.
+        /// </summary>
+        private static void ShowStLinkDriverHintIfPresent()
+        {
+            if (!WindowsUsbScanner.IsUsbDevicePresent(StVendorId, s_stLinkProductIds))
+            {
+                return;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+            OutputWriter.WriteLine();
+            OutputWriter.WriteLine("An ST-LINK probe is connected but has no driver the native transport can use.");
+            OutputWriter.WriteLine("Install a WinUSB driver for the 'ST-Link Debug' interface (interface 0):");
+            OutputWriter.WriteLine("  - Recommended: the ST-LINK USB driver from ST: https://www.st.com/en/development-tools/stsw-link009.html");
+            OutputWriter.WriteLine("  - Or Zadig (https://zadig.akeo.ie) -> select 'ST-Link Debug' -> WinUSB -> Install Driver");
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+        }
+
+        /// <summary>
+        /// When a native DFU enumeration comes up empty but an STM32 DFU device is physically
+        /// connected, prints guidance on installing a WinUSB-compatible driver.
+        /// </summary>
+        private static void ShowDfuDriverHintIfPresent()
+        {
+            if (!WindowsUsbScanner.IsUsbDevicePresent(StVendorId, new ushort[] { StDfuProductId }))
+            {
+                return;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+            OutputWriter.WriteLine();
+            OutputWriter.WriteLine("An STM32 device in DFU mode is connected but has no driver the native transport can use.");
+            OutputWriter.WriteLine("Install a WinUSB driver for it: Zadig (https://zadig.akeo.ie) -> select the STM32 BOOTLOADER device -> WinUSB -> Install Driver.");
+            OutputWriter.ForegroundColor = ConsoleColor.White;
         }
 
         /// <inheritdoc />
@@ -119,6 +163,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Yellow;
                     OutputWriter.WriteLine("No DFU devices found via native USB enumeration");
+                    ShowDfuDriverHintIfPresent();
                 }
                 else
                 {
@@ -147,6 +192,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (connecteDevices.Count == 0)
                 {
                     OutputWriter.WriteLine("No JTAG devices found");
+                    ShowStLinkDriverHintIfPresent();
                 }
                 else
                 {
@@ -205,6 +251,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Yellow;
                     OutputWriter.WriteLine("No ST-LINK probes found via native USB enumeration");
+                    ShowStLinkDriverHintIfPresent();
                 }
                 else
                 {
