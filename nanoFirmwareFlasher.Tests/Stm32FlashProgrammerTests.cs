@@ -85,7 +85,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsTrue(values.Length >= 16, $"Expected at least 16 family values, got {values.Length}");
 
             // Verify core families exist
-            string[] expected = { "Unknown", "F0", "F1", "F4", "F7", "H7", "L0", "L4", "L5",
+            string[] expected = { "Unknown", "F0", "F1", "F3", "F4", "F7", "H7", "L0", "L4", "L5",
                                   "G0", "G4", "WB", "WL", "U5", "C0", "H5" };
 
             foreach (string name in expected)
@@ -124,6 +124,22 @@ namespace nanoFirmwareFlasher.Tests
         [DataRow((ushort)0x420, "F1")]
         [DataRow((ushort)0x428, "F1")]
         public void ClassifyDevice_F1_Family(ushort devId, string expectedFamily)
+        {
+            var result = ClassifyDevice(devId);
+            Assert.AreEqual(expectedFamily, result.ToString());
+        }
+
+        #endregion
+
+        #region ClassifyDevice — F3 family
+
+        [TestMethod]
+        [DataRow((ushort)0x422, "F3")]
+        [DataRow((ushort)0x432, "F3")]
+        [DataRow((ushort)0x438, "F3")]
+        [DataRow((ushort)0x439, "F3")]
+        [DataRow((ushort)0x446, "F3")]
+        public void ClassifyDevice_F3_Family(ushort devId, string expectedFamily)
         {
             var result = ClassifyDevice(devId);
             Assert.AreEqual(expectedFamily, result.ToString());
@@ -339,6 +355,8 @@ namespace nanoFirmwareFlasher.Tests
                 0x440, 0x442, 0x444, 0x445, 0x448,
                 // F1
                 0x410, 0x412, 0x414, 0x418, 0x420, 0x428,
+                // F3
+                0x422, 0x432, 0x438, 0x439, 0x446,
                 // F4
                 0x411, 0x413, 0x419, 0x421, 0x423, 0x431, 0x433, 0x434, 0x441, 0x458, 0x463,
                 // F7
@@ -396,9 +414,9 @@ namespace nanoFirmwareFlasher.Tests
                 }
             }
 
-            // 5 F0 + 6 F1 + 11 F4 + 3 F7 + 3 H7 + 4 L0 + 7 L4 + 4 G0 + 3 G4
-            // + 2 WB + 1 WL + 1 L5 + 4 U5 + 2 C0 + 3 H5 = 59
-            Assert.AreEqual(59, count, $"Expected 59 known device IDs, found {count}");
+            // 5 F0 + 6 F1 + 5 F3 + 11 F4 + 3 F7 + 3 H7 + 4 L0 + 7 L4 + 4 G0 + 3 G4
+            // + 2 WB + 1 WL + 1 L5 + 4 U5 + 2 C0 + 3 H5 = 64
+            Assert.AreEqual(64, count, $"Expected 64 known device IDs, found {count}");
         }
 
         #endregion
@@ -408,6 +426,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         [DataRow("F0", 1024U)]
         [DataRow("F1", 1024U)]
+        [DataRow("F3", 2048U)]
         [DataRow("L0", 128U)]
         public void GetFlashRegisters_F0F1L0Group_CorrectValues(string familyName, uint expectedPageSize)
         {

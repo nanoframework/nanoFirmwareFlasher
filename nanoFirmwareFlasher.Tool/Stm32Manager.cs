@@ -224,27 +224,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.OK;
             }
 
-            var connectedStDfuDevices = new System.Collections.Generic.List<(string serial, string device)>();
-            var connectedStJtagDevices = new System.Collections.Generic.List<string>();
-
-            try
-            {
-                connectedStDfuDevices = StmDfuDevice.ListDevices();
-            }
-            catch
-            {
-                // CLI tool not available
-            }
-
-            try
-            {
-                connectedStJtagDevices = StmJtagDevice.ListDevices();
-            }
-            catch
-            {
-                // CLI tool not available
-            }
-
             bool updateAndDeploy = false;
 
             if (_options.NativeDfuUpdate &&
@@ -314,10 +293,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 #endregion
             }
             else if (!_options.NativeDfuUpdate && !_options.NativeSwdUpdate && !_options.NativeStLinkUpdate &&
-                (_options.BinFile.Any() || _options.HexFile.Any()) &&
-                connectedStDfuDevices.Count == 0 && connectedStJtagDevices.Count == 0)
+                (_options.BinFile.Any() || _options.HexFile.Any()))
             {
-                // No explicit interface and no CLI devices found — try native auto-detection
+                // No explicit native interface — try native auto-detection
                 try
                 {
                     var nativeStLinkProbes = StmStLinkDevice.ListDevices();
@@ -389,60 +367,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     // Native DFU enumeration not available
                 }
-            }
-            else if (connectedStDfuDevices.Count != 0 &&
-                (_options.BinFile.Any() ||
-                 _options.HexFile.Any()))
-            {
-
-                #region STM32 DFU options
-
-                var dfuDevice = new StmDfuDevice(_options.DfuDeviceId);
-
-                if (!dfuDevice.DevicePresent)
-                {
-                    // no JTAG device found
-
-                    // done here, this command has no further processing
-                    return ExitCodes.E5001;
-                }
-
-                if (_verbosityLevel >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.WriteLine($"Connected to JTAG device with ID {dfuDevice.DfuId}");
-                }
-
-                return FlashDeviceFiles(dfuDevice);
-
-                #endregion
-
-            }
-            else if (connectedStJtagDevices.Count != 0 &&
-                    (_options.BinFile.Any() ||
-                     _options.HexFile.Any()))
-            {
-                // this has to be a JTAG connected device
-
-                #region STM32 JTAG options
-
-                var jtagDevice = new StmJtagDevice(_options.JtagDeviceId);
-
-                if (!jtagDevice.DevicePresent)
-                {
-                    // no JTAG device found
-
-                    // done here, this command has no further processing
-                    return ExitCodes.E5001;
-                }
-
-                if (_verbosityLevel >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
-                }
-
-                return FlashDeviceFiles(jtagDevice);
-
-                #endregion
             }
             else if (!string.IsNullOrEmpty(_options.TargetName))
             {

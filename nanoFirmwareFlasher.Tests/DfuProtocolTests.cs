@@ -297,7 +297,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void StmNativeDfuDevice_ListDevices_ReturnsTuples()
         {
-            // ListDevices should return (serial, device) tuples matching StmDfuDevice.ListDevices() format
+            // ListDevices should return (serial, device) tuples
             List<(string serial, string device)> devices = StmNativeDfuDevice.ListDevices();
             Assert.IsNotNull(devices);
 

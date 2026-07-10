@@ -465,34 +465,6 @@ namespace nanoFirmwareFlasher.Tests
         #region Phase 7: CLI-Free Robustness
 
         [TestMethod]
-        public void StmDeviceBase_RunSTM32ProgrammerCLI_ThrowsOnMissingBinary()
-        {
-            // RunSTM32ProgrammerCLI should throw StLinkCliExecutionException when CLI binary is missing,
-            // not Win32Exception/FileNotFoundException
-            try
-            {
-                StmDeviceBase.RunSTM32ProgrammerCLI("--list");
-                // If CLI happens to exist, test is inconclusive
-            }
-            catch (StLinkCliExecutionException ex)
-            {
-                // Expected — should mention the tool name and suggest native alternatives
-                Assert.IsTrue(
-                    ex.Message.Contains("STM32_Programmer_CLI") || ex.Message.Contains("native"),
-                    $"Error message should reference the missing tool or native alternatives. Got: {ex.Message}");
-            }
-        }
-
-        [TestMethod]
-        public void StmDeviceBase_RunSTM32ProgrammerCLI_IsPublicStatic()
-        {
-            var method = typeof(StmDeviceBase).GetMethod("RunSTM32ProgrammerCLI");
-            Assert.IsNotNull(method, "RunSTM32ProgrammerCLI should exist");
-            Assert.IsTrue(method.IsStatic);
-            Assert.IsTrue(method.IsPublic);
-        }
-
-        [TestMethod]
         public void JLinkCli_RunJLinkCLI_IsInternalMethod()
         {
             // RunJLinkCLI should be internal (not public)
@@ -558,16 +530,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsTrue(
                 name.Contains("native") || name.Contains("uart"),
                 $"E9010 display should suggest native alternatives. Got: {name}");
-        }
-
-        [TestMethod]
-        public void StmDeviceBase_ExecuteListDevices_IsPublicStatic()
-        {
-            // ExecuteListDevices wraps RunSTM32ProgrammerCLI — verify it exists
-            var method = typeof(StmDeviceBase).GetMethod("ExecuteListDevices");
-            Assert.IsNotNull(method, "ExecuteListDevices should exist");
-            Assert.IsTrue(method.IsStatic);
-            Assert.IsTrue(method.IsPublic);
         }
 
         #endregion

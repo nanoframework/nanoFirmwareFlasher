@@ -12,8 +12,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// High-level STM32 device that communicates via the UART bootloader (AN3155).
-    /// Provides flash operations equivalent to <see cref="StmDfuDevice"/> and <see cref="StmJtagDevice"/>
-    /// but without requiring external tools.
+    /// Provides flash operations over the native serial bootloader, without requiring
+    /// external tools.
     /// </summary>
     public class Stm32UartDevice : IDisposable, IStmFlashableDevice
     {

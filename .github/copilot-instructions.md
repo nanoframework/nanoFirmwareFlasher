@@ -27,7 +27,7 @@ nanoFirmwareFlasher.sln
 │   ├── Options.cs                 # CommandLine options (CommandLineParser library)
 │   └── *Manager.cs                # Per-platform CLI managers (Esp32, Stm32, TI, Silabs)
 ├── nanoFirmwareFlasher.Tests/     # Unit tests (MSTest)
-├── lib/                           # Bundled third-party CLI tools (jlink, stlink, silink, uniflash, esp32 bootloaders)
+├── lib/                           # Bundled third-party CLI tools (jlink, silink, uniflash, esp32 bootloaders)
 └── Samples/                       # Sample apps demonstrating library usage
 ```
 
@@ -38,7 +38,7 @@ nanoFirmwareFlasher.sln
 | Platform        | Connection Method           | Key Classes                              |
 |-----------------|-----------------------------|------------------------------------------|
 | ESP32 / S2 / S3 | Serial (native C# protocol) | `EspTool`, `Esp32Operations`, `Esp32Firmware` |
-| STM32           | JTAG, DFU                   | `StmJtagDevice`, `StmDfuDevice`, `Stm32Operations`, `Stm32Firmware` |
+| STM32           | Native ST-LINK, CMSIS-DAP SWD, USB DFU, UART | `StmStLinkDevice`, `StmSwdDevice`, `StmNativeDfuDevice`, `Stm32UartDevice`, `Stm32Operations`, `Stm32Firmware` |
 | TI CC13x2/CC26x2| TI Uniflash CLI             | `CC13x26x2Operations`, `CC13x26x2Firmware` |
 | Silabs Giant Gecko | J-Link / silink CLI      | `JLinkOperations`, `JLinkFirmware`, `SilinkCli` |
 
@@ -153,7 +153,7 @@ Uses **Nerdbank.GitVersioning** (`version.json`). The version is automatically d
 
 ## Known Issues and Workarounds
 
-- **STM32 Cube Programmer** has a known bug where it fails when the tool installation path contains diacritic characters. Users must install `nanoff` to a plain ASCII path when targeting STM32 devices.
+- **STM32 native transports** require the target's USB device (ST-LINK probe or `STM32 BOOTLOADER` in DFU mode) to be bound to a WinUSB driver on Windows (e.g. via Zadig). No external STM32 CLI tool is used anymore.
 - **ESP32-S2**: It is not possible to safely auto-detect the best image; users must always specify `--target`.
 - **FeatherS2, TinyS2, some S3 modules**: Must be placed in download mode manually (hold BOOT, click RESET, release BOOT) before flashing.
 - When running `dotnet restore` in locked mode fails, it usually means a package was added/updated without regenerating the lock file. Run `dotnet restore --force-evaluate` to regenerate it.

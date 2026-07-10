@@ -31,6 +31,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             Unknown,
             F0,
             F1,
+            F3,
             F4,
             F7,
             H7,
@@ -604,6 +605,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 case 0x428: // STM32F100 High density Value Line
                     return Stm32Family.F1;
 
+                // F3 family (F1-style page flash, 2 KB pages)
+                case 0x422: // STM32F302xB/C, F303xB/C, F358
+                case 0x432: // STM32F373/378
+                case 0x438: // STM32F303x6/8, F328, F334
+                case 0x439: // STM32F301/302x6/8, F318
+                case 0x446: // STM32F302xD/E, F303xD/E, F398
+                    return Stm32Family.F3;
+
                 // F4 family
                 case 0x411: // STM32F2xx
                 case 0x413: // STM32F40x/41x
@@ -702,6 +711,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 case Stm32Family.F0:
                 case Stm32Family.F1:
+                case Stm32Family.F3:
                 case Stm32Family.L0:
                     return new FlashRegisters
                     {
@@ -717,7 +727,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                         BsyBit = 1U << 0,    // BSY
                         EopBit = 1U << 5,    // EOP
                         SectorShift = 0,
-                        PageSize = family == Stm32Family.L0 ? 128U : 1024U,
+                        PageSize = family == Stm32Family.L0 ? 128U
+                            : family == Stm32Family.F3 ? 2048U
+                            : 1024U,
                     };
 
                 case Stm32Family.F4:

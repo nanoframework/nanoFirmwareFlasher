@@ -14,8 +14,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// STM32 device using a native ST-LINK V2/V3 debug probe (USB bulk protocol).
-    /// Provides the same public API as <see cref="StmJtagDevice"/> but requires no
-    /// STM32_Programmer_CLI executable.
+    /// No external tools are required.
     /// Cross-platform: uses WinUSB on Windows, libusb-1.0 on Linux/macOS.
     /// </summary>
     public class StmStLinkDevice : IDisposable, IStmFlashableDevice

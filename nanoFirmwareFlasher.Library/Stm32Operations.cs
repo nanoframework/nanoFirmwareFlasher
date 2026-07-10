@@ -50,8 +50,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool verify = false)
         {
             bool isApplicationBinFile = false;
-            StmDfuDevice dfuDevice;
-            StmJtagDevice jtagDevice;
 
             // if a target name wasn't specified use the default (and only available) ESP32 target
             if (string.IsNullOrEmpty(targetName))
@@ -111,62 +109,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            List<(string serial, string device)> connectedStDfuDevices = new List<(string serial, string device)>();
-            List<string> connectedStJtagDevices = new List<string>();
-
-            // Only enumerate CLI-based devices when we might actually use them
-            bool needCliEnumeration = updateInterface == Interface.Dfu
-                                     || updateInterface == Interface.Jtag
-                                     || updateInterface == Interface.None;
-
-            if (needCliEnumeration)
+            if (updateInterface == Interface.NativeDfu
+                || updateInterface == Interface.NativeSwd
+                || updateInterface == Interface.NativeStLink)
             {
-                try
-                {
-                    connectedStDfuDevices = StmDfuDevice.ListDevices();
-                }
-                catch
-                {
-                    // CLI tool not available — that's OK, native paths may work
-                }
-
-                try
-                {
-                    connectedStJtagDevices = StmJtagDevice.ListDevices();
-                }
-                catch
-                {
-                    // CLI tool not available — that's OK, native paths may work
-                }
-            }
-
-            if (updateInterface == Interface.NativeDfu)
-            {
-                // Native USB DFU — cross-platform, no CLI needed
-            }
-            else if (updateInterface == Interface.NativeSwd)
-            {
-                // Native SWD via CMSIS-DAP — cross-platform, no CLI needed
-            }
-            else if (updateInterface == Interface.NativeStLink)
-            {
-                // Native SWD via ST-LINK V2/V3 — cross-platform, no CLI needed
+                // A native transport was requested explicitly — nothing to resolve.
             }
             else if (updateInterface == Interface.Jtag)
             {
-                // --jtag specified: try native ST-LINK first, then CMSIS-DAP, then CLI
+                // --jtag: use a native ST-LINK probe, falling back to native CMSIS-DAP SWD.
                 bool nativeFound = false;
 
                 try
                 {
-                    var nativeStLinkProbes = StmStLinkDevice.ListDevices();
-
-                    if (nativeStLinkProbes.Count > 0)
+                    if (StmStLinkDevice.ListDevices().Count > 0)
                     {
                         if (verbosity >= VerbosityLevel.Detailed)
                         {
                             OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                            OutputWriter.WriteLine("Found ST-LINK probe — using native ST-LINK transport (no CLI tools needed).");
+                            OutputWriter.WriteLine("Found ST-LINK probe — using native ST-LINK transport.");
                             OutputWriter.ForegroundColor = ConsoleColor.White;
                         }
 
@@ -183,14 +144,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     try
                     {
-                        var nativeSwdProbes = StmSwdDevice.ListDevices();
-
-                        if (nativeSwdProbes.Count > 0)
+                        if (StmSwdDevice.ListDevices().Count > 0)
                         {
                             if (verbosity >= VerbosityLevel.Detailed)
                             {
                                 OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                                OutputWriter.WriteLine("Found CMSIS-DAP probe — using native SWD transport (no CLI tools needed).");
+                                OutputWriter.WriteLine("Found CMSIS-DAP probe — using native SWD transport.");
                                 OutputWriter.ForegroundColor = ConsoleColor.White;
                             }
 
@@ -204,126 +163,107 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 }
 
-                if (!nativeFound && !connectedStJtagDevices.Any())
+                if (!nativeFound)
                 {
-                    // no JTAG device was found via any method
+                    // no JTAG/SWD probe was found
                     return ExitCodes.E5001;
                 }
-                // else: fall through with Interface.Jtag (CLI) or already set to native
             }
             else if (updateInterface == Interface.Dfu)
             {
-                // --dfu specified: try native DFU first, then CLI
+                // --dfu: use a native USB DFU device.
+                bool nativeFound = false;
+
                 try
                 {
-                    var nativeDfuDevices = StmNativeDfuDevice.ListDevices();
-
-                    if (nativeDfuDevices.Count > 0)
+                    if (StmNativeDfuDevice.ListDevices().Count > 0)
                     {
                         if (verbosity >= VerbosityLevel.Detailed)
                         {
                             OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                            OutputWriter.WriteLine("Found DFU device — using native USB DFU (no CLI tools needed).");
+                            OutputWriter.WriteLine("Found DFU device — using native USB DFU.");
                             OutputWriter.ForegroundColor = ConsoleColor.White;
                         }
 
                         updateInterface = Interface.NativeDfu;
+                        nativeFound = true;
                     }
-                    else if (!connectedStDfuDevices.Any())
-                    {
-                        // no DFU device was found via any method
-                        return ExitCodes.E1000;
-                    }
-                    // else: fall through with Interface.Dfu (CLI)
                 }
                 catch
                 {
-                    // Native enumeration failed — check CLI
-                    if (!connectedStDfuDevices.Any())
-                    {
-                        return ExitCodes.E1000;
-                    }
+                    // Native DFU enumeration not available
                 }
-            }
-            else if (updateInterface != Interface.None)
-            {
-                // unknown interface specified (shouldn't happen)
-            }
-            else
-            {
-                // Interface.None — auto-detect the best available interface
-                // Priority: CLI DFU → CLI JTAG (already enumerated) → Native ST-LINK → Native CMSIS-DAP → Native DFU
 
-                // If CLI enumeration already found devices, use them directly without probing native transports
-                if (dfuDeviceId != null || connectedStDfuDevices.Any())
+                if (!nativeFound)
                 {
-                    updateInterface = Interface.Dfu;
+                    // no DFU device was found
+                    return ExitCodes.E1000;
                 }
-                else if (jtagId != null || connectedStJtagDevices.Any())
+            }
+            else if (updateInterface == Interface.None)
+            {
+                // Auto-detect the best available native transport.
+                // An explicitly supplied device id implies the transport the user wants.
+                if (dfuDeviceId != null)
                 {
-                    updateInterface = Interface.Jtag;
+                    updateInterface = Interface.NativeDfu;
+                }
+                else if (jtagId != null)
+                {
+                    updateInterface = Interface.NativeStLink;
                 }
                 else
                 {
                     bool foundNative = false;
-                    var nativeStLinkProbes = new List<string>();
 
                     try
                     {
-                        nativeStLinkProbes = StmStLinkDevice.ListDevices();
+                        if (StmStLinkDevice.ListDevices().Count > 0)
+                        {
+                            if (verbosity >= VerbosityLevel.Detailed)
+                            {
+                                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                                OutputWriter.WriteLine("Auto-detected ST-LINK probe — using native transport.");
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
+                            }
+
+                            updateInterface = Interface.NativeStLink;
+                            foundNative = true;
+                        }
                     }
                     catch
                     {
                         // Native ST-LINK enumeration not available on this platform
                     }
 
-                    if (nativeStLinkProbes.Count > 0)
-                    {
-                        if (verbosity >= VerbosityLevel.Detailed)
-                        {
-                            OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                            OutputWriter.WriteLine("Auto-detected ST-LINK probe — using native transport.");
-                            OutputWriter.ForegroundColor = ConsoleColor.White;
-                        }
-
-                        updateInterface = Interface.NativeStLink;
-                        foundNative = true;
-                    }
-
                     if (!foundNative)
                     {
-                        var nativeSwdProbes = new List<string>();
-
                         try
                         {
-                            nativeSwdProbes = StmSwdDevice.ListDevices();
+                            if (StmSwdDevice.ListDevices().Count > 0)
+                            {
+                                if (verbosity >= VerbosityLevel.Detailed)
+                                {
+                                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                                    OutputWriter.WriteLine("Auto-detected CMSIS-DAP probe — using native SWD transport.");
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                                }
+
+                                updateInterface = Interface.NativeSwd;
+                                foundNative = true;
+                            }
                         }
                         catch
                         {
                             // Native SWD enumeration not available
                         }
-
-                        if (nativeSwdProbes.Count > 0)
-                        {
-                            if (verbosity >= VerbosityLevel.Detailed)
-                            {
-                                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                                OutputWriter.WriteLine("Auto-detected CMSIS-DAP probe — using native SWD transport.");
-                                OutputWriter.ForegroundColor = ConsoleColor.White;
-                            }
-
-                            updateInterface = Interface.NativeSwd;
-                            foundNative = true;
-                        }
                     }
 
                     if (!foundNative)
                     {
                         try
                         {
-                            var nativeDfuDevices = StmNativeDfuDevice.ListDevices();
-
-                            if (nativeDfuDevices.Count > 0)
+                            if (StmNativeDfuDevice.ListDevices().Count > 0)
                             {
                                 if (verbosity >= VerbosityLevel.Detailed)
                                 {
@@ -346,9 +286,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (updateInterface != Interface.NativeDfu
                 && updateInterface != Interface.NativeSwd
-                && updateInterface != Interface.NativeStLink
-                && !connectedStDfuDevices.Any()
-                && !connectedStJtagDevices.Any())
+                && updateInterface != Interface.NativeStLink)
             {
                 // no device was found
                 return ExitCodes.E9010;
@@ -572,221 +510,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     return ExitCodes.E5041;
                 }
             }
-            else if (updateInterface == Interface.Dfu)
-            {
-                // DFU update
 
-                try
-                {
-                    if (dfuDeviceId != null)
-                    {
-                        // verify the specified ID exists in the list
-                        if (!connectedStDfuDevices.Any(d => d.serial == dfuDeviceId))
-                        {
-                            return ExitCodes.E1005;
-                        }
-                    }
-                    else
-                    {
-                        // no ID specified — use the first available device
-                        dfuDeviceId = connectedStDfuDevices[0].serial;
-                    }
-
-                    dfuDevice = new StmDfuDevice(dfuDeviceId);
-
-                    if (!dfuDevice.DevicePresent)
-                    {
-                        // no DFU device found
-
-                        // done here, this command has no further processing
-                        return ExitCodes.E1000;
-                    }
-                }
-                catch (CantConnectToJtagDeviceException)
-                {
-                    return ExitCodes.E5002;
-                }
-                catch (Exception)
-                {
-                    return ExitCodes.E5000;
-                }
-
-                if (fitCheck)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-
-                    OutputWriter.WriteLine("");
-                    OutputWriter.WriteLine("It's not possible to perform image fit check for devices connected with DFU");
-                    OutputWriter.WriteLine("");
-
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                }
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-
-                    OutputWriter.WriteLine($"Connected to DFU device with ID {dfuDevice.DfuId}");
-                    OutputWriter.WriteLine("");
-                    OutputWriter.WriteLine($"{dfuDevice}");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                }
-
-                // set verbosity
-                dfuDevice.Verbosity = verbosity;
-
-                ExitCodes operationResult = ExitCodes.OK;
-
-                // set verbosity
-                dfuDevice.Verbosity = verbosity;
-
-                // write HEX files to flash
-                if (filesToFlash.Any(f => f.EndsWith(".hex")))
-                {
-                    operationResult = dfuDevice.FlashHexFiles(filesToFlash);
-                }
-
-                if (operationResult == ExitCodes.OK && isApplicationBinFile)
-                {
-                    // now program the application file
-                    operationResult = dfuDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
-                }
-
-                if (
-                    updateFw
-                    && operationResult == ExitCodes.OK)
-                {
-                    // start execution on MCU from with bootloader address
-                    dfuDevice.StartExecution($"{firmware.BooterStartAddress:X8}");
-                }
-
-                return operationResult;
-            }
-            else
-            {
-                // JTAG device
-
-                try
-                {
-                    if (jtagId != null)
-                    {
-                        // verify the specified ID exists in the list
-                        if (!connectedStJtagDevices.Contains(jtagId))
-                        {
-                            return ExitCodes.E5002;
-                        }
-                    }
-                    else
-                    {
-                        // no ID specified — use the first available device
-                        jtagId = connectedStJtagDevices[0];
-                    }
-
-                    jtagDevice = new StmJtagDevice(jtagId);
-
-                    if (!jtagDevice.DevicePresent)
-                    {
-                        // no JTAG device found
-
-                        // done here, this command has no further processing
-                        return ExitCodes.E5001;
-                    }
-                }
-                catch (CantConnectToJtagDeviceException)
-                {
-                    return ExitCodes.E5002;
-                }
-                catch (Exception)
-                {
-                    return ExitCodes.E5000;
-                }
-
-                if (verbosity >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.WriteLine("");
-                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                    OutputWriter.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
-                    OutputWriter.WriteLine("");
-                    OutputWriter.WriteLine($"{jtagDevice}");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                }
-
-                if (fitCheck)
-                {
-                    PerformTargetCheck(targetName, jtagDevice);
-                }
-
-                ExitCodes operationResult = ExitCodes.OK;
-
-                // set verbosity
-                jtagDevice.Verbosity = verbosity;
-
-                // write HEX files to flash
-                if (filesToFlash.Any(f => f.EndsWith(".hex")))
-                {
-                    operationResult = jtagDevice.FlashHexFiles(filesToFlash);
-                }
-
-                if (operationResult == ExitCodes.OK && isApplicationBinFile)
-                {
-                    // now program the application file
-                    operationResult = jtagDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
-                }
-
-                if (
-                    updateFw
-                    && operationResult == ExitCodes.OK)
-                {
-                    // reset MCU
-                    jtagDevice.ResetMcu();
-                }
-
-                return operationResult;
-            }
-        }
-
-        private static void PerformTargetCheck(string target, StmJtagDevice jtagDevice)
-        {
-            string boardName;
-
-            // tweak our target name trying to mach ST names
-            string targetName = target.ToUpper().Replace("ST_", "").Replace("NUCLEO64", "NUCLEO").Replace("NUCLEO144", "NUCLEO").Replace("STM", "").Replace("-", "_").Replace("_", "");
-
-            // check if there is a board name available
-            if (
-                string.IsNullOrEmpty(jtagDevice.BoardName)
-                || jtagDevice.BoardName == "--")
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-
-                OutputWriter.WriteLine("");
-                OutputWriter.WriteLine("******************************************* WARNING ************************ *************");
-                OutputWriter.WriteLine("It wasn't possible to validate if the firmware image that's about to be used works on the");
-                OutputWriter.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
-                OutputWriter.WriteLine("******************************************************************************************");
-                OutputWriter.WriteLine("");
-
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-            }
-            else
-            {
-                // do some parsing to match our target names
-                boardName = jtagDevice.BoardName.Replace("-", "_");
-
-                if (!targetName.Contains(boardName))
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-
-                    OutputWriter.WriteLine("");
-                    OutputWriter.WriteLine("******************************************* WARNING ***************************************");
-                    OutputWriter.WriteLine("It seems that the firmware image that's about to be used isn't the appropriate one for the");
-                    OutputWriter.WriteLine($"target connected. But this doesn't necessarily mean that it won't work.");
-                    OutputWriter.WriteLine("*******************************************************************************************");
-                    OutputWriter.WriteLine("");
-
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                }
-            }
+            // A native transport is guaranteed at this point (validated above);
+            // this is a defensive fallback so all code paths return a value.
+            return ExitCodes.E9010;
         }
 
         /// <summary>
@@ -851,21 +578,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // Native SWD enumeration not available
             }
 
-            // Fall back to CLI JTAG
-            StmJtagDevice jtagDevice = new StmJtagDevice(jtagId);
-
-            if (!jtagDevice.DevicePresent)
-            {
-                return ExitCodes.E5001;
-            }
-
-            if (verbosity >= VerbosityLevel.Normal)
-            {
-                OutputWriter.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
-            }
-
-            jtagDevice.Verbosity = verbosity;
-            return jtagDevice.ResetMcu();
+            // no native ST-LINK or CMSIS-DAP probe found
+            return ExitCodes.E5001;
         }
 
         /// <summary>
@@ -956,21 +670,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // Native DFU enumeration not available
             }
 
-            // Fall back to CLI JTAG
-            StmJtagDevice jtagDevice = new StmJtagDevice(jtagId);
-
-            if (!jtagDevice.DevicePresent)
-            {
-                return ExitCodes.E5001;
-            }
-
-            if (verbosity >= VerbosityLevel.Normal)
-            {
-                OutputWriter.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
-            }
-
-            jtagDevice.Verbosity = verbosity;
-            return jtagDevice.MassErase();
+            // no native ST-LINK, CMSIS-DAP or DFU device found
+            return ExitCodes.E5001;
         }
 
         /// <summary>
