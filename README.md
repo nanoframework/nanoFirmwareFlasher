@@ -402,7 +402,7 @@ nanoff --nanodevice --devicedetails --serialport COM9
 
 The tool tries to make a best effort sanity check on whether the requested target fits the connected target.
 Sometimes that's not possible because of the differences and variations on the target names, or lack of details provided by the connected device or even (like with DFU connected devices) because it's not possible to determine exactly what device is connected at all.
-This doesn't necessarily mean that the firmware won't work, so take this as an advice only.
+This doesn't necessarily mean that the firmware won't work so should be taken as advice only.
 
 To disable this validation add `--nofitcheck` option to the command line.
 
@@ -508,7 +508,7 @@ Some devices like ESP32, Orgpal and few others have storage available. Files can
 nanoff --target ESP32_C3 --update --masserase --serialport COM21  --filedeployment C:\path\deploy.json
 ```
 
-The JSON has an optional `SerialPort` field in case the port to upload the files must be different than the one to flash the device or not specified in the main command line, and a **mandatory** list of `Files` entries. Each entry must contain `DestinationFilePath`, the destination full path file name and `SourceFilePath` to deploy content, otherwise to delete the file, the full path with file name of the source file to be deployed:
+The JSON has an optional `SerialPort` field in case the port to upload the files differs from the one to flash the device specified in the main command line, and a **mandatory** list of `Files` entries. Each entry must contain `DestinationFilePath`, the destination full path file name and `SourceFilePath` to deploy content, otherwise to delete the file, the full path with file name of the source file to be deployed:
 
 ```json
 {
@@ -781,7 +781,7 @@ Represents an Ethernet configuration and here are the properties:
 
 ### Device and CA Certificates
 
-You can either **base64** encode your certificates (`DeviceCertificates` and `CACertificates`) or provide a path on a certificate file (`DeviceCertificatesPath` and `CACertificatesPath`). Note that the certificate file can contain multiple certificates one after the other. This is especially useful for CA certificates.
+You can either **base64** encode your certificates (`DeviceCertificates` and `CACertificates`) or provide a path to a certificate file (`DeviceCertificatesPath` and `CACertificatesPath`). Note that the certificate file can contain multiple certificates one after the other. This is especially useful for CA certificates.
 
 ## Clear cache location
 
