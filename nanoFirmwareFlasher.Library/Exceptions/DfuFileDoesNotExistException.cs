@@ -4,14 +4,12 @@
 //
 
 using System;
-using System.Runtime.Serialization;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// The DFU file specified does not exist.
     /// </summary>
-    [Serializable]
     public class DfuFileDoesNotExistException : Exception
     {
         /// <summary>
@@ -35,15 +33,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display.</param>
         public DfuFileDoesNotExistException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        /// DFU file does not exist exception.
-        /// </summary>
-        /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context.</param>
-        protected DfuFileDoesNotExistException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

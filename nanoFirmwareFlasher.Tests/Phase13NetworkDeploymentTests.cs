@@ -432,17 +432,25 @@ namespace nanoFirmwareFlasher.Tests
         public void JLinkCli_CommandTemplates_ContainExpectedTokens()
         {
             // Use reflection to read private const fields
-            var singleTemplate = typeof(JLinkCli).GetField("FlashSingleFileCommandTemplate",
+            FieldInfo? singleTemplate = typeof(JLinkCli).GetField(
+                "FlashSingleFileCommandTemplate",
                 BindingFlags.NonPublic | BindingFlags.Static);
             Assert.IsNotNull(singleTemplate, "FlashSingleFileCommandTemplate should exist");
-            string value = (string)singleTemplate.GetValue(null);
+
+            object? singleValueObject = singleTemplate.GetValue(null);
+            Assert.IsNotNull(singleValueObject);
+            string value = (string)singleValueObject;
             Assert.IsTrue(value.Contains("{FILE_PATH}"));
             Assert.IsTrue(value.Contains("{FLASH_ADDRESS}"));
 
-            var multiTemplate = typeof(JLinkCli).GetField("FlashMultipleFilesCommandTemplate",
+            FieldInfo? multiTemplate = typeof(JLinkCli).GetField(
+                "FlashMultipleFilesCommandTemplate",
                 BindingFlags.NonPublic | BindingFlags.Static);
             Assert.IsNotNull(multiTemplate, "FlashMultipleFilesCommandTemplate should exist");
-            string multiValue = (string)multiTemplate.GetValue(null);
+
+            object? multiValueObject = multiTemplate.GetValue(null);
+            Assert.IsNotNull(multiValueObject);
+            string multiValue = (string)multiValueObject;
             Assert.IsTrue(multiValue.Contains("{LOAD_FILE_LIST}"));
         }
 
@@ -472,7 +480,9 @@ namespace nanoFirmwareFlasher.Tests
             var files = new System.Collections.Generic.List<string> { @"C:\nonexistent\firmware.bin" };
             var shadowFiles = new System.Collections.Generic.List<string>();
 
-            var result = (ExitCodes)method.Invoke(null, new object[] { files, shadowFiles });
+            var invokeResult = method.Invoke(null, new object[] { files, shadowFiles });
+            Assert.IsNotNull(invokeResult, "ProcessFilePaths should return a value");
+            var result = (ExitCodes)invokeResult;
             Assert.AreEqual(ExitCodes.E5004, result);
         }
 
@@ -485,11 +495,14 @@ namespace nanoFirmwareFlasher.Tests
 
             var method = typeof(JLinkCli).GetMethod("ProcessFilePaths",
                 BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(method, "ProcessFilePaths should exist");
 
             var files = new System.Collections.Generic.List<string> { testFile };
             var shadowFiles = new System.Collections.Generic.List<string>();
 
-            var result = (ExitCodes)method.Invoke(null, new object[] { files, shadowFiles });
+            var invokeResult = method.Invoke(null, new object[] { files, shadowFiles });
+            Assert.IsNotNull(invokeResult, "ProcessFilePaths should return a value");
+            var result = (ExitCodes)invokeResult;
             Assert.AreEqual(ExitCodes.OK, result);
             Assert.AreEqual(1, shadowFiles.Count);
         }

@@ -125,7 +125,7 @@ namespace nanoFirmwareFlasher.Tests
                 new[] { typeof(IStmFlashableDevice) },
                 null);
 
-            var result = (ExitCodes)method.Invoke(manager, new object[] { mockDevice });
+            var result = (ExitCodes)method!.Invoke(manager, new object[] { mockDevice })!;
 
             Assert.AreEqual(ExitCodes.OK, result);
             Assert.AreEqual(VerbosityLevel.Diagnostic, mockDevice.Verbosity);
@@ -151,6 +151,7 @@ namespace nanoFirmwareFlasher.Tests
                 null,
                 new[] { typeof(IStmFlashableDevice) },
                 null);
+            Assert.IsNotNull(method, "FlashDeviceFiles helper should exist on Stm32Manager");
 
             method.Invoke(manager, new object[] { mockDevice });
 
@@ -177,7 +178,7 @@ namespace nanoFirmwareFlasher.Tests
                 new[] { typeof(IStmFlashableDevice) },
                 null);
 
-            var result = (ExitCodes)method.Invoke(manager, new object[] { mockDevice });
+            var result = (ExitCodes)method!.Invoke(manager, new object[] { mockDevice })!;
 
             Assert.AreEqual(ExitCodes.OK, result);
             Assert.IsFalse(mockDevice.FlashHexCalled);

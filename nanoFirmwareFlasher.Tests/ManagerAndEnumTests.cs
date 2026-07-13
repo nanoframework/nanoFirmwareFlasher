@@ -162,6 +162,7 @@ namespace nanoFirmwareFlasher.Tests
         public void ExitCodes_OK_HasDisplayAttribute()
         {
             var field = typeof(ExitCodes).GetField(nameof(ExitCodes.OK));
+            Assert.IsNotNull(field, "ExitCodes.OK field should exist");
             var display = field.GetCustomAttribute<DisplayAttribute>();
             Assert.IsNotNull(display, "ExitCodes.OK should have a Display attribute");
         }
@@ -190,12 +191,12 @@ namespace nanoFirmwareFlasher.Tests
         public void ExitCodes_E1000_SuggestsNativeAlternatives()
         {
             var field = typeof(ExitCodes).GetField(nameof(ExitCodes.E1000));
+            Assert.IsNotNull(field);
             var display = field.GetCustomAttribute<DisplayAttribute>();
-            Assert.IsNotNull(display);
 
-            string name = display.Name;
+            string? name = display!.Name;
             Assert.IsTrue(
-                name.Contains("nativedfu") || name.Contains("uart"),
+                name!.Contains("nativedfu") || name!.Contains("uart"),
                 "E1000 should suggest native alternatives");
         }
 
@@ -203,12 +204,12 @@ namespace nanoFirmwareFlasher.Tests
         public void ExitCodes_E5001_SuggestsNativeAlternatives()
         {
             var field = typeof(ExitCodes).GetField(nameof(ExitCodes.E5001));
+            Assert.IsNotNull(field, "ExitCodes.E5001 field should exist");
             var display = field.GetCustomAttribute<DisplayAttribute>();
-            Assert.IsNotNull(display);
 
-            string name = display.Name;
+            string? name = display!.Name;
             Assert.IsTrue(
-                name.Contains("nativestlink") || name.Contains("nativeswd"),
+                name!.Contains("nativestlink") || name!.Contains("nativeswd"),
                 "E5001 should suggest native alternatives");
         }
 

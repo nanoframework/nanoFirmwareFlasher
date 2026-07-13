@@ -130,6 +130,7 @@ namespace nanoFirmwareFlasher.Tests
         public void ExitCode_E5022_HasDisplayAttribute()
         {
             var field = typeof(ExitCodes).GetField(nameof(ExitCodes.E5022));
+            Assert.IsNotNull(field, "ExitCodes.E5022 field should exist");
             var attr = field.GetCustomAttribute<DisplayAttribute>();
             Assert.IsNotNull(attr);
             Assert.IsFalse(string.IsNullOrEmpty(attr.Name));

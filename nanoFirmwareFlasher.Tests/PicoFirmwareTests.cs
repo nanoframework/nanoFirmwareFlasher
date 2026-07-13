@@ -59,9 +59,11 @@ namespace nanoFirmwareFlasher.Tests
             // since we can't call DownloadAndExtractAsync without a real Cloudsmith package
             var firmware = new PicoFirmware("RP_PICO_RP2040", "1.0.0.0", false);
 
-            typeof(PicoFirmware)
-                .GetProperty("BinFilePath", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                .SetValue(firmware, binFilePath);
+            var binFilePathProperty = typeof(PicoFirmware)
+                .GetProperty("BinFilePath", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.IsNotNull(binFilePathProperty);
+            binFilePathProperty.SetValue(firmware, binFilePath);
 
             // exercise GetUf2Bytes
             byte[] uf2Data = firmware.GetUf2Bytes(PicoUf2Utility.FAMILY_ID_RP2040);
