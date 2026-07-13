@@ -22,23 +22,27 @@ namespace nanoFirmwareFlasher.Tests
         private static readonly MethodInfo ClassifyDeviceMethod =
             typeof(Stm32FlashProgrammer).GetMethod(
                 "ClassifyDevice",
-                BindingFlags.Static | BindingFlags.NonPublic)!;
+                BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("ClassifyDevice method not found.");
 
         // Use reflection to call internal static GetFlashRegisters(Stm32Family family)
         private static readonly MethodInfo GetFlashRegistersMethod =
             typeof(Stm32FlashProgrammer).GetMethod(
                 "GetFlashRegisters",
-                BindingFlags.Static | BindingFlags.NonPublic)!;
+                BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("GetFlashRegisters method not found.");
 
         // Use reflection to call internal static GetSectorForAddress(uint offset)
         private static readonly MethodInfo GetSectorForAddressMethod =
             typeof(Stm32FlashProgrammer).GetMethod(
                 "GetSectorForAddress",
-                BindingFlags.Static | BindingFlags.NonPublic)!;
+                BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("GetSectorForAddress method not found.");
 
         // Helper to get the Stm32Family enum type
         private static readonly Type FamilyEnumType =
-            typeof(Stm32FlashProgrammer).GetNestedType("Stm32Family", BindingFlags.NonPublic)!;
+            typeof(Stm32FlashProgrammer).GetNestedType("Stm32Family", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("Stm32Family enum not found.");
 
         private static object ClassifyDevice(ushort devId)
         {
