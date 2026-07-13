@@ -32,7 +32,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="fitCheck">Checks whether the firmware will fit.</param>
         /// <param name="updateInterface">The connection interface.</param>
         /// <param name="verbosity">The verbosity level to use.</param>
-        /// <param name="verify">Whether to verify the flash after programming.</param>
+        /// <param name="verify">Whether to verify the flash after programming when supported by the selected transport.</param>
         /// <returns>The outcome.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             string targetName,
