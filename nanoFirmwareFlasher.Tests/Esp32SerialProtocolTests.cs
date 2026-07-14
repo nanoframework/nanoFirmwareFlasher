@@ -810,7 +810,7 @@ namespace nanoFirmwareFlasher.Tests
             };
 
             // Parse all and find the ReadReg response
-            Esp32ResponsePacket readRegResponse = null;
+            Esp32ResponsePacket? readRegResponse = null;
 
             foreach (var payload in responses)
             {
@@ -1662,9 +1662,10 @@ namespace nanoFirmwareFlasher.Tests
         public void ProjectFile_NoEsptoolBinaryReferences()
         {
             // Verify the .csproj no longer references esptool binaries
-            string projectDir = Path.GetDirectoryName(typeof(EspTool).Assembly.Location);
+            string? projectDir = Path.GetDirectoryName(typeof(EspTool).Assembly.Location);
+
             // Walk up to find the source project file
-            string repoRoot = projectDir;
+            string? repoRoot = projectDir;
             while (repoRoot != null && !File.Exists(Path.Combine(repoRoot, "nanoFirmwareFlasher.sln")))
             {
                 repoRoot = Path.GetDirectoryName(repoRoot);

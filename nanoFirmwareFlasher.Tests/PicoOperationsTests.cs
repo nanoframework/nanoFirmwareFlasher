@@ -87,24 +87,24 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void PicoOperations_InferTargetName_MapsChipTypes()
         {
-            MethodInfo method = typeof(PicoOperations).GetMethod(
+            MethodInfo? method = typeof(PicoOperations).GetMethod(
                 "InferTargetName",
                 BindingFlags.NonPublic | BindingFlags.Static);
 
             Assert.IsNotNull(method, "InferTargetName method not found");
 
             // null device returns null (caller must handle the error)
-            string result = (string)method.Invoke(null, new object[] { null });
+            string? result = (string?)method.Invoke(null, new object?[] { null });
             Assert.IsNull(result);
 
             // RP2040 chip maps to RP_PICO_RP2040
             var rp2040 = new PicoDeviceInfo("RP2040", "", "", "", "");
-            result = (string)method.Invoke(null, new object[] { rp2040 });
+            result = (string?)method.Invoke(null, new object?[] { rp2040 });
             Assert.AreEqual("RP_PICO_RP2040", result);
 
             // RP2350 chip maps to RP_PICO_RP2350
             var rp2350 = new PicoDeviceInfo("RP2350", "", "", "", "");
-            result = (string)method.Invoke(null, new object[] { rp2350 });
+            result = (string?)method.Invoke(null, new object?[] { rp2350 });
             Assert.AreEqual("RP_PICO_RP2350", result);
         }
 

@@ -179,8 +179,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 //  1. Consumes boot log bytes so they don't confuse SYNC parsing.
                 //  2. Detects the boot mode (download vs normal) for better diagnostics.
                 // Matches esptool's boot log detection in _connect_attempt().
-                bool bootLogDetected = false;
-                bool downloadMode = false;
                 int waiting = _port.BytesToRead;
 
                 if (waiting > 0)
@@ -201,9 +199,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                     if (bootMatch.Success)
                     {
-                        bootLogDetected = true;
-                        downloadMode = bootMatch.Groups[2].Success;
-
+                        bool downloadMode = bootMatch.Groups[2].Success;
                         if (Verbosity >= VerbosityLevel.Diagnostic)
                         {
                             OutputWriter.WriteLine(

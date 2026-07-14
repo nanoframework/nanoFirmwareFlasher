@@ -4,14 +4,12 @@
 //
 
 using System;
-using System.Runtime.Serialization;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// Error communicating with STM32 UART bootloader.
     /// </summary>
-    [Serializable]
     public class Stm32UartBootloaderException : Exception
     {
         /// <summary>
@@ -35,15 +33,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display.</param>
         public Stm32UartBootloaderException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        /// STM32 UART bootloader communication exception.
-        /// </summary>
-        /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context.</param>
-        protected Stm32UartBootloaderException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

@@ -271,6 +271,7 @@ namespace nanoFirmwareFlasher.Tests
             {
                 // Set LocationPath via reflection since it's normally set by DownloadAndExtractAsync
                 var prop = typeof(FirmwarePackage).GetProperty("LocationPath");
+                Assert.IsNotNull(prop, "LocationPath property should exist");
                 prop.SetValue(fw, fwDir);
 
                 fw.PostProcessDownloadAndExtract();
@@ -294,6 +295,7 @@ namespace nanoFirmwareFlasher.Tests
             using (var fw = new Stm32Firmware("TEST_TARGET", "1.0.0", false))
             {
                 var prop = typeof(FirmwarePackage).GetProperty("LocationPath");
+                Assert.IsNotNull(prop, "LocationPath property should exist");
                 prop.SetValue(fw, fwDir);
 
                 fw.PostProcessDownloadAndExtract();
@@ -505,7 +507,7 @@ namespace nanoFirmwareFlasher.Tests
                 BindingFlags.NonPublic | BindingFlags.Static);
             Assert.IsNotNull(method);
 
-            uint address = (uint)method.Invoke(null, new object[] { hexFile });
+            uint address = (uint)method!.Invoke(null, new object[] { hexFile })!;
             Assert.AreEqual(0x08000000u, address);
         }
 
@@ -525,8 +527,9 @@ namespace nanoFirmwareFlasher.Tests
             var method = typeof(FirmwarePackage).GetMethod(
                 "FindStartAddressInHexFile",
                 BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(method);
 
-            uint address = (uint)method.Invoke(null, new object[] { hexFile });
+            uint address = (uint)method!.Invoke(null, new object[] { hexFile })!;
             Assert.AreEqual(0x2462u, address);
         }
 
@@ -545,6 +548,7 @@ namespace nanoFirmwareFlasher.Tests
             var method = typeof(FirmwarePackage).GetMethod(
                 "FindStartAddressInHexFile",
                 BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(method);
 
             try
             {
@@ -565,6 +569,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             var options = new Options();
             var platformProp = typeof(Options).GetProperty("Platform");
+            Assert.IsNotNull(platformProp, "Platform property should exist");
             platformProp.SetValue(options, (SupportedPlatform?)platform);
             return options;
         }
