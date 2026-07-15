@@ -216,6 +216,7 @@ jobs:
       )
     inputs:
       command: restore
+      arguments: '/p:RestoreLockedMode=false'
       restoreArguments: '--locked-mode'
       verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln

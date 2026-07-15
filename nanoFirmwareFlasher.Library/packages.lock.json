@@ -4,13 +4,13 @@
     ".NETFramework,Version=v4.7.2": {
       "LibUsbDotNet": {
         "type": "Direct",
-        "requested": "2.2.75",
+        "requested": "[2.2.75, )",
         "resolved": "2.2.75",
         "contentHash": "PRp2lYflUN/IrYJW8ZM6G/0hBKnX4ySOq9L+4mavqWIGH6KcEMPXKAxln6oVQ+dQK5Q2yNdYLDJhk7NfuP9+ww=="
       },
       "Microsoft.ApplicationInsights": {
         "type": "Direct",
-        "requested": "2.22.0",
+        "requested": "[2.22.0, )",
         "resolved": "2.22.0",
         "contentHash": "3AOM9bZtku7RQwHyMEY3tQMrHIgjcfRDa6YQpd/QG2LDGvMydSlL9Di+8LLMt7J2RDdfJ7/2jdYv6yHcMJAnNw==",
         "dependencies": {
@@ -19,7 +19,7 @@
       },
       "Microsoft.Extensions.Configuration": {
         "type": "Direct",
-        "requested": "10.0.10",
+        "requested": "[10.0.10, )",
         "resolved": "10.0.10",
         "contentHash": "plJWK2zpWuuyxI8F8s2scx6Je7N1Ajjs6HvYUGKwRnDMWIVIz9FHwAkiT7ASgrvAOd10T0FPVlh9BzAJJME+jg==",
         "dependencies": {
@@ -29,7 +29,7 @@
       },
       "Microsoft.Extensions.Configuration.Json": {
         "type": "Direct",
-        "requested": "10.0.10",
+        "requested": "[10.0.10, )",
         "resolved": "10.0.10",
         "contentHash": "uvJ6sHwjgrkMEJOgiC76G0mcZGXerwyyWkwX34EOjCbxKG6TCtfAoqDKAMsCvEBf9HxjlGQEgqsSMOGCmGBf+A==",
         "dependencies": {
@@ -51,7 +51,7 @@
       },
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "2.5.10",
+        "requested": "[2.5.10, )",
         "resolved": "2.5.10",
         "contentHash": "ETpK8oihKti7iCV6GkJhvExj3FT66wD8djRj/qWglMl8UaWQhJ4g+j2st5bOqmBrMf2llwOu5qk9wnkTbPAAVA==",
         "dependencies": {
@@ -61,25 +61,25 @@
       },
       "Nerdbank.GitVersioning": {
         "type": "Direct",
-        "requested": "3.6.146",
+        "requested": "[3.6.146, )",
         "resolved": "3.6.146",
         "contentHash": "W1eQ8hD9Y/cZ2+ilgxECl003xr1hybpN3fMxoTlMqg++BixETBMWzS4y9s08oHJKXgKtudsoxhITNOEf1OR66w=="
       },
       "System.ComponentModel.Annotations": {
         "type": "Direct",
-        "requested": "5.0.0",
+        "requested": "[5.0.0, )",
         "resolved": "5.0.0",
         "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
       },
       "System.IO.Ports": {
         "type": "Direct",
-        "requested": "8.0.0",
+        "requested": "[8.0.0, )",
         "resolved": "8.0.0",
         "contentHash": "MaiPbx2/QXZc62gm/DrajRrGPG1lU4m08GWMoWiymPYM+ba4kfACp2PbiYpqJ4QiFGhHD00zX3RoVDTucjWe9g=="
       },
       "System.Net.Http": {
         "type": "Direct",
-        "requested": "4.3.4",
+        "requested": "[4.3.4, )",
         "resolved": "4.3.4",
         "contentHash": "aOa2d51SEbmM+H+Csw7yJOuNZoHkrP2XnAurye5HWYgGVVU54YZDvsLUYRv6h18X3sPnjNCANmN7ZhIPiqMcjA==",
         "dependencies": {
@@ -88,7 +88,7 @@
       },
       "System.Text.Json": {
         "type": "Direct",
-        "requested": "10.0.10",
+        "requested": "[10.0.10, )",
         "resolved": "10.0.10",
         "contentHash": "bmsO6UdYtBdtn32zYXfsh7KlyTIzV/3V9hdT9RIb4pXKgYOsNxXR+VbWigNwBtNFVGYGm6Hwmqw5a+/IWFd36Q==",
         "dependencies": {
@@ -284,19 +284,19 @@
     "net10.0": {
       "LibUsbDotNet": {
         "type": "Direct",
-        "requested": "2.2.75",
+        "requested": "[2.2.75, )",
         "resolved": "2.2.75",
         "contentHash": "PRp2lYflUN/IrYJW8ZM6G/0hBKnX4ySOq9L+4mavqWIGH6KcEMPXKAxln6oVQ+dQK5Q2yNdYLDJhk7NfuP9+ww=="
       },
       "Microsoft.ApplicationInsights": {
         "type": "Direct",
-        "requested": "2.22.0",
+        "requested": "[2.22.0, )",
         "resolved": "2.22.0",
         "contentHash": "3AOM9bZtku7RQwHyMEY3tQMrHIgjcfRDa6YQpd/QG2LDGvMydSlL9Di+8LLMt7J2RDdfJ7/2jdYv6yHcMJAnNw=="
       },
       "Microsoft.Extensions.Configuration": {
         "type": "Direct",
-        "requested": "10.0.10",
+        "requested": "[10.0.10, )",
         "resolved": "10.0.10",
         "contentHash": "plJWK2zpWuuyxI8F8s2scx6Je7N1Ajjs6HvYUGKwRnDMWIVIz9FHwAkiT7ASgrvAOd10T0FPVlh9BzAJJME+jg==",
         "dependencies": {
@@ -306,7 +306,7 @@
       },
       "Microsoft.Extensions.Configuration.Json": {
         "type": "Direct",
-        "requested": "10.0.10",
+        "requested": "[10.0.10, )",
         "resolved": "10.0.10",
         "contentHash": "uvJ6sHwjgrkMEJOgiC76G0mcZGXerwyyWkwX34EOjCbxKG6TCtfAoqDKAMsCvEBf9HxjlGQEgqsSMOGCmGBf+A==",
         "dependencies": {
@@ -318,7 +318,7 @@
       },
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "2.5.10",
+        "requested": "[2.5.10, )",
         "resolved": "2.5.10",
         "contentHash": "ETpK8oihKti7iCV6GkJhvExj3FT66wD8djRj/qWglMl8UaWQhJ4g+j2st5bOqmBrMf2llwOu5qk9wnkTbPAAVA==",
         "dependencies": {
@@ -328,19 +328,19 @@
       },
       "Nerdbank.GitVersioning": {
         "type": "Direct",
-        "requested": "3.6.146",
+        "requested": "[3.6.146, )",
         "resolved": "3.6.146",
         "contentHash": "W1eQ8hD9Y/cZ2+ilgxECl003xr1hybpN3fMxoTlMqg++BixETBMWzS4y9s08oHJKXgKtudsoxhITNOEf1OR66w=="
       },
       "System.ComponentModel.Annotations": {
         "type": "Direct",
-        "requested": "5.0.0",
+        "requested": "[5.0.0, )",
         "resolved": "5.0.0",
         "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
       },
       "System.IO.Ports": {
         "type": "Direct",
-        "requested": "8.0.0",
+        "requested": "[8.0.0, )",
         "resolved": "8.0.0",
         "contentHash": "MaiPbx2/QXZc62gm/DrajRrGPG1lU4m08GWMoWiymPYM+ba4kfACp2PbiYpqJ4QiFGhHD00zX3RoVDTucjWe9g==",
         "dependencies": {
@@ -349,7 +349,7 @@
       },
       "System.Net.Http": {
         "type": "Direct",
-        "requested": "4.3.4",
+        "requested": "[4.3.4, )",
         "resolved": "4.3.4",
         "contentHash": "aOa2d51SEbmM+H+Csw7yJOuNZoHkrP2XnAurye5HWYgGVVU54YZDvsLUYRv6h18X3sPnjNCANmN7ZhIPiqMcjA==",
         "dependencies": {
@@ -361,7 +361,7 @@
       },
       "System.Text.Json": {
         "type": "Direct",
-        "requested": "10.0.10",
+        "requested": "[10.0.10, )",
         "resolved": "10.0.10",
         "contentHash": "bmsO6UdYtBdtn32zYXfsh7KlyTIzV/3V9hdT9RIb4pXKgYOsNxXR+VbWigNwBtNFVGYGm6Hwmqw5a+/IWFd36Q=="
       },
