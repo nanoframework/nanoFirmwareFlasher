@@ -216,7 +216,6 @@ jobs:
       )
     inputs:
       command: restore
-      restoreArguments: '--locked-mode'
       verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln
       feedsToUse: config
