@@ -38,7 +38,7 @@ jobs:
 ##############################
 - job: Check_Build_Options
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
 
   steps:
   
@@ -156,7 +156,7 @@ jobs:
   - Check_Build_Options
 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
 
   variables:
     - group: sign-client-credentials
@@ -199,6 +199,13 @@ jobs:
           nuget | "$(Agent.OS)"
           nuget
       path: $(UserProfile)/.nuget/packages
+
+  - task: UseDotNet@2
+    displayName: Use .NET SDK 10
+    inputs:
+      packageType: sdk
+      version: 10.0.x
+      includePreviewVersions: false
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
