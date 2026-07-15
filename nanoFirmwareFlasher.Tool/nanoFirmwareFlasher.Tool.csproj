@@ -47,9 +47,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
 		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.10" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.146" PrivateAssets="All" />
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.10.91" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -87,8 +87,8 @@
 	</Target>
 
 	<PropertyGroup>
-		<!-- set this to 'net8.0\' to package contents in this TFM folder  -->
-		<PackageTfmSubFolder>net8.0\</PackageTfmSubFolder>
+		<!-- set this to 'net10.0\' to package contents in this TFM folder  -->
+		<PackageTfmSubFolder>net10.0\</PackageTfmSubFolder>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\Key.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
