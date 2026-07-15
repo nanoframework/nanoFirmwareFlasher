@@ -200,6 +200,13 @@ jobs:
           nuget
       path: $(UserProfile)/.nuget/packages
 
+  - task: UseDotNet@2
+    displayName: Use .NET SDK 10 Preview
+    inputs:
+      packageType: sdk
+      version: 10.0.100
+      includePreviewVersions: true
+
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
     condition: >-
