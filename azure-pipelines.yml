@@ -217,7 +217,7 @@ jobs:
     inputs:
       command: restore
       restoreArguments: '--locked-mode'
-      verbosityRestore: diagnostic
+      verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln
       feedsToUse: config
       nugetConfigPath: NuGet.Config
