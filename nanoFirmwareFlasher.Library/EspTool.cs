@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
@@ -800,6 +801,57 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                     OutputWriter.WriteLine(
                                         $"Wrote {uncompressedSize} bytes at 0x{partAddress:X8} in {secs:F1} seconds ({kbits:F1} kbit/s).");
                                 }
+                            }
+
+                            // Match upstream behavior: verify written data by default when feasible.
+                            if (_client.IsStubRunning)
+                            {
+                                if (Verbosity >= VerbosityLevel.Normal)
+                                {
+                                    OutputWriter.WriteLine("Verifying written data...");
+                                }
+
+                                byte[] flashMd5 = _flashController.FlashMd5(partAddress, uncompressedSize);
+
+                                byte[] inputMd5;
+                                using (var md5 = MD5.Create())
+                                {
+                                    inputMd5 = md5.ComputeHash(fileData);
+                                }
+
+                                bool md5Match = inputMd5.Length == flashMd5.Length;
+
+                                for (int i = 0; md5Match && i < inputMd5.Length; i++)
+                                {
+                                    if (inputMd5[i] != flashMd5[i])
+                                    {
+                                        md5Match = false;
+                                    }
+                                }
+
+                                if (!md5Match)
+                                {
+                                    string inputMd5Hex = BitConverter.ToString(inputMd5).Replace("-", "").ToLowerInvariant();
+                                    string flashMd5Hex = BitConverter.ToString(flashMd5).Replace("-", "").ToLowerInvariant();
+
+                                    if (Verbosity >= VerbosityLevel.Normal)
+                                    {
+                                        OutputWriter.WriteLine($"Input MD5: {inputMd5Hex}");
+                                        OutputWriter.WriteLine($"Flash MD5: {flashMd5Hex}");
+                                    }
+
+                                    // Throw InvalidOperationException so first failure goes through existing retry path.
+                                    throw new InvalidOperationException("MD5 of file does not match data in flash.");
+                                }
+
+                                if (Verbosity >= VerbosityLevel.Normal)
+                                {
+                                    OutputWriter.WriteLine("Hash of data verified.");
+                                }
+                            }
+                            else if (Verbosity >= VerbosityLevel.Detailed)
+                            {
+                                OutputWriter.WriteLine("Cannot verify written data (stub loader not running).");
                             }
 
                             written = true;
