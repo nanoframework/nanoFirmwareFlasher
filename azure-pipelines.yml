@@ -221,7 +221,7 @@ jobs:
       command: restore
       verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln
-      feedsToUse: config
+      #feedsToUse: config
       nugetConfigPath: NuGet.Config
 
   - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack
