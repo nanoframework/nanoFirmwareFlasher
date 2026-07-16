@@ -61,7 +61,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--
     <PackageReference Include="LibUsbDotNet" Version="2.2.75" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
@@ -72,18 +71,6 @@
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Text.Json" Version="10.0.10" />
-    -->
-
-    <PackageReference Include="LibUsbDotNet" />
-    <PackageReference Include="Microsoft.ApplicationInsights" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-    <PackageReference Include="nanoFramework.Tools.Debugger.Net" />
-    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="All" />
-    <PackageReference Include="System.ComponentModel.Annotations" />
-    <PackageReference Include="System.IO.Ports" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
@@ -98,65 +85,65 @@
     <AssemblyOriginatorKeyFile>..\Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
-    <Import Project="nugetcontent.targets" />
-    
-    <!-- ************************************************************************************************************************* -->
-    <!-- WARNING: when changing or adding any include path for an external tool, make sure to add/update in 'nugetcontent.targets' -->
-    <!-- ************************************************************************************************************************* -->
+  <Import Project="nugetcontent.targets" />
+  
+  <!-- ************************************************************************************************************************* -->
+  <!-- WARNING: when changing or adding any include path for an external tool, make sure to add/update in 'nugetcontent.targets' -->
+  <!-- ************************************************************************************************************************* -->
 
-    <!-- Stub loader images embedded as resources (run update-stubs.ps1 to download) -->
-    <ItemGroup>
-        <EmbeddedResource Include="Esp32Serial\StubImages\*.json" />
-    </ItemGroup>
+  <!-- Stub loader images embedded as resources (run update-stubs.ps1 to download) -->
+  <ItemGroup>
+      <EmbeddedResource Include="Esp32Serial\StubImages\*.json" />
+  </ItemGroup>
 
-    <!-- ESP32 nanoFramework bootloader files -->
-    <ItemGroup>
-        <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-    </ItemGroup>
-
-    <!-- STLink executables for all platforms -->
-    <ItemGroup>
-        <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-    </ItemGroup>
-
-    <!-- J-Link executables for all platforms -->
-    <ItemGroup>
-        <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>		
-        <None Include="..\lib\jlink\**" Link="jlink\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\jlinkMac\**" Link="jlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-    </ItemGroup>
-
-    <!-- TI Uniflash tool -->
-    <ItemGroup>
-        <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-    </ItemGroup>
-    <ItemGroup>
-      <None Update="..\lib\esp32bootloader\bootloader.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+  <!-- ESP32 nanoFramework bootloader files -->
+  <ItemGroup>
+      <None Include="..\lib\esp32bootloader\**" Link="esp32bootloader\%(RecursiveDir)%(Filename)%(Extension)">
       </None>
-      <None Update="..\lib\esp32bootloader\partitions_2mb.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+  </ItemGroup>
+
+  <!-- STLink executables for all platforms -->
+  <ItemGroup>
+      <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)">
       </None>
-      <None Update="..\lib\esp32bootloader\test_startup.bin">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
       </None>
-    </ItemGroup>
+      <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
+      </None>
+  </ItemGroup>
+
+  <!-- J-Link executables for all platforms -->
+  <ItemGroup>
+      <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)">
+      </None>		
+      <None Include="..\lib\jlink\**" Link="jlink\%(RecursiveDir)%(Filename)%(Extension)">
+      </None>
+      <None Include="..\lib\jlinkMac\**" Link="jlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
+      </None>
+      <None Include="..\lib\jlinkLinux\**" Link="jlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
+      </None>
+      <None Include="..\lib\silink\**" Link="silink\%(RecursiveDir)%(Filename)%(Extension)">
+      </None>
+  </ItemGroup>
+
+  <!-- TI Uniflash tool -->
+  <ItemGroup>
+      <None Include="..\lib\uniflash\**" Link="uniflash\%(RecursiveDir)%(Filename)%(Extension)">
+      </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="..\lib\esp32bootloader\bootloader.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Update="..\lib\esp32bootloader\partitions_2mb.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Update="..\lib\esp32bootloader\test_startup.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
