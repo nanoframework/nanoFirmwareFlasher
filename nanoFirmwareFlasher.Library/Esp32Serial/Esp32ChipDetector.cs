@@ -192,7 +192,20 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 0x18 => 16 * 1024 * 1024,   // 16MB
                 0x19 => 32 * 1024 * 1024,   // 32MB
                 0x1A => 64 * 1024 * 1024,   // 64MB
+                0x1B => 128 * 1024 * 1024,  // 128MB
+                0x1C => 256 * 1024 * 1024,  // 256MB
                 0x20 => 64 * 1024 * 1024,   // 64MB (alternate)
+                0x21 => 128 * 1024 * 1024,  // 128MB (alternate)
+                0x22 => 256 * 1024 * 1024,  // 256MB (alternate)
+                0x32 => 256 * 1024,         // 256KB (alternate)
+                0x33 => 512 * 1024,         // 512KB (alternate)
+                0x34 => 1 * 1024 * 1024,    // 1MB (alternate)
+                0x35 => 2 * 1024 * 1024,    // 2MB (alternate)
+                0x36 => 4 * 1024 * 1024,    // 4MB (alternate)
+                0x37 => 8 * 1024 * 1024,    // 8MB (alternate)
+                0x38 => 16 * 1024 * 1024,   // 16MB (alternate)
+                0x39 => 32 * 1024 * 1024,   // 32MB (alternate)
+                0x3A => 64 * 1024 * 1024,   // 64MB (alternate)
                 _ => -1, // Unknown
             };
         }

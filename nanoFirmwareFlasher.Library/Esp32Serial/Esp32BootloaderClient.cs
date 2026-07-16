@@ -27,9 +27,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Number of extra sync responses to drain after successful sync.</summary>
         private const int SyncDrainCount = 7;
 
+        /// <summary>Additional connection attempts used only after baseline retries fail.</summary>
+        private const int AdaptiveExtraAttempts = 6;
+
         private SerialPort _port;
         private bool _disposed;
         private bool _isUsbJtag;
+
+        private struct SyncAttemptStats
+        {
+            internal int Timeouts;
+            internal int InvalidSlipFrames;
+            internal int StaleFrames;
+        }
 
         /// <summary>Whether the stub loader is currently running (affects response parsing).</summary>
         internal bool IsStubRunning { get; set; }
@@ -105,6 +115,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             bool synced = false;
             bool promptShown = false;
+            bool staleHeavyLastAttempt = false;
+            int consecutiveTimeoutHeavy = 0;
 
             // Detect USB device type to choose the optimal reset strategy.
             // Matches esptool's _construct_reset_strategy_sequence():
@@ -141,8 +153,23 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 }
             }
 
-            for (int attempt = 0; attempt < maxRetries; attempt++)
+            int totalAttempts = maxRetries + AdaptiveExtraAttempts;
+
+            for (int attempt = 0; attempt < totalAttempts; attempt++)
             {
+                bool isAdaptiveAttempt = attempt >= maxRetries;
+
+                if (isAdaptiveAttempt && attempt == maxRetries && Verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.WriteLine("Initial connection retries exhausted, switching to adaptive recovery attempts...");
+                }
+
+                // In adaptive mode, periodically reopen the port to recover from flaky USB/serial stack state.
+                if (isAdaptiveAttempt && ((attempt - maxRetries) % 2 == 1 || consecutiveTimeoutHeavy >= 3))
+                {
+                    ReopenPortForRecovery();
+                }
+
                 // Clear buffer before reset so post-reset boot log is isolated.
                 // Matches esptool's reset_input_buffer() before reset_strategy().
                 _port.DiscardInBuffer();
@@ -155,7 +182,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 {
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{maxRetries}: USB-JTAG reset");
+                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{totalAttempts}: USB-JTAG reset");
                     }
 
                     Esp32ResetSequence.EnterBootloaderUsbJtag(_port);
@@ -166,9 +193,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                         ? Esp32ResetSequence.DefaultResetDelayMs
                         : Esp32ResetSequence.ExtraResetDelayMs;
 
+                    if (consecutiveTimeoutHeavy >= 2)
+                    {
+                        delay = Math.Min(delay + (50 * (consecutiveTimeoutHeavy - 1)), 900);
+                    }
+
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{maxRetries}: ClassicReset (delay={delay}ms)");
+                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{totalAttempts}: ClassicReset (delay={delay}ms)");
                     }
 
                     Esp32ResetSequence.EnterBootloader(_port, delay);
@@ -227,13 +259,38 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                     promptShown = true;
                 }
+                if (staleHeavyLastAttempt)
+                {
+                    AggressiveDrainSyncResponses();
+                }
+
+                if (consecutiveTimeoutHeavy >= 2)
+                {
+                    int settleDelay = Math.Min(150 + ((consecutiveTimeoutHeavy - 2) * 50), 350);
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine($"[Connect] Applying extra settle delay before SYNC: {settleDelay}ms");
+                    }
+
+                    Thread.Sleep(settleDelay);
+                }
+
+                int syncSubAttempts = isAdaptiveAttempt
+                    ? Math.Min(8, 3 + (attempt - maxRetries))
+                    : 5;
+
+                int syncTimeoutMs = 100;
+                if (isAdaptiveAttempt && (attempt - maxRetries) >= 3)
+                {
+                    syncTimeoutMs = Math.Min(200, 150 + (((attempt - maxRetries) - 3) * 25));
+                }
 
                 // Try to sync
-                if (TrySync())
+                if (TrySync(syncSubAttempts, syncTimeoutMs, 50, out SyncAttemptStats syncStats))
                 {
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        OutputWriter.WriteLine($"[Connect] Sync succeeded on attempt {attempt + 1}/{maxRetries}");
+                        OutputWriter.WriteLine($"[Connect] Sync succeeded on attempt {attempt + 1}/{totalAttempts}");
                     }
 
                     synced = true;
@@ -241,7 +298,21 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 }
                 else if (Verbosity >= VerbosityLevel.Diagnostic)
                 {
-                    OutputWriter.WriteLine($"[Connect] Sync failed on attempt {attempt + 1}/{maxRetries}");
+                    OutputWriter.WriteLine($"[Connect] Sync failed on attempt {attempt + 1}/{totalAttempts}");
+                    OutputWriter.WriteLine(
+                        $"[Connect] Sync diagnostics: timeouts={syncStats.Timeouts}, invalidSlip={syncStats.InvalidSlipFrames}, stale={syncStats.StaleFrames}");
+                }
+
+                bool timeoutHeavy = syncStats.Timeouts >= Math.Max(2, syncSubAttempts - 1);
+                bool staleHeavy = syncStats.StaleFrames >= Math.Max(2, syncSubAttempts / 2)
+                                  && syncStats.Timeouts == 0;
+
+                consecutiveTimeoutHeavy = timeoutHeavy ? consecutiveTimeoutHeavy + 1 : 0;
+                staleHeavyLastAttempt = staleHeavy;
+
+                if (staleHeavy && Verbosity >= VerbosityLevel.Diagnostic)
+                {
+                    OutputWriter.WriteLine("[Connect] Stale-response-heavy attempt detected, increasing cleanup.");
                 }
             }
 
@@ -463,13 +534,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// Makes multiple fast attempts within a single reset cycle.
         /// </summary>
         /// <returns>True if sync was successful.</returns>
-        private bool TrySync()
+        private bool TrySync(int subAttempts, int syncTimeoutMs, int interAttemptDelayMs, out SyncAttemptStats stats)
         {
+            stats = new SyncAttemptStats();
             byte[] syncPacket = Esp32CommandPacket.BuildSync();
 
-            // esptool does 5 sync attempts per reset cycle, each with
-            // flush_input + flushOutput + sync(timeout=0.1).
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < subAttempts; i++)
             {
                 try
                 {
@@ -479,14 +549,27 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                     _port.Write(syncPacket, 0, syncPacket.Length);
 
-                    // SYNC_TIMEOUT = 0.1s in esptool
-                    byte[] responsePayload = SlipFraming.ReadFrame(_port, 100);
+                    byte[] responsePayload = SlipFraming.ReadFrame(_port, syncTimeoutMs);
 
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
                         OutputWriter.WriteLine(
-                            $"[Sync] Sub-attempt {i + 1}/5: got {responsePayload.Length} bytes,"
+                            $"[Sync] Sub-attempt {i + 1}/{subAttempts}: got {responsePayload.Length} bytes,"
                             + $" dir=0x{(responsePayload.Length > 0 ? responsePayload[0] : 0):X2}");
+                    }
+
+                    if (responsePayload.Length < Esp32ResponsePacket.MinimumPacketSize)
+                    {
+                        stats.StaleFrames++;
+                        Thread.Sleep(interAttemptDelayMs);
+                        continue;
+                    }
+
+                    if (responsePayload[0] != Esp32ResponsePacket.ResponseDirection)
+                    {
+                        stats.StaleFrames++;
+                        Thread.Sleep(interAttemptDelayMs);
+                        continue;
                     }
 
                     if (responsePayload.Length >= Esp32ResponsePacket.MinimumPacketSize
@@ -505,27 +588,83 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                                 $"[Sync] Response: cmd=0x{(byte)response.Command:X2}"
                                 + $" success={response.IsSuccess} value=0x{response.Value:X8}");
                         }
+
+                        stats.StaleFrames++;
                     }
                 }
                 catch (TimeoutException)
                 {
+                    stats.Timeouts++;
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/5: timeout (no response)");
+                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/{subAttempts}: timeout (no response)");
                     }
                 }
                 catch (InvalidOperationException ex)
                 {
+                    stats.InvalidSlipFrames++;
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/5: invalid SLIP frame: {ex.Message}");
+                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/{subAttempts}: invalid SLIP frame: {ex.Message}");
                     }
                 }
 
-                Thread.Sleep(50);
+                Thread.Sleep(interAttemptDelayMs);
             }
 
             return false;
+        }
+
+        private void AggressiveDrainSyncResponses()
+        {
+            int drained = 0;
+
+            for (int i = 0; i < 16; i++)
+            {
+                try
+                {
+                    SlipFraming.ReadFrame(_port, 60);
+                    drained++;
+                }
+                catch (TimeoutException)
+                {
+                    break;
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignore malformed frame while draining
+                }
+            }
+
+            _port.DiscardInBuffer();
+
+            if (Verbosity >= VerbosityLevel.Diagnostic)
+            {
+                OutputWriter.WriteLine($"[Connect] Aggressive cleanup drained {drained} frame(s)");
+            }
+        }
+
+        private void ReopenPortForRecovery()
+        {
+            if (Verbosity >= VerbosityLevel.Diagnostic)
+            {
+                OutputWriter.WriteLine("[Connect] Reopening serial port for recovery...");
+            }
+
+            if (_port.IsOpen)
+            {
+                _port.DiscardInBuffer();
+                _port.DiscardOutBuffer();
+                _port.Close();
+            }
+
+            Thread.Sleep(120);
+
+            _port.Open();
+            _port.DtrEnable = false;
+            _port.RtsEnable = false;
+            _port.DiscardInBuffer();
+            _port.DiscardOutBuffer();
         }
 
         /// <summary>

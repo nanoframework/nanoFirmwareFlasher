@@ -1160,7 +1160,20 @@ namespace nanoFirmwareFlasher.Tests
         [DataRow((short)0x1840, 16 * 1024 * 1024, "16MB")]
         [DataRow((short)0x1940, 32 * 1024 * 1024, "32MB")]
         [DataRow((short)0x1A40, 64 * 1024 * 1024, "64MB")]
+        [DataRow((short)0x1B40, 128 * 1024 * 1024, "128MB")]
+        [DataRow((short)0x1C40, 256 * 1024 * 1024, "256MB")]
         [DataRow((short)0x2040, 64 * 1024 * 1024, "64MB alt")]
+        [DataRow((short)0x2140, 128 * 1024 * 1024, "128MB alt")]
+        [DataRow((short)0x2240, 256 * 1024 * 1024, "256MB alt")]
+        [DataRow((short)0x3240, 256 * 1024, "256KB alt")]
+        [DataRow((short)0x3340, 512 * 1024, "512KB alt")]
+        [DataRow((short)0x3440, 1 * 1024 * 1024, "1MB alt")]
+        [DataRow((short)0x3540, 2 * 1024 * 1024, "2MB alt")]
+        [DataRow((short)0x3640, 4 * 1024 * 1024, "4MB alt")]
+        [DataRow((short)0x3740, 8 * 1024 * 1024, "8MB alt")]
+        [DataRow((short)0x3840, 16 * 1024 * 1024, "16MB alt")]
+        [DataRow((short)0x3940, 32 * 1024 * 1024, "32MB alt")]
+        [DataRow((short)0x3A40, 64 * 1024 * 1024, "64MB alt 2")]
         public void ChipDetector_DetectFlashSizeFromId_KnownSizes(short deviceId, int expectedBytes, string description)
         {
             // deviceId layout: capacity in high byte, memType in low byte
