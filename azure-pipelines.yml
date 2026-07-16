@@ -25,8 +25,8 @@ trigger:
 pr:
   autoCancel: true
 
-variables:
-  system.debug: true
+#variables:
+#  system.debug: true
 
 # add nf-tools repo to resources (for Azure Pipelines templates)
 resources:
@@ -221,7 +221,7 @@ jobs:
       command: restore
       verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln
-      #feedsToUse: config
+      feedsToUse: config
       nugetConfigPath: NuGet.Config
 
   - script: dotnet build -c $(BuildConfiguration) /p:PublicRelease=true --no-restore /t:build,pack

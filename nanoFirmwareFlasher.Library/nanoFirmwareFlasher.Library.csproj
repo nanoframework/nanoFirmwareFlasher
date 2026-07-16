@@ -61,6 +61,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
     <PackageReference Include="LibUsbDotNet" Version="2.2.75" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
@@ -71,6 +72,18 @@
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Text.Json" Version="10.0.10" />
+    -->
+
+    <PackageReference Include="LibUsbDotNet" />
+    <PackageReference Include="Microsoft.ApplicationInsights" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="nanoFramework.Tools.Debugger.Net" />
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="All" />
+    <PackageReference Include="System.ComponentModel.Annotations" />
+    <PackageReference Include="System.IO.Ports" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
