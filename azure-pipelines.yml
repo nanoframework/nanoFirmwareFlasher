@@ -25,9 +25,6 @@ trigger:
 pr:
   autoCancel: true
 
-#variables:
-#  system.debug: true
-
 # add nf-tools repo to resources (for Azure Pipelines templates)
 resources:
   repositories:
@@ -219,6 +216,7 @@ jobs:
       )
     inputs:
       command: restore
+      restoreArguments: '--locked-mode'
       verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln
       feedsToUse: config
