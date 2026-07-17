@@ -719,6 +719,19 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void BootloaderClient_ShouldUseUsbJtagReset_UsesFallbackDuringAdaptiveRecovery()
+        {
+            Assert.IsTrue(Esp32BootloaderClient.ShouldUseUsbJtagReset(true, false, 0, 10));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, false, 0, 10));
+            Assert.IsTrue(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, true, 10, 10));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, true, 11, 10));
+
+            // Early adaptive start should preserve alternating fallback behavior.
+            Assert.IsTrue(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, true, 3, 3));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, true, 4, 3));
+        }
+
+        [TestMethod]
         public void Protocol_WriteRegCommand_BuildAndParseResponse()
         {
             // Simulate a WriteReg operation:

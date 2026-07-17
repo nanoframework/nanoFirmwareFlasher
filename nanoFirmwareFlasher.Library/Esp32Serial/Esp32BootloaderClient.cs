@@ -30,6 +30,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Additional connection attempts used only after baseline retries fail.</summary>
         private const int AdaptiveExtraAttempts = 6;
 
+        /// <summary>
+        /// For Espressif VID ports with a non-standard PID, begin adaptive fallback earlier
+        /// so USB-JTAG probing starts before all classic retries are exhausted.
+        /// </summary>
+        private const int EarlyAdaptiveStartAttemptForEspressifCustomPid = 3;
+
         private const uint Esp32C5PcrSysclkConfReg = 0x60096110;
         private const uint Esp32C5PcrSysclkXtalFreqMask = 0x7Fu << 24;
         private const int Esp32C5PcrSysclkXtalFreqShift = 24;
@@ -162,7 +168,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             var (usbVid, usbPid) = SerialPortUsbInfo.GetUsbIds(_port.PortName);
             bool isUsbJtag = usbVid == SerialPortUsbInfo.EspressifVid
                              && SerialPortUsbInfo.IsUsbJtagSerialPid(usbPid);
+            bool isEspressifCustomPid = usbVid == SerialPortUsbInfo.EspressifVid
+                                        && usbPid >= 0
+                                        && !SerialPortUsbInfo.IsUsbJtagSerialPid(usbPid);
             _isUsbJtag = isUsbJtag;
+
+            int adaptiveStartAttempt = isEspressifCustomPid
+                ? Math.Min(maxRetries, EarlyAdaptiveStartAttemptForEspressifCustomPid)
+                : maxRetries;
 
             // Show the prompt after a few failed attempts
             int promptAfterAttempt = 7;
@@ -174,6 +187,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     OutputWriter.WriteLine(
                         $"USB device detected: VID=0x{usbVid:X4} PID=0x{usbPid:X4}"
                         + " (Espressif USB-JTAG/Serial)");
+                }
+                else if (isEspressifCustomPid)
+                {
+                    OutputWriter.WriteLine(
+                        $"USB device detected: VID=0x{usbVid:X4} PID=0x{usbPid:X4}"
+                        + " (Espressif custom PID; enabling early adaptive USB-JTAG fallback)");
                 }
                 else if (usbVid >= 0 && usbPid >= 0)
                 {
@@ -190,15 +209,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             for (int attempt = 0; attempt < totalAttempts; attempt++)
             {
-                bool isAdaptiveAttempt = attempt >= maxRetries;
+                bool isAdaptiveAttempt = attempt >= adaptiveStartAttempt;
 
-                if (isAdaptiveAttempt && attempt == maxRetries && Verbosity >= VerbosityLevel.Normal)
+                if (isAdaptiveAttempt && attempt == adaptiveStartAttempt && Verbosity >= VerbosityLevel.Normal)
                 {
-                    OutputWriter.WriteLine("Initial connection retries exhausted, switching to adaptive recovery attempts...");
+                    OutputWriter.WriteLine("Switching to adaptive recovery attempts...");
                 }
 
                 // In adaptive mode, periodically reopen the port to recover from flaky USB/serial stack state.
-                if (isAdaptiveAttempt && ((attempt - maxRetries) % 2 == 1 || consecutiveTimeoutHeavy >= 3))
+                if (isAdaptiveAttempt && ((attempt - adaptiveStartAttempt) % 2 == 1 || consecutiveTimeoutHeavy >= 3))
                 {
                     ReopenPortForRecovery();
                 }
@@ -211,7 +230,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 // Matches esptool: USB-JTAG resets ONLY when positively identified.
                 // In adaptive recovery mode, probe USB-JTAG on alternating retries too,
                 // which helps native USB boards recover if VID/PID detection was inconclusive.
-                bool useUsbJtagReset = ShouldUseUsbJtagReset(isUsbJtag, isAdaptiveAttempt, attempt, maxRetries);
+                bool useUsbJtagReset = ShouldUseUsbJtagReset(isUsbJtag, isAdaptiveAttempt, attempt, adaptiveStartAttempt);
 
                 if (useUsbJtagReset)
                 {
@@ -313,13 +332,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 }
 
                 int syncSubAttempts = isAdaptiveAttempt
-                    ? Math.Min(8, 3 + (attempt - maxRetries))
+                    ? Math.Min(8, 3 + (attempt - adaptiveStartAttempt))
                     : 5;
 
                 int syncTimeoutMs = 100;
-                if (isAdaptiveAttempt && (attempt - maxRetries) >= 3)
+                if (isAdaptiveAttempt && (attempt - adaptiveStartAttempt) >= 3)
                 {
-                    syncTimeoutMs = Math.Min(200, 150 + (((attempt - maxRetries) - 3) * 25));
+                    syncTimeoutMs = Math.Min(200, 150 + (((attempt - adaptiveStartAttempt) - 3) * 25));
                 }
 
                 // Try to sync
@@ -369,14 +388,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             }
         }
 
-        internal static bool ShouldUseUsbJtagReset(bool isUsbJtag, bool isAdaptiveAttempt, int attempt, int maxRetries)
+        internal static bool ShouldUseUsbJtagReset(bool isUsbJtag, bool isAdaptiveAttempt, int attempt, int adaptiveStartAttempt)
         {
             if (isUsbJtag)
             {
                 return true;
             }
 
-            return isAdaptiveAttempt && ((attempt - maxRetries) % 2 == 0);
+            return isAdaptiveAttempt && ((attempt - adaptiveStartAttempt) % 2 == 0);
         }
 
         /// <summary>
