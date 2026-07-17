@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Ports;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -29,6 +30,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         /// <summary>Additional connection attempts used only after baseline retries fail.</summary>
         private const int AdaptiveExtraAttempts = 6;
+
+        /// <summary>Retries when opening the serial port to tolerate USB re-enumeration delays.</summary>
+        private const int OpenPortRetryAttempts = 5;
+
+        /// <summary>Retries for reset sequence execution when control line operations transiently fail.</summary>
+        private const int ResetReconnectAttempts = 3;
 
         /// <summary>
         /// For Espressif VID ports with a non-standard PID, begin adaptive fallback earlier
@@ -130,7 +137,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 _port.Close();
             }
 
-            _port.Open();
+            OpenPortWithRetries();
 
             if (Verbosity >= VerbosityLevel.Diagnostic)
             {
@@ -237,46 +244,16 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     useUsbJtagReset,
                     consecutiveTimeoutHeavy);
 
-                if (useUsbJtagReset)
+                int delay = (attempt % 2 == 0)
+                    ? Esp32ResetSequence.DefaultResetDelayMs
+                    : Esp32ResetSequence.ExtraResetDelayMs;
+
+                if (consecutiveTimeoutHeavy >= 2)
                 {
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
-                    {
-                        OutputWriter.WriteLine(
-                            $"[Connect] Attempt {attempt + 1}/{totalAttempts}: "
-                            + (isUsbJtag ? "USB-JTAG reset" : "USB-JTAG fallback reset"));
-                    }
-
-                    Esp32ResetSequence.EnterBootloaderUsbJtag(_port);
+                    delay = Math.Min(delay + (50 * (consecutiveTimeoutHeavy - 1)), 900);
                 }
-                else
-                {
-                    int delay = (attempt % 2 == 0)
-                        ? Esp32ResetSequence.DefaultResetDelayMs
-                        : Esp32ResetSequence.ExtraResetDelayMs;
 
-                    if (consecutiveTimeoutHeavy >= 2)
-                    {
-                        delay = Math.Min(delay + (50 * (consecutiveTimeoutHeavy - 1)), 900);
-                    }
-
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
-                    {
-                        OutputWriter.WriteLine(
-                            $"[Connect] Attempt {attempt + 1}/{totalAttempts}: "
-                            + (useManualBootHoldFallback
-                                ? $"ClassicReset+BOOT hold fallback (delay={delay}ms)"
-                                : $"ClassicReset (delay={delay}ms)"));
-                    }
-
-                    if (useManualBootHoldFallback)
-                    {
-                        Esp32ResetSequence.EnterBootloaderKeepBootPinLow(_port, delay);
-                    }
-                    else
-                    {
-                        Esp32ResetSequence.EnterBootloader(_port, delay);
-                    }
-                }
+                ExecuteResetWithRecovery(useUsbJtagReset, useManualBootHoldFallback, isUsbJtag, delay, attempt + 1, totalAttempts);
 
                 // Read any boot log output from the ROM after reset.
                 // This serves two purposes:
@@ -951,11 +928,128 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             Thread.Sleep(120);
 
-            _port.Open();
+            OpenPortWithRetries();
             _port.DtrEnable = false;
             _port.RtsEnable = false;
             _port.DiscardInBuffer();
             _port.DiscardOutBuffer();
+        }
+
+        private void ExecuteResetWithRecovery(
+            bool useUsbJtagReset,
+            bool useManualBootHoldFallback,
+            bool isUsbJtag,
+            int delay,
+            int attemptNumber,
+            int totalAttempts)
+        {
+            Action resetAction;
+            string resetLabel;
+
+            if (useUsbJtagReset)
+            {
+                resetAction = () => Esp32ResetSequence.EnterBootloaderUsbJtag(_port);
+                resetLabel = isUsbJtag ? "USB-JTAG reset" : "USB-JTAG fallback reset";
+            }
+            else if (useManualBootHoldFallback)
+            {
+                resetAction = () => Esp32ResetSequence.EnterBootloaderKeepBootPinLow(_port, delay);
+                resetLabel = $"ClassicReset+BOOT hold fallback (delay={delay}ms)";
+            }
+            else
+            {
+                resetAction = () => Esp32ResetSequence.EnterBootloader(_port, delay);
+                resetLabel = $"ClassicReset (delay={delay}ms)";
+            }
+
+            if (Verbosity >= VerbosityLevel.Diagnostic)
+            {
+                OutputWriter.WriteLine($"[Connect] Attempt {attemptNumber}/{totalAttempts}: {resetLabel}");
+            }
+
+            Exception lastError = null;
+            for (int retry = 0; retry < ResetReconnectAttempts; retry++)
+            {
+                try
+                {
+                    if (!_port.IsOpen)
+                    {
+                        OpenPortWithRetries();
+                        _port.DtrEnable = false;
+                        _port.RtsEnable = false;
+                    }
+
+                    resetAction();
+                    return;
+                }
+                catch (Exception ex) when (ex is IOException || ex is InvalidOperationException || ex is UnauthorizedAccessException)
+                {
+                    lastError = ex;
+
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine(
+                            $"[Connect] Reset failed ({ex.GetType().Name}: {ex.Message}). "
+                            + $"Recovery retry {retry + 1}/{ResetReconnectAttempts}...");
+                    }
+
+                    SafeClosePort();
+                    Thread.Sleep(150 + (retry * 150));
+                }
+            }
+
+            throw new EspToolExecutionException($"Reset sequence failed after recovery retries: {lastError?.Message}");
+        }
+
+        private void OpenPortWithRetries()
+        {
+            Exception lastError = null;
+
+            for (int attempt = 0; attempt < OpenPortRetryAttempts; attempt++)
+            {
+                try
+                {
+                    if (!_port.IsOpen)
+                    {
+                        _port.Open();
+                    }
+
+                    return;
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is InvalidOperationException)
+                {
+                    lastError = ex;
+
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine(
+                            $"[Connect] Port open failed ({ex.GetType().Name}: {ex.Message}). "
+                            + $"Retry {attempt + 1}/{OpenPortRetryAttempts}...");
+                    }
+
+                    SafeClosePort();
+                    Thread.Sleep(120 + (attempt * 120));
+                }
+            }
+
+            throw new EspToolExecutionException($"Unable to open serial port {_port.PortName}: {lastError?.Message}");
+        }
+
+        private void SafeClosePort()
+        {
+            if (!_port.IsOpen)
+            {
+                return;
+            }
+
+            try
+            {
+                _port.Close();
+            }
+            catch
+            {
+                // Best-effort close during recovery.
+            }
         }
 
         /// <summary>
