@@ -732,6 +732,16 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void BootloaderClient_ShouldUseManualBootHoldFallback_TriggersOnlyForSilentCustomPidPath()
+        {
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(false, true, false, 3));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(true, false, false, 3));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(true, true, true, 3));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(true, true, false, 1));
+            Assert.IsTrue(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(true, true, false, 2));
+        }
+
+        [TestMethod]
         public void Protocol_WriteRegCommand_BuildAndParseResponse()
         {
             // Simulate a WriteReg operation:

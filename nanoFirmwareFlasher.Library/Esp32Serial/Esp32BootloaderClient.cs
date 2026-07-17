@@ -231,6 +231,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 // In adaptive recovery mode, probe USB-JTAG on alternating retries too,
                 // which helps native USB boards recover if VID/PID detection was inconclusive.
                 bool useUsbJtagReset = ShouldUseUsbJtagReset(isUsbJtag, isAdaptiveAttempt, attempt, adaptiveStartAttempt);
+                bool useManualBootHoldFallback = ShouldUseManualBootHoldFallback(
+                    isEspressifCustomPid,
+                    isAdaptiveAttempt,
+                    useUsbJtagReset,
+                    consecutiveTimeoutHeavy);
 
                 if (useUsbJtagReset)
                 {
@@ -256,10 +261,21 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{totalAttempts}: ClassicReset (delay={delay}ms)");
+                        OutputWriter.WriteLine(
+                            $"[Connect] Attempt {attempt + 1}/{totalAttempts}: "
+                            + (useManualBootHoldFallback
+                                ? $"ClassicReset+BOOT hold fallback (delay={delay}ms)"
+                                : $"ClassicReset (delay={delay}ms)"));
                     }
 
-                    Esp32ResetSequence.EnterBootloader(_port, delay);
+                    if (useManualBootHoldFallback)
+                    {
+                        Esp32ResetSequence.EnterBootloaderKeepBootPinLow(_port, delay);
+                    }
+                    else
+                    {
+                        Esp32ResetSequence.EnterBootloader(_port, delay);
+                    }
                 }
 
                 // Read any boot log output from the ROM after reset.
@@ -342,7 +358,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 }
 
                 // Try to sync
-                if (TrySync(syncSubAttempts, syncTimeoutMs, 50, out SyncAttemptStats syncStats))
+                if (useManualBootHoldFallback)
+                {
+                    syncTimeoutMs = Math.Max(syncTimeoutMs, 250);
+                }
+
+                if (TrySync(syncSubAttempts, syncTimeoutMs, 50, useManualBootHoldFallback, out SyncAttemptStats syncStats))
                 {
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
@@ -396,6 +417,18 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             }
 
             return isAdaptiveAttempt && ((attempt - adaptiveStartAttempt) % 2 == 0);
+        }
+
+        internal static bool ShouldUseManualBootHoldFallback(
+            bool isEspressifCustomPid,
+            bool isAdaptiveAttempt,
+            bool useUsbJtagReset,
+            int consecutiveTimeoutHeavy)
+        {
+            return isEspressifCustomPid
+                   && isAdaptiveAttempt
+                   && !useUsbJtagReset
+                   && consecutiveTimeoutHeavy >= 2;
         }
 
         /// <summary>
@@ -777,82 +810,97 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// Makes multiple fast attempts within a single reset cycle.
         /// </summary>
         /// <returns>True if sync was successful.</returns>
-        private bool TrySync(int subAttempts, int syncTimeoutMs, int interAttemptDelayMs, out SyncAttemptStats stats)
+        private bool TrySync(
+            int subAttempts,
+            int syncTimeoutMs,
+            int interAttemptDelayMs,
+            bool releaseBootPinAfterAttempts,
+            out SyncAttemptStats stats)
         {
             stats = new SyncAttemptStats();
             byte[] syncPacket = Esp32CommandPacket.BuildSync();
 
-            for (int i = 0; i < subAttempts; i++)
+            try
             {
-                try
+                for (int i = 0; i < subAttempts; i++)
                 {
-                    // Flush before each attempt, matching esptool's _connect_attempt loop
-                    _port.DiscardInBuffer();
-                    _port.BaseStream.Flush();
-
-                    _port.Write(syncPacket, 0, syncPacket.Length);
-
-                    byte[] responsePayload = SlipFraming.ReadFrame(_port, syncTimeoutMs);
-
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    try
                     {
-                        OutputWriter.WriteLine(
-                            $"[Sync] Sub-attempt {i + 1}/{subAttempts}: got {responsePayload.Length} bytes,"
-                            + $" dir=0x{(responsePayload.Length > 0 ? responsePayload[0] : 0):X2}");
-                    }
+                        // Flush before each attempt, matching esptool's _connect_attempt loop
+                        _port.DiscardInBuffer();
+                        _port.BaseStream.Flush();
 
-                    if (responsePayload.Length < Esp32ResponsePacket.MinimumPacketSize)
-                    {
-                        stats.StaleFrames++;
-                        Thread.Sleep(interAttemptDelayMs);
-                        continue;
-                    }
+                        _port.Write(syncPacket, 0, syncPacket.Length);
 
-                    if (responsePayload[0] != Esp32ResponsePacket.ResponseDirection)
-                    {
-                        stats.StaleFrames++;
-                        Thread.Sleep(interAttemptDelayMs);
-                        continue;
-                    }
-
-                    if (responsePayload.Length >= Esp32ResponsePacket.MinimumPacketSize
-                        && responsePayload[0] == Esp32ResponsePacket.ResponseDirection)
-                    {
-                        var response = Esp32ResponsePacket.Parse(responsePayload, IsStubRunning);
-
-                        if (response.Command == Esp32Command.Sync && response.IsSuccess)
-                        {
-                            return true;
-                        }
+                        byte[] responsePayload = SlipFraming.ReadFrame(_port, syncTimeoutMs);
 
                         if (Verbosity >= VerbosityLevel.Diagnostic)
                         {
                             OutputWriter.WriteLine(
-                                $"[Sync] Response: cmd=0x{(byte)response.Command:X2}"
-                                + $" success={response.IsSuccess} value=0x{response.Value:X8}");
+                                $"[Sync] Sub-attempt {i + 1}/{subAttempts}: got {responsePayload.Length} bytes,"
+                                + $" dir=0x{(responsePayload.Length > 0 ? responsePayload[0] : 0):X2}");
                         }
 
-                        stats.StaleFrames++;
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    stats.Timeouts++;
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
-                    {
-                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/{subAttempts}: timeout (no response)");
-                    }
-                }
-                catch (InvalidOperationException ex)
-                {
-                    stats.InvalidSlipFrames++;
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
-                    {
-                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/{subAttempts}: invalid SLIP frame: {ex.Message}");
-                    }
-                }
+                        if (responsePayload.Length < Esp32ResponsePacket.MinimumPacketSize)
+                        {
+                            stats.StaleFrames++;
+                            Thread.Sleep(interAttemptDelayMs);
+                            continue;
+                        }
 
-                Thread.Sleep(interAttemptDelayMs);
+                        if (responsePayload[0] != Esp32ResponsePacket.ResponseDirection)
+                        {
+                            stats.StaleFrames++;
+                            Thread.Sleep(interAttemptDelayMs);
+                            continue;
+                        }
+
+                        if (responsePayload.Length >= Esp32ResponsePacket.MinimumPacketSize
+                            && responsePayload[0] == Esp32ResponsePacket.ResponseDirection)
+                        {
+                            var response = Esp32ResponsePacket.Parse(responsePayload, IsStubRunning);
+
+                            if (response.Command == Esp32Command.Sync && response.IsSuccess)
+                            {
+                                return true;
+                            }
+
+                            if (Verbosity >= VerbosityLevel.Diagnostic)
+                            {
+                                OutputWriter.WriteLine(
+                                    $"[Sync] Response: cmd=0x{(byte)response.Command:X2}"
+                                    + $" success={response.IsSuccess} value=0x{response.Value:X8}");
+                            }
+
+                            stats.StaleFrames++;
+                        }
+                    }
+                    catch (TimeoutException)
+                    {
+                        stats.Timeouts++;
+                        if (Verbosity >= VerbosityLevel.Diagnostic)
+                        {
+                            OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/{subAttempts}: timeout (no response)");
+                        }
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        stats.InvalidSlipFrames++;
+                        if (Verbosity >= VerbosityLevel.Diagnostic)
+                        {
+                            OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/{subAttempts}: invalid SLIP frame: {ex.Message}");
+                        }
+                    }
+
+                    Thread.Sleep(interAttemptDelayMs);
+                }
+            }
+            finally
+            {
+                if (releaseBootPinAfterAttempts)
+                {
+                    Esp32ResetSequence.ReleaseBootPin(_port);
+                }
             }
 
             return false;
