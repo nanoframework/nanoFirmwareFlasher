@@ -209,17 +209,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                 // Select reset strategy based on detected USB type.
                 // Matches esptool: USB-JTAG resets ONLY when positively identified.
-                // In adaptive recovery mode, probe USB-JTAG on alternating retries too,
-                // which helps native USB boards recover if VID/PID detection was inconclusive.
-                bool useUsbJtagReset = ShouldUseUsbJtagReset(isUsbJtag, isAdaptiveAttempt, attempt, maxRetries);
-
-                if (useUsbJtagReset)
+                // For all other cases (known UART bridge OR unknown VID/PID),
+                // use ClassicReset with cycling delays (50ms / 550ms).
+                if (isUsbJtag)
                 {
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        OutputWriter.WriteLine(
-                            $"[Connect] Attempt {attempt + 1}/{totalAttempts}: "
-                            + (isUsbJtag ? "USB-JTAG reset" : "USB-JTAG fallback reset"));
+                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{totalAttempts}: USB-JTAG reset");
                     }
 
                     Esp32ResetSequence.EnterBootloaderUsbJtag(_port);
@@ -367,16 +363,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             {
                 OutputWriter.WriteLine($"Connected to ESP32 bootloader on {_port.PortName} @ {CurrentBaudRate} baud.");
             }
-        }
-
-        internal static bool ShouldUseUsbJtagReset(bool isUsbJtag, bool isAdaptiveAttempt, int attempt, int maxRetries)
-        {
-            if (isUsbJtag)
-            {
-                return true;
-            }
-
-            return isAdaptiveAttempt && ((attempt - maxRetries) % 2 == 0);
         }
 
         /// <summary>
