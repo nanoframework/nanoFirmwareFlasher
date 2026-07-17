@@ -724,11 +724,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // A bit of flexibility to allow common variations of target names - map them to the canonical names used in firmware package metadata
             return normalized switch
             {
-                "RP_PICO_2040" => "RP_PICO_RP2040",
-                "RP_PICO_W_2040" => "RP_PICO_W_RP2040",
-                "RP_PICO_2040_W" => "RP_PICO_W_RP2040",
-                "RP_PICO_RP2040_W" => "RP_PICO_W_RP2040",
-                "RP_PICO_2350" => "RP_PICO_RP2350",
+                "RP_PICO_2040" => "PICO_RP2040",
+                "RP_PICO_W_2040" => "PICO_RP2040_W",
+                "RP_PICO_2040_W" => "PICO_RP2040_W",
+                "RP_PICO_RP2040_W" => "PICO_RP2040_W",
+                "RP_PICO_2350" => "PICO2_RP2350",
+                "RP_PICO_W_2350" => "PICO2_RP2350_W",
+                "RP_PICO_2350_W" => "PICO2_RP2350_W",
+                "RP_PICO2_2350" => "PICO2_RP2350",
+                "RP_PICO2_W_2350" => "PICO2_RP2350_W",
+                "RP_PICO2_2350_W" => "PICO2_RP2350_W",
+                
                 _ => normalized,
             };
         }
@@ -745,10 +751,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (deviceInfo.ChipType == "RP2350")
             {
-                return "RP_PICO_RP2350";
+                return "PICO2_RP2350";
             }
 
-            return "RP_PICO_RP2040";
+            return "PICO_RP2040";
         }
 
         /// <summary>
