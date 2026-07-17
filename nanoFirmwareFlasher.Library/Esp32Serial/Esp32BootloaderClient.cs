@@ -161,7 +161,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             // to fail (chip boots normally instead of entering download mode).
             var (usbVid, usbPid) = SerialPortUsbInfo.GetUsbIds(_port.PortName);
             bool isUsbJtag = usbVid == SerialPortUsbInfo.EspressifVid
-                             && usbPid == SerialPortUsbInfo.UsbJtagSerialPid;
+                             && SerialPortUsbInfo.IsUsbJtagSerialPid(usbPid);
             _isUsbJtag = isUsbJtag;
 
             // Show the prompt after a few failed attempts

@@ -26,12 +26,23 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal const int UsbJtagSerialPid = 0x1001;
 
         /// <summary>
+        /// Some Espressif native USB boards expose a customer PID instead of 0x1001.
+        /// Treat it as USB-Serial/JTAG-compatible for reset selection.
+        /// </summary>
+        internal const int UsbJtagSerialCompatiblePid = 0x4001;
+
+        /// <summary>
         /// Check whether the given serial port is an Espressif USB-JTAG/Serial device.
         /// </summary>
         internal static bool IsUsbJtagSerial(string portName)
         {
             var (vid, pid) = GetUsbIds(portName);
-            return vid == EspressifVid && pid == UsbJtagSerialPid;
+            return vid == EspressifVid && IsUsbJtagSerialPid(pid);
+        }
+
+        internal static bool IsUsbJtagSerialPid(int pid)
+        {
+            return pid == UsbJtagSerialPid || pid == UsbJtagSerialCompatiblePid;
         }
 
         /// <summary>
