@@ -712,10 +712,9 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void SerialPortUsbInfo_IsUsbJtagSerialPid_AcceptsCompatibleEspressifPid()
+        public void SerialPortUsbInfo_IsUsbJtagSerialPid_UsesExactUpstreamPid()
         {
             Assert.IsTrue(SerialPortUsbInfo.IsUsbJtagSerialPid(SerialPortUsbInfo.UsbJtagSerialPid));
-            Assert.IsTrue(SerialPortUsbInfo.IsUsbJtagSerialPid(SerialPortUsbInfo.UsbJtagSerialCompatiblePid));
             Assert.IsFalse(SerialPortUsbInfo.IsUsbJtagSerialPid(0x0002));
         }
 
