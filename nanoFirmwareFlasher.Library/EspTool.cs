@@ -180,7 +180,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // If caller needs standard baud rate and we're currently at a higher rate, change back.
                 if (useStandardBaudrate && _stubUploaded && _client.CurrentBaudRate != Esp32BootloaderClient.DefaultBaudRate)
                 {
-                    _client.ChangeBaudRate(Esp32BootloaderClient.DefaultBaudRate);
+                    _client.ChangeBaudRate(Esp32BootloaderClient.DefaultBaudRate, _chipDetector?.Config);
                 }
 
                 return;
@@ -190,13 +190,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _client.Connect();
 
             _chipDetector = new Esp32ChipDetector(_client);
+
+            // Always prepare detected chip runtime state before any stub/flash operation.
+            EnsureRuntimeChipConfig();
+
             _isConnected = true;
 
-            // Try to upload the stub loader for faster operations
-            if (_chipType != "auto")
-            {
-                TryUploadStub(useStandardBaudrate);
-            }
+            // Try to upload the stub loader for faster operations.
+            TryUploadStub(useStandardBaudrate);
         }
 
         /// <summary>
@@ -227,12 +228,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             try
             {
+                EnsureRuntimeChipConfig();
+
+                if (_chipDetector.Config.DisableStub)
+                {
+                    _stubUploaded = false;
+
+                    if (Verbosity >= VerbosityLevel.Detailed)
+                    {
+                        OutputWriter.WriteLine($"Skipping stub loader for {_chipDetector.Config.ChipType} on this chip revision.");
+                    }
+
+                    return;
+                }
+
                 _stubUploaded = Esp32StubLoader.UploadStub(_client, _chipDetector.Config, Verbosity);
 
                 if (_stubUploaded && !useStandardBaudrate && _baudRate != Esp32BootloaderClient.DefaultBaudRate)
                 {
                     // Change to user-requested baud rate for faster transfers
-                    _client.ChangeBaudRate(_baudRate);
+                    _client.ChangeBaudRate(_baudRate, _chipDetector.Config);
 
                     if (Verbosity >= VerbosityLevel.Detailed)
                     {
@@ -250,6 +265,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     OutputWriter.WriteLine($"Stub upload failed ({ex.Message}), using ROM bootloader.");
                 }
             }
+        }
+
+        private void EnsureRuntimeChipConfig()
+        {
+            if (_chipDetector == null)
+            {
+                return;
+            }
+
+            if (_chipDetector.Config == null)
+            {
+                _chipType = _chipDetector.DetectChipType();
+            }
+
+            _chipDetector.ApplyRuntimeTransportOverrides();
+            _client.SetRuntimeConfig(_chipDetector.Config);
         }
 
         /// <summary>
@@ -272,9 +303,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 EnsureConnected();
 
-                // Detect chip type via magic register
-                string chipType = _chipDetector.DetectChipType();
-                _chipType = chipType;
+                // Ensure chip is detected and runtime transport flags are applied.
+                EnsureRuntimeChipConfig();
 
                 var config = _chipDetector.Config;
 
@@ -314,9 +344,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 PSRamAvailability psramIsAvailable = PSRamAvailability.Undetermined;
                 int psRamSize = 0;
 
-                if (_chipType == "esp32c3"
-                   || _chipType == "esp32c6"
-                   || _chipType == "esp32h2")
+                     if (_chipType == "esp32c3"
+                         || _chipType == "esp32c2"
+                         || _chipType == "esp32c6"
+                         || _chipType == "esp32h2"
+                         || _chipType == "esp32h21"
+                         || _chipType == "esp32h4"
+                         || _chipType == "esp32e22")
                 {
                     // these series don't have PSRAM
                     psramIsAvailable = PSRamAvailability.No;
@@ -369,20 +403,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
-                // Map chip type to display format with hyphen (e.g. "esp32s3" → "ESP32-S3")
-                string displayChipType = chipType switch
-                {
-                    "esp32" => "ESP32",
-                    "esp32s2" => "ESP32-S2",
-                    "esp32s3" => "ESP32-S3",
-                    "esp32c3" => "ESP32-C3",
-                    "esp32c6" => "ESP32-C6",
-                    "esp32h2" => "ESP32-H2",
-                    "esp32c5" => "ESP32-C5",
-                    "esp32c61" => "ESP32-C61",
-                    "esp32p4" => "ESP32-P4",
-                    _ => chipType.ToUpperInvariant(),
-                };
+                string displayChipType = config.Name;
 
 
                 return new Esp32DeviceInfo(
@@ -967,8 +988,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (_chipDetector.Config == null)
             {
                 // Need to detect chip type first to get the config
-                _chipDetector.DetectChipType();
+                EnsureRuntimeChipConfig();
             }
+
+            EnsureRuntimeChipConfig();
 
             _flashController = new Esp32FlashController(_client, _chipDetector.Config);
         }

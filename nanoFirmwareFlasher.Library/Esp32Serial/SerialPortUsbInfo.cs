@@ -34,6 +34,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         }
 
         /// <summary>
+        /// Check whether the given serial port is a native Espressif USB-OTG device for the specified chip image PID.
+        /// </summary>
+        internal static bool IsUsbOtg(string portName, uint chipId)
+        {
+            var (vid, pid) = GetUsbIds(portName);
+            return vid == EspressifVid && pid == (int)chipId;
+        }
+
+        /// <summary>
         /// Get the USB VID and PID for a serial port.
         /// Returns (-1, -1) if the information cannot be determined.
         /// </summary>

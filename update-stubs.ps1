@@ -26,7 +26,20 @@ param (
 # Source this helper
 . .\common.ps1
 
-$chipTypes = @("esp32", "esp32s2", "esp32s3", "esp32c3", "esp32c6", "esp32h2")
+$chipTypes = @(
+    "esp32",
+    "esp32c2",
+    "esp32c3",
+    "esp32c5",
+    "esp32c6",
+    "esp32c61",
+    "esp32h2",
+    "esp32h4",
+    "esp32p4",
+    "esp32s2",
+    "esp32s3",
+    "esp32s31"
+)
 $stubDir = Join-Path (Join-Path (Join-Path $PSScriptRoot "nanoFirmwareFlasher.Library") "Esp32Serial") "StubImages"
 $repoOwner = "espressif"
 $repoName = "esp-flasher-stub"

@@ -144,6 +144,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// </summary>
         private void SendFlashBegin(int totalSize, int numBlocks, int blockSize, uint offset)
         {
+            _client.PrepareForFlashOperations(_config);
+
             byte[] data = new byte[16];
             Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)totalSize);
             Esp32CommandPacket.WriteUInt32LE(data, 4, (uint)numBlocks);
@@ -205,6 +207,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Default block size for compressed writes (matches esptool stub).</summary>
         internal const int CompressedBlockSize = 0x4000;
 
+        /// <summary>Reduced block size used by the S31 stub when connected over native USB-OTG.</summary>
+        internal const int UsbOtgCompressedBlockSize = 0x800;
+
         /// <summary>
         /// Write binary data to flash using deflate compression (requires stub loader).
         /// Significantly faster for data with high compressibility.
@@ -240,7 +245,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     "Compressed flash writes require the stub loader to be running.");
             }
 
-            int blockSize = CompressedBlockSize;
+            int blockSize = _config.UsesUsbOtg ? UsbOtgCompressedBlockSize : CompressedBlockSize;
             int totalBlocks = (compressed.Length + blockSize - 1) / blockSize;
 
             // FLASH_DEFL_BEGIN: [erase_size:4 (uncompressed)][num_blocks:4][block_size:4][offset:4]
@@ -291,6 +296,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         private void SendFlashDeflBegin(int uncompressedSize, int numBlocks, int blockSize, uint offset)
         {
+            _client.PrepareForFlashOperations(_config);
+
             byte[] data = new byte[16];
             Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)uncompressedSize);
             Esp32CommandPacket.WriteUInt32LE(data, 4, (uint)numBlocks);
@@ -578,6 +585,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <param name="flashSizeBytes">Total flash size in bytes.</param>
         internal void SendSpiSetParams(int flashSizeBytes)
         {
+            _client.PrepareForFlashOperations(_config);
+
             byte[] data = new byte[24];
             Esp32CommandPacket.WriteUInt32LE(data, 0, 0);                            // fl_id = 0
             Esp32CommandPacket.WriteUInt32LE(data, 4, (uint)flashSizeBytes);         // total_size
@@ -739,6 +748,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             int length,
             Action<int, int> progress = null)
         {
+            _client.PrepareForFlashOperations(_config);
+
             // READ_FLASH command data format: [address:4][length:4][block_size:4][max_in_flight:4]
             byte[] cmdData = new byte[16];
             Esp32CommandPacket.WriteUInt32LE(cmdData, 0, address);
