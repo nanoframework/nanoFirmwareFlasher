@@ -76,19 +76,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 BootloaderPath = "bootloader.bin";
 
-                // Boot loader goes to 0x1000, except for ESP32_C3/C6/c61/H2/S3, which goes to 0x0
-                // and ESP32_P4 and ESP32_C5 where it goes at 0x2000
+                // Boot loader goes to 0x1000, except for newer ROM families with 0x0 or 0x2000 offsets.
                 int BootLoaderAddress = 0x1000;
                 if (deviceInfo.ChipType == "ESP32-C3"
+                    || deviceInfo.ChipType == "ESP32-C2"
                     || deviceInfo.ChipType == "ESP32-C6"
                     || deviceInfo.ChipType == "ESP32-C61"
                     || deviceInfo.ChipType == "ESP32-H2"
+                    || deviceInfo.ChipType == "ESP32-H21"
+                    || deviceInfo.ChipType == "ESP32-E22"
                     || deviceInfo.ChipType == "ESP32-S3")
                 {
                     BootLoaderAddress = 0;
                 }
                 if (deviceInfo.ChipType == "ESP32-P4"
-                    || deviceInfo.ChipType == "ESP32-C5")
+                    || deviceInfo.ChipType == "ESP32-C5"
+                    || deviceInfo.ChipType == "ESP32-H4"
+                    || deviceInfo.ChipType == "ESP32-S31")
                 {
                     BootLoaderAddress = 0x2000;
                 }

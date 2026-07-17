@@ -30,9 +30,42 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Additional connection attempts used only after baseline retries fail.</summary>
         private const int AdaptiveExtraAttempts = 6;
 
+        private const uint Esp32C5PcrSysclkConfReg = 0x60096110;
+        private const uint Esp32C5PcrSysclkXtalFreqMask = 0x7Fu << 24;
+        private const int Esp32C5PcrSysclkXtalFreqShift = 24;
+
+        private const uint Esp32P4EfuseBlock1Addr = 0x5012D044;
+        private const uint Esp32P4EfuseRdRepeatData1Reg = 0x5012D034;
+        private const uint Esp32P4EfuseDownloadModeXpdOnMask = 0x1u << 16;
+        private const uint Esp32P4LpSystemRegAnaXpdPadGroupReg = 0x5011010C;
+        private const uint Esp32P4PmuExtLdoP0_0P1AAnaReg = 0x501151BC;
+        private const uint Esp32P4PmuAna0P1AEnCurLim0 = 1u << 27;
+        private const uint Esp32P4PmuExtLdoP0_0P1AReg = 0x501151B8;
+        private const uint Esp32P4Pmu0P1ATarget00 = 0xFFu << 23;
+        private const uint Esp32P4Pmu0P1AForceTiehSel0 = 1u << 7;
+        private const uint Esp32P4PmuDateReg = 0x501153FC;
+        private const uint Esp32P4LpWdtConfig0Reg = 0x50116000;
+        private const uint Esp32P4LpWdtWprotectReg = 0x50116018;
+        private const uint Esp32P4LpSwdConfReg = 0x5011601C;
+        private const uint Esp32P4LpSwdWprotectReg = 0x50116020;
+        private const uint Esp32P4LpWdtWkey = 0x50D83AA1;
+        private const uint Esp32P4LpSwdAutoFeedEn = 1u << 18;
+
+        private const uint Esp32S31LpWdtConfig0Reg = 0x20801000;
+        private const uint Esp32S31LpWdtConfig1Reg = 0x20801004;
+        private const uint Esp32S31LpWdtWprotectReg = 0x20801018;
+        private const uint Esp32S31LpWdtWkey = 0x50D83AA1;
+
+        private const uint Esp32E22GpioStrapReg = 0xC310D000;
+        private const uint Esp32E22GpioStrapSpiBootMask = 0x1u << 3;
+        private const uint Esp32E22RtcCntlOption1Reg = 0x3F408128;
+        private const uint Esp32E22RtcCntlForceDownloadBootMask = 0x1u;
+
         private SerialPort _port;
         private bool _disposed;
         private bool _isUsbJtag;
+        private bool _p4FlashPrepared;
+        private Esp32ChipConfig _runtimeConfig;
 
         private struct SyncAttemptStats
         {
@@ -449,10 +482,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// For stub: both old and new baud rates are sent.
         /// </summary>
         /// <param name="newBaudRate">New baud rate to switch to.</param>
-        internal void ChangeBaudRate(int newBaudRate)
+        /// <param name="config">Detected chip configuration used for ROM-specific baud quirks.</param>
+        internal void ChangeBaudRate(int newBaudRate, Esp32ChipConfig config = null)
         {
+            int commandBaudRate = GetCommandBaudRate(newBaudRate, config);
+
             byte[] data = new byte[8];
-            Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)newBaudRate);
+            Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)commandBaudRate);
             Esp32CommandPacket.WriteUInt32LE(data, 4, IsStubRunning ? (uint)CurrentBaudRate : 0);
 
             var response = SendCommand(Esp32Command.ChangeBaudrate, data);
@@ -469,6 +505,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             _port.DiscardInBuffer();
         }
 
+        internal void PrepareForFlashOperations(Esp32ChipConfig config)
+        {
+            if (config == null || IsStubRunning)
+            {
+                return;
+            }
+
+            if (config.ChipType == "esp32p4")
+            {
+                PrepareEsp32P4ForFlashOperations();
+            }
+        }
+
         /// <summary>
         /// Perform a hard reset to exit the bootloader and run the application.
         /// </summary>
@@ -478,6 +527,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             if (_port.IsOpen)
             {
+                if (_runtimeConfig?.ChipType == "esp32s31" && _runtimeConfig.UsesUsbOtg)
+                {
+                    WatchdogResetEsp32S31();
+                    return;
+                }
+
+                if (_runtimeConfig?.ChipType == "esp32e22" && _runtimeConfig.UsesUsbOtg)
+                {
+                    uint strapReg = ReadRegister(Esp32E22GpioStrapReg);
+                    uint forceDownloadReg = ReadRegister(Esp32E22RtcCntlOption1Reg);
+
+                    if ((strapReg & Esp32E22GpioStrapSpiBootMask) == 0
+                        && (forceDownloadReg & Esp32E22RtcCntlForceDownloadBootMask) == 0)
+                    {
+                        // Upstream routes this case through the chip's watchdog-reset path.
+                        // We don't have a published E22-specific watchdog register sequence,
+                        // so use the existing USB-aware hard-reset primitive after matching the branch condition.
+                        Esp32ResetSequence.HardReset(_port, true);
+                        return;
+                    }
+                }
+
                 Esp32ResetSequence.HardReset(_port, _isUsbJtag);
             }
         }
@@ -526,6 +597,145 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// Get the underlying serial port (for direct serial reading, e.g. PSRAM detection).
         /// </summary>
         internal SerialPort Port => _port;
+
+        internal void SetRuntimeConfig(Esp32ChipConfig config)
+        {
+            _runtimeConfig = config;
+        }
+
+        private int GetCommandBaudRate(int requestedBaudRate, Esp32ChipConfig config)
+        {
+            if (IsStubRunning || config == null)
+            {
+                return requestedBaudRate;
+            }
+
+            if (config.ChipType == "esp32c2")
+            {
+                int crystalFrequency = EstimateCrystalFrequencyMHz(config);
+                if (crystalFrequency == 26)
+                {
+                    return requestedBaudRate * 40 / 26;
+                }
+            }
+            else if (config.ChipType == "esp32c5")
+            {
+                int crystalFrequency = EstimateCrystalFrequencyMHz(config);
+                int romExpectedCrystalFrequency = (int)((ReadRegister(Esp32C5PcrSysclkConfReg) & Esp32C5PcrSysclkXtalFreqMask) >> Esp32C5PcrSysclkXtalFreqShift);
+
+                if (crystalFrequency == 48 && romExpectedCrystalFrequency == 40)
+                {
+                    return requestedBaudRate * 40 / 48;
+                }
+
+                if (crystalFrequency == 40 && romExpectedCrystalFrequency == 48)
+                {
+                    return requestedBaudRate * 48 / 40;
+                }
+            }
+
+            return requestedBaudRate;
+        }
+
+        private int EstimateCrystalFrequencyMHz(Esp32ChipConfig config)
+        {
+            uint uartClkDivAddr;
+
+            if (config.ChipType == "esp32")
+            {
+                uartClkDivAddr = 0x3FF40014;
+            }
+            else if (config.ChipType == "esp32e22")
+            {
+                uartClkDivAddr = 0xC3102014;
+            }
+            else
+            {
+                uartClkDivAddr = 0x60000014;
+            }
+
+            uint uartClkDiv = ReadRegister(uartClkDivAddr);
+            uint divisor = uartClkDiv & 0xFFFFF;
+            double estXtal = ((double)CurrentBaudRate * divisor) / 1_000_000.0 / config.XtalClkDivider;
+
+            if (estXtal > 45)
+            {
+                return 48;
+            }
+
+            if (estXtal > 33)
+            {
+                return 40;
+            }
+
+            return 26;
+        }
+
+        private void PrepareEsp32P4ForFlashOperations()
+        {
+            if (_p4FlashPrepared)
+            {
+                return;
+            }
+
+            if (_isUsbJtag)
+            {
+                WriteRegister(Esp32P4LpWdtWprotectReg, Esp32P4LpWdtWkey);
+                WriteRegister(Esp32P4LpWdtConfig0Reg, 0);
+                WriteRegister(Esp32P4LpWdtWprotectReg, 0);
+
+                WriteRegister(Esp32P4LpSwdWprotectReg, Esp32P4LpWdtWkey);
+                WriteRegister(Esp32P4LpSwdConfReg, ReadRegister(Esp32P4LpSwdConfReg) | Esp32P4LpSwdAutoFeedEn);
+                WriteRegister(Esp32P4LpSwdWprotectReg, 0);
+            }
+
+            int revision = GetEsp32P4Revision();
+
+            if (revision == 302
+                && (ReadRegister(Esp32P4EfuseRdRepeatData1Reg) & Esp32P4EfuseDownloadModeXpdOnMask) != 0)
+            {
+                WriteRegister(Esp32P4PmuDateReg, 0);
+                _p4FlashPrepared = true;
+                return;
+            }
+
+            if (revision == 301 || revision == 302)
+            {
+                WriteRegister(Esp32P4LpSystemRegAnaXpdPadGroupReg, 1);
+                Thread.Sleep(10);
+
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AAnaReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AAnaReg) | Esp32P4PmuAna0P1AEnCurLim0);
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) | Esp32P4Pmu0P1AForceTiehSel0);
+                WriteRegister(Esp32P4PmuDateReg, ReadRegister(Esp32P4PmuDateReg) | 0x3u);
+                Thread.Sleep(1);
+
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AAnaReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AAnaReg) & ~Esp32P4PmuAna0P1AEnCurLim0);
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) & ~Esp32P4Pmu0P1ATarget00);
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) | 0x80u);
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) & ~Esp32P4Pmu0P1AForceTiehSel0);
+                Thread.Sleep(2);
+            }
+
+            _p4FlashPrepared = true;
+        }
+
+        private int GetEsp32P4Revision()
+        {
+            uint block1Word2 = ReadRegister(Esp32P4EfuseBlock1Addr + 8);
+            int majorRev = (int)((((block1Word2 >> 23) & 0x01) << 2) | ((block1Word2 >> 4) & 0x03));
+            int minorRev = (int)(block1Word2 & 0x0F);
+
+            return (majorRev * 100) + minorRev;
+        }
+
+        private void WatchdogResetEsp32S31()
+        {
+            WriteRegister(Esp32S31LpWdtWprotectReg, Esp32S31LpWdtWkey);
+            WriteRegister(Esp32S31LpWdtConfig1Reg, 2000);
+            WriteRegister(Esp32S31LpWdtConfig0Reg, (1u << 31) | (5u << 28) | (1u << 8) | 2u);
+            WriteRegister(Esp32S31LpWdtWprotectReg, 0);
+            Thread.Sleep(500);
+        }
 
         #region Sync Implementation
 
