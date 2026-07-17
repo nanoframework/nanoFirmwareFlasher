@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -327,20 +328,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         }
 
         /// <summary>
-        /// macOS: Attempt to determine USB VID/PID via ioreg.
+        /// macOS: Determine USB VID/PID for a specific serial port via ioreg.
         /// Falls back to (-1, -1) if not determinable.
         /// </summary>
         private static (int vid, int pid) GetUsbIdsMacOS(string portName)
         {
-            // On macOS, use ioreg to search for USB serial devices and match by port name.
-            // Run: ioreg -r -c IOUSBHostDevice -l
-            // Parse "idVendor" and "idProduct" properties near matching device.
             try
             {
                 var psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = "/usr/sbin/ioreg",
-                    Arguments = "-r -c IOUSBHostDevice -l",
+                    Arguments = "-r -c IOSerialBSDClient -l",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
@@ -369,19 +367,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                     output = process.StandardOutput.ReadToEnd();
 
-                    // Look for Espressif VID/PID in the ioreg output.
-                    // This is a simplified check — if any Espressif USB-JTAG device is
-                    // present on the system and we're connecting to a /dev/cu.usbmodem* port,
-                    // it's very likely the target device.
-                    bool hasEspressifJtag =
-                        output.Contains($"\"idVendor\" = {EspressifVid}")
-                        && output.Contains($"\"idProduct\" = {UsbJtagSerialPid}");
-
-                    // The USB-JTAG/Serial peripheral typically shows as /dev/cu.usbmodem*
-                    if (hasEspressifJtag && portName.Contains("usbmodem"))
-                    {
-                        return (EspressifVid, UsbJtagSerialPid);
-                    }
+                    return ParseUsbIdsFromMacOsIoreg(output, portName);
                 }
             }
             catch
@@ -390,6 +376,132 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             }
 
             return (-1, -1);
+        }
+
+        internal static (int vid, int pid) ParseUsbIdsFromMacOsIoreg(string ioregOutput, string portName)
+        {
+            if (string.IsNullOrWhiteSpace(ioregOutput) || string.IsNullOrWhiteSpace(portName))
+            {
+                return (-1, -1);
+            }
+
+            string normalizedPort = NormalizePortPath(portName);
+
+            var portRegex = new Regex(
+                @"""(?:IOCalloutDevice|IODialinDevice)""\s*=\s*""(?<port>[^""]+)""",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var vidRegex = new Regex(
+                @"""idVendor""\s*=\s*(?<value>0x[0-9A-Fa-f]+|\d+)",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var pidRegex = new Regex(
+                @"""idProduct""\s*=\s*(?<value>0x[0-9A-Fa-f]+|\d+)",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+            bool inBlock = false;
+            bool blockHasMatchingPort = false;
+            int vid = -1;
+            int pid = -1;
+
+            string[] lines = ioregOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string line in lines)
+            {
+                string trimmed = line.Trim();
+
+                if (trimmed == "{")
+                {
+                    inBlock = true;
+                    blockHasMatchingPort = false;
+                    vid = -1;
+                    pid = -1;
+                    continue;
+                }
+
+                if (!inBlock)
+                {
+                    continue;
+                }
+
+                if (trimmed == "}")
+                {
+                    if (blockHasMatchingPort && vid >= 0 && pid >= 0)
+                    {
+                        return (vid, pid);
+                    }
+
+                    inBlock = false;
+                    continue;
+                }
+
+                Match portMatch = portRegex.Match(trimmed);
+                if (portMatch.Success)
+                {
+                    string candidatePort = NormalizePortPath(portMatch.Groups["port"].Value);
+                    if (string.Equals(candidatePort, normalizedPort, StringComparison.OrdinalIgnoreCase))
+                    {
+                        blockHasMatchingPort = true;
+                    }
+
+                    continue;
+                }
+
+                Match vidMatch = vidRegex.Match(trimmed);
+                if (vidMatch.Success)
+                {
+                    if (TryParseIoregNumber(vidMatch.Groups["value"].Value, out int parsedVid))
+                    {
+                        vid = parsedVid;
+                    }
+
+                    continue;
+                }
+
+                Match pidMatch = pidRegex.Match(trimmed);
+                if (pidMatch.Success && TryParseIoregNumber(pidMatch.Groups["value"].Value, out int parsedPid))
+                {
+                    pid = parsedPid;
+                }
+            }
+
+            return (-1, -1);
+        }
+
+        private static string NormalizePortPath(string portName)
+        {
+            if (string.IsNullOrWhiteSpace(portName))
+            {
+                return string.Empty;
+            }
+
+            if (portName.StartsWith("/dev/", StringComparison.OrdinalIgnoreCase))
+            {
+                return portName;
+            }
+
+            return $"/dev/{portName}";
+        }
+
+        private static bool TryParseIoregNumber(string value, out int number)
+        {
+            number = -1;
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            string trimmed = value.Trim();
+            if (trimmed.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                return int.TryParse(trimmed.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out number);
+            }
+
+            if (int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
+            {
+                return true;
+            }
+
+            return int.TryParse(trimmed, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out number);
         }
     }
 }

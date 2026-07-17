@@ -42,7 +42,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             var sec = _client.TryGetSecurityInfo();
             if (sec != null)
             {
-                _config = Esp32ChipConfigs.GetByChipId(sec?.chipId);
+                _config = CreateRuntimeConfig(Esp32ChipConfigs.GetByChipId(sec?.chipId));
 
                 if (_config != null)
                 {
@@ -62,7 +62,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             // 3. Legacy magic‑value detection LAST
             //
             uint magic = _client.ReadRegister(0x40001000);
-            _config = Esp32ChipConfigs.GetByMagicValue(magic);
+            _config = CreateRuntimeConfig(Esp32ChipConfigs.GetByMagicValue(magic));
             if (_config == null)
             {
                 throw new EspToolExecutionException(
@@ -100,6 +100,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             {
                 _config.UsesUsbOtg = SerialPortUsbInfo.IsUsbOtg(_client.Port.PortName, _config.ChipId);
             }
+        }
+
+        private static Esp32ChipConfig CreateRuntimeConfig(Esp32ChipConfig baseConfig)
+        {
+            return baseConfig?.CreateRuntimeCopy();
         }
 
         /// <summary>

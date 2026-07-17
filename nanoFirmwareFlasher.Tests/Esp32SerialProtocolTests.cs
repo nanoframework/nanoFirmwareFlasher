@@ -1083,6 +1083,26 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void ChipDetector_ApplyRuntimeConfigOverrides_DoesNotMutateStaticRegistryEntry()
+        {
+            var registryConfig = Esp32ChipConfigs.GetByType("esp32c2");
+
+            Assert.IsNotNull(registryConfig);
+            Assert.IsFalse(registryConfig.DisableStub);
+            Assert.IsNull(registryConfig.StubVariant);
+
+            var runtimeConfig = registryConfig.CreateRuntimeCopy();
+            Esp32ChipDetector.ApplyRuntimeConfigOverrides(runtimeConfig, 0);
+
+            Assert.IsTrue(runtimeConfig.DisableStub);
+            Assert.IsNull(runtimeConfig.StubVariant);
+
+            // Registry entry must stay immutable runtime-wise.
+            Assert.IsFalse(registryConfig.DisableStub);
+            Assert.IsNull(registryConfig.StubVariant);
+        }
+
+        [TestMethod]
         [DataRow("ESP32-S31", "esp32s31", 32u, 0x2000)]
         [DataRow("ESP32-E22", "esp32e22", 31u, 0x0000)]
         public void ChipConfig_UsesUsbOtg_DefaultsFalse(string name, string chipType, uint chipId, int bootloaderAddress)
@@ -1096,6 +1116,47 @@ namespace nanoFirmwareFlasher.Tests
         public void FlashController_UsbOtgCompressedBlockSize_Is800()
         {
             Assert.AreEqual(0x800, Esp32FlashController.UsbOtgCompressedBlockSize);
+        }
+
+        [TestMethod]
+        public void SerialPortUsbInfo_ParseUsbIdsFromMacOsIoreg_MatchesTargetPortAndReturnsChipPid()
+        {
+            const string ioregOutput = @"
+{
+    ""IOCalloutDevice"" = ""/dev/cu.usbmodem11101""
+    ""IODialinDevice"" = ""/dev/tty.usbmodem11101""
+    ""idVendor"" = 0x303a
+    ""idProduct"" = 0x0001
+}
+{
+    ""IOCalloutDevice"" = ""/dev/cu.usbmodemE22""
+    ""IODialinDevice"" = ""/dev/tty.usbmodemE22""
+    ""idVendor"" = 0x303a
+    ""idProduct"" = 31
+}
+";
+
+            var ids = SerialPortUsbInfo.ParseUsbIdsFromMacOsIoreg(ioregOutput, "/dev/cu.usbmodemE22");
+
+            Assert.AreEqual(0x303A, ids.vid);
+            Assert.AreEqual(31, ids.pid);
+        }
+
+        [TestMethod]
+        public void SerialPortUsbInfo_ParseUsbIdsFromMacOsIoreg_UnknownPortReturnsUnknown()
+        {
+            const string ioregOutput = @"
+{
+    ""IOCalloutDevice"" = ""/dev/cu.usbmodem11101""
+    ""idVendor"" = 0x303a
+    ""idProduct"" = 0x1001
+}
+";
+
+            var ids = SerialPortUsbInfo.ParseUsbIdsFromMacOsIoreg(ioregOutput, "/dev/cu.usbmodemMissing");
+
+            Assert.AreEqual(-1, ids.vid);
+            Assert.AreEqual(-1, ids.pid);
         }
 
         // ---- Esp32ChipConfig: SPI register address calculations ----

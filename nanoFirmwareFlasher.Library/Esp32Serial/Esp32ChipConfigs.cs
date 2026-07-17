@@ -145,6 +145,35 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         /// <summary>Full address of the SPI CMD register (base + 0x00).</summary>
         internal uint SpiCmdAddr => SpiRegBase;
+
+        /// <summary>
+        /// Creates a detached runtime copy of this chip configuration.
+        /// Runtime flags are intentionally reset to defaults.
+        /// </summary>
+        internal Esp32ChipConfig CreateRuntimeCopy()
+        {
+            return new Esp32ChipConfig(
+                Name,
+                ChipType,
+                ChipId,
+                UseMagicValue,
+                MagicValue,
+                MagicRegAddr,
+                EfuseMacWord0Addr,
+                EfuseMacWord1Addr,
+                SpiRegBase,
+                SpiUsrOffset,
+                SpiW0Offset,
+                SpiUsr1Offset,
+                SpiUsr2Offset,
+                SpiMosiDlenOffset,
+                SpiMisoDlenOffset,
+                EfuseBaseAddr,
+                XtalClkDivider,
+                BootloaderAddress,
+                FlashWriteBlockSize,
+                UsesOldSpiRegisters);
+        }
     }
 
     /// <summary>

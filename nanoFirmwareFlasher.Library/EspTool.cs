@@ -194,6 +194,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // Always prepare detected chip runtime state before any stub/flash operation.
             EnsureRuntimeChipConfig();
 
+            // Some chip families (notably ESP32-P4) require one-time ROM-side
+            // flash preparation that must happen before the stub starts.
+            _client.PrepareForFlashOperations(_chipDetector.Config);
+
             _isConnected = true;
 
             // Try to upload the stub loader for faster operations.

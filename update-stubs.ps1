@@ -20,7 +20,9 @@
 
 [CmdletBinding()]
 param (
-    [Parameter(HelpMessage = "Stub version to download")][string]$RequestedVersion
+    [Parameter(HelpMessage = "Stub version to download")][string]$RequestedVersion,
+    [Parameter(HelpMessage = "Number of download attempts per asset")][ValidateRange(1, 10)][int]$RetryCount = 3,
+    [Parameter(HelpMessage = "Initial delay between retries in seconds")][ValidateRange(1, 30)][int]$RetryDelaySeconds = 2
 )
 
 # Source this helper
@@ -43,6 +45,37 @@ $chipTypes = @(
 $stubDir = Join-Path (Join-Path (Join-Path $PSScriptRoot "nanoFirmwareFlasher.Library") "Esp32Serial") "StubImages"
 $repoOwner = "espressif"
 $repoName = "esp-flasher-stub"
+
+function Invoke-DownloadWithRetry {
+    param(
+        [Parameter(Mandatory = $true)][string]$Uri,
+        [Parameter(Mandatory = $true)][string]$DestinationPath,
+        [Parameter(Mandatory = $true)][int]$Attempts,
+        [Parameter(Mandatory = $true)][int]$InitialDelaySeconds
+    )
+
+    $lastError = $null
+
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        try {
+            Invoke-WebRequest -Uri $Uri -OutFile $DestinationPath -UseBasicParsing -ErrorAction Stop
+            return
+        }
+        catch {
+            $lastError = $_
+
+            if ($attempt -ge $Attempts) {
+                break
+            }
+
+            $delaySeconds = [Math]::Min($InitialDelaySeconds * $attempt, 15)
+            " (retry $attempt/$($Attempts - 1) in ${delaySeconds}s)" | Write-Host -ForegroundColor Yellow -NoNewline
+            Start-Sleep -Seconds $delaySeconds
+        }
+    }
+
+    throw $lastError
+}
 
 # Create output directory
 if (-not (Test-Path $stubDir)) {
@@ -70,22 +103,40 @@ else {
 
 "Downloading stub images for version $version..." | Write-Host -ForegroundColor White
 
+$failedAssets = @()
+
 foreach ($chip in $chipTypes) {
     # Release assets are named: esp32.json, esp32c3.json, etc.
     $assetName = "$chip.json"
     $url = "https://github.com/$repoOwner/$repoName/releases/download/$version/$assetName"
     # Our embedded resources are named: stub_esp32.json, stub_esp32c3.json, etc.
     $outputFile = Join-Path $stubDir "stub_$chip.json"
+    $tempFile = "$outputFile.$PID.tmp"
     
     "  Downloading $assetName..." | Write-Host -ForegroundColor Gray -NoNewline
     
     try {
-        Invoke-WebRequest -Uri $url -OutFile $outputFile -UseBasicParsing -ErrorAction Stop
+        Invoke-DownloadWithRetry -Uri $url -DestinationPath $tempFile -Attempts $RetryCount -InitialDelaySeconds $RetryDelaySeconds
+
+        # Promote only after successful download, so stale files are not partially updated.
+        Move-Item -Path $tempFile -Destination $outputFile -Force
+
         " OK" | Write-Host -ForegroundColor Green
     }
     catch {
-        " FAILED (may not exist for this chip/version)" | Write-Host -ForegroundColor Yellow
+        if (Test-Path $tempFile) {
+            Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
+        }
+
+        $failedAssets += $assetName
+        " FAILED ($($_.Exception.Message))" | Write-Host -ForegroundColor Red
     }
+}
+
+if ($failedAssets.Count -gt 0) {
+    "Failed to download $($failedAssets.Count) stub asset(s): $($failedAssets -join ', ')" | Write-Host -ForegroundColor Red
+    "No existing stub file was replaced unless its download completed successfully." | Write-Host -ForegroundColor Yellow
+    exit 1
 }
 
 "Stub images downloaded to: $stubDir" | Write-Host -ForegroundColor Green
