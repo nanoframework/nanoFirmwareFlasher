@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using nanoFramework.Tools.Debugger;
 using nanoFramework.Tools.FirmwareFlasher;
@@ -995,11 +997,16 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         [DataRow(9u, "esp32s3", "ESP32-S3")]
         [DataRow(5u, "esp32c3", "ESP32-C3")]
+        [DataRow(12u, "esp32c2", "ESP32-C2")]
         [DataRow(23u, "esp32c5", "ESP32-C5")]
         [DataRow(13u, "esp32c6", "ESP32-C6")]
         [DataRow(20u, "esp32c61", "ESP32-C61")]
         [DataRow(18u, "esp32p4", "ESP32-P4")]
         [DataRow(16u, "esp32h2", "ESP32-H2")]
+        [DataRow(25u, "esp32h21", "ESP32-H21")]
+        [DataRow(28u, "esp32h4", "ESP32-H4")]
+        [DataRow(31u, "esp32e22", "ESP32-E22")]
+        [DataRow(32u, "esp32s31", "ESP32-S31")]
         public void ChipConfig_GetByChipId_ReturnsCorrectChip(uint chip_id, string expectedType, string expectedName)
         {
             var config = Esp32ChipConfigs.GetByChipId(chip_id);
@@ -1022,8 +1029,13 @@ namespace nanoFirmwareFlasher.Tests
         [DataRow("esp32s2", "ESP32-S2")]
         [DataRow("esp32s3", "ESP32-S3")]
         [DataRow("esp32c3", "ESP32-C3")]
+        [DataRow("esp32c2", "ESP32-C2")]
         [DataRow("esp32c6", "ESP32-C6")]
         [DataRow("esp32h2", "ESP32-H2")]
+        [DataRow("esp32h21", "ESP32-H21")]
+        [DataRow("esp32h4", "ESP32-H4")]
+        [DataRow("esp32e22", "ESP32-E22")]
+        [DataRow("esp32s31", "ESP32-S31")]
         public void ChipConfig_GetByType_ReturnsCorrectChip(string chipType, string expectedName)
         {
             var config = Esp32ChipConfigs.GetByType(chipType);
@@ -1045,6 +1057,106 @@ namespace nanoFirmwareFlasher.Tests
         public void ChipConfig_GetByType_UnknownType_ReturnsNull()
         {
             Assert.IsNull(Esp32ChipConfigs.GetByType("esp32x9"));
+        }
+
+        [TestMethod]
+        public void ChipDetector_ApplyRuntimeConfigOverrides_C2Eco0_DisablesStub()
+        {
+            var config = new Esp32ChipConfig("ESP32-C2", "esp32c2", 12, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0x4000, false);
+
+            Esp32ChipDetector.ApplyRuntimeConfigOverrides(config, 0);
+
+            Assert.IsTrue(config.DisableStub);
+            Assert.IsNull(config.StubVariant);
+        }
+
+        [TestMethod]
+        public void ChipDetector_ApplyRuntimeConfigOverrides_ResetsPreviousOverrides()
+        {
+            var config = new Esp32ChipConfig("ESP32-C2", "esp32c2", 12, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0x4000, false);
+
+            Esp32ChipDetector.ApplyRuntimeConfigOverrides(config, 0);
+            Esp32ChipDetector.ApplyRuntimeConfigOverrides(config, 1);
+
+            Assert.IsFalse(config.DisableStub);
+            Assert.IsNull(config.StubVariant);
+        }
+
+        [TestMethod]
+        public void ChipDetector_ApplyRuntimeConfigOverrides_DoesNotMutateStaticRegistryEntry()
+        {
+            var registryConfig = Esp32ChipConfigs.GetByType("esp32c2");
+
+            Assert.IsNotNull(registryConfig);
+            Assert.IsFalse(registryConfig.DisableStub);
+            Assert.IsNull(registryConfig.StubVariant);
+
+            var runtimeConfig = registryConfig.CreateRuntimeCopy();
+            Esp32ChipDetector.ApplyRuntimeConfigOverrides(runtimeConfig, 0);
+
+            Assert.IsTrue(runtimeConfig.DisableStub);
+            Assert.IsNull(runtimeConfig.StubVariant);
+
+            // Registry entry must stay immutable runtime-wise.
+            Assert.IsFalse(registryConfig.DisableStub);
+            Assert.IsNull(registryConfig.StubVariant);
+        }
+
+        [TestMethod]
+        [DataRow("ESP32-S31", "esp32s31", 32u, 0x2000)]
+        [DataRow("ESP32-E22", "esp32e22", 31u, 0x0000)]
+        public void ChipConfig_UsesUsbOtg_DefaultsFalse(string name, string chipType, uint chipId, int bootloaderAddress)
+        {
+            var config = new Esp32ChipConfig(name, chipType, chipId, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, bootloaderAddress, 0x4000, false);
+
+            Assert.IsFalse(config.UsesUsbOtg);
+        }
+
+        [TestMethod]
+        public void FlashController_UsbOtgCompressedBlockSize_Is800()
+        {
+            Assert.AreEqual(0x800, Esp32FlashController.UsbOtgCompressedBlockSize);
+        }
+
+        [TestMethod]
+        public void SerialPortUsbInfo_ParseUsbIdsFromMacOsIoreg_MatchesTargetPortAndReturnsChipPid()
+        {
+            const string ioregOutput = @"
+{
+    ""IOCalloutDevice"" = ""/dev/cu.usbmodem11101""
+    ""IODialinDevice"" = ""/dev/tty.usbmodem11101""
+    ""idVendor"" = 0x303a
+    ""idProduct"" = 0x0001
+}
+{
+    ""IOCalloutDevice"" = ""/dev/cu.usbmodemE22""
+    ""IODialinDevice"" = ""/dev/tty.usbmodemE22""
+    ""idVendor"" = 0x303a
+    ""idProduct"" = 31
+}
+";
+
+            var ids = SerialPortUsbInfo.ParseUsbIdsFromMacOsIoreg(ioregOutput, "/dev/cu.usbmodemE22");
+
+            Assert.AreEqual(0x303A, ids.vid);
+            Assert.AreEqual(31, ids.pid);
+        }
+
+        [TestMethod]
+        public void SerialPortUsbInfo_ParseUsbIdsFromMacOsIoreg_UnknownPortReturnsUnknown()
+        {
+            const string ioregOutput = @"
+{
+    ""IOCalloutDevice"" = ""/dev/cu.usbmodem11101""
+    ""idVendor"" = 0x303a
+    ""idProduct"" = 0x1001
+}
+";
+
+            var ids = SerialPortUsbInfo.ParseUsbIdsFromMacOsIoreg(ioregOutput, "/dev/cu.usbmodemMissing");
+
+            Assert.AreEqual(-1, ids.vid);
+            Assert.AreEqual(-1, ids.pid);
         }
 
         // ---- Esp32ChipConfig: SPI register address calculations ----
@@ -1095,8 +1207,20 @@ namespace nanoFirmwareFlasher.Tests
         {
             Assert.AreEqual(0x0, Esp32ChipConfigs.ESP32_S3.BootloaderAddress);
             Assert.AreEqual(0x0, Esp32ChipConfigs.ESP32_C3.BootloaderAddress);
+            Assert.AreEqual(0x0, Esp32ChipConfigs.ESP32_C2.BootloaderAddress);
             Assert.AreEqual(0x0, Esp32ChipConfigs.ESP32_C6.BootloaderAddress);
             Assert.AreEqual(0x0, Esp32ChipConfigs.ESP32_H2.BootloaderAddress);
+            Assert.AreEqual(0x0, Esp32ChipConfigs.ESP32_H21.BootloaderAddress);
+            Assert.AreEqual(0x0, Esp32ChipConfigs.ESP32_E22.BootloaderAddress);
+        }
+
+        [TestMethod]
+        public void ChipConfig_NewerChips_BootloaderAt0x2000()
+        {
+            Assert.AreEqual(0x2000, Esp32ChipConfigs.ESP32_C5.BootloaderAddress);
+            Assert.AreEqual(0x2000, Esp32ChipConfigs.ESP32_P4.BootloaderAddress);
+            Assert.AreEqual(0x2000, Esp32ChipConfigs.ESP32_H4.BootloaderAddress);
+            Assert.AreEqual(0x2000, Esp32ChipConfigs.ESP32_S31.BootloaderAddress);
         }
 
         // ---- Esp32ChipConfig: Only ESP32 uses old SPI registers ----
@@ -1117,11 +1241,11 @@ namespace nanoFirmwareFlasher.Tests
         // ---- Esp32ChipConfigs.All ----
 
         [TestMethod]
-        public void ChipConfig_All_ReturnsNineConfigs()
+        public void ChipConfig_All_ReturnsFourteenConfigs()
         {
             var all = new System.Collections.Generic.List<Esp32ChipConfig>(Esp32ChipConfigs.All);
 
-            Assert.AreEqual(9, all.Count);
+            Assert.AreEqual(14, all.Count);
         }
 
         // ---- Esp32ChipConfig: MagicRegAddr ----
@@ -1234,6 +1358,27 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(0x600B0848u, Esp32ChipConfigs.ESP32_C6.EfuseMacWord1Addr);
             Assert.AreEqual(0x600B0844u, Esp32ChipConfigs.ESP32_H2.EfuseMacWord0Addr);
             Assert.AreEqual(0x600B0848u, Esp32ChipConfigs.ESP32_H2.EfuseMacWord1Addr);
+        }
+
+        [TestMethod]
+        public void ChipConfig_NewerFamilies_EfuseMacAddresses()
+        {
+            Assert.AreEqual(0x60008840u, Esp32ChipConfigs.ESP32_C2.EfuseMacWord0Addr);
+            Assert.AreEqual(0x60008844u, Esp32ChipConfigs.ESP32_C2.EfuseMacWord1Addr);
+            Assert.AreEqual(0x600B4044u, Esp32ChipConfigs.ESP32_H21.EfuseMacWord0Addr);
+            Assert.AreEqual(0x600B4048u, Esp32ChipConfigs.ESP32_H21.EfuseMacWord1Addr);
+            Assert.AreEqual(0x600B1844u, Esp32ChipConfigs.ESP32_H4.EfuseMacWord0Addr);
+            Assert.AreEqual(0x600B1848u, Esp32ChipConfigs.ESP32_H4.EfuseMacWord1Addr);
+            Assert.AreEqual(0xC4008044u, Esp32ChipConfigs.ESP32_E22.EfuseMacWord0Addr);
+            Assert.AreEqual(0xC4008048u, Esp32ChipConfigs.ESP32_E22.EfuseMacWord1Addr);
+            Assert.AreEqual(0x20715050u, Esp32ChipConfigs.ESP32_S31.EfuseMacWord0Addr);
+            Assert.AreEqual(0x20715054u, Esp32ChipConfigs.ESP32_S31.EfuseMacWord1Addr);
+        }
+
+        [TestMethod]
+        public void ChipConfig_Esp32C61_EfuseBaseAddress()
+        {
+            Assert.AreEqual(0x600B4800u, Esp32ChipConfigs.ESP32_C61.EfuseBaseAddr);
         }
 
         #endregion
@@ -1581,11 +1726,16 @@ namespace nanoFirmwareFlasher.Tests
                 { "esp32s2", "ESP32-S2" },
                 { "esp32s3", "ESP32-S3" },
                 { "esp32c3", "ESP32-C3" },
+                { "esp32c2", "ESP32-C2" },
                 { "esp32c6", "ESP32-C6" },
                 { "esp32h2", "ESP32-H2" },
+                { "esp32h21", "ESP32-H21" },
+                { "esp32h4", "ESP32-H4" },
                 { "esp32c5", "ESP32-C5" },
                 { "esp32c61", "ESP32-C61" },
+                { "esp32e22", "ESP32-E22" },
                 { "esp32p4", "ESP32-P4" },
+                { "esp32s31", "ESP32-S31" },
             };
 
             // Verify all chip configs map to known display names
@@ -1597,6 +1747,67 @@ namespace nanoFirmwareFlasher.Tests
                 Assert.AreEqual(config.Name, expectedMappings[config.ChipType],
                     $"Config name for '{config.ChipType}' should match expected display format");
             }
+        }
+
+        [TestMethod]
+        public void EspTool_EnsureFlashController_AppliesRuntimeConfigForUsbOtgTargets()
+        {
+            var tool = (EspTool)RuntimeHelpers.GetUninitializedObject(typeof(EspTool));
+
+            Esp32ChipConfig sourceConfig = Esp32ChipConfigs.ESP32_S31;
+            Esp32ChipConfig runtimeConfig = new Esp32ChipConfig(
+                sourceConfig.Name,
+                sourceConfig.ChipType,
+                sourceConfig.ChipId,
+                sourceConfig.UseMagicValue,
+                sourceConfig.MagicValue,
+                sourceConfig.MagicRegAddr,
+                sourceConfig.EfuseMacWord0Addr,
+                sourceConfig.EfuseMacWord1Addr,
+                sourceConfig.SpiRegBase,
+                sourceConfig.SpiUsrOffset,
+                sourceConfig.SpiW0Offset,
+                sourceConfig.SpiUsr1Offset,
+                sourceConfig.SpiUsr2Offset,
+                sourceConfig.SpiMosiDlenOffset,
+                sourceConfig.SpiMisoDlenOffset,
+                sourceConfig.EfuseBaseAddr,
+                sourceConfig.XtalClkDivider,
+                sourceConfig.BootloaderAddress,
+                sourceConfig.FlashWriteBlockSize,
+                sourceConfig.UsesOldSpiRegisters);
+
+            var client = new Esp32BootloaderClient("COM1", verbosity: VerbosityLevel.Quiet);
+            var detector = new Esp32ChipDetector(client);
+
+            typeof(Esp32ChipDetector)
+                .GetField("_config", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(detector, runtimeConfig);
+
+            typeof(EspTool)
+                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(tool, client);
+
+            typeof(EspTool)
+                .GetField("_chipDetector", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(tool, detector);
+
+            typeof(EspTool)
+                .GetMethod("EnsureFlashController", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .Invoke(tool, Array.Empty<object>());
+
+            object flashController = typeof(EspTool)
+                .GetField("_flashController", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(tool)!;
+
+            Assert.IsNotNull(flashController, "Flash controller should be created during flash setup.");
+
+            object runtimeConfigOnClient = typeof(Esp32BootloaderClient)
+                .GetField("_runtimeConfig", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(client)!;
+
+            Assert.AreSame(runtimeConfig, runtimeConfigOnClient, "Flash entry setup should propagate the detected runtime config to the bootloader client.");
+            Assert.AreSame(runtimeConfig, detector.Config, "Detector config should remain the runtime config instance used by flash setup.");
         }
 
         [TestMethod]
@@ -1751,9 +1962,13 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void StubImage_TryLoad_knownChip_ReturnsNotNull()
+        [DataRow("esp32s3")]
+        [DataRow("esp32c2")]
+        [DataRow("esp32h4")]
+        [DataRow("esp32s31")]
+        public void StubImage_TryLoad_KnownChip_ReturnsNotNull(string chipType)
         {
-            var knownConfig = new Esp32ChipConfig("ESP32_S3", "esp32s3", 0, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
+            var knownConfig = new Esp32ChipConfig(chipType.ToUpperInvariant(), chipType, 0, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
 
             // A stub should exist for a known chip type
             var result = Esp32StubImage.TryLoad(knownConfig);

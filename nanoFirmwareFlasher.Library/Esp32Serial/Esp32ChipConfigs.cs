@@ -75,6 +75,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Stub variant for the chips when loading a specific stub based on chip rev version. </summary>
         public string StubVariant { get; set; } = null;
 
+        /// <summary>Whether the flasher stub must be skipped for this detected runtime variant.</summary>
+        internal bool DisableStub { get; set; }
+
+        /// <summary>Whether the current runtime path is using native USB-OTG for this chip.</summary>
+        internal bool UsesUsbOtg { get; set; }
+
         internal Esp32ChipConfig(
             string name,
             string chipType,
@@ -139,6 +145,35 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         /// <summary>Full address of the SPI CMD register (base + 0x00).</summary>
         internal uint SpiCmdAddr => SpiRegBase;
+
+        /// <summary>
+        /// Creates a detached runtime copy of this chip configuration.
+        /// Runtime flags are intentionally reset to defaults.
+        /// </summary>
+        internal Esp32ChipConfig CreateRuntimeCopy()
+        {
+            return new Esp32ChipConfig(
+                Name,
+                ChipType,
+                ChipId,
+                UseMagicValue,
+                MagicValue,
+                MagicRegAddr,
+                EfuseMacWord0Addr,
+                EfuseMacWord1Addr,
+                SpiRegBase,
+                SpiUsrOffset,
+                SpiW0Offset,
+                SpiUsr1Offset,
+                SpiUsr2Offset,
+                SpiMosiDlenOffset,
+                SpiMisoDlenOffset,
+                EfuseBaseAddr,
+                XtalClkDivider,
+                BootloaderAddress,
+                FlashWriteBlockSize,
+                UsesOldSpiRegisters);
+        }
     }
 
     /// <summary>
@@ -243,6 +278,30 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             usesOldSpiRegisters: false
         );
 
+        // ======================== ESP32-C2 ========================
+        internal static Esp32ChipConfig ESP32_C2 { get; } = new(
+            name: "ESP32-C2",
+            chipType: "esp32c2",
+            chipId: 12,
+            useMagicValue: false,
+            magicValue: 0,
+            magicRegAddr: 0x40001000,
+            efuseMacWord0Addr: 0x60008840,
+            efuseMacWord1Addr: 0x60008844,
+            spiRegBase: 0x60002000,
+            spiUsrOffset: 0x18,
+            spiW0Offset: 0x58,
+            spiUsr1Offset: 0x1C,
+            spiUsr2Offset: 0x20,
+            spiMosiDlenOffset: 0x24,
+            spiMisoDlenOffset: 0x28,
+            efuseBaseAddr: 0x60008800,
+            xtalClkDivider: 1,
+            bootloaderAddress: 0x0,
+            flashWriteBlockSize: 0x4000,
+            usesOldSpiRegisters: false
+        );
+
         // ======================== ESP32-C6 ========================
         internal static Esp32ChipConfig ESP32_C6 { get; } = new(
             name: "ESP32-C6",
@@ -291,6 +350,54 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             usesOldSpiRegisters: false
         );
 
+        // ======================== ESP32-H21 ========================
+        internal static Esp32ChipConfig ESP32_H21 { get; } = new(
+            name: "ESP32-H21",
+            chipType: "esp32h21",
+            chipId: 25,
+            useMagicValue: false,
+            magicValue: 0,
+            magicRegAddr: 0x40001000,
+            efuseMacWord0Addr: 0x600B4044,
+            efuseMacWord1Addr: 0x600B4048,
+            spiRegBase: 0x60003000,
+            spiUsrOffset: 0x18,
+            spiW0Offset: 0x58,
+            spiUsr1Offset: 0x1C,
+            spiUsr2Offset: 0x20,
+            spiMosiDlenOffset: 0x24,
+            spiMisoDlenOffset: 0x28,
+            efuseBaseAddr: 0x600B4000,
+            xtalClkDivider: 1,
+            bootloaderAddress: 0x0,
+            flashWriteBlockSize: 0x4000,
+            usesOldSpiRegisters: false
+        );
+
+        // ======================== ESP32-H4 ========================
+        internal static Esp32ChipConfig ESP32_H4 { get; } = new(
+            name: "ESP32-H4",
+            chipType: "esp32h4",
+            chipId: 28,
+            useMagicValue: false,
+            magicValue: 0,
+            magicRegAddr: 0x40001000,
+            efuseMacWord0Addr: 0x600B1844,
+            efuseMacWord1Addr: 0x600B1848,
+            spiRegBase: 0x60099000,
+            spiUsrOffset: 0x18,
+            spiW0Offset: 0x58,
+            spiUsr1Offset: 0x1C,
+            spiUsr2Offset: 0x20,
+            spiMosiDlenOffset: 0x24,
+            spiMisoDlenOffset: 0x28,
+            efuseBaseAddr: 0x600B1800,
+            xtalClkDivider: 1,
+            bootloaderAddress: 0x2000,
+            flashWriteBlockSize: 0x4000,
+            usesOldSpiRegisters: false
+        );
+
         // ======================== ESP32-C5 ========================
         internal static Esp32ChipConfig ESP32_C5 { get; } = new(
             name: "ESP32-C5",
@@ -332,7 +439,31 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             spiUsr2Offset: 0x20,
             spiMosiDlenOffset: 0x24,
             spiMisoDlenOffset: 0x28,
-            efuseBaseAddr: 0x600B0800,
+            efuseBaseAddr: 0x600B4800,
+            xtalClkDivider: 1,
+            bootloaderAddress: 0x0,
+            flashWriteBlockSize: 0x4000,
+            usesOldSpiRegisters: false
+        );
+
+        // ======================== ESP32-E22 ========================
+        internal static Esp32ChipConfig ESP32_E22 { get; } = new(
+            name: "ESP32-E22",
+            chipType: "esp32e22",
+            chipId: 31,
+            useMagicValue: false,
+            magicValue: 0,
+            magicRegAddr: 0x40001000,
+            efuseMacWord0Addr: 0xC4008044,
+            efuseMacWord1Addr: 0xC4008048,
+            spiRegBase: 0xC3003000,
+            spiUsrOffset: 0x18,
+            spiW0Offset: 0x58,
+            spiUsr1Offset: 0x1C,
+            spiUsr2Offset: 0x20,
+            spiMosiDlenOffset: 0x24,
+            spiMisoDlenOffset: 0x28,
+            efuseBaseAddr: 0xC4008000,
             xtalClkDivider: 1,
             bootloaderAddress: 0x0,
             flashWriteBlockSize: 0x4000,
@@ -363,6 +494,30 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             usesOldSpiRegisters: false
         );
 
+        // ======================== ESP32-S31 ========================
+        internal static Esp32ChipConfig ESP32_S31 { get; } = new(
+            name: "ESP32-S31",
+            chipType: "esp32s31",
+            chipId: 32,
+            useMagicValue: false,
+            magicValue: 0,
+            magicRegAddr: 0x40001000,
+            efuseMacWord0Addr: 0x20715050,
+            efuseMacWord1Addr: 0x20715054,
+            spiRegBase: 0x20501000,
+            spiUsrOffset: 0x18,
+            spiW0Offset: 0x58,
+            spiUsr1Offset: 0x1C,
+            spiUsr2Offset: 0x20,
+            spiMosiDlenOffset: 0x24,
+            spiMisoDlenOffset: 0x28,
+            efuseBaseAddr: 0x20715000,
+            xtalClkDivider: 1,
+            bootloaderAddress: 0x2000,
+            flashWriteBlockSize: 0x4000,
+            usesOldSpiRegisters: false
+        );
+
         /// <summary>
         /// All known chip configurations indexed by their primary magic value.
         /// </summary>
@@ -381,11 +536,16 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             { "esp32s2", ESP32_S2 },
             { "esp32s3", ESP32_S3 },
             { "esp32c3", ESP32_C3 },
+            { "esp32c2", ESP32_C2 },
             { "esp32c6", ESP32_C6 },
             { "esp32h2", ESP32_H2 },
+            { "esp32h21", ESP32_H21 },
+            { "esp32h4", ESP32_H4 },
             { "esp32c5", ESP32_C5 },
             { "esp32c61", ESP32_C61 },
+            { "esp32e22", ESP32_E22 },
             { "esp32p4", ESP32_P4 },
+            { "esp32s31", ESP32_S31 },
         };
 
         /// <summary>
@@ -441,11 +601,16 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 yield return ESP32_S2;
                 yield return ESP32_S3;
                 yield return ESP32_C3;
+                yield return ESP32_C2;
                 yield return ESP32_C6;
                 yield return ESP32_H2;
+                yield return ESP32_H21;
+                yield return ESP32_H4;
                 yield return ESP32_C5;
                 yield return ESP32_C61;
+                yield return ESP32_E22;
                 yield return ESP32_P4;
+                yield return ESP32_S31;
             }
         }
     }

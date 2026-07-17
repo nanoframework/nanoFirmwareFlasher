@@ -15,7 +15,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
     internal static class Esp32StubLoader
     {
         /// <summary>Default block size for memory uploads.</summary>
-        private const int MemBlockSize = 0x1800; // 6 KB — matches esptool
+        private const int MemBlockSize = 0x1800; // 6 KB — default esptool ESP_RAM_BLOCK
+
+        /// <summary>Reduced RAM upload block size used for USB-OTG targets.</summary>
+        private const int UsbOtgMemBlockSize = 0x800;
 
         /// <summary>Timeout for MEM_END (stub starts executing, may take a moment).</summary>
         private const int MemEndTimeoutMs = 10_000;
@@ -55,13 +58,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 OutputWriter.WriteLine($"Uploading stub loader for {config.ChipType}...");
             }
 
+            int memBlockSize = config.UsesUsbOtg ? UsbOtgMemBlockSize : MemBlockSize;
+
             // Upload text segment
-            UploadSegment(client, stub.Text, stub.TextStart);
+            UploadSegment(client, stub.Text, stub.TextStart, memBlockSize);
 
             // Upload data segment (if present)
             if (stub.Data.Length > 0)
             {
-                UploadSegment(client, stub.Data, stub.DataStart);
+                UploadSegment(client, stub.Data, stub.DataStart, memBlockSize);
             }
 
             // Execute the stub by sending MEM_END with the entry point
@@ -88,15 +93,16 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         private static void UploadSegment(
             Esp32BootloaderClient client,
             byte[] data,
-            uint address)
+            uint address,
+            int memBlockSize)
         {
-            int numBlocks = (data.Length + MemBlockSize - 1) / MemBlockSize;
+            int numBlocks = (data.Length + memBlockSize - 1) / memBlockSize;
 
             // MEM_BEGIN: [total_size:4][num_blocks:4][block_size:4][offset:4]
             byte[] beginData = new byte[16];
             Esp32CommandPacket.WriteUInt32LE(beginData, 0, (uint)data.Length);
             Esp32CommandPacket.WriteUInt32LE(beginData, 4, (uint)numBlocks);
-            Esp32CommandPacket.WriteUInt32LE(beginData, 8, (uint)MemBlockSize);
+            Esp32CommandPacket.WriteUInt32LE(beginData, 8, (uint)memBlockSize);
             Esp32CommandPacket.WriteUInt32LE(beginData, 12, address);
 
             var response = client.SendCommand(Esp32Command.MemBegin, beginData);
@@ -105,9 +111,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             // MEM_DATA: send each block
             for (int seq = 0; seq < numBlocks; seq++)
             {
-                int offset = seq * MemBlockSize;
+                int offset = seq * memBlockSize;
                 int remaining = data.Length - offset;
-                int chunkSize = Math.Min(MemBlockSize, remaining);
+                int chunkSize = Math.Min(memBlockSize, remaining);
 
                 byte[] block = new byte[chunkSize];
                 Buffer.BlockCopy(data, offset, block, 0, chunkSize);
