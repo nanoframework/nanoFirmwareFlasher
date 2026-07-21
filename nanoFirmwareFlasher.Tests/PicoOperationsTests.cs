@@ -97,24 +97,24 @@ namespace nanoFirmwareFlasher.Tests
             string? result = (string?)method.Invoke(null, new object?[] { null });
             Assert.IsNull(result);
 
-            // RP2040 chip maps to RP_PICO_RP2040
+            // RP2040 chip maps to PICO_RP2040
             var rp2040 = new PicoDeviceInfo("RP2040", "", "", "", "");
             result = (string?)method.Invoke(null, new object?[] { rp2040 });
-            Assert.AreEqual("RP_PICO_RP2040", result);
+            Assert.AreEqual("PICO_RP2040", result);
 
-            // RP2350 chip maps to RP_PICO_RP2350
+            // RP2350 chip maps to PICO2_RP2350
             var rp2350 = new PicoDeviceInfo("RP2350", "", "", "", "");
             result = (string?)method.Invoke(null, new object?[] { rp2350 });
-            Assert.AreEqual("RP_PICO_RP2350", result);
+            Assert.AreEqual("PICO2_RP2350", result);
         }
 
         [TestMethod]
         public void PicoOperations_NormalizeTargetName_MapsLegacyAliases()
         {
-            Assert.AreEqual("RP_PICO_RP2040", PicoOperations.NormalizeTargetName("RP_PICO_2040"));
-            Assert.AreEqual("RP_PICO_RP2350", PicoOperations.NormalizeTargetName("RP_PICO_2350"));
-            Assert.AreEqual("RP_PICO_RP2040", PicoOperations.NormalizeTargetName("RP_PICO_RP2040"));
-            Assert.AreEqual("RP_PICO_W_RP2040", PicoOperations.NormalizeTargetName("RP_PICO_W_RP2040"));
+            Assert.AreEqual("PICO_RP2040", PicoOperations.NormalizeTargetName("RP_PICO_2040"));
+            Assert.AreEqual("PICO2_RP2350", PicoOperations.NormalizeTargetName("RP_PICO_2350"));
+            Assert.AreEqual("PICO_RP2040", PicoOperations.NormalizeTargetName("RP_PICO_RP2040"));
+            Assert.AreEqual("PICO_RP2040_W", PicoOperations.NormalizeTargetName("RP_PICO_W_RP2040"));
             Assert.AreEqual(null, PicoOperations.NormalizeTargetName(null));
         }
 
