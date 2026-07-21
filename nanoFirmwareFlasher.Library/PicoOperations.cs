@@ -725,12 +725,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return normalized switch
             {
                 "RP_PICO_2040" => "PICO_RP2040",
+                "RP_PICO_RP2040" => "PICO_RP2040",
                 "RP_PICO_W_2040" => "PICO_RP2040_W",
+                "RP_PICO_W_RP2040" => "PICO_RP2040_W",
                 "RP_PICO_2040_W" => "PICO_RP2040_W",
                 "RP_PICO_RP2040_W" => "PICO_RP2040_W",
                 "RP_PICO_2350" => "PICO2_RP2350",
+                "RP_PICO_RP2350" => "PICO2_RP2350",
                 "RP_PICO_W_2350" => "PICO2_RP2350_W",
+                "RP_PICO_W_RP2350" => "PICO2_RP2350_W",
                 "RP_PICO_2350_W" => "PICO2_RP2350_W",
+                "RP_PICO_RP2350_W" => "PICO2_RP2350_W",
                 "RP_PICO2_2350" => "PICO2_RP2350",
                 "RP_PICO2_W_2350" => "PICO2_RP2350_W",
                 "RP_PICO2_2350_W" => "PICO2_RP2350_W",
