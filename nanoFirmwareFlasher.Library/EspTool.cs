@@ -157,7 +157,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                OutputWriter.WriteLine($"Using {serialPort} @ {baudRate} baud to connect to ESP32.");
+                OutputWriter.WriteLine(
+                    $"Using {serialPort} @ {Esp32BootloaderClient.DefaultBaudRate} baud to connect to ESP32"
+                    + $" (transfer baud target: {baudRate}).");
             }
 
             // set properties

@@ -67,6 +67,33 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         }
 
         /// <summary>
+        /// Perform classic reset but keep BOOT (GPIO0) asserted low after EN release.
+        /// This mirrors manually holding the BOOT button while attempting SYNC.
+        /// </summary>
+        internal static void EnterBootloaderKeepBootPinLow(SerialPort port, int resetDelayMs = DefaultResetDelayMs)
+        {
+            // D0: IO0=HIGH
+            SetDtr(port, false);
+            // R1: EN=LOW, chip in reset
+            SetRts(port, true);
+            Thread.Sleep(100);
+
+            // D1: IO0=LOW (keep BOOT asserted)
+            SetDtr(port, true);
+            // R0: EN=HIGH, chip out of reset while GPIO0 stays low
+            SetRts(port, false);
+            Thread.Sleep(resetDelayMs);
+        }
+
+        /// <summary>
+        /// Release BOOT (GPIO0) after a temporary BOOT-hold sequence.
+        /// </summary>
+        internal static void ReleaseBootPin(SerialPort port)
+        {
+            SetDtr(port, false);
+        }
+
+        /// <summary>
         /// Perform USB-JTAG/Serial reset sequence for chips with native USB
         /// (ESP32-S3, ESP32-C3, ESP32-C6, ESP32-H2, ESP32-P4).
         /// 
