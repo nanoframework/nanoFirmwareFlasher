@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -129,6 +130,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string boardId = "";
             string bootloaderVersion = "";
             string driveLabel = "";
+            uint? flashSizeBytes = null;
 
             foreach (string line in lines)
             {
@@ -144,6 +146,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     bootloaderVersion = line.Trim();
                 }
+
+                flashSizeBytes ??= TryParseFlashSizeFromInfoLine(line);
             }
 
             // try to get volume label
@@ -172,7 +176,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return null;
             }
 
-            return new PicoDeviceInfo(chipType, boardId, bootloaderVersion, drivePath, driveLabel);
+            return new PicoDeviceInfo(chipType, boardId, bootloaderVersion, drivePath, driveLabel, flashSizeBytes);
         }
 
         /// <summary>
@@ -1029,6 +1033,108 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return null;
+        }
+
+        private static uint? TryParseFlashSizeFromInfoLine(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return null;
+            }
+
+            int separator = line.IndexOf(':');
+
+            if (separator <= 0)
+            {
+                return null;
+            }
+
+            string key = line.Substring(0, separator).Trim();
+
+            if (key.IndexOf("flash", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                return null;
+            }
+
+            string value = line.Substring(separator + 1).Trim();
+
+            if (TryParseFlashSizeToken(value, out uint flashSizeBytes))
+            {
+                return flashSizeBytes;
+            }
+
+            string[] tokens = value.Split(new[] { ' ', '\t', ',', ';', '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string token in tokens)
+            {
+                if (TryParseFlashSizeToken(token, out flashSizeBytes))
+                {
+                    return flashSizeBytes;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool TryParseFlashSizeToken(string token, out uint flashSizeBytes)
+        {
+            flashSizeBytes = 0;
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return false;
+            }
+
+            string normalized = token
+                .Trim()
+                .TrimEnd('.')
+                .Replace("_", string.Empty)
+                .ToUpperInvariant();
+
+            if (normalized.StartsWith("0X", StringComparison.Ordinal)
+                && uint.TryParse(normalized.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint hexBytes))
+            {
+                flashSizeBytes = hexBytes;
+                return true;
+            }
+
+            uint multiplier = 1;
+
+            if (normalized.EndsWith("MB", StringComparison.Ordinal))
+            {
+                multiplier = 1024u * 1024u;
+                normalized = normalized.Substring(0, normalized.Length - 2);
+            }
+            else if (normalized.EndsWith("M", StringComparison.Ordinal))
+            {
+                multiplier = 1024u * 1024u;
+                normalized = normalized.Substring(0, normalized.Length - 1);
+            }
+            else if (normalized.EndsWith("KB", StringComparison.Ordinal)
+                || normalized.EndsWith("K", StringComparison.Ordinal))
+            {
+                multiplier = 1024u;
+                normalized = normalized.EndsWith("KB", StringComparison.Ordinal)
+                    ? normalized.Substring(0, normalized.Length - 2)
+                    : normalized.Substring(0, normalized.Length - 1);
+            }
+            else if (normalized.EndsWith("B", StringComparison.Ordinal))
+            {
+                normalized = normalized.Substring(0, normalized.Length - 1);
+            }
+
+            if (!uint.TryParse(normalized, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint size))
+            {
+                return false;
+            }
+
+            if (size == 0)
+            {
+                return false;
+            }
+
+            flashSizeBytes = size * multiplier;
+            return true;
         }
 
         #endregion
