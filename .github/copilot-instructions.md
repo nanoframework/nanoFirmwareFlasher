@@ -80,9 +80,9 @@ All classes use the namespace `nanoFramework.Tools.FirmwareFlasher`.
 dotnet build nanoFirmwareFlasher.sln
 ```
 
-- The library targets **net8.0** and **net472**.
-- The tool targets **net8.0**.
-- Tests target **net8.0**.
+- The library targets **net10.0** and **net472**.
+- The tool targets **net10.0**.
+- Tests target **net10.0**.
 - NuGet packages use locked restore (`packages.lock.json`). Lock mode is enforced in CI (`TF_BUILD` or `ContinuousIntegrationBuild` env vars). When adding/updating NuGet dependencies locally, run `dotnet restore` to update the lock file.
 
 ---
