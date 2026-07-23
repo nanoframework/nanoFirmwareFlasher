@@ -1133,7 +1133,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return false;
             }
 
+            // guard against overflow: if size * multiplier would exceed uint.MaxValue, reject
+            if (multiplier > 1 && size > uint.MaxValue / multiplier)
+            {
+                flashSizeBytes = 0;
+                return false;
+            }
+
             flashSizeBytes = size * multiplier;
+
+            // reject implausible values — known Pico flash sizes are in the low-MB range
+            const uint MinPlausibleFlashSize = 1024u;               // 1 KB
+            const uint MaxPlausibleFlashSize = 64u * 1024u * 1024u; // 64 MB
+
+            if (flashSizeBytes < MinPlausibleFlashSize || flashSizeBytes > MaxPlausibleFlashSize)
+            {
+                flashSizeBytes = 0;
+                return false;
+            }
+
             return true;
         }
 
