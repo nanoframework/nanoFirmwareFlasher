@@ -712,6 +712,36 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void SerialPortUsbInfo_IsUsbJtagSerialPid_UsesExactUpstreamPid()
+        {
+            Assert.IsTrue(SerialPortUsbInfo.IsUsbJtagSerialPid(SerialPortUsbInfo.UsbJtagSerialPid));
+            Assert.IsFalse(SerialPortUsbInfo.IsUsbJtagSerialPid(0x0002));
+        }
+
+        [TestMethod]
+        public void BootloaderClient_ShouldUseUsbJtagReset_UsesFallbackDuringAdaptiveRecovery()
+        {
+            Assert.IsTrue(Esp32BootloaderClient.ShouldUseUsbJtagReset(true, false, 0, 10));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, false, 0, 10));
+            Assert.IsTrue(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, true, 10, 10));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, true, 11, 10));
+
+            // Early adaptive start should preserve alternating fallback behavior.
+            Assert.IsTrue(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, true, 3, 3));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseUsbJtagReset(false, true, 4, 3));
+        }
+
+        [TestMethod]
+        public void BootloaderClient_ShouldUseManualBootHoldFallback_TriggersOnlyForSilentCustomPidPath()
+        {
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(false, true, false, 3));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(true, false, false, 3));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(true, true, true, 3));
+            Assert.IsFalse(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(true, true, false, 1));
+            Assert.IsTrue(Esp32BootloaderClient.ShouldUseManualBootHoldFallback(true, true, false, 2));
+        }
+
+        [TestMethod]
         public void Protocol_WriteRegCommand_BuildAndParseResponse()
         {
             // Simulate a WriteReg operation:

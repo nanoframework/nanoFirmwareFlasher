@@ -31,7 +31,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         internal static bool IsUsbJtagSerial(string portName)
         {
             var (vid, pid) = GetUsbIds(portName);
-            return vid == EspressifVid && pid == UsbJtagSerialPid;
+            return vid == EspressifVid && IsUsbJtagSerialPid(pid);
+        }
+
+        internal static bool IsUsbJtagSerialPid(int pid)
+        {
+            return pid == UsbJtagSerialPid;
         }
 
         /// <summary>

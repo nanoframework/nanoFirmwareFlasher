@@ -234,6 +234,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual("UF2 Bootloader v3.0", result.BootloaderVersion);
             Assert.AreEqual(drivePath, result.DrivePath);
             Assert.AreEqual(PicoUf2Utility.FAMILY_ID_RP2040, result.FamilyId);
+            Assert.AreEqual(PicoFirmware.DefaultFlashSize, result.FlashSizeBytes);
         }
 
         [TestMethod]
@@ -254,6 +255,27 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual("RP2350", result.ChipType);
             Assert.AreEqual("RP2350", result.BoardId);
             Assert.AreEqual(PicoUf2Utility.FAMILY_ID_RP2350_ARM, result.FamilyId);
+            Assert.AreEqual(PicoFirmware.DefaultFlashSizeRp2350, result.FlashSizeBytes);
+        }
+
+        [TestMethod]
+        public void DetectDevice_WithFlashSizeLine_UsesParsedSize()
+        {
+            string testDirectory = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string drivePath = Path.Combine(testDirectory, "RP2350-size");
+            Directory.CreateDirectory(drivePath);
+
+            File.WriteAllText(Path.Combine(drivePath, "INFO_UF2.TXT"),
+                "UF2 Bootloader v1.0\r\n" +
+                "Model: Raspberry Pi RP2350\r\n" +
+                "Board-ID: RP2350\r\n" +
+                "Flash size: 8MB\r\n");
+
+            PicoDeviceInfo result = PicoUf2Utility.DetectDevice(drivePath);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("RP2350", result.ChipType);
+            Assert.AreEqual(8u * 1024u * 1024u, result.FlashSizeBytes);
         }
 
         [TestMethod]
@@ -330,6 +352,7 @@ namespace nanoFirmwareFlasher.Tests
             var info = new PicoDeviceInfo("RP2040", "RPI-RP2", "v3.0", "/media/RPI-RP2", "RPI-RP2");
 
             Assert.AreEqual(PicoUf2Utility.FAMILY_ID_RP2040, info.FamilyId);
+            Assert.AreEqual(PicoFirmware.DefaultFlashSize, info.FlashSizeBytes);
         }
 
         [TestMethod]
@@ -338,6 +361,7 @@ namespace nanoFirmwareFlasher.Tests
             var info = new PicoDeviceInfo("RP2350", "RP2350", "v1.0", "/Volumes/RP2350", "RP2350");
 
             Assert.AreEqual(PicoUf2Utility.FAMILY_ID_RP2350_ARM, info.FamilyId);
+            Assert.AreEqual(PicoFirmware.DefaultFlashSizeRp2350, info.FlashSizeBytes);
         }
 
         [TestMethod]
