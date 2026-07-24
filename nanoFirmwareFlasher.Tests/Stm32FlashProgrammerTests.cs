@@ -4,7 +4,6 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using nanoFramework.Tools.FirmwareFlasher.Swd;
@@ -23,37 +22,43 @@ namespace nanoFirmwareFlasher.Tests
         private static readonly MethodInfo ClassifyDeviceMethod =
             typeof(Stm32FlashProgrammer).GetMethod(
                 "ClassifyDevice",
-                BindingFlags.Static | BindingFlags.NonPublic);
+                BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("ClassifyDevice method not found.");
 
         // Use reflection to call internal static GetFlashRegisters(Stm32Family family)
         private static readonly MethodInfo GetFlashRegistersMethod =
             typeof(Stm32FlashProgrammer).GetMethod(
                 "GetFlashRegisters",
-                BindingFlags.Static | BindingFlags.NonPublic);
+                BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("GetFlashRegisters method not found.");
 
         // Use reflection to call internal static GetSectorForAddress(uint offset)
         private static readonly MethodInfo GetSectorForAddressMethod =
             typeof(Stm32FlashProgrammer).GetMethod(
                 "GetSectorForAddress",
-                BindingFlags.Static | BindingFlags.NonPublic);
+                BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("GetSectorForAddress method not found.");
 
         // Helper to get the Stm32Family enum type
         private static readonly Type FamilyEnumType =
-            typeof(Stm32FlashProgrammer).GetNestedType("Stm32Family", BindingFlags.NonPublic);
+            typeof(Stm32FlashProgrammer).GetNestedType("Stm32Family", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("Stm32Family enum not found.");
 
         private static object ClassifyDevice(ushort devId)
         {
-            return ClassifyDeviceMethod.Invoke(null, new object[] { devId });
+            return ClassifyDeviceMethod.Invoke(null, new object[] { devId })!;
         }
 
         private static object GetFlashRegisters(object family)
         {
-            return GetFlashRegistersMethod.Invoke(null, new object[] { family });
+            return GetFlashRegistersMethod.Invoke(null, new object[] { family })!;
         }
 
         private static int GetSectorForAddress(uint offset)
         {
-            return (int)GetSectorForAddressMethod.Invoke(null, new object[] { offset });
+            // MethodInfo.Invoke can return null; guard against null to satisfy nullable analysis
+            var result = GetSectorForAddressMethod.Invoke(null, new object[] { offset });
+            return (int)(result ?? throw new InvalidOperationException("GetSectorForAddress returned null"));
         }
 
         private static object GetFamilyValue(string name)
@@ -63,7 +68,15 @@ namespace nanoFirmwareFlasher.Tests
 
         private static object GetRegField(object regs, string fieldName)
         {
-            return regs.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetValue(regs);
+            var field = regs.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (field == null)
+                throw new InvalidOperationException($"Field '{fieldName}' not found on type '{regs.GetType()}'.");
+
+            var value = field.GetValue(regs);
+            if (value == null)
+                throw new InvalidOperationException($"Field '{fieldName}' on type '{regs.GetType()}' returned null.");
+
+            return value;
         }
 
         private static uint GetUintRegField(object regs, string fieldName)
@@ -660,9 +673,9 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsNotNull(m0, "DbgmcuIdcode_M0 constant should exist");
             Assert.IsNotNull(m33, "DbgmcuIdcode_M33 constant should exist");
 
-            Assert.AreEqual(0xE0042000U, (uint)m3m4.GetValue(null));
-            Assert.AreEqual(0x40015800U, (uint)m0.GetValue(null));
-            Assert.AreEqual(0x44024000U, (uint)m33.GetValue(null));
+            Assert.AreEqual(0xE0042000U, (uint)m3m4.GetValue(null)!);
+            Assert.AreEqual(0x40015800U, (uint)m0.GetValue(null)!);
+            Assert.AreEqual(0x44024000U, (uint)m33.GetValue(null)!);
         }
 
         #endregion
@@ -679,8 +692,8 @@ namespace nanoFirmwareFlasher.Tests
 
             Assert.IsNotNull(key1);
             Assert.IsNotNull(key2);
-            Assert.AreEqual(0x45670123U, (uint)key1.GetValue(null));
-            Assert.AreEqual(0xCDEF89ABU, (uint)key2.GetValue(null));
+            Assert.AreEqual(0x45670123U, (uint)key1.GetValue(null)!);
+            Assert.AreEqual(0xCDEF89ABU, (uint)key2.GetValue(null)!);
         }
 
         #endregion

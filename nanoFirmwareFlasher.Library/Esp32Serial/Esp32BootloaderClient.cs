@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Ports;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -27,9 +28,64 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Number of extra sync responses to drain after successful sync.</summary>
         private const int SyncDrainCount = 7;
 
+        /// <summary>Additional connection attempts used only after baseline retries fail.</summary>
+        private const int AdaptiveExtraAttempts = 6;
+
+        /// <summary>Retries when opening the serial port to tolerate USB re-enumeration delays.</summary>
+        private const int OpenPortRetryAttempts = 5;
+
+        /// <summary>Retries for reset sequence execution when control line operations transiently fail.</summary>
+        private const int ResetReconnectAttempts = 3;
+
+        /// <summary>
+        /// For Espressif VID ports with a non-standard PID, begin adaptive fallback earlier
+        /// so USB-JTAG probing starts before all classic retries are exhausted.
+        /// </summary>
+        private const int EarlyAdaptiveStartAttemptForEspressifCustomPid = 3;
+
+        private const uint Esp32C5PcrSysclkConfReg = 0x60096110;
+        private const uint Esp32C5PcrSysclkXtalFreqMask = 0x7Fu << 24;
+        private const int Esp32C5PcrSysclkXtalFreqShift = 24;
+
+        private const uint Esp32P4EfuseBlock1Addr = 0x5012D044;
+        private const uint Esp32P4EfuseRdRepeatData1Reg = 0x5012D034;
+        private const uint Esp32P4EfuseDownloadModeXpdOnMask = 0x1u << 16;
+        private const uint Esp32P4LpSystemRegAnaXpdPadGroupReg = 0x5011010C;
+        private const uint Esp32P4PmuExtLdoP0_0P1AAnaReg = 0x501151BC;
+        private const uint Esp32P4PmuAna0P1AEnCurLim0 = 1u << 27;
+        private const uint Esp32P4PmuExtLdoP0_0P1AReg = 0x501151B8;
+        private const uint Esp32P4Pmu0P1ATarget00 = 0xFFu << 23;
+        private const uint Esp32P4Pmu0P1AForceTiehSel0 = 1u << 7;
+        private const uint Esp32P4PmuDateReg = 0x501153FC;
+        private const uint Esp32P4LpWdtConfig0Reg = 0x50116000;
+        private const uint Esp32P4LpWdtWprotectReg = 0x50116018;
+        private const uint Esp32P4LpSwdConfReg = 0x5011601C;
+        private const uint Esp32P4LpSwdWprotectReg = 0x50116020;
+        private const uint Esp32P4LpWdtWkey = 0x50D83AA1;
+        private const uint Esp32P4LpSwdAutoFeedEn = 1u << 18;
+
+        private const uint Esp32S31LpWdtConfig0Reg = 0x20801000;
+        private const uint Esp32S31LpWdtConfig1Reg = 0x20801004;
+        private const uint Esp32S31LpWdtWprotectReg = 0x20801018;
+        private const uint Esp32S31LpWdtWkey = 0x50D83AA1;
+
+        private const uint Esp32E22GpioStrapReg = 0xC310D000;
+        private const uint Esp32E22GpioStrapSpiBootMask = 0x1u << 3;
+        private const uint Esp32E22RtcCntlOption1Reg = 0x3F408128;
+        private const uint Esp32E22RtcCntlForceDownloadBootMask = 0x1u;
+
         private SerialPort _port;
         private bool _disposed;
         private bool _isUsbJtag;
+        private bool _p4FlashPrepared;
+        private Esp32ChipConfig _runtimeConfig;
+
+        private struct SyncAttemptStats
+        {
+            internal int Timeouts;
+            internal int InvalidSlipFrames;
+            internal int StaleFrames;
+        }
 
         /// <summary>Whether the stub loader is currently running (affects response parsing).</summary>
         internal bool IsStubRunning { get; set; }
@@ -81,7 +137,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 _port.Close();
             }
 
-            _port.Open();
+            OpenPortWithRetries();
 
             if (Verbosity >= VerbosityLevel.Diagnostic)
             {
@@ -105,6 +161,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             bool synced = false;
             bool promptShown = false;
+            bool staleHeavyLastAttempt = false;
+            int consecutiveTimeoutHeavy = 0;
 
             // Detect USB device type to choose the optimal reset strategy.
             // Matches esptool's _construct_reset_strategy_sequence():
@@ -116,8 +174,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             // to fail (chip boots normally instead of entering download mode).
             var (usbVid, usbPid) = SerialPortUsbInfo.GetUsbIds(_port.PortName);
             bool isUsbJtag = usbVid == SerialPortUsbInfo.EspressifVid
-                             && usbPid == SerialPortUsbInfo.UsbJtagSerialPid;
+                             && SerialPortUsbInfo.IsUsbJtagSerialPid(usbPid);
+            bool isEspressifCustomPid = usbVid == SerialPortUsbInfo.EspressifVid
+                                        && usbPid >= 0
+                                        && !SerialPortUsbInfo.IsUsbJtagSerialPid(usbPid);
             _isUsbJtag = isUsbJtag;
+
+            int adaptiveStartAttempt = isEspressifCustomPid
+                ? Math.Min(maxRetries, EarlyAdaptiveStartAttemptForEspressifCustomPid)
+                : maxRetries;
 
             // Show the prompt after a few failed attempts
             int promptAfterAttempt = 7;
@@ -130,6 +195,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                         $"USB device detected: VID=0x{usbVid:X4} PID=0x{usbPid:X4}"
                         + " (Espressif USB-JTAG/Serial)");
                 }
+                else if (isEspressifCustomPid)
+                {
+                    OutputWriter.WriteLine(
+                        $"USB device detected: VID=0x{usbVid:X4} PID=0x{usbPid:X4}"
+                        + " (Espressif custom PID; enabling early adaptive USB-JTAG fallback)");
+                }
                 else if (usbVid >= 0 && usbPid >= 0)
                 {
                     OutputWriter.WriteLine(
@@ -141,46 +212,54 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 }
             }
 
-            for (int attempt = 0; attempt < maxRetries; attempt++)
+            int totalAttempts = maxRetries + AdaptiveExtraAttempts;
+
+            for (int attempt = 0; attempt < totalAttempts; attempt++)
             {
+                bool isAdaptiveAttempt = attempt >= adaptiveStartAttempt;
+
+                if (isAdaptiveAttempt && attempt == adaptiveStartAttempt && Verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.WriteLine("Switching to adaptive recovery attempts...");
+                }
+
+                // In adaptive mode, periodically reopen the port to recover from flaky USB/serial stack state.
+                if (isAdaptiveAttempt && ((attempt - adaptiveStartAttempt) % 2 == 1 || consecutiveTimeoutHeavy >= 3))
+                {
+                    ReopenPortForRecovery();
+                }
+
                 // Clear buffer before reset so post-reset boot log is isolated.
                 // Matches esptool's reset_input_buffer() before reset_strategy().
                 _port.DiscardInBuffer();
 
                 // Select reset strategy based on detected USB type.
                 // Matches esptool: USB-JTAG resets ONLY when positively identified.
-                // For all other cases (known UART bridge OR unknown VID/PID),
-                // use ClassicReset with cycling delays (50ms / 550ms).
-                if (isUsbJtag)
+                // In adaptive recovery mode, probe USB-JTAG on alternating retries too,
+                // which helps native USB boards recover if VID/PID detection was inconclusive.
+                bool useUsbJtagReset = ShouldUseUsbJtagReset(isUsbJtag, isAdaptiveAttempt, attempt, adaptiveStartAttempt);
+                bool useManualBootHoldFallback = ShouldUseManualBootHoldFallback(
+                    isEspressifCustomPid,
+                    isAdaptiveAttempt,
+                    useUsbJtagReset,
+                    consecutiveTimeoutHeavy);
+
+                int delay = (attempt % 2 == 0)
+                    ? Esp32ResetSequence.DefaultResetDelayMs
+                    : Esp32ResetSequence.ExtraResetDelayMs;
+
+                if (consecutiveTimeoutHeavy >= 2)
                 {
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
-                    {
-                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{maxRetries}: USB-JTAG reset");
-                    }
-
-                    Esp32ResetSequence.EnterBootloaderUsbJtag(_port);
+                    delay = Math.Min(delay + (50 * (consecutiveTimeoutHeavy - 1)), 900);
                 }
-                else
-                {
-                    int delay = (attempt % 2 == 0)
-                        ? Esp32ResetSequence.DefaultResetDelayMs
-                        : Esp32ResetSequence.ExtraResetDelayMs;
 
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
-                    {
-                        OutputWriter.WriteLine($"[Connect] Attempt {attempt + 1}/{maxRetries}: ClassicReset (delay={delay}ms)");
-                    }
-
-                    Esp32ResetSequence.EnterBootloader(_port, delay);
-                }
+                ExecuteResetWithRecovery(useUsbJtagReset, useManualBootHoldFallback, isUsbJtag, delay, attempt + 1, totalAttempts);
 
                 // Read any boot log output from the ROM after reset.
                 // This serves two purposes:
                 //  1. Consumes boot log bytes so they don't confuse SYNC parsing.
                 //  2. Detects the boot mode (download vs normal) for better diagnostics.
                 // Matches esptool's boot log detection in _connect_attempt().
-                bool bootLogDetected = false;
-                bool downloadMode = false;
                 int waiting = _port.BytesToRead;
 
                 if (waiting > 0)
@@ -201,9 +280,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
                     if (bootMatch.Success)
                     {
-                        bootLogDetected = true;
-                        downloadMode = bootMatch.Groups[2].Success;
-
+                        bool downloadMode = bootMatch.Groups[2].Success;
                         if (Verbosity >= VerbosityLevel.Diagnostic)
                         {
                             OutputWriter.WriteLine(
@@ -231,13 +308,43 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                     promptShown = true;
                 }
+                if (staleHeavyLastAttempt)
+                {
+                    AggressiveDrainSyncResponses();
+                }
+
+                if (consecutiveTimeoutHeavy >= 2)
+                {
+                    int settleDelay = Math.Min(150 + ((consecutiveTimeoutHeavy - 2) * 50), 350);
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine($"[Connect] Applying extra settle delay before SYNC: {settleDelay}ms");
+                    }
+
+                    Thread.Sleep(settleDelay);
+                }
+
+                int syncSubAttempts = isAdaptiveAttempt
+                    ? Math.Min(8, 3 + (attempt - adaptiveStartAttempt))
+                    : 5;
+
+                int syncTimeoutMs = 100;
+                if (isAdaptiveAttempt && (attempt - adaptiveStartAttempt) >= 3)
+                {
+                    syncTimeoutMs = Math.Min(200, 150 + (((attempt - adaptiveStartAttempt) - 3) * 25));
+                }
 
                 // Try to sync
-                if (TrySync())
+                if (useManualBootHoldFallback)
+                {
+                    syncTimeoutMs = Math.Max(syncTimeoutMs, 250);
+                }
+
+                if (TrySync(syncSubAttempts, syncTimeoutMs, 50, useManualBootHoldFallback, out SyncAttemptStats syncStats))
                 {
                     if (Verbosity >= VerbosityLevel.Diagnostic)
                     {
-                        OutputWriter.WriteLine($"[Connect] Sync succeeded on attempt {attempt + 1}/{maxRetries}");
+                        OutputWriter.WriteLine($"[Connect] Sync succeeded on attempt {attempt + 1}/{totalAttempts}");
                     }
 
                     synced = true;
@@ -245,7 +352,21 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 }
                 else if (Verbosity >= VerbosityLevel.Diagnostic)
                 {
-                    OutputWriter.WriteLine($"[Connect] Sync failed on attempt {attempt + 1}/{maxRetries}");
+                    OutputWriter.WriteLine($"[Connect] Sync failed on attempt {attempt + 1}/{totalAttempts}");
+                    OutputWriter.WriteLine(
+                        $"[Connect] Sync diagnostics: timeouts={syncStats.Timeouts}, invalidSlip={syncStats.InvalidSlipFrames}, stale={syncStats.StaleFrames}");
+                }
+
+                bool timeoutHeavy = syncStats.Timeouts >= Math.Max(2, syncSubAttempts - 1);
+                bool staleHeavy = syncStats.StaleFrames >= Math.Max(2, syncSubAttempts / 2)
+                                  && syncStats.Timeouts == 0;
+
+                consecutiveTimeoutHeavy = timeoutHeavy ? consecutiveTimeoutHeavy + 1 : 0;
+                staleHeavyLastAttempt = staleHeavy;
+
+                if (staleHeavy && Verbosity >= VerbosityLevel.Diagnostic)
+                {
+                    OutputWriter.WriteLine("[Connect] Stale-response-heavy attempt detected, increasing cleanup.");
                 }
             }
 
@@ -263,6 +384,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             {
                 OutputWriter.WriteLine($"Connected to ESP32 bootloader on {_port.PortName} @ {CurrentBaudRate} baud.");
             }
+        }
+
+        internal static bool ShouldUseUsbJtagReset(bool isUsbJtag, bool isAdaptiveAttempt, int attempt, int adaptiveStartAttempt)
+        {
+            if (isUsbJtag)
+            {
+                return true;
+            }
+
+            return isAdaptiveAttempt && ((attempt - adaptiveStartAttempt) % 2 == 0);
+        }
+
+        internal static bool ShouldUseManualBootHoldFallback(
+            bool isEspressifCustomPid,
+            bool isAdaptiveAttempt,
+            bool useUsbJtagReset,
+            int consecutiveTimeoutHeavy)
+        {
+            return isEspressifCustomPid
+                   && isAdaptiveAttempt
+                   && !useUsbJtagReset
+                   && consecutiveTimeoutHeavy >= 2;
         }
 
         /// <summary>
@@ -382,10 +525,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// For stub: both old and new baud rates are sent.
         /// </summary>
         /// <param name="newBaudRate">New baud rate to switch to.</param>
-        internal void ChangeBaudRate(int newBaudRate)
+        /// <param name="config">Detected chip configuration used for ROM-specific baud quirks.</param>
+        internal void ChangeBaudRate(int newBaudRate, Esp32ChipConfig config = null)
         {
+            int commandBaudRate = GetCommandBaudRate(newBaudRate, config);
+
             byte[] data = new byte[8];
-            Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)newBaudRate);
+            Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)commandBaudRate);
             Esp32CommandPacket.WriteUInt32LE(data, 4, IsStubRunning ? (uint)CurrentBaudRate : 0);
 
             var response = SendCommand(Esp32Command.ChangeBaudrate, data);
@@ -402,6 +548,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             _port.DiscardInBuffer();
         }
 
+        internal void PrepareForFlashOperations(Esp32ChipConfig config)
+        {
+            if (config == null || IsStubRunning)
+            {
+                return;
+            }
+
+            if (config.ChipType == "esp32p4")
+            {
+                PrepareEsp32P4ForFlashOperations();
+            }
+        }
+
         /// <summary>
         /// Perform a hard reset to exit the bootloader and run the application.
         /// </summary>
@@ -411,6 +570,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             if (_port.IsOpen)
             {
+                if (_runtimeConfig?.ChipType == "esp32s31" && _runtimeConfig.UsesUsbOtg)
+                {
+                    WatchdogResetEsp32S31();
+                    return;
+                }
+
+                if (_runtimeConfig?.ChipType == "esp32e22" && _runtimeConfig.UsesUsbOtg)
+                {
+                    uint strapReg = ReadRegister(Esp32E22GpioStrapReg);
+                    uint forceDownloadReg = ReadRegister(Esp32E22RtcCntlOption1Reg);
+
+                    if ((strapReg & Esp32E22GpioStrapSpiBootMask) == 0
+                        && (forceDownloadReg & Esp32E22RtcCntlForceDownloadBootMask) == 0)
+                    {
+                        // Upstream routes this case through the chip's watchdog-reset path.
+                        // We don't have a published E22-specific watchdog register sequence,
+                        // so use the existing USB-aware hard-reset primitive after matching the branch condition.
+                        Esp32ResetSequence.HardReset(_port, true);
+                        return;
+                    }
+                }
+
                 Esp32ResetSequence.HardReset(_port, _isUsbJtag);
             }
         }
@@ -460,6 +641,145 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// </summary>
         internal SerialPort Port => _port;
 
+        internal void SetRuntimeConfig(Esp32ChipConfig config)
+        {
+            _runtimeConfig = config;
+        }
+
+        private int GetCommandBaudRate(int requestedBaudRate, Esp32ChipConfig config)
+        {
+            if (IsStubRunning || config == null)
+            {
+                return requestedBaudRate;
+            }
+
+            if (config.ChipType == "esp32c2")
+            {
+                int crystalFrequency = EstimateCrystalFrequencyMHz(config);
+                if (crystalFrequency == 26)
+                {
+                    return requestedBaudRate * 40 / 26;
+                }
+            }
+            else if (config.ChipType == "esp32c5")
+            {
+                int crystalFrequency = EstimateCrystalFrequencyMHz(config);
+                int romExpectedCrystalFrequency = (int)((ReadRegister(Esp32C5PcrSysclkConfReg) & Esp32C5PcrSysclkXtalFreqMask) >> Esp32C5PcrSysclkXtalFreqShift);
+
+                if (crystalFrequency == 48 && romExpectedCrystalFrequency == 40)
+                {
+                    return requestedBaudRate * 40 / 48;
+                }
+
+                if (crystalFrequency == 40 && romExpectedCrystalFrequency == 48)
+                {
+                    return requestedBaudRate * 48 / 40;
+                }
+            }
+
+            return requestedBaudRate;
+        }
+
+        private int EstimateCrystalFrequencyMHz(Esp32ChipConfig config)
+        {
+            uint uartClkDivAddr;
+
+            if (config.ChipType == "esp32")
+            {
+                uartClkDivAddr = 0x3FF40014;
+            }
+            else if (config.ChipType == "esp32e22")
+            {
+                uartClkDivAddr = 0xC3102014;
+            }
+            else
+            {
+                uartClkDivAddr = 0x60000014;
+            }
+
+            uint uartClkDiv = ReadRegister(uartClkDivAddr);
+            uint divisor = uartClkDiv & 0xFFFFF;
+            double estXtal = ((double)CurrentBaudRate * divisor) / 1_000_000.0 / config.XtalClkDivider;
+
+            if (estXtal > 45)
+            {
+                return 48;
+            }
+
+            if (estXtal > 33)
+            {
+                return 40;
+            }
+
+            return 26;
+        }
+
+        private void PrepareEsp32P4ForFlashOperations()
+        {
+            if (_p4FlashPrepared)
+            {
+                return;
+            }
+
+            if (_isUsbJtag)
+            {
+                WriteRegister(Esp32P4LpWdtWprotectReg, Esp32P4LpWdtWkey);
+                WriteRegister(Esp32P4LpWdtConfig0Reg, 0);
+                WriteRegister(Esp32P4LpWdtWprotectReg, 0);
+
+                WriteRegister(Esp32P4LpSwdWprotectReg, Esp32P4LpWdtWkey);
+                WriteRegister(Esp32P4LpSwdConfReg, ReadRegister(Esp32P4LpSwdConfReg) | Esp32P4LpSwdAutoFeedEn);
+                WriteRegister(Esp32P4LpSwdWprotectReg, 0);
+            }
+
+            int revision = GetEsp32P4Revision();
+
+            if (revision == 302
+                && (ReadRegister(Esp32P4EfuseRdRepeatData1Reg) & Esp32P4EfuseDownloadModeXpdOnMask) != 0)
+            {
+                WriteRegister(Esp32P4PmuDateReg, 0);
+                _p4FlashPrepared = true;
+                return;
+            }
+
+            if (revision == 301 || revision == 302)
+            {
+                WriteRegister(Esp32P4LpSystemRegAnaXpdPadGroupReg, 1);
+                Thread.Sleep(10);
+
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AAnaReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AAnaReg) | Esp32P4PmuAna0P1AEnCurLim0);
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) | Esp32P4Pmu0P1AForceTiehSel0);
+                WriteRegister(Esp32P4PmuDateReg, ReadRegister(Esp32P4PmuDateReg) | 0x3u);
+                Thread.Sleep(1);
+
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AAnaReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AAnaReg) & ~Esp32P4PmuAna0P1AEnCurLim0);
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) & ~Esp32P4Pmu0P1ATarget00);
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) | 0x80u);
+                WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) & ~Esp32P4Pmu0P1AForceTiehSel0);
+                Thread.Sleep(2);
+            }
+
+            _p4FlashPrepared = true;
+        }
+
+        private int GetEsp32P4Revision()
+        {
+            uint block1Word2 = ReadRegister(Esp32P4EfuseBlock1Addr + 8);
+            int majorRev = (int)((((block1Word2 >> 23) & 0x01) << 2) | ((block1Word2 >> 4) & 0x03));
+            int minorRev = (int)(block1Word2 & 0x0F);
+
+            return (majorRev * 100) + minorRev;
+        }
+
+        private void WatchdogResetEsp32S31()
+        {
+            WriteRegister(Esp32S31LpWdtWprotectReg, Esp32S31LpWdtWkey);
+            WriteRegister(Esp32S31LpWdtConfig1Reg, 2000);
+            WriteRegister(Esp32S31LpWdtConfig0Reg, (1u << 31) | (5u << 28) | (1u << 8) | 2u);
+            WriteRegister(Esp32S31LpWdtWprotectReg, 0);
+            Thread.Sleep(500);
+        }
+
         #region Sync Implementation
 
         /// <summary>
@@ -467,69 +787,269 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// Makes multiple fast attempts within a single reset cycle.
         /// </summary>
         /// <returns>True if sync was successful.</returns>
-        private bool TrySync()
+        private bool TrySync(
+            int subAttempts,
+            int syncTimeoutMs,
+            int interAttemptDelayMs,
+            bool releaseBootPinAfterAttempts,
+            out SyncAttemptStats stats)
         {
+            stats = new SyncAttemptStats();
             byte[] syncPacket = Esp32CommandPacket.BuildSync();
 
-            // esptool does 5 sync attempts per reset cycle, each with
-            // flush_input + flushOutput + sync(timeout=0.1).
-            for (int i = 0; i < 5; i++)
+            try
             {
-                try
+                for (int i = 0; i < subAttempts; i++)
                 {
-                    // Flush before each attempt, matching esptool's _connect_attempt loop
-                    _port.DiscardInBuffer();
-                    _port.BaseStream.Flush();
-
-                    _port.Write(syncPacket, 0, syncPacket.Length);
-
-                    // SYNC_TIMEOUT = 0.1s in esptool
-                    byte[] responsePayload = SlipFraming.ReadFrame(_port, 100);
-
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    try
                     {
-                        OutputWriter.WriteLine(
-                            $"[Sync] Sub-attempt {i + 1}/5: got {responsePayload.Length} bytes,"
-                            + $" dir=0x{(responsePayload.Length > 0 ? responsePayload[0] : 0):X2}");
-                    }
+                        // Flush before each attempt, matching esptool's _connect_attempt loop
+                        _port.DiscardInBuffer();
+                        _port.BaseStream.Flush();
 
-                    if (responsePayload.Length >= Esp32ResponsePacket.MinimumPacketSize
-                        && responsePayload[0] == Esp32ResponsePacket.ResponseDirection)
-                    {
-                        var response = Esp32ResponsePacket.Parse(responsePayload, IsStubRunning);
+                        _port.Write(syncPacket, 0, syncPacket.Length);
 
-                        if (response.Command == Esp32Command.Sync && response.IsSuccess)
-                        {
-                            return true;
-                        }
+                        byte[] responsePayload = SlipFraming.ReadFrame(_port, syncTimeoutMs);
 
                         if (Verbosity >= VerbosityLevel.Diagnostic)
                         {
                             OutputWriter.WriteLine(
-                                $"[Sync] Response: cmd=0x{(byte)response.Command:X2}"
-                                + $" success={response.IsSuccess} value=0x{response.Value:X8}");
+                                $"[Sync] Sub-attempt {i + 1}/{subAttempts}: got {responsePayload.Length} bytes,"
+                                + $" dir=0x{(responsePayload.Length > 0 ? responsePayload[0] : 0):X2}");
+                        }
+
+                        if (responsePayload.Length < Esp32ResponsePacket.MinimumPacketSize)
+                        {
+                            stats.StaleFrames++;
+                            Thread.Sleep(interAttemptDelayMs);
+                            continue;
+                        }
+
+                        if (responsePayload[0] != Esp32ResponsePacket.ResponseDirection)
+                        {
+                            stats.StaleFrames++;
+                            Thread.Sleep(interAttemptDelayMs);
+                            continue;
+                        }
+
+                        if (responsePayload.Length >= Esp32ResponsePacket.MinimumPacketSize
+                            && responsePayload[0] == Esp32ResponsePacket.ResponseDirection)
+                        {
+                            var response = Esp32ResponsePacket.Parse(responsePayload, IsStubRunning);
+
+                            if (response.Command == Esp32Command.Sync && response.IsSuccess)
+                            {
+                                return true;
+                            }
+
+                            if (Verbosity >= VerbosityLevel.Diagnostic)
+                            {
+                                OutputWriter.WriteLine(
+                                    $"[Sync] Response: cmd=0x{(byte)response.Command:X2}"
+                                    + $" success={response.IsSuccess} value=0x{response.Value:X8}");
+                            }
+
+                            stats.StaleFrames++;
                         }
                     }
-                }
-                catch (TimeoutException)
-                {
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    catch (TimeoutException)
                     {
-                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/5: timeout (no response)");
+                        stats.Timeouts++;
+                        if (Verbosity >= VerbosityLevel.Diagnostic)
+                        {
+                            OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/{subAttempts}: timeout (no response)");
+                        }
                     }
-                }
-                catch (InvalidOperationException ex)
-                {
-                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    catch (InvalidOperationException ex)
                     {
-                        OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/5: invalid SLIP frame: {ex.Message}");
+                        stats.InvalidSlipFrames++;
+                        if (Verbosity >= VerbosityLevel.Diagnostic)
+                        {
+                            OutputWriter.WriteLine($"[Sync] Sub-attempt {i + 1}/{subAttempts}: invalid SLIP frame: {ex.Message}");
+                        }
                     }
-                }
 
-                Thread.Sleep(50);
+                    Thread.Sleep(interAttemptDelayMs);
+                }
+            }
+            finally
+            {
+                if (releaseBootPinAfterAttempts)
+                {
+                    Esp32ResetSequence.ReleaseBootPin(_port);
+                }
             }
 
             return false;
+        }
+
+        private void AggressiveDrainSyncResponses()
+        {
+            int drained = 0;
+
+            for (int i = 0; i < 16; i++)
+            {
+                try
+                {
+                    SlipFraming.ReadFrame(_port, 60);
+                    drained++;
+                }
+                catch (TimeoutException)
+                {
+                    break;
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignore malformed frame while draining
+                }
+            }
+
+            _port.DiscardInBuffer();
+
+            if (Verbosity >= VerbosityLevel.Diagnostic)
+            {
+                OutputWriter.WriteLine($"[Connect] Aggressive cleanup drained {drained} frame(s)");
+            }
+        }
+
+        private void ReopenPortForRecovery()
+        {
+            if (Verbosity >= VerbosityLevel.Diagnostic)
+            {
+                OutputWriter.WriteLine("[Connect] Reopening serial port for recovery...");
+            }
+
+            if (_port.IsOpen)
+            {
+                _port.DiscardInBuffer();
+                _port.DiscardOutBuffer();
+                _port.Close();
+            }
+
+            Thread.Sleep(120);
+
+            OpenPortWithRetries();
+            _port.DtrEnable = false;
+            _port.RtsEnable = false;
+            _port.DiscardInBuffer();
+            _port.DiscardOutBuffer();
+        }
+
+        private void ExecuteResetWithRecovery(
+            bool useUsbJtagReset,
+            bool useManualBootHoldFallback,
+            bool isUsbJtag,
+            int delay,
+            int attemptNumber,
+            int totalAttempts)
+        {
+            Action resetAction;
+            string resetLabel;
+
+            if (useUsbJtagReset)
+            {
+                resetAction = () => Esp32ResetSequence.EnterBootloaderUsbJtag(_port);
+                resetLabel = isUsbJtag ? "USB-JTAG reset" : "USB-JTAG fallback reset";
+            }
+            else if (useManualBootHoldFallback)
+            {
+                resetAction = () => Esp32ResetSequence.EnterBootloaderKeepBootPinLow(_port, delay);
+                resetLabel = $"ClassicReset+BOOT hold fallback (delay={delay}ms)";
+            }
+            else
+            {
+                resetAction = () => Esp32ResetSequence.EnterBootloader(_port, delay);
+                resetLabel = $"ClassicReset (delay={delay}ms)";
+            }
+
+            if (Verbosity >= VerbosityLevel.Diagnostic)
+            {
+                OutputWriter.WriteLine($"[Connect] Attempt {attemptNumber}/{totalAttempts}: {resetLabel}");
+            }
+
+            Exception lastError = null;
+            for (int retry = 0; retry < ResetReconnectAttempts; retry++)
+            {
+                try
+                {
+                    if (!_port.IsOpen)
+                    {
+                        OpenPortWithRetries();
+                        _port.DtrEnable = false;
+                        _port.RtsEnable = false;
+                    }
+
+                    resetAction();
+                    return;
+                }
+                catch (Exception ex) when (ex is IOException || ex is InvalidOperationException || ex is UnauthorizedAccessException)
+                {
+                    lastError = ex;
+
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine(
+                            $"[Connect] Reset failed ({ex.GetType().Name}: {ex.Message}). "
+                            + $"Recovery retry {retry + 1}/{ResetReconnectAttempts}...");
+                    }
+
+                    SafeClosePort();
+                    Thread.Sleep(150 + (retry * 150));
+                }
+            }
+
+            throw new EspToolExecutionException($"Reset sequence failed after recovery retries: {lastError?.Message}");
+        }
+
+        private void OpenPortWithRetries()
+        {
+            Exception lastError = null;
+
+            for (int attempt = 0; attempt < OpenPortRetryAttempts; attempt++)
+            {
+                try
+                {
+                    if (!_port.IsOpen)
+                    {
+                        _port.Open();
+                    }
+
+                    return;
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is InvalidOperationException)
+                {
+                    lastError = ex;
+
+                    if (Verbosity >= VerbosityLevel.Diagnostic)
+                    {
+                        OutputWriter.WriteLine(
+                            $"[Connect] Port open failed ({ex.GetType().Name}: {ex.Message}). "
+                            + $"Retry {attempt + 1}/{OpenPortRetryAttempts}...");
+                    }
+
+                    SafeClosePort();
+                    Thread.Sleep(120 + (attempt * 120));
+                }
+            }
+
+            throw new EspToolExecutionException($"Unable to open serial port {_port.PortName}: {lastError?.Message}");
+        }
+
+        private void SafeClosePort()
+        {
+            if (!_port.IsOpen)
+            {
+                return;
+            }
+
+            try
+            {
+                _port.Close();
+            }
+            catch
+            {
+                // Best-effort close during recovery.
+            }
         }
 
         /// <summary>

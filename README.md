@@ -44,8 +44,8 @@ Tool 'nanoff' (version '9.9.9') was successfully installed.
 ### Install path issues
 
 > [!CAUTION]
-> That are know issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in STM32 Cube Programmer.
-If that's the case with your user path, for example, you have to install it in a location that does have those.
+> There are known issues running commands for STM32 devices when `nanoff` is installed in a path that contains diacritic characters. This is caused by a known bug in the STM32 Cube Programmer.
+If that's the case with your user path, for example, you have to install it in a location that does not contain those characters.
 To accomplish that, use the following .NET Core CLI command on which the path where the tool will be installed is specified:
 
 ```console
@@ -104,7 +104,7 @@ Note that it's possible to combine multiple options if those operations are supp
 
 ## ESP32 usage examples
 
-There are multiple ESP32 images available, some are build specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards). You will need as well to know the COM port used by your device. Find [how to do this here](#finding-the-device-com-port-on-windows). Alternatively, you can as well list the available COM ports. If you list them first without the device to flash and then plugging the device, the additional port which will show up is the one for the device to flash. This method works for all OS:
+There are multiple ESP32 images available, some are built specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards). You will also need to know the COM port used by your device. Find [how to do this here](#finding-the-device-com-port-on-windows). Alternatively, you can also list the available COM ports. If you list them first without the device to flash and then plugging the device, the additional port which will show up is the one for the device to flash. This method works on all operating systems:
 
 ```console
 nanoff --listports
@@ -179,7 +179,7 @@ To deploy an application on an ESP32 target connected to COM31, with your applic
 This example uses the binary format file that you can find when you are building an application. Note, as only application can run, when you are building a library, a bin file is not created automatically. Only for applications.
 
 ```console
-nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
+nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\esp32-backups\my_awesome_app.bin" --address 0x1B000
 ```
 
 ### Skip backing up configuration partition
@@ -222,7 +222,7 @@ nanoff --update --target ST_STM32F769I_DISCOVERY --jtag --binfile "c:\dev\my awe
 
 ### List all STM32 devices available with JTAG connection
 
-This useful to list all STM32 devices that are connected through JTAG.
+This is useful for listing all STM32 devices that are connected through JTAG.
 
 ```console
 nanoff --listjtag
@@ -230,7 +230,7 @@ nanoff --listjtag
 
 ### List all STM32 devices available with DFU connection
 
-This useful to list all STM32 devices that are connected through DFU.
+This is useful for listing all STM32 devices that are connected through DFU.
 
 ```console
 nanoff --listdfu
@@ -303,7 +303,7 @@ nanoff --update --target SL_STK3701A --binfile "c:\dev\my awesome app\bin\debug\
 
 ### List all Silabs devices available with J-Link connection
 
-This useful to list all Silabs devices that are connected through J-Link.
+This is useful for listing all Silabs devices that are connected through J-Link.
 
 ```console
 nanoff --listjlink
@@ -322,7 +322,7 @@ If no device is detected, nanoff will wait up to 30 seconds for a Pico to enter 
 To update the firmware of a Raspberry Pi Pico (RP2040) to the latest available stable version.
 
 ```console
-nanoff --update --target RP_PICO_RP2040
+nanoff --update --target PICO_RP2040
 ```
 
 ### Update the firmware of a Raspberry Pi Pico 2
@@ -330,7 +330,7 @@ nanoff --update --target RP_PICO_RP2040
 To update the firmware of a Raspberry Pi Pico 2 (RP2350) to the latest available preview version.
 
 ```console
-nanoff --update --target RP_PICO_RP2350 --preview
+nanoff --update --target PICO2_RP2350 --preview
 ```
 
 ### Show details of the connected Pico device
@@ -394,7 +394,7 @@ nanoff --nanodevice --devicedetails --serialport COM9
 
 The tool tries to make a best effort sanity check on whether the requested target fits the connected target.
 Sometimes that's not possible because of the differences and variations on the target names, or lack of details provided by the connected device or even (like with DFU connected devices) because it's not possible to determine exactly what device is connected at all.
-This doesn't necessarily mean that the firmware wont' work, so take this as an advice only.
+This doesn't necessarily mean that the firmware won't work so should be taken as advice only.
 
 To disable this validation add `--nofitcheck` option to the command line.
 
@@ -455,7 +455,7 @@ You need to know the COM Port attached to your device. Search for **Computer Man
 
 ## Finding the device COM port using nanoff
 
-You can use the --listports command with nanoff to list the available COM ports. This method works on all OS. If you run the command first without your device plugged, you'll get a first list. Then plug your device and run the command again. The new COM port showing up is the one from your device!
+You can use the --listports command with nanoff to list the available COM ports. This method works on all operating systems. If you run the command first without your device plugged, you'll get a first list. Then plug your device and run the command again. The new COM port showing up is the one from your device!
 
 ```console
 nanoff --listports
@@ -494,13 +494,13 @@ If you use the `--listtargets` switch in conjunction with `--preview`, you'll ge
 
 ## Deploy file to device storage
 
-Some devices like ESP32, Orgpal and few others have storage available. Files can be deployed in this storage. You have to use the `filedeployment` parameter pointing on a JSON file to deploy files while flashing the device:
+Some devices like ESP32, Orgpal and few others have storage available. Files can be deployed to this storage. You have to use the `filedeployment` parameter pointing to a JSON file to deploy files while flashing the device:
 
 ```console
 nanoff --target ESP32_C3 --update --masserase --serialport COM21  --filedeployment C:\path\deploy.json
 ```
 
-The JSON an optional `SerialPort` in case the port to upload the files must be different than the one to flash the device or not specified in the main command line and a **mandatory** list of `Files` entries. Each entry must contains `DestinationFilePath`, the destination full path file name and `SourceFilePath` to deploy content, otherwise to delete the file, the full path with file name of the source file to be deployed:
+The JSON has an optional `SerialPort` field in case the port to upload the files differs from the one to flash the device specified in the main command line, and a **mandatory** list of `Files` entries. Each entry must contain `DestinationFilePath`, the destination full path file name and `SourceFilePath` to deploy content, otherwise to delete the file, the full path with file name of the source file to be deployed:
 
 ```json
 {
@@ -514,7 +514,7 @@ The JSON an optional `SerialPort` in case the port to upload the files must be d
          "DestinationFilePath": "I:\\NoneFile.txt"
       },
       {
-         "DestinationFilePath": "I:\\wilnotexist.txt",
+         "DestinationFilePath": "I:\\willnotexist.txt",
          "SourceFilePath": "C:\\WRONGPATH\\TestFile.txt"
       }
    ]
@@ -544,7 +544,7 @@ You can upload Wireless, Wireless Access Point, Ethernet configurations and Cert
 nanoff --networkdeployment C:\path\deploy.json
 ```
 
-The json file can contains various configurations and thet are all optional:
+The JSON file can contain various optional configurations:
 
 ```json
 {
@@ -554,10 +554,10 @@ The json file can contains various configurations and thet are all optional:
    "Ethernet": { },
    // Only one or the other can be used
    "DeviceCertificates": "base64",
-   "DeviceCertificatesPath": "c:\\pathto\\cert.pem",
+   "DeviceCertificatesPath": "c:\\path_to\\cert.pem",
    // Only one or the other can be used
    "CACertificates": "base64",
-   "CACertificatesPath": "c:\\pathto\\certca.pem"
+   "CACertificatesPath": "c:\\path_to\\certca.pem"
 }
 ```
 
@@ -566,10 +566,10 @@ The optional `SerialPort` can be used in case the port to upload the configurati
 Here is a minimal example setting up a Wireless Client and a Wireless Access Point configuration at the same time:
 
 ```json
-{"SerialPort":"COM10","WirelessClient":{"SSID":"MySSID","Password":"the_secret_password"},"WirelessAccessPoint":{"SSID":"nanoDevice","Password":null,"IPv4Address":"192.168.10.1","IPv4NetMAsk":"255.255.255.0","Authentication":"None"}}
+{"SerialPort":"COM10","WirelessClient":{"SSID":"MySSID","Password":"the_secret_password"},"WirelessAccessPoint":{"SSID":"nanoDevice","Password":null,"IPv4Address":"192.168.10.1","IPv4NetMask":"255.255.255.0","Authentication":"None"}}
 ```
 
-See the section further to understand what are the mandatory fields and which ones are optionals.
+See the section further to understand what are the mandatory fields and which ones are optional.
 
 ### Wireless Client options
 
@@ -651,7 +651,7 @@ The `WirelessClient` object represents the wireless configuration settings for a
   - Type: `string`
   - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
   - Description: the MAC address.
-  - Note: some devivces do not allow to be set up, please check your device first.
+  - Note: some devices do not allow this to be set, please check your device first.
 
 ### Wireless Access Point options
 
@@ -722,7 +722,7 @@ The `WirelessClient` object represents the wireless configuration settings for a
   - Type: `string`
   - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
   - Description: the MAC address.
-  - Note: some devivces do not allow to be set up, please check your device first.
+  - Note: some devices do not allow this to be set, please check your device first.
 
 ### Ethernet options
 
@@ -769,11 +769,11 @@ Represents an Ethernet configuration and here are the properties:
   - Type: `string`
   - Format: `AABBCCDDEEFF` or `AA:BB:CC:DD:EE:FF`
   - Description: the MAC address.
-  - Note: some devivces do not allow to be set up, please check your device first.
+  - Note: some devices do not allow this to be set, please check your device first.
 
 ### Device and CA Certificates
 
-You can either **base64** encode your certificates (`DeviceCertificates` and `CACertificates`) or provide a path on a certificate file (`DeviceCertificatesPath` and `CACertificatesPath`). Note that the certificate file can contain multiple certificates one after the other. This is especially usefull for CA certificates.
+You can either **base64** encode your certificates (`DeviceCertificates` and `CACertificates`) or provide a path to a certificate file (`DeviceCertificatesPath` and `CACertificatesPath`). Note that the certificate file can contain multiple certificates one after the other. This is especially useful for CA certificates.
 
 ## Clear cache location
 

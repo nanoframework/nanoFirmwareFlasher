@@ -13,7 +13,7 @@ namespace nanoFirmwareFlasher.Tests
     [TestClass]
     public class IntelHexParserTests
     {
-        private string _testDir;
+        private string? _testDir;
 
         [TestInitialize]
         public void Setup()
@@ -153,6 +153,7 @@ namespace nanoFirmwareFlasher.Tests
         [ExpectedException(typeof(FileNotFoundException))]
         public void Parse_NonExistentFile_ThrowsFileNotFound()
         {
+            Assert.IsNotNull(_testDir, "Test directory should be initialized");
             IntelHexParser.Parse(Path.Combine(_testDir, "nonexistent.hex"));
         }
 
@@ -443,7 +444,7 @@ namespace nanoFirmwareFlasher.Tests
 
         private string WriteHexFile(string content)
         {
-            string path = Path.Combine(_testDir, Guid.NewGuid().ToString("N") + ".hex");
+            string path = Path.Combine(_testDir!, Guid.NewGuid().ToString("N") + ".hex");
             File.WriteAllText(path, content);
             return path;
         }

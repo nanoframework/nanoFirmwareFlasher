@@ -28,7 +28,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             PicoDeviceInfo deviceInfo,
             VerbosityLevel verbosity)
         {
-            uint flashSize = PicoFirmware.DefaultFlashSize;
+            uint flashSize = ResolveFlashSize(deviceInfo);
             uint familyId = deviceInfo.FamilyId;
 
             if (verbosity >= VerbosityLevel.Normal)
@@ -336,13 +336,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // if mass erase requested, pad the UF2 to cover the entire flash
             if (massErase)
             {
+                uint flashSize = ResolveFlashSize(deviceInfo);
+
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.White;
-                    OutputWriter.WriteLine($"Mass erase: padding UF2 to cover full {PicoFirmware.DefaultFlashSize / 1024}KB flash...");
+                    OutputWriter.WriteLine($"Mass erase: padding UF2 to cover full {flashSize / 1024}KB flash...");
                 }
 
-                uf2Data = PicoUf2Utility.PadUf2ToFullFlash(uf2Data, PicoFirmware.DefaultBaseAddress, PicoFirmware.DefaultFlashSize, familyId);
+                uf2Data = PicoUf2Utility.PadUf2ToFullFlash(uf2Data, PicoFirmware.DefaultBaseAddress, flashSize, familyId);
             }
 
             if (verbosity >= VerbosityLevel.Normal)
@@ -487,7 +489,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // validate address is within the Pico XIP flash window
-            uint flashEnd = PicoFirmware.DefaultBaseAddress + PicoFirmware.DefaultFlashSize;
+            uint flashSize = ResolveFlashSize(deviceInfo);
+            uint flashEnd = PicoFirmware.DefaultBaseAddress + flashSize;
 
             if (address < PicoFirmware.DefaultBaseAddress || address >= flashEnd)
             {
@@ -686,6 +689,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return ExitCodes.OK;
         }
 
+        private static uint ResolveFlashSize(PicoDeviceInfo deviceInfo)
+        {
+            if (deviceInfo != null && deviceInfo.FlashSizeBytes > 0)
+            {
+                return deviceInfo.FlashSizeBytes;
+            }
+
+            return PicoFirmware.DefaultFlashSize;
+        }
         /// <summary>
         /// Build the UF2 file name to copy to the BOOTSEL drive.
         /// </summary>
@@ -724,11 +736,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // A bit of flexibility to allow common variations of target names - map them to the canonical names used in firmware package metadata
             return normalized switch
             {
-                "RP_PICO_2040" => "RP_PICO_RP2040",
-                "RP_PICO_W_2040" => "RP_PICO_W_RP2040",
-                "RP_PICO_2040_W" => "RP_PICO_W_RP2040",
-                "RP_PICO_RP2040_W" => "RP_PICO_W_RP2040",
-                "RP_PICO_2350" => "RP_PICO_RP2350",
+                "RP_PICO_2040" => "PICO_RP2040",
+                "RP_PICO_RP2040" => "PICO_RP2040",
+                "RP_PICO_W_2040" => "PICO_RP2040_W",
+                "RP_PICO_W_RP2040" => "PICO_RP2040_W",
+                "RP_PICO_2040_W" => "PICO_RP2040_W",
+                "RP_PICO_RP2040_W" => "PICO_RP2040_W",
+                "RP_PICO_2350" => "PICO2_RP2350",
+                "RP_PICO_RP2350" => "PICO2_RP2350",
+                "RP_PICO_W_2350" => "PICO2_RP2350_W",
+                "RP_PICO_W_RP2350" => "PICO2_RP2350_W",
+                "RP_PICO_2350_W" => "PICO2_RP2350_W",
+                "RP_PICO_RP2350_W" => "PICO2_RP2350_W",
+                "RP_PICO2_2350" => "PICO2_RP2350",
+                "RP_PICO2_W_2350" => "PICO2_RP2350_W",
+                "RP_PICO2_2350_W" => "PICO2_RP2350_W",
+                
                 _ => normalized,
             };
         }
@@ -745,10 +768,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (deviceInfo.ChipType == "RP2350")
             {
-                return "RP_PICO_RP2350";
+                return "PICO2_RP2350";
             }
 
-            return "RP_PICO_RP2040";
+            return "PICO_RP2040";
         }
 
         /// <summary>

@@ -290,6 +290,7 @@ namespace nanoFirmwareFlasher.Tests
                 null,
                 new[] { typeof(ISwdTransport) },
                 null);
+            Assert.IsNotNull(constructor);
 
             var swd = constructor.Invoke(new object[] { stLink });
             Assert.IsNotNull(swd);
@@ -601,6 +602,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(1, displayAttr.Length, "E1000 should have a Display attribute");
 
             var name = ((System.ComponentModel.DataAnnotations.DisplayAttribute)displayAttr[0]).Name;
+            Assert.IsNotNull(name);
             Assert.IsTrue(
                 name.Contains("nativedfu") || name.Contains("native") || name.Contains("uart"),
                 $"E1000 display should suggest native alternatives. Got: {name}");
@@ -617,6 +619,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(1, displayAttr.Length);
 
             var name = ((System.ComponentModel.DataAnnotations.DisplayAttribute)displayAttr[0]).Name;
+            Assert.IsNotNull(name);
             Assert.IsTrue(
                 name.Contains("nativestlink") || name.Contains("nativeswd") || name.Contains("native"),
                 $"E5001 display should suggest native alternatives. Got: {name}");
@@ -633,6 +636,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(1, displayAttr.Length);
 
             var name = ((System.ComponentModel.DataAnnotations.DisplayAttribute)displayAttr[0]).Name;
+            Assert.IsNotNull(name);
             Assert.IsTrue(
                 name.Contains("native") || name.Contains("uart"),
                 $"E9010 display should suggest native alternatives. Got: {name}");

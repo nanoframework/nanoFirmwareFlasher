@@ -4,14 +4,12 @@
 //
 
 using System;
-using System.Runtime.Serialization;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// Couldn't open the specified J-Link device.
     /// </summary>
-    [Serializable]
     public class CantConnectToJLinkDeviceException : Exception
     {
         /// <summary>
@@ -35,15 +33,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display.</param>
         public CantConnectToJLinkDeviceException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        /// Cannot connect to the JLINK device exception.
-        /// </summary>
-        /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context.</param>
-        protected CantConnectToJLinkDeviceException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

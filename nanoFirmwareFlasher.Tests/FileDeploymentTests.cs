@@ -91,6 +91,8 @@ namespace nanoFirmwareFlasher.Tests
 
             var config = JsonSerializer.Deserialize<FileDeploymentConfiguration>(json, s_jsonOptions);
 
+            Assert.IsNotNull(config);
+            Assert.IsNotNull(config.Files);
             Assert.AreEqual(3, config.Files.Count);
         }
 
@@ -106,6 +108,7 @@ namespace nanoFirmwareFlasher.Tests
 
             var config = JsonSerializer.Deserialize<FileDeploymentConfiguration>(json, s_jsonOptions);
 
+            Assert.IsNotNull(config);
             Assert.IsNotNull(config.Files);
             Assert.AreEqual(1, config.Files.Count);
             Assert.IsNull(config.Files[0].SourceFilePath);
@@ -124,6 +127,7 @@ namespace nanoFirmwareFlasher.Tests
 
             var config = JsonSerializer.Deserialize<FileDeploymentConfiguration>(json, s_jsonOptions);
 
+            Assert.IsNotNull(config);
             Assert.AreEqual(string.Empty, config.Files[0].SourceFilePath);
         }
 
@@ -138,6 +142,7 @@ namespace nanoFirmwareFlasher.Tests
 
             var config = JsonSerializer.Deserialize<FileDeploymentConfiguration>(json, s_jsonOptions);
 
+            Assert.IsNotNull(config);
             Assert.IsNull(config.SerialPort);
         }
 
@@ -148,6 +153,7 @@ namespace nanoFirmwareFlasher.Tests
 
             var config = JsonSerializer.Deserialize<FileDeploymentConfiguration>(json, s_jsonOptions);
 
+            Assert.IsNotNull(config);
             Assert.IsNotNull(config.Files);
             Assert.AreEqual(0, config.Files.Count);
         }
@@ -159,6 +165,7 @@ namespace nanoFirmwareFlasher.Tests
 
             var config = JsonSerializer.Deserialize<FileDeploymentConfiguration>(json, s_jsonOptions);
 
+            Assert.IsNotNull(config);
             Assert.AreEqual("COM8", config.SerialPort);
         }
 

@@ -43,6 +43,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public uint FamilyId { get; }
 
         /// <summary>
+        /// External flash size in bytes.
+        /// Defaults to a chip-appropriate value when it can't be read from INFO_UF2.TXT.
+        /// </summary>
+        public uint FlashSizeBytes { get; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="chipType">Chip type string.</param>
@@ -50,12 +56,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="bootloaderVersion">Bootloader version.</param>
         /// <param name="drivePath">Path to UF2 drive.</param>
         /// <param name="driveLabel">Volume label.</param>
+        /// <param name="flashSizeBytes">Detected external flash size in bytes, or <c>null</c> to use defaults.</param>
         public PicoDeviceInfo(
             string chipType,
             string boardId,
             string bootloaderVersion,
             string drivePath,
-            string driveLabel)
+            string driveLabel,
+            uint? flashSizeBytes = null)
         {
             ChipType = chipType;
             BoardId = boardId;
@@ -70,6 +78,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 "RP2350" => PicoUf2Utility.FAMILY_ID_RP2350_ARM,
                 _ => throw new NotSupportedException($"Unknown Pico chip type '{chipType}'. Supported types: RP2040, RP2350."),
             };
+
+            FlashSizeBytes = flashSizeBytes.GetValueOrDefault(GetDefaultFlashSize(chipType));
         }
 
         /// <inheritdoc/>
@@ -81,9 +91,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
             deviceInfo.AppendLine($"Board: {BoardId}");
             deviceInfo.AppendLine($"Bootloader: {BootloaderVersion}");
             deviceInfo.AppendLine($"Drive: {DrivePath} ({DriveLabel})");
+            deviceInfo.AppendLine($"Flash: {FormatFlashSize(FlashSizeBytes)} ({FlashSizeBytes:N0} bytes)");
             deviceInfo.Append($"UF2 Family ID: 0x{FamilyId:X8}");
 
             return deviceInfo.ToString();
+        }
+
+        private static uint GetDefaultFlashSize(string chipType)
+        {
+            return chipType switch
+            {
+                "RP2040" => PicoFirmware.DefaultFlashSize,
+                "RP2350" => PicoFirmware.DefaultFlashSizeRp2350,
+                _ => PicoFirmware.DefaultFlashSize,
+            };
+        }
+
+        private static string FormatFlashSize(uint sizeBytes)
+        {
+            if (sizeBytes % (1024 * 1024) == 0)
+            {
+                return $"{sizeBytes / (1024 * 1024)}MB";
+            }
+
+            if (sizeBytes % 1024 == 0)
+            {
+                return $"{sizeBytes / 1024}KB";
+            }
+
+            return $"{sizeBytes}B";
         }
     }
 }

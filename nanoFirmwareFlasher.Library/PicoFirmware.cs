@@ -23,6 +23,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal const uint DefaultFlashSize = 2 * 1024 * 1024;
 
         /// <summary>
+        /// Default flash size for RP2350 Pico 2 boards (4 MB).
+        /// </summary>
+        internal const uint DefaultFlashSizeRp2350 = 4 * 1024 * 1024;
+
+        /// <summary>
         /// Default deployment region address for managed application.
         /// This must match the deployment region start defined in the nanoFramework target's flash map.
         /// </summary>

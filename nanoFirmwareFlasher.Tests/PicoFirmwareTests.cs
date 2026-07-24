@@ -20,7 +20,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             using var output = new OutputWriterHelper();
 
-            var firmware = new PicoFirmware("RP_PICO_RP2040", "1.0.0.0", false);
+            var firmware = new PicoFirmware("PICO_RP2040", "1.0.0.0", false);
 
             Assert.IsNotNull(firmware);
         }
@@ -30,7 +30,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             using var output = new OutputWriterHelper();
 
-            var firmware = new PicoFirmware("RP_PICO_RP2350", "1.0.0.0", true);
+            var firmware = new PicoFirmware("PICO2_RP2350", "1.0.0.0", true);
 
             Assert.IsNotNull(firmware);
         }
@@ -43,7 +43,7 @@ namespace nanoFirmwareFlasher.Tests
             // simulate a downloaded firmware by creating a nanoCLR.bin file
             string locationPath = Path.Combine(
                 FirmwarePackage.LocationPathBase,
-                "RP_PICO_RP2040");
+                "PICO_RP2040");
             Directory.CreateDirectory(locationPath);
 
             byte[] testBinData = new byte[512];
@@ -57,11 +57,13 @@ namespace nanoFirmwareFlasher.Tests
 
             // create a firmware and set BinFilePath via reflection
             // since we can't call DownloadAndExtractAsync without a real Cloudsmith package
-            var firmware = new PicoFirmware("RP_PICO_RP2040", "1.0.0.0", false);
+            var firmware = new PicoFirmware("PICO_RP2040", "1.0.0.0", false);
 
-            typeof(PicoFirmware)
-                .GetProperty("BinFilePath", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                .SetValue(firmware, binFilePath);
+            var binFilePathProperty = typeof(PicoFirmware)
+                .GetProperty("BinFilePath", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.IsNotNull(binFilePathProperty);
+            binFilePathProperty.SetValue(firmware, binFilePath);
 
             // exercise GetUf2Bytes
             byte[] uf2Data = firmware.GetUf2Bytes(PicoUf2Utility.FAMILY_ID_RP2040);
@@ -82,7 +84,7 @@ namespace nanoFirmwareFlasher.Tests
             // isolate the firmware cache so the test doesn't touch ~/.nanoFramework/fw_cache
             FirmwarePackage.LocationPathBase = Path.Combine(testDirectory, "cache");
 
-            string targetName = "RP_PICO_RP2040";
+            string targetName = "PICO_RP2040";
             string version = "1.0.0.0";
             string zipFilePath = Path.Combine(archiveDirectory, $"{targetName}-{version}.zip");
 

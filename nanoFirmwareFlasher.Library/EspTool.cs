@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
@@ -156,7 +157,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
-                OutputWriter.WriteLine($"Using {serialPort} @ {baudRate} baud to connect to ESP32.");
+                OutputWriter.WriteLine(
+                    $"Using {serialPort} @ {Esp32BootloaderClient.DefaultBaudRate} baud to connect to ESP32"
+                    + $" (transfer baud target: {baudRate}).");
             }
 
             // set properties
@@ -179,7 +182,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // If caller needs standard baud rate and we're currently at a higher rate, change back.
                 if (useStandardBaudrate && _stubUploaded && _client.CurrentBaudRate != Esp32BootloaderClient.DefaultBaudRate)
                 {
-                    _client.ChangeBaudRate(Esp32BootloaderClient.DefaultBaudRate);
+                    _client.ChangeBaudRate(Esp32BootloaderClient.DefaultBaudRate, _chipDetector?.Config);
                 }
 
                 return;
@@ -189,13 +192,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _client.Connect();
 
             _chipDetector = new Esp32ChipDetector(_client);
+
+            // Always prepare detected chip runtime state before any stub/flash operation.
+            EnsureRuntimeChipConfig();
+
+            // Some chip families (notably ESP32-P4) require one-time ROM-side
+            // flash preparation that must happen before the stub starts.
+            _client.PrepareForFlashOperations(_chipDetector.Config);
+
             _isConnected = true;
 
-            // Try to upload the stub loader for faster operations
-            if (_chipType != "auto")
-            {
-                TryUploadStub(useStandardBaudrate);
-            }
+            // Try to upload the stub loader for faster operations.
+            TryUploadStub(useStandardBaudrate);
         }
 
         /// <summary>
@@ -226,12 +234,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             try
             {
+                EnsureRuntimeChipConfig();
+
+                if (_chipDetector.Config.DisableStub)
+                {
+                    _stubUploaded = false;
+
+                    if (Verbosity >= VerbosityLevel.Detailed)
+                    {
+                        OutputWriter.WriteLine($"Skipping stub loader for {_chipDetector.Config.ChipType} on this chip revision.");
+                    }
+
+                    return;
+                }
+
                 _stubUploaded = Esp32StubLoader.UploadStub(_client, _chipDetector.Config, Verbosity);
 
                 if (_stubUploaded && !useStandardBaudrate && _baudRate != Esp32BootloaderClient.DefaultBaudRate)
                 {
                     // Change to user-requested baud rate for faster transfers
-                    _client.ChangeBaudRate(_baudRate);
+                    _client.ChangeBaudRate(_baudRate, _chipDetector.Config);
 
                     if (Verbosity >= VerbosityLevel.Detailed)
                     {
@@ -249,6 +271,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     OutputWriter.WriteLine($"Stub upload failed ({ex.Message}), using ROM bootloader.");
                 }
             }
+        }
+
+        private void EnsureRuntimeChipConfig()
+        {
+            if (_chipDetector == null)
+            {
+                return;
+            }
+
+            if (_chipDetector.Config == null)
+            {
+                _chipType = _chipDetector.DetectChipType();
+            }
+
+            _chipDetector.ApplyRuntimeTransportOverrides();
+            _client.SetRuntimeConfig(_chipDetector.Config);
         }
 
         /// <summary>
@@ -271,9 +309,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 EnsureConnected();
 
-                // Detect chip type via magic register
-                string chipType = _chipDetector.DetectChipType();
-                _chipType = chipType;
+                // Ensure chip is detected and runtime transport flags are applied.
+                EnsureRuntimeChipConfig();
 
                 var config = _chipDetector.Config;
 
@@ -313,9 +350,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 PSRamAvailability psramIsAvailable = PSRamAvailability.Undetermined;
                 int psRamSize = 0;
 
-                if (_chipType == "esp32c3"
-                   || _chipType == "esp32c6"
-                   || _chipType == "esp32h2")
+                     if (_chipType == "esp32c3"
+                         || _chipType == "esp32c2"
+                         || _chipType == "esp32c6"
+                         || _chipType == "esp32h2"
+                         || _chipType == "esp32h21"
+                         || _chipType == "esp32h4"
+                         || _chipType == "esp32e22")
                 {
                     // these series don't have PSRAM
                     psramIsAvailable = PSRamAvailability.No;
@@ -368,20 +409,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
-                // Map chip type to display format with hyphen (e.g. "esp32s3" → "ESP32-S3")
-                string displayChipType = chipType switch
-                {
-                    "esp32" => "ESP32",
-                    "esp32s2" => "ESP32-S2",
-                    "esp32s3" => "ESP32-S3",
-                    "esp32c3" => "ESP32-C3",
-                    "esp32c6" => "ESP32-C6",
-                    "esp32h2" => "ESP32-H2",
-                    "esp32c5" => "ESP32-C5",
-                    "esp32c61" => "ESP32-C61",
-                    "esp32p4" => "ESP32-P4",
-                    _ => chipType.ToUpperInvariant(),
-                };
+                string displayChipType = config.Name;
 
 
                 return new Esp32DeviceInfo(
@@ -802,6 +830,57 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 }
                             }
 
+                            // Match upstream behavior: verify written data by default when feasible.
+                            if (_client.IsStubRunning)
+                            {
+                                if (Verbosity >= VerbosityLevel.Normal)
+                                {
+                                    OutputWriter.WriteLine("Verifying written data...");
+                                }
+
+                                byte[] flashMd5 = _flashController.FlashMd5(partAddress, uncompressedSize);
+
+                                byte[] inputMd5;
+                                using (var md5 = MD5.Create())
+                                {
+                                    inputMd5 = md5.ComputeHash(fileData);
+                                }
+
+                                bool md5Match = inputMd5.Length == flashMd5.Length;
+
+                                for (int i = 0; md5Match && i < inputMd5.Length; i++)
+                                {
+                                    if (inputMd5[i] != flashMd5[i])
+                                    {
+                                        md5Match = false;
+                                    }
+                                }
+
+                                if (!md5Match)
+                                {
+                                    string inputMd5Hex = BitConverter.ToString(inputMd5).Replace("-", "").ToLowerInvariant();
+                                    string flashMd5Hex = BitConverter.ToString(flashMd5).Replace("-", "").ToLowerInvariant();
+
+                                    if (Verbosity >= VerbosityLevel.Normal)
+                                    {
+                                        OutputWriter.WriteLine($"Input MD5: {inputMd5Hex}");
+                                        OutputWriter.WriteLine($"Flash MD5: {flashMd5Hex}");
+                                    }
+
+                                    // Throw InvalidOperationException so first failure goes through existing retry path.
+                                    throw new InvalidOperationException("MD5 of file does not match data in flash.");
+                                }
+
+                                if (Verbosity >= VerbosityLevel.Normal)
+                                {
+                                    OutputWriter.WriteLine("Hash of data verified.");
+                                }
+                            }
+                            else if (Verbosity >= VerbosityLevel.Detailed)
+                            {
+                                OutputWriter.WriteLine("Cannot verify written data (stub loader not running).");
+                            }
+
                             written = true;
                             break;
                         }
@@ -915,8 +994,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (_chipDetector.Config == null)
             {
                 // Need to detect chip type first to get the config
-                _chipDetector.DetectChipType();
+                EnsureRuntimeChipConfig();
             }
+
+            EnsureRuntimeChipConfig();
 
             _flashController = new Esp32FlashController(_client, _chipDetector.Config);
         }

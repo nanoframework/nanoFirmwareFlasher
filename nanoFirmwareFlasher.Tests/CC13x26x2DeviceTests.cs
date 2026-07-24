@@ -139,10 +139,10 @@ namespace nanoFirmwareFlasher.Tests
 
             try
             {
-                var device = new CC13x26x2Device("config.ccxml");
-                var result = device.FlashBinFiles(
-                    new List<string> { tempFile },
-                    new List<string> { null });
+                CC13x26x2Device device = new("config.ccxml");
+                List<string> filePaths = [tempFile];
+                List<string> addresses = [null!];
+                ExitCodes result = device.FlashBinFiles(filePaths, addresses);
 
                 Assert.AreEqual(ExitCodes.E5007, result);
             }
