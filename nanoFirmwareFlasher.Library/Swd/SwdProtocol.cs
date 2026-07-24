@@ -326,6 +326,31 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void SystemReset()
         {
+            if (_dap is StLinkTransport stLink)
+            {
+                // ST-LINK is a high-level adapter: manual MEM-AP register access does not work,
+                // so use the probe's native reset. First clear any halt-on-reset vector catch
+                // that connect-under-reset may have armed (DEMCR.VC_CORERESET), so the core runs
+                // the freshly flashed firmware instead of halting at the reset vector.
+                try
+                {
+                    // DEMCR = TRCENA only (VC_CORERESET cleared).
+                    stLink.WriteMemory32(0xE000EDFC, new byte[] { 0x00, 0x00, 0x00, 0x01 });
+                }
+                catch (SwdProtocolException)
+                {
+                    // Best-effort — proceed with the reset regardless.
+                }
+
+                stLink.ResetSystem();
+
+                // Resume so the core executes the application after reset (it was halted for
+                // flashing).
+                stLink.RunCore();
+
+                return;
+            }
+
             const uint AIRCR_ADDR = 0xE000ED0C;
             const uint VECTKEY = 0x05FA0000;
             const uint SYSRESETREQ = 1U << 2;

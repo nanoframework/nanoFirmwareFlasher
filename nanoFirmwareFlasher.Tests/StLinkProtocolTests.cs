@@ -475,6 +475,34 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         #endregion
+
+        #region Connect-under-reset (DRIVE_NRST) command encoding
+
+        [TestMethod]
+        public void DriveNrstCommand_UsesApiV2DriveNrstOpcode()
+        {
+            // Connect-under-reset asserts the target NRST line before entering SWD so a
+            // running/low-power application can't gate the debug port. The command MUST be
+            // STLINK_DEBUG_APIV2_DRIVE_NRST (0x3C).
+            byte[] cmd = StLinkTransport.BuildDriveNrstCommand(0x00);
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x3C, cmd[1], "byte 1 must be STLINK_DEBUG_APIV2_DRIVE_NRST (0x3C)");
+        }
+
+        [TestMethod]
+        [DataRow((byte)0x00)] // NRST low (assert reset)
+        [DataRow((byte)0x01)] // NRST high (release reset)
+        [DataRow((byte)0x02)] // NRST pulse
+        public void DriveNrstCommand_EncodesRequestedState(byte state)
+        {
+            byte[] cmd = StLinkTransport.BuildDriveNrstCommand(state);
+
+            Assert.AreEqual(state, cmd[2], "byte 2 must carry the requested NRST state");
+        }
+
+        #endregion
+
         #region Dispose safety
 
         [TestMethod]

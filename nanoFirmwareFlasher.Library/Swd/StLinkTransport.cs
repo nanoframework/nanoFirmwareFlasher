@@ -62,6 +62,23 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const byte StLinkDebugApiV2ReadDap = 0x45;
         private const byte StLinkDebugApiV2WriteDap = 0x46;
 
+        // Hardware reset line (NRST) control (V2 API).
+        // Used for "connect under reset": holding the MCU in reset lets the probe enter
+        // SWD even when the running application gates the debug port (e.g. low-power modes).
+        private const byte StLinkDebugApiV2DriveNrst = 0x3C;
+        private const byte StLinkDebugApiV2DriveNrstLow = 0x00;
+        private const byte StLinkDebugApiV2DriveNrstHigh = 0x01;
+        private const byte StLinkDebugApiV2DriveNrstPulse = 0x02;
+
+        // Cortex-M debug registers (System Control Space) used to arm a halt-on-reset so the
+        // core comes out of reset already halted, before it can run code that re-gates debug.
+        private const uint CortexMDhcsr = 0xE000EDF0;
+        private const uint CortexMDemcr = 0xE000EDFC;
+        // DHCSR = DBGKEY (0xA05F0000) | C_HALT (0x2) | C_DEBUGEN (0x1)
+        private const uint CortexMDhcsrHalt = 0xA05F0003;
+        // DEMCR = TRCENA (0x01000000) | VC_CORERESET (0x1) -> halt on core reset
+        private const uint CortexMDemcrHaltOnReset = 0x01000001;
+
         // Mode values
         private const byte StLinkModeDebugSwd = 0x02;
         private const byte StLinkModeDfu = 0x00;
@@ -137,11 +154,191 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         public bool Connect()
         {
-            byte[] cmd = BuildEnterSwdCommand();
+            // A plain SWD enter works when the target's debug port is available. Retry a
+            // couple of times to ride out transient WAIT/timeout responses from the probe.
+            if (TryEnterSwd(3))
+            {
+                return true;
+            }
 
-            byte[] resp = SendCommand(cmd, 2);
+            // The target is likely running application code that gates the debug port (for
+            // example an STM32 in a low-power STOP/STANDBY mode). Fall back to a
+            // "connect under reset" strategy, mirroring what STM32CubeProgrammer's
+            // "Under reset" mode (and the manual "hold NRST, release" procedure) do.
+            OutputWriter.WriteLine(
+                "Target did not respond to SWD - attempting to connect under reset...");
 
-            return resp != null && resp.Length >= 2 && resp[0] == StLinkDebugErrOk;
+            // Strategy 1: hold the MCU in reset while connecting. The SWJ-DP stays alive in
+            // the always-on debug power domain, so ENTER_SWD succeeds; arm a halt-on-reset
+            // so the core stays halted the instant reset is released.
+            if (TryConnectUnderReset())
+            {
+                return true;
+            }
+
+            // Strategy 2: pulse reset and race to enter SWD in the brief window right after
+            // reset, before the application can disable debug. This matches pressing the
+            // board's reset button while the tool connects.
+            return TryConnectAfterResetPulse();
+        }
+
+        /// <summary>
+        /// Connects while holding the target in hardware reset, then arms a halt-on-reset and
+        /// releases reset so the core comes up halted.
+        /// </summary>
+        private bool TryConnectUnderReset()
+        {
+            DriveNrst(StLinkDebugApiV2DriveNrstLow);
+            Thread.Sleep(20);
+
+            bool entered = TryEnterSwd(5);
+
+            if (entered)
+            {
+                // Best-effort: halt now and set vector-catch so the core halts at its reset
+                // vector before executing any application code once reset is released.
+                TryArmHaltOnReset();
+            }
+
+            Thread.Sleep(5);
+            DriveNrst(StLinkDebugApiV2DriveNrstHigh);
+            Thread.Sleep(20);
+
+            if (entered)
+            {
+                // Re-assert the halt after the core has left reset.
+                try
+                {
+                    HaltCore();
+                }
+                catch (SwdProtocolException)
+                {
+                    // Non-fatal: the connection is established either way.
+                }
+            }
+
+            return entered;
+        }
+
+        /// <summary>
+        /// Pulses the reset line and repeatedly attempts to enter SWD to catch the short
+        /// window after reset before application code can disable the debug port.
+        /// </summary>
+        private bool TryConnectAfterResetPulse()
+        {
+            DriveNrst(StLinkDebugApiV2DriveNrstLow);
+            Thread.Sleep(5);
+            DriveNrst(StLinkDebugApiV2DriveNrstHigh);
+
+            for (int i = 0; i < 30; i++)
+            {
+                if (TryEnterSwd(1))
+                {
+                    try
+                    {
+                        HaltCore();
+                    }
+                    catch (SwdProtocolException)
+                    {
+                        // Non-fatal.
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Arms a Cortex-M halt-on-reset (vector catch) and halts the core, best-effort.
+        /// Used during connect-under-reset so the core does not run application code that
+        /// would re-gate the debug port once reset is released.
+        /// </summary>
+        private void TryArmHaltOnReset()
+        {
+            try
+            {
+                HaltCore();
+                WriteMemory32(CortexMDemcr, ToLittleEndian(CortexMDemcrHaltOnReset));
+                WriteMemory32(CortexMDhcsr, ToLittleEndian(CortexMDhcsrHalt));
+            }
+            catch (SwdProtocolException)
+            {
+                // Best-effort: the debug registers may not be accessible while the core is
+                // held in reset on some targets. The reset-pulse strategy covers those.
+            }
+        }
+
+        private static byte[] ToLittleEndian(uint value)
+        {
+            return new byte[]
+            {
+                (byte)(value & 0xFF),
+                (byte)((value >> 8) & 0xFF),
+                (byte)((value >> 16) & 0xFF),
+                (byte)((value >> 24) & 0xFF),
+            };
+        }
+
+        /// <summary>
+        /// Sends the ENTER_SWD command up to <paramref name="attempts"/> times and returns
+        /// <see langword="true"/> as soon as the probe reports success.
+        /// </summary>
+        private bool TryEnterSwd(int attempts)
+        {
+            for (int i = 0; i < attempts; i++)
+            {
+                byte[] cmd = BuildEnterSwdCommand();
+
+                byte[] resp = SendCommand(cmd, 2);
+
+                if (resp != null && resp.Length >= 2 && resp[0] == StLinkDebugErrOk)
+                {
+                    return true;
+                }
+
+                Thread.Sleep(10);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Drives the target hardware reset (NRST) line via the ST-LINK APIv2 command.
+        /// Failures are ignored: not every probe/board wires NRST, and this is only used
+        /// as a best-effort fallback during connect.
+        /// </summary>
+        /// <param name="state">
+        /// One of <see cref="StLinkDebugApiV2DriveNrstLow"/>,
+        /// <see cref="StLinkDebugApiV2DriveNrstHigh"/> or
+        /// <see cref="StLinkDebugApiV2DriveNrstPulse"/>.
+        /// </param>
+        private void DriveNrst(byte state)
+        {
+            try
+            {
+                SendCommand(BuildDriveNrstCommand(state), 2);
+            }
+            catch (SwdProtocolException)
+            {
+                // Best-effort only — ignore probes/boards that don't support NRST control.
+            }
+        }
+
+        /// <summary>
+        /// Builds the ST-LINK APIv2 DRIVE_NRST command (0xF2 0x3C &lt;state&gt;) used for
+        /// connect-under-reset. The opcode MUST be 0x3C; other values drive the wrong
+        /// subsystem.
+        /// </summary>
+        internal static byte[] BuildDriveNrstCommand(byte state)
+        {
+            byte[] cmd = new byte[CmdSize];
+            cmd[0] = StLinkDebugCommand;
+            cmd[1] = StLinkDebugApiV2DriveNrst;
+            cmd[2] = state;
+
+            return cmd;
         }
 
         /// <summary>

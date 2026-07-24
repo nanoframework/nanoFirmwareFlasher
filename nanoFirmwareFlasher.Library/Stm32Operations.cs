@@ -420,10 +420,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         operationResult = swdDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
                     }
 
-                    if (updateFw
-                        && operationResult == ExitCodes.OK)
+                    if (operationResult == ExitCodes.OK)
                     {
-                        // reset MCU to start running
+                        // reset MCU so it starts running the flashed firmware
                         swdDevice.ResetMcu();
                     }
 
@@ -493,10 +492,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         operationResult = stLinkDevice.FlashBinFiles([applicationPath], [deploymentAddress]);
                     }
 
-                    if (updateFw
-                        && operationResult == ExitCodes.OK)
+                    if (operationResult == ExitCodes.OK)
                     {
-                        // reset MCU to start running
+                        // reset MCU so it starts running the flashed firmware
                         stLinkDevice.ResetMcu();
                     }
 
