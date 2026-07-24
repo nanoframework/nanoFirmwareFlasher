@@ -88,7 +88,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 throw new CantConnectToJtagDeviceException(
                     "No ST-LINK debug probes found. Make sure a probe is connected and the correct driver is installed. " +
-                    "On Windows, install the WinUSB driver using Zadig (https://zadig.akeo.ie). " +
+                    "On Windows, install the ST-LINK USB driver (STSW-LINK009, https://www.st.com/en/development-tools/stsw-link009.html), " +
+                    "which also ships with STM32CubeProgrammer; alternatively bind it to WinUSB with Zadig (https://zadig.akeo.ie). " +
                     "On Linux, add a udev rule: echo 'SUBSYSTEM==\"usb\", ATTR{idVendor}==\"0483\", MODE=\"0666\"' " +
                     "| sudo tee /etc/udev/rules.d/70-st-link.rules && sudo udevadm control --reload-rules. " +
                     "On macOS, no additional drivers are needed.");

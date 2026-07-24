@@ -25,11 +25,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal uint ReadWord(uint address)
         {
-            _swd.WriteAp(SwdProtocol.ApCsw,
-                SwdProtocol.CswSize32 | SwdProtocol.CswAddrinc_Off | SwdProtocol.CswDbgSwEnable);
-            _swd.WriteAp(SwdProtocol.ApTar, address);
-
-            return _swd.ReadAp(SwdProtocol.ApDrw);
+            return _swd.ReadMemoryWord(address);
         }
 
         /// <summary>
@@ -37,10 +33,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void WriteWord(uint address, uint value)
         {
-            _swd.WriteAp(SwdProtocol.ApCsw,
-                SwdProtocol.CswSize32 | SwdProtocol.CswAddrinc_Off | SwdProtocol.CswDbgSwEnable);
-            _swd.WriteAp(SwdProtocol.ApTar, address);
-            _swd.WriteAp(SwdProtocol.ApDrw, value);
+            _swd.WriteMemoryWord(address, value);
         }
 
         /// <summary>
@@ -54,6 +47,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             if (wordCount <= 0)
             {
                 return Array.Empty<uint>();
+            }
+
+            // Use the transport's native block read when available (ST-LINK).
+            if (_swd.UsesNativeMemory)
+            {
+                return _swd.ReadMemoryBlock(address, wordCount);
             }
 
             // Configure CSW for 32-bit, single auto-increment
@@ -101,6 +100,23 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         {
             if (data == null || data.Length == 0)
             {
+                return;
+            }
+
+            // Use the transport's native block write when available (ST-LINK).
+            if (_swd.UsesNativeMemory)
+            {
+                byte[] bytes = new byte[data.Length * 4];
+
+                for (int i = 0; i < data.Length; i++)
+                {
+                    bytes[i * 4] = (byte)(data[i] & 0xFF);
+                    bytes[i * 4 + 1] = (byte)((data[i] >> 8) & 0xFF);
+                    bytes[i * 4 + 2] = (byte)((data[i] >> 16) & 0xFF);
+                    bytes[i * 4 + 3] = (byte)((data[i] >> 24) & 0xFF);
+                }
+
+                _swd.WriteMemoryBlock(address, bytes);
                 return;
             }
 

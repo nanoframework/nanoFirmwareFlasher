@@ -122,6 +122,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             ushort devId = (ushort)(idcode & 0xFFF);
 
             _family = ClassifyDevice(devId);
+
+            if (_family == Stm32Family.Unknown)
+            {
+                throw new SwdProtocolException(
+                    $"Unrecognized STM32 device. DBGMCU IDCODE: 0x{idcode:X8}, device ID: 0x{devId:X3}. " +
+                    "Either the device ID could not be read or it is not in the supported device table.");
+            }
+
             _regs = GetFlashRegisters(_family);
 
             return _family;

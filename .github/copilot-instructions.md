@@ -153,7 +153,7 @@ Uses **Nerdbank.GitVersioning** (`version.json`). The version is automatically d
 
 ## Known Issues and Workarounds
 
-- **STM32 native transports** require the target's USB device (ST-LINK probe or `STM32 BOOTLOADER` in DFU mode) to be bound to a WinUSB driver on Windows (e.g. via Zadig). No external STM32 CLI tool is used anymore.
+- **STM32 native transports** require the target's USB device to have a WinUSB-capable driver on Windows. For an ST-LINK probe, install the ST-LINK USB driver (STSW-LINK009, also shipped with STM32CubeProgrammer) — preferred, as it keeps ST's own tools working; Zadig/WinUSB is an alternative. For a `STM32 BOOTLOADER` device in DFU mode, bind it to WinUSB with Zadig. No external STM32 CLI tool is used anymore.
 - **ESP32-S2**: It is not possible to safely auto-detect the best image; users must always specify `--target`.
 - **FeatherS2, TinyS2, some S3 modules**: Must be placed in download mode manually (hold BOOT, click RESET, release BOOT) before flashing.
 - When running `dotnet restore` in locked mode fails, it usually means a package was added/updated without regenerating the lock file. Run `dotnet restore --force-evaluate` to regenerate it.

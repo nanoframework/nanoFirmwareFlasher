@@ -42,10 +42,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         private const byte StLinkDebugExit = 0x21;
         private const byte StLinkDebugReadIdCodes = 0x31;
-        private const byte StLinkDebugReadMemory32 = 0x36;
-        private const byte StLinkDebugWriteMemory32 = 0x35;
-        private const byte StLinkDebugReadMemory8 = 0x3C;
-        private const byte StLinkDebugWriteMemory8 = 0x3D;
+
+        // Block memory access opcodes. These return / accept raw little-endian data of the
+        // requested length (no status prefix). NOTE: 0x36/0x35 are the single-register
+        // READ/WRITE_DEBUG_REG commands (status+value), NOT block memory access.
+        private const byte StLinkDebugReadMemory32 = 0x07;  // STLINK_DEBUG_READMEM_32BIT
+        private const byte StLinkDebugWriteMemory32 = 0x08;  // STLINK_DEBUG_WRITEMEM_32BIT
+        private const byte StLinkDebugReadMemory8 = 0x0C;   // STLINK_DEBUG_READMEM_8BIT
+        private const byte StLinkDebugWriteMemory8 = 0x0D;   // STLINK_DEBUG_WRITEMEM_8BIT
         private const byte StLinkDebugSetSwdClk = 0x43;
         private const byte StLinkDebugReadRegister = 0x33;
         private const byte StLinkDebugWriteRegister = 0x34;
@@ -771,7 +775,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 throw new SwdProtocolException(
                     "No ST-LINK device found. Make sure the probe is connected. " +
-                    "On Windows, install the WinUSB driver via Zadig (https://zadig.akeo.ie). " +
+                    "On Windows, install the ST-LINK USB driver (STSW-LINK009, https://www.st.com/en/development-tools/stsw-link009.html), " +
+                    "which also ships with STM32CubeProgrammer; alternatively bind it to WinUSB with Zadig (https://zadig.akeo.ie). " +
                     "On Linux, add a udev rule: echo 'SUBSYSTEM==\"usb\", ATTR{idVendor}==\"0483\", MODE=\"0666\"' " +
                     "| sudo tee /etc/udev/rules.d/70-st-link.rules && sudo udevadm control --reload-rules. " +
                     "On macOS, no additional drivers are needed.");
