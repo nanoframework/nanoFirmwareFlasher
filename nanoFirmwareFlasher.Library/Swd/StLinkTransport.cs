@@ -284,15 +284,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 int chunkBytes = chunkWords * 4;
                 uint chunkAddr = address + (uint)(wordsRead * 4);
 
-                byte[] cmd = new byte[CmdSize];
-                cmd[0] = StLinkDebugCommand;
-                cmd[1] = StLinkDebugReadMemory32;
-                cmd[2] = (byte)(chunkAddr & 0xFF);
-                cmd[3] = (byte)((chunkAddr >> 8) & 0xFF);
-                cmd[4] = (byte)((chunkAddr >> 16) & 0xFF);
-                cmd[5] = (byte)((chunkAddr >> 24) & 0xFF);
-                cmd[6] = (byte)(chunkBytes & 0xFF);
-                cmd[7] = (byte)((chunkBytes >> 8) & 0xFF);
+                byte[] cmd = BuildReadMemory32Command(chunkAddr, chunkBytes);
 
                 byte[] data = SendCommand(cmd, chunkBytes);
 
@@ -337,15 +329,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
                 uint chunkAddr = address + (uint)offset;
 
-                byte[] cmd = new byte[CmdSize];
-                cmd[0] = StLinkDebugCommand;
-                cmd[1] = StLinkDebugWriteMemory32;
-                cmd[2] = (byte)(chunkAddr & 0xFF);
-                cmd[3] = (byte)((chunkAddr >> 8) & 0xFF);
-                cmd[4] = (byte)((chunkAddr >> 16) & 0xFF);
-                cmd[5] = (byte)((chunkAddr >> 24) & 0xFF);
-                cmd[6] = (byte)(chunkLen & 0xFF);
-                cmd[7] = (byte)((chunkLen >> 8) & 0xFF);
+                byte[] cmd = BuildWriteMemory32Command(chunkAddr, chunkLen);
 
                 byte[] chunk = new byte[chunkLen];
                 Buffer.BlockCopy(data, offset, chunk, 0, chunkLen);
@@ -354,6 +338,46 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
                 offset += chunkLen;
             }
+        }
+
+        /// <summary>
+        /// Builds the ST-LINK block memory <b>read</b> command (STLINK_DEBUG_READMEM_32BIT).
+        /// The opcode MUST be 0x07 (block memory read, returns raw data); 0x36 is
+        /// READ_DEBUG_REG (single register, returns status+value) and must not be used here.
+        /// </summary>
+        internal static byte[] BuildReadMemory32Command(uint address, int byteCount)
+        {
+            byte[] cmd = new byte[CmdSize];
+            cmd[0] = StLinkDebugCommand;
+            cmd[1] = StLinkDebugReadMemory32;
+            cmd[2] = (byte)(address & 0xFF);
+            cmd[3] = (byte)((address >> 8) & 0xFF);
+            cmd[4] = (byte)((address >> 16) & 0xFF);
+            cmd[5] = (byte)((address >> 24) & 0xFF);
+            cmd[6] = (byte)(byteCount & 0xFF);
+            cmd[7] = (byte)((byteCount >> 8) & 0xFF);
+
+            return cmd;
+        }
+
+        /// <summary>
+        /// Builds the ST-LINK block memory <b>write</b> command (STLINK_DEBUG_WRITEMEM_32BIT).
+        /// The opcode MUST be 0x08 (block memory write); 0x35 is WRITE_DEBUG_REG (single
+        /// register) and must not be used here.
+        /// </summary>
+        internal static byte[] BuildWriteMemory32Command(uint address, int byteCount)
+        {
+            byte[] cmd = new byte[CmdSize];
+            cmd[0] = StLinkDebugCommand;
+            cmd[1] = StLinkDebugWriteMemory32;
+            cmd[2] = (byte)(address & 0xFF);
+            cmd[3] = (byte)((address >> 8) & 0xFF);
+            cmd[4] = (byte)((address >> 16) & 0xFF);
+            cmd[5] = (byte)((address >> 24) & 0xFF);
+            cmd[6] = (byte)(byteCount & 0xFF);
+            cmd[7] = (byte)((byteCount >> 8) & 0xFF);
+
+            return cmd;
         }
 
         /// <summary>

@@ -368,6 +368,112 @@ namespace nanoFirmwareFlasher.Tests
 
         #endregion
 
+        #region Block memory command encoding (opcode regression)
+
+        [TestMethod]
+        public void ReadMemory32Command_UsesBlockReadOpcode_Not36()
+        {
+            // Regression guard: block memory reads MUST use 0x07 (STLINK_DEBUG_READMEM_32BIT).
+            // A previous bug used 0x36 (READ_DEBUG_REG), which returns a status word instead of
+            // memory data, causing bogus IDCODE reads (0x1D) and failed flashing on real ST-LINK
+            // hardware (e.g. embedded ST-LINK/V2-1 on B-L475E-IOT01A).
+            byte[] cmd = StLinkTransport.BuildReadMemory32Command(0x08000000, 4);
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x07, cmd[1], "byte 1 must be STLINK_DEBUG_READMEM_32BIT (0x07), not 0x36");
+        }
+
+        [TestMethod]
+        public void WriteMemory32Command_UsesBlockWriteOpcode_Not35()
+        {
+            // Regression guard: block memory writes MUST use 0x08 (STLINK_DEBUG_WRITEMEM_32BIT),
+            // not 0x35 (WRITE_DEBUG_REG).
+            byte[] cmd = StLinkTransport.BuildWriteMemory32Command(0x20000000, 8);
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x08, cmd[1], "byte 1 must be STLINK_DEBUG_WRITEMEM_32BIT (0x08), not 0x35");
+        }
+
+        [TestMethod]
+        public void ReadMemory32Command_EncodesAddressAndLength_LittleEndian()
+        {
+            byte[] cmd = StLinkTransport.BuildReadMemory32Command(0x08004008, 256);
+
+            // Address 0x08004008, little-endian in bytes 2..5.
+            Assert.AreEqual((byte)0x08, cmd[2]);
+            Assert.AreEqual((byte)0x40, cmd[3]);
+            Assert.AreEqual((byte)0x00, cmd[4]);
+            Assert.AreEqual((byte)0x08, cmd[5]);
+
+            // Byte count 256 (0x0100), little-endian in bytes 6..7.
+            Assert.AreEqual((byte)0x00, cmd[6]);
+            Assert.AreEqual((byte)0x01, cmd[7]);
+        }
+
+        [TestMethod]
+        public void WriteMemory32Command_EncodesAddressAndLength_LittleEndian()
+        {
+            byte[] cmd = StLinkTransport.BuildWriteMemory32Command(0x2000FFFC, 512);
+
+            // Address 0x2000FFFC, little-endian in bytes 2..5.
+            Assert.AreEqual((byte)0xFC, cmd[2]);
+            Assert.AreEqual((byte)0xFF, cmd[3]);
+            Assert.AreEqual((byte)0x00, cmd[4]);
+            Assert.AreEqual((byte)0x20, cmd[5]);
+
+            // Byte count 512 (0x0200), little-endian in bytes 6..7.
+            Assert.AreEqual((byte)0x00, cmd[6]);
+            Assert.AreEqual((byte)0x02, cmd[7]);
+        }
+
+        #endregion
+
+        #region UsesNativeMemory routing
+
+        [TestMethod]
+        public void SwdProtocol_UsesNativeMemory_TrueForStLinkTransport()
+        {
+            // ST-LINK is a high-level adapter (HLA): memory access must go through the probe's
+            // native READMEM/WRITEMEM commands, not manual DAP-direct AP transfers (which return
+            // AP IDR 0 on ST-LINK firmware). SwdProtocol signals this via UsesNativeMemory.
+            using (var stLink = new StLinkTransport())
+            using (var swd = new SwdProtocol(stLink))
+            {
+                Assert.IsTrue(swd.UsesNativeMemory);
+            }
+        }
+
+        [TestMethod]
+        public void SwdProtocol_UsesNativeMemory_FalseForNonStLinkTransport()
+        {
+            // A non-ST-LINK (e.g. CMSIS-DAP) transport uses the manual DAP-direct memory path.
+            using (var fake = new FakeSwdTransport())
+            using (var swd = new SwdProtocol(fake))
+            {
+                Assert.IsFalse(swd.UsesNativeMemory);
+            }
+        }
+
+        /// <summary>
+        /// Minimal non-ST-LINK <see cref="ISwdTransport"/> for routing tests.
+        /// </summary>
+        private sealed class FakeSwdTransport : ISwdTransport
+        {
+            public string ProductName => "Fake";
+            public string SerialNumber => "0";
+            public int PacketSize => 64;
+            public bool Connect() => true;
+            public void Disconnect() { }
+            public bool SetClock(uint frequencyHz) => true;
+            public bool TransferConfigure(byte idleCycles, ushort waitRetry, ushort matchRetry) => true;
+            public bool SwdConfigure(byte turnaround = 0) => true;
+            public bool SwjSequence(byte bitCount, byte[] data) => true;
+            public uint[] ExecuteTransfer(byte dapIndex, TransferRequest[] requests) => Array.Empty<uint>();
+            public byte SwjPins(byte pinOutput, byte pinSelect, uint waitUs) => 0;
+            public void Dispose() { }
+        }
+
+        #endregion
         #region Dispose safety
 
         [TestMethod]
