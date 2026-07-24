@@ -78,6 +78,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const uint CortexMDhcsrHalt = 0xA05F0003;
         // DEMCR = TRCENA (0x01000000) | VC_CORERESET (0x1) -> halt on core reset
         private const uint CortexMDemcrHaltOnReset = 0x01000001;
+        // DEMCR = TRCENA only (VC_CORERESET cleared) -> run normally after reset
+        private const uint CortexMDemcrTrcenaOnly = 0x01000000;
 
         // Mode values
         private const byte StLinkModeDebugSwd = 0x02;
@@ -314,15 +316,21 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// <see cref="StLinkDebugApiV2DriveNrstHigh"/> or
         /// <see cref="StLinkDebugApiV2DriveNrstPulse"/>.
         /// </param>
-        private void DriveNrst(byte state)
+        /// <returns>
+        /// <see langword="true"/> if the probe acknowledged the command (status OK);
+        /// <see langword="false"/> if it rejected it or the transfer failed.
+        /// </returns>
+        private bool DriveNrst(byte state)
         {
             try
             {
-                SendCommand(BuildDriveNrstCommand(state), 2);
+                byte[] resp = SendCommand(BuildDriveNrstCommand(state), 2);
+                return resp != null && resp.Length >= 2 && resp[0] == StLinkDebugErrOk;
             }
             catch (SwdProtocolException)
             {
                 // Best-effort only — ignore probes/boards that don't support NRST control.
+                return false;
             }
         }
 
@@ -627,16 +635,78 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         }
 
         /// <summary>
-        /// Resets the target system.
+        /// Resets the target system via the ST-LINK native system-reset command.
         /// </summary>
-        internal void ResetSystem()
+        /// <returns><see langword="true"/> if the probe acknowledged the command.</returns>
+        internal bool ResetSystem()
         {
             byte[] cmd = new byte[CmdSize];
             cmd[0] = StLinkDebugCommand;
             cmd[1] = StLinkDebugResetSys;
 
-            SendCommand(cmd, 2);
+            byte[] resp = SendCommand(cmd, 2);
             Thread.Sleep(50);
+
+            return resp != null && resp.Length >= 2 && resp[0] == StLinkDebugErrOk;
+        }
+
+        /// <summary>
+        /// Resets the target and leaves it running the application. Clears any halt-on-reset
+        /// vector catch, performs a debug system reset (works even when NRST is not wired),
+        /// then drives a hardware NRST pulse — the equivalent of pressing the board's reset
+        /// button — so the MCU boots cleanly into the freshly flashed firmware.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if the probe acknowledged at least one reset method
+        /// (system reset or NRST); <see langword="false"/> if every reset command was
+        /// rejected, meaning the target was most likely NOT reset.
+        /// </returns>
+        internal bool ResetTarget()
+        {
+            // Clear DEMCR.VC_CORERESET so the core does not halt at the reset vector (it may
+            // have been armed during connect-under-reset).
+            try
+            {
+                WriteMemory32(CortexMDemcr, ToLittleEndian(CortexMDemcrTrcenaOnly));
+            }
+            catch (SwdProtocolException)
+            {
+                // Best-effort — continue with the reset.
+            }
+
+            bool acknowledged = false;
+
+            // Software system reset + run. Works even on boards where NRST is not routed to
+            // the ST-LINK.
+            try
+            {
+                acknowledged |= ResetSystem();
+                RunCore();
+            }
+            catch (SwdProtocolException)
+            {
+                // Best-effort.
+            }
+
+            // Hardware reset via the NRST line, matching the board's reset button. Done last
+            // so the board ends up freshly reset and running.
+            bool nrstLow = DriveNrst(StLinkDebugApiV2DriveNrstLow);
+            Thread.Sleep(20);
+            bool nrstHigh = DriveNrst(StLinkDebugApiV2DriveNrstHigh);
+            Thread.Sleep(30);
+
+            if (nrstLow && nrstHigh)
+            {
+                acknowledged = true;
+            }
+            else if (DriveNrst(StLinkDebugApiV2DriveNrstPulse))
+            {
+                // Some ST-LINK firmware only honors the single-shot pulse variant.
+                acknowledged = true;
+                Thread.Sleep(30);
+            }
+
+            return acknowledged;
         }
 
         /// <summary>

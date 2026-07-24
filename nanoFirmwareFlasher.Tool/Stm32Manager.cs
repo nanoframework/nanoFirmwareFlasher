@@ -58,15 +58,41 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (_options.HexFile.Any())
             {
-                return device.FlashHexFiles(_options.HexFile);
+                return FlashAndReset(device, () => device.FlashHexFiles(_options.HexFile));
             }
 
             if (_options.BinFile.Any())
             {
-                return device.FlashBinFiles(_options.BinFile, _options.FlashAddress);
+                return FlashAndReset(device, () => device.FlashBinFiles(_options.BinFile, _options.FlashAddress));
             }
 
             return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// Runs the supplied flash operation and, on success, resets the MCU so it starts
+        /// running the freshly flashed firmware. Reset is applied for the native ST-LINK and
+        /// CMSIS-DAP/SWD transports (which support a debug reset).
+        /// </summary>
+        private static ExitCodes FlashAndReset(IStmFlashableDevice device, Func<ExitCodes> flashOperation)
+        {
+            ExitCodes result = flashOperation();
+
+            if (result != ExitCodes.OK)
+            {
+                return result;
+            }
+
+            if (device is StmStLinkDevice stLinkDevice)
+            {
+                stLinkDevice.ResetMcu();
+            }
+            else if (device is StmSwdDevice swdDevice)
+            {
+                swdDevice.ResetMcu();
+            }
+
+            return result;
         }
 
         /// <summary>
