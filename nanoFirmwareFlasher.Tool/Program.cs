@@ -556,6 +556,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // ESP32 related
                 else if (
                     !string.IsNullOrEmpty(o.SerialPort) &&
+                    // a pure file/network deployment uses the wire protocol and is platform independent:
+                    // it must not be misclassified as an ESP32 firmware operation (which would connect through
+                    // the esptool bootloader and leave the device unable to answer wire protocol requests)
+                    string.IsNullOrEmpty(o.FileDeployment) &&
+                    string.IsNullOrEmpty(o.NetworkDeployment) &&
                     ((o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
                     (o.Esp32FlashFrequency != 40)))
