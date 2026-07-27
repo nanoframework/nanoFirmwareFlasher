@@ -428,12 +428,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     return operationResult;
                 }
-                catch (CantConnectToJtagDeviceException)
+                catch (CantConnectToJtagDeviceException ex)
                 {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine($"SWD probe connection failed: {ex.Message}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                     return ExitCodes.E5002;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine($"Unexpected SWD probe error: {ex.Message}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                     return ExitCodes.E5041;
                 }
             }
@@ -500,12 +506,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     return operationResult;
                 }
-                catch (CantConnectToJtagDeviceException)
+                catch (CantConnectToJtagDeviceException ex)
                 {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine($"ST-LINK connection failed: {ex.Message}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                     return ExitCodes.E5002;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine($"Unexpected ST-LINK error: {ex.Message}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
                     return ExitCodes.E5041;
                 }
             }
