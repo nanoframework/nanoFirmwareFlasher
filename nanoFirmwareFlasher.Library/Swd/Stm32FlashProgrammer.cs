@@ -58,6 +58,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             internal uint PgBit;   // programming enable
             internal uint SerBit;  // sector erase (F4/F7) or page erase (L4/G0)
             internal uint MerBit;  // mass erase
+            internal uint Mer2Bit; // second-bank mass erase (dual-bank families, e.g. L4 MER2)
             internal uint StrtBit; // start
             internal uint LockBit; // lock
 
@@ -76,6 +77,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const uint DbgmcuIdcode_M3M4 = 0xE0042000;  // Cortex-M3/M4/M7
         private const uint DbgmcuIdcode_M0 = 0x40015800;    // Cortex-M0/M0+
         private const uint DbgmcuIdcode_M33 = 0x44024000;   // Cortex-M33 (H5, U5)
+
+        // Factory FLASH_SIZE register (size in Kbytes, 16-bit) for L4/G4.
+        private const uint FlashSizeRegister = 0x1FFF75E0;
 
         #endregion
 
@@ -132,7 +136,51 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
             _regs = GetFlashRegisters(_family);
 
+            // Dual-bank families only erase bank 1 with MER1; a full mass erase must also set
+            // the bank-2 mass-erase bit (MER2). Determine it from the actual device config.
+            _regs.Mer2Bit = GetSecondBankMassEraseBit(_family);
+
             return _family;
+        }
+
+        /// <summary>
+        /// Returns the FLASH_CR bit that mass-erases the second bank (MER2) for dual-bank
+        /// devices, or 0 for single-bank devices. Reading only MER1 leaves the second bank
+        /// (e.g. 0x08080000+ on a 1 MB STM32L4) intact.
+        /// </summary>
+        private uint GetSecondBankMassEraseBit(Stm32Family family)
+        {
+            switch (family)
+            {
+                case Stm32Family.L4:
+                case Stm32Family.G4:
+                    // On L4/G4, FLASH_CR MER2 is bit 15.
+                    return IsDualBank(family) ? (1U << 15) : 0U;
+
+                default:
+                    return 0U;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the connected device is configured as dual-bank flash.
+        /// </summary>
+        private bool IsDualBank(Stm32Family family)
+        {
+            // Flash size in Kbytes from the factory FLASH_SIZE register.
+            uint flashSizeKb = _mem.ReadWord(FlashSizeRegister) & 0xFFFF;
+
+            // Devices larger than 512 KB (e.g. the 1 MB STM32L475) are always dual-bank.
+            if (flashSizeKb != 0 && flashSizeKb != 0xFFFF && flashSizeKb > 512)
+            {
+                return true;
+            }
+
+            // Smaller parts are dual-bank only when the DUALBANK/DBANK option bit is set.
+            uint optr = _mem.ReadWord(_regs.FlashBase + 0x20); // FLASH_OPTR
+            uint dualBankBit = family == Stm32Family.G4 ? (1U << 22) : (1U << 21);
+
+            return (optr & dualBankBit) != 0;
         }
 
         /// <summary>
@@ -187,16 +235,18 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 // Clear any pending errors
                 ClearFlashErrors();
 
-                // Set MER bit and start
-                uint cr = _regs.MerBit | _regs.StrtBit;
+                // Set the mass-erase bit(s) and start. Dual-bank families need both MER1 and
+                // MER2, otherwise only the first bank is erased.
+                uint massEraseBits = _regs.MerBit | _regs.Mer2Bit;
+                uint cr = massEraseBits | _regs.StrtBit;
                 _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
 
                 // Wait for completion
                 WaitForFlashReady(timeoutMs);
 
-                // Clear MER bit
+                // Clear MER bit(s)
                 cr = _mem.ReadWord(_regs.FlashBase + _regs.CrOffset);
-                cr &= ~_regs.MerBit;
+                cr &= ~massEraseBits;
                 _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
             }
             finally
