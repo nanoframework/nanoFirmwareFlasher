@@ -695,15 +695,29 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             bool nrstHigh = DriveNrst(StLinkDebugApiV2DriveNrstHigh);
             Thread.Sleep(30);
 
+            bool hardwareReset = false;
+
             if (nrstLow && nrstHigh)
             {
                 acknowledged = true;
+                hardwareReset = true;
             }
             else if (DriveNrst(StLinkDebugApiV2DriveNrstPulse))
             {
                 // Some ST-LINK firmware only honors the single-shot pulse variant.
                 acknowledged = true;
+                hardwareReset = true;
                 Thread.Sleep(30);
+            }
+
+            if (acknowledged && !hardwareReset)
+            {
+                // A soft (SYSRESETREQ) reset succeeded but the physical NRST line could not be
+                // driven. Let the user know the reset was not a full hardware reset.
+                OutputWriter.WriteLine(
+                    "Note: the target NRST line is not available through the debug probe; a soft "
+                    + "system reset was performed. Peripherals and the backup domain are not fully "
+                    + "reset — press the board reset button or power-cycle for a full hardware reset.");
             }
 
             return acknowledged;
