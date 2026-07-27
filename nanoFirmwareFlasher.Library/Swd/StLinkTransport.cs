@@ -30,6 +30,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const byte StLinkDebugCommand = 0xF2;
         private const byte StLinkDfuCommand = 0xF3;
         private const byte StLinkGetCurrentMode = 0xF5;
+        private const byte StLinkGetTargetVoltage = 0xF7;
 
         // Debug sub-commands
         private const byte StLinkDebugEnterSwd = 0x30;
@@ -61,6 +62,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         // DAP register access (V2 API)
         private const byte StLinkDebugApiV2ReadDap = 0x45;
         private const byte StLinkDebugApiV2WriteDap = 0x46;
+
+        // Reports whether the last block memory read/write actually succeeded at the
+        // SWD protocol level (distinct from the USB transfer status).
+        private const byte StLinkDebugApiV2GetLastRwStatus2 = 0x3E;
 
         // Hardware reset line (NRST) control (V2 API).
         // Used for "connect under reset": holding the MCU in reset lets the probe enter
@@ -611,9 +616,38 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 Buffer.BlockCopy(data, offset, chunk, 0, chunkLen);
 
                 SendCommandWithData(cmd, chunk);
+                CheckLastReadWriteStatus(chunkAddr);
 
                 offset += chunkLen;
             }
+        }
+
+        /// <summary>
+        /// Queries whether the last block memory read/write succeeded at the SWD protocol
+        /// level (GETLASTRWSTATUS2) and throws if it did not.
+        /// </summary>
+        private void CheckLastReadWriteStatus(uint address)
+        {
+            byte[] resp = SendCommand(BuildGetLastRwStatus2Command(), 12);
+
+            if (resp != null && resp.Length >= 1 && resp[0] != StLinkDebugErrOk)
+            {
+                throw new SwdProtocolException(
+                    $"ST-LINK memory write failed at 0x{address:X8}: status 0x{resp[0]:X2}.");
+            }
+        }
+
+        /// <summary>
+        /// Builds the ST-LINK GETLASTRWSTATUS2 command (0xF2 0x3E), which reports whether the
+        /// last block memory read/write succeeded at the SWD protocol level.
+        /// </summary>
+        internal static byte[] BuildGetLastRwStatus2Command()
+        {
+            byte[] cmd = new byte[CmdSize];
+            cmd[0] = StLinkDebugCommand;
+            cmd[1] = StLinkDebugApiV2GetLastRwStatus2;
+
+            return cmd;
         }
 
         /// <summary>
@@ -883,6 +917,39 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             if (ProductName == null || ProductName == "ST-LINK")
             {
                 ProductName = $"ST-LINK/V{major}";
+            }
+        }
+
+        /// <summary>
+        /// Reads the target VDD voltage in millivolts, or -1 if it could not be read.
+        /// </summary>
+        internal int ReadTargetVoltageMillivolts()
+        {
+            try
+            {
+                byte[] cmd = new byte[CmdSize];
+                cmd[0] = StLinkGetTargetVoltage;
+
+                byte[] resp = SendCommand(cmd, 8);
+
+                if (resp == null || resp.Length < 8)
+                {
+                    return -1;
+                }
+
+                uint factor = (uint)(resp[0] | (resp[1] << 8) | (resp[2] << 16) | (resp[3] << 24));
+                uint reading = (uint)(resp[4] | (resp[5] << 8) | (resp[6] << 16) | (resp[7] << 24));
+
+                if (factor == 0)
+                {
+                    return -1;
+                }
+
+                return (int)(2400L * reading / factor);
+            }
+            catch (SwdProtocolException)
+            {
+                return -1;
             }
         }
 
@@ -1278,6 +1345,21 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
             _writer = _device.OpenEndpointWriter((LibUsbDotNet.Main.WriteEndpointID)outEndpoint);
             _reader = _device.OpenEndpointReader((LibUsbDotNet.Main.ReadEndpointID)inEndpoint);
+
+            // Match libusb-1.0's WinUSB backend (used by OpenOCD/st-link): enable
+            // AUTO_CLEAR_STALL so a stalled pipe is cleared automatically instead of failing.
+            if (_device is LibUsbDotNet.WinUsb.WindowsDevice windowsDevice)
+            {
+                try
+                {
+                    windowsDevice.EndpointPolicies((LibUsbDotNet.Main.ReadEndpointID)inEndpoint).AutoClearStall = true;
+                    windowsDevice.EndpointPolicies((LibUsbDotNet.Main.WriteEndpointID)outEndpoint).AutoClearStall = true;
+                }
+                catch
+                {
+                    // Not supported on this backend — continue.
+                }
+            }
 
             // Clear any stale/halted pipe state left by a previous session (common with
             // ST-LINK/V2 dongles shared between tools). A halted pipe makes the first transfer

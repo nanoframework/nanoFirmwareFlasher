@@ -476,6 +476,19 @@ namespace nanoFirmwareFlasher.Tests
 
         #endregion
 
+        #region GETLASTRWSTATUS2 command encoding
+
+        [TestMethod]
+        public void GetLastRwStatus2Command_UsesCorrectOpcode()
+        {
+            byte[] cmd = StLinkTransport.BuildGetLastRwStatus2Command();
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x3E, cmd[1], "byte 1 must be GETLASTRWSTATUS2 (0x3E)");
+        }
+
+        #endregion
+
         #region TAR auto-increment wrap boundary (block memory chunking)
 
         [TestMethod]

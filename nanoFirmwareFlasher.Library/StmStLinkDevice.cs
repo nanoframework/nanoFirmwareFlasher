@@ -133,6 +133,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
             try
             {
                 _stLink.Open(selectedPath);
+
+                int targetMillivolts = _stLink.ReadTargetVoltageMillivolts();
+
+                if (targetMillivolts >= 0 && targetMillivolts < 1500)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine(
+                        $"Warning: target voltage reads {targetMillivolts} mV — the target may not be powered.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+
                 _swd.Initialize();
 
                 DpIdcode = _swd.DpIdcodeValue;
