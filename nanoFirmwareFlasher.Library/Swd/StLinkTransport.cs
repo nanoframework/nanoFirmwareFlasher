@@ -977,25 +977,48 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         private byte[] SendCommand(byte[] cmd, int responseLength)
         {
-            _usb.WriteBulk(EpOut, cmd, cmd.Length);
+            // Some (notably clone) ST-LINK probes intermittently STALL the bulk pipes. Unlike
+            // libusb (which sets WinUSB's AUTO_CLEAR_STALL), LibUsbDotNet surfaces the stall as
+            // a hard failure, so recover it ourselves: reset the pipes and retry the command.
+            const int maxAttempts = 3;
+            SwdProtocolException lastError = null;
 
-            if (responseLength <= 0)
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                return null;
+                if (attempt > 0)
+                {
+                    _usb.ResetPipes();
+                }
+
+                try
+                {
+                    _usb.WriteBulk(EpOut, cmd, cmd.Length);
+
+                    if (responseLength <= 0)
+                    {
+                        return null;
+                    }
+
+                    byte[] response = new byte[responseLength];
+                    int bytesRead = _usb.ReadBulk(EpIn, response, responseLength);
+
+                    if (bytesRead < responseLength)
+                    {
+                        // Partial read — resize
+                        byte[] partial = new byte[bytesRead];
+                        Buffer.BlockCopy(response, 0, partial, 0, bytesRead);
+                        return partial;
+                    }
+
+                    return response;
+                }
+                catch (SwdProtocolException ex)
+                {
+                    lastError = ex;
+                }
             }
 
-            byte[] response = new byte[responseLength];
-            int bytesRead = _usb.ReadBulk(EpIn, response, responseLength);
-
-            if (bytesRead < responseLength)
-            {
-                // Partial read — resize
-                byte[] partial = new byte[bytesRead];
-                Buffer.BlockCopy(response, 0, partial, 0, bytesRead);
-                return partial;
-            }
-
-            return response;
+            throw lastError;
         }
 
         private void SendCommandWithData(byte[] cmd, byte[] data)
@@ -1017,6 +1040,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         void Open(string devicePath);
         void WriteBulk(byte endpoint, byte[] data, int length);
         int ReadBulk(byte endpoint, byte[] buffer, int length);
+        void ResetPipes();
         string ProductName { get; }
         string SerialNumber { get; }
     }
@@ -1057,10 +1081,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         // a driver LibUsbDotNet can open), but the transfer failed — almost always because the
         // ST-LINK debug interface is on ST's proprietary driver instead of a WinUSB-class one.
         private const string DriverHint =
-            " The probe was found but the USB transfer failed. This usually means the ST-LINK "
-            + "debug interface is bound to ST's proprietary 'STM32 STLink' driver rather than a "
-            + "WinUSB-class driver (WinUSB/libusbK/libusb-win32). Bind the 'ST-Link Debug' "
-            + "interface to WinUSB with Zadig (https://zadig.akeo.ie) and retry.";
+            " The probe was found but the USB transfer failed. If the ST-LINK debug interface is "
+            + "still on ST's proprietary 'STM32 STLink' driver, bind it to a WinUSB-class driver "
+            + "(WinUSB/libusbK/libusb-win32) with Zadig (https://zadig.akeo.ie). If it is already "
+            + "on WinUSB, the probe may be an ST-LINK/V2 clone that does not tolerate raw USB "
+            + "reliably (e.g. it stalls the response pipe) — try a genuine ST-LINK, a Nucleo/Discovery "
+            + "on-board probe, or a CMSIS-DAP probe.";
 
         private LibUsbDotNet.UsbDevice _device;
         private LibUsbDotNet.UsbEndpointWriter _writer;
@@ -1295,6 +1321,30 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             }
 
             return bytesRead;
+        }
+
+        public void ResetPipes()
+        {
+            // Clear a stalled/halted bulk pipe (WinUsb_ResetPipe) and drop any stale data so a
+            // subsequent transfer can succeed. Best-effort: ignore backends that don't support it.
+            try
+            {
+                _writer?.Reset();
+            }
+            catch
+            {
+                // ignore
+            }
+
+            try
+            {
+                _reader?.Reset();
+                _reader?.ReadFlush();
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         internal static List<(string productName, string serialNumber, string devicePath)> EnumerateDevices()
