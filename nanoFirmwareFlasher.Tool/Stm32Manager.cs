@@ -109,13 +109,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.ForegroundColor = ConsoleColor.Yellow;
             OutputWriter.WriteLine();
             OutputWriter.WriteLine("An ST-LINK probe is connected but has no driver the native transport can use.");
-            OutputWriter.WriteLine("Install a driver for the 'ST-Link Debug' interface (interface 0):");
-            OutputWriter.WriteLine("  - Recommended: the ST-LINK USB driver (STSW-LINK009) from ST. It works with");
-            OutputWriter.WriteLine("    the native transport and keeps STM32CubeProgrammer / your IDE working:");
-            OutputWriter.WriteLine("    https://www.st.com/en/development-tools/stsw-link009.html");
-            OutputWriter.WriteLine("    (STM32CubeProgrammer / STM32CubeIDE install it as well.)");
-            OutputWriter.WriteLine("  - Alternative: bind it to WinUSB with Zadig (https://zadig.akeo.ie) ->");
+            OutputWriter.WriteLine("The native transport uses raw USB (LibUsbDotNet), which needs a WinUSB-class");
+            OutputWriter.WriteLine("driver on the 'ST-Link Debug' interface (interface 0):");
+            OutputWriter.WriteLine("  - Recommended: bind it to WinUSB with Zadig (https://zadig.akeo.ie) ->");
             OutputWriter.WriteLine("    select 'ST-Link Debug' (USB ID 0483 374B, interface 0) -> WinUSB -> Install.");
+            OutputWriter.WriteLine("  - ST's proprietary STSW-LINK009 driver is NOT compatible with this transport.");
+            OutputWriter.WriteLine("    Reinstall it only to restore STM32CubeProgrammer / STM32CubeIDE for that probe:");
+            OutputWriter.WriteLine("    https://www.st.com/en/development-tools/stsw-link009.html");
             OutputWriter.WriteLine("    Note: Zadig replaces ST's driver, so ST tools won't use that probe until reverted.");
             OutputWriter.ForegroundColor = ConsoleColor.White;
         }

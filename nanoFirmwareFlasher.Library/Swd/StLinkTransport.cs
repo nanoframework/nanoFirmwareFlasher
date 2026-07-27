@@ -1053,6 +1053,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         private const int BulkTransferTimeout = 5000;
 
+        // Appended to bulk-transfer failures: the probe enumerated (so it's connected and on
+        // a driver LibUsbDotNet can open), but the transfer failed — almost always because the
+        // ST-LINK debug interface is on ST's proprietary driver instead of a WinUSB-class one.
+        private const string DriverHint =
+            " The probe was found but the USB transfer failed. This usually means the ST-LINK "
+            + "debug interface is bound to ST's proprietary 'STM32 STLink' driver rather than a "
+            + "WinUSB-class driver (WinUSB/libusbK/libusb-win32). Bind the 'ST-Link Debug' "
+            + "interface to WinUSB with Zadig (https://zadig.akeo.ie) and retry.";
+
         private LibUsbDotNet.UsbDevice _device;
         private LibUsbDotNet.UsbEndpointWriter _writer;
         private LibUsbDotNet.UsbEndpointReader _reader;
@@ -1083,8 +1092,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 throw new SwdProtocolException(
                     "No ST-LINK device found. Make sure the probe is connected. " +
-                    "On Windows, install the ST-LINK USB driver (STSW-LINK009, https://www.st.com/en/development-tools/stsw-link009.html), " +
-                    "which also ships with STM32CubeProgrammer; alternatively bind it to WinUSB with Zadig (https://zadig.akeo.ie). " +
+                    "On Windows, the native transport uses raw USB (LibUsbDotNet), so the ST-LINK debug interface must be bound to a WinUSB-class driver (WinUSB, libusbK or libusb-win32): use Zadig (https://zadig.akeo.ie) to install WinUSB on the 'ST-Link Debug' interface. " +
+                    "ST's proprietary STSW-LINK009 driver is not compatible with this transport; reinstall it (https://www.st.com/en/development-tools/stsw-link009.html) only to restore STM32CubeProgrammer/STM32CubeIDE for that probe. " +
                     "On Linux, add a udev rule: echo 'SUBSYSTEM==\"usb\", ATTR{idVendor}==\"0483\", MODE=\"0666\"' " +
                     "| sudo tee /etc/udev/rules.d/70-st-link.rules && sudo udevadm control --reload-rules. " +
                     "On macOS, no additional drivers are needed.");
@@ -1266,7 +1275,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 throw new SwdProtocolException(
                     $"ST-LINK USB bulk write failed (PID 0x{_productId:X4}, OUT endpoint "
-                    + $"0x{_writeEndpoint:X2}, source: {_endpointSource}). Error: {error}");
+                    + $"0x{_writeEndpoint:X2}, source: {_endpointSource}). Error: {error} "
+                    + $"(Win32 {LibUsbDotNet.UsbDevice.LastErrorNumber}: {LibUsbDotNet.UsbDevice.LastErrorString})."
+                    + DriverHint);
             }
         }
 
@@ -1278,7 +1289,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 throw new SwdProtocolException(
                     $"ST-LINK USB bulk read failed (PID 0x{_productId:X4}, IN endpoint "
-                    + $"0x{_readEndpoint:X2}, source: {_endpointSource}). Error: {error}");
+                    + $"0x{_readEndpoint:X2}, source: {_endpointSource}). Error: {error} "
+                    + $"(Win32 {LibUsbDotNet.UsbDevice.LastErrorNumber}: {LibUsbDotNet.UsbDevice.LastErrorString})."
+                    + DriverHint);
             }
 
             return bytesRead;
