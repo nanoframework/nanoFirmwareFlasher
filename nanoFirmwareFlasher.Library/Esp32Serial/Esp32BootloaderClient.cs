@@ -610,10 +610,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     return;
                 }
 
-                if (_runtimeConfig?.ChipType == "esp32s3" && _runtimeConfig.UsesUsbOtg)
+                if (_runtimeConfig?.ChipType == "esp32s3")
                 {
                     // Clear force-download-boot so the chip doesn't get stuck in download
-                    // mode after reset (arduino-esp32 #6762). Best-effort, matching upstream.
+                    // mode after reset (arduino-esp32 #6762). Upstream does this on every
+                    // S3 reset path (UART, USB-Serial/JTAG and USB-OTG) before any reset,
+                    // so it must run regardless of the transport. Best-effort.
                     try
                     {
                         WriteRegister(Esp32S3RtcCntlOption1Reg, 0, Esp32RtcCntlForceDownloadBootMask);
@@ -623,18 +625,24 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                         // Ignore transient failures (e.g. during monitoring) — matches upstream.
                     }
 
-                    if (CanWatchdogReset(Esp32S3GpioStrapReg, Esp32S3RtcCntlOption1Reg))
+                    if (_runtimeConfig.UsesUsbOtg)
                     {
-                        PerformWatchdogReset(
-                            Esp32S3RtcWdtWprotectReg,
-                            Esp32S3RtcWdtConfig0Reg,
-                            Esp32S3RtcWdtConfig1Reg);
+                        if (CanWatchdogReset(Esp32S3GpioStrapReg, Esp32S3RtcCntlOption1Reg))
+                        {
+                            PerformWatchdogReset(
+                                Esp32S3RtcWdtWprotectReg,
+                                Esp32S3RtcWdtConfig0Reg,
+                                Esp32S3RtcWdtConfig1Reg);
+                            return;
+                        }
+
+                        // USB-OTG boards need the longer reset timing.
+                        Esp32ResetSequence.HardReset(_port, true);
                         return;
                     }
 
-                    // USB-OTG boards need the longer reset timing.
-                    Esp32ResetSequence.HardReset(_port, true);
-                    return;
+                    // Non-USB-OTG S3 (UART or USB-Serial/JTAG): fall through to the
+                    // default reset below after clearing the force-download bit.
                 }
 
                 if (_runtimeConfig?.ChipType == "esp32e22" && _runtimeConfig.UsesUsbOtg)
@@ -843,8 +851,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         /// <summary>
         /// Determine whether an RTC watchdog reset is safe, mirroring esptool: only when the
-        /// chip is not being held in (or forced into) download mode — GPIO0 high (SPI boot
-        /// strap clear) and the force-download-boot bit cleared.
+        /// chip is being held in download mode via the strapping pin (GPIO0 low, i.e. the SPI
+        /// boot strap bit is clear) while the force-download-boot bit is cleared. In that state
+        /// a plain reset would not re-sample the pins, so the watchdog reset is used instead.
         /// </summary>
         private bool CanWatchdogReset(uint gpioStrapReg, uint option1Reg)
         {
