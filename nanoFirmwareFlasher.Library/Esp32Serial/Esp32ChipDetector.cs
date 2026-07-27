@@ -96,9 +96,39 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         {
             EnsureConfig();
 
-            if (_config.ChipType == "esp32s31" || _config.ChipType == "esp32e22")
+            uint usbOtgImagePid = GetUsbOtgImagePid(_config);
+
+            if (usbOtgImagePid != 0)
             {
-                _config.UsesUsbOtg = SerialPortUsbInfo.IsUsbOtg(_client.Port.PortName, _config.ChipId);
+                _config.UsesUsbOtg = SerialPortUsbInfo.IsUsbOtg(_client.Port.PortName, usbOtgImagePid);
+            }
+        }
+
+        /// <summary>
+        /// Returns the Espressif native USB-OTG product ID for chips that have an on-chip
+        /// USB-OTG peripheral, or 0 for chips without one (which use an external UART bridge
+        /// or the USB-Serial/JTAG peripheral instead). The USB-OTG product ID equals the
+        /// image chip ID. The ESP32-S2 is detected by magic value, so its <see cref="Esp32ChipConfig.ChipId"/>
+        /// is 0; its image chip ID (and therefore USB-OTG product ID) is 2.
+        /// </summary>
+        private static uint GetUsbOtgImagePid(Esp32ChipConfig config)
+        {
+            switch (config.ChipType)
+            {
+                // ESP32-S2 uses magic-value detection, so ChipId is 0. Its native
+                // USB-OTG product ID is the image chip ID, which is 2.
+                case "esp32s2":
+                    return 0x0002;
+
+                // These chips carry their image chip ID in ChipId, which equals the
+                // native USB-OTG product ID.
+                case "esp32s3":
+                case "esp32s31":
+                case "esp32e22":
+                    return config.ChipId;
+
+                default:
+                    return 0;
             }
         }
 
