@@ -81,6 +81,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         // Factory FLASH_SIZE register (size in Kbytes, 16-bit) for L4/G4.
         private const uint FlashSizeRegister = 0x1FFF75E0;
 
+        // Block size (bytes) for bulk flash programming. Uses the transport's native block
+        // write (one USB transfer) instead of a word-at-a-time loop. A multiple of 8 so it is
+        // valid for both 32-bit (F4/F7) and 64-bit double-word (L4-style) programming.
+        private const int ProgramBlockBytes = 2048;
+
         #endregion
 
         private readonly ArmMemAp _mem;
@@ -517,23 +522,20 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
             _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
 
-            // Write data word by word
+            // Program using the transport's native block write instead of one word per USB
+            // transaction. While PG is set, the flash controller stalls the bus for each
+            // 32-bit word it programs, so a block write is paced correctly by hardware; we
+            // confirm completion by polling BSY once per block. The previous word-at-a-time
+            // loop issued two USB round-trips for every 4 bytes, which made large images
+            // (hundreds of KB) appear to hang.
             int pos = 0;
 
             while (pos < length)
             {
-                uint word = 0xFFFFFFFF;
-                int remaining = length - pos;
-
-                for (int b = 0; b < 4 && b < remaining; b++)
-                {
-                    word &= ~(0xFFU << (b * 8));
-                    word |= (uint)data[dataOffset + pos + b] << (b * 8);
-                }
-
-                _mem.WriteWord(address + (uint)pos, word);
-                WaitForFlashReady(1000);
-                pos += 4;
+                int chunk = Math.Min(ProgramBlockBytes, length - pos);
+                _mem.WriteBytes(address + (uint)pos, data, dataOffset + pos, chunk);
+                WaitForFlashReady(5000);
+                pos += chunk;
             }
 
             // Clear PG bit
@@ -549,11 +551,25 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             cr |= _regs.PgBit;
             _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
 
+            // These families program a 64-bit double-word at a time: the flash controller
+            // starts programming once both 32-bit words are written, stalling the bus in
+            // between. A block write (multiple of 8 bytes) is therefore paced correctly by
+            // hardware; poll BSY once per block. This replaces the previous double-word per
+            // USB round-trip loop, which was far too slow for large images.
+            int alignedLength = length & ~7; // whole 64-bit double-words
             int pos = 0;
 
-            while (pos < length)
+            while (pos < alignedLength)
             {
-                // Write two 32-bit words (one 64-bit double word)
+                int chunk = Math.Min(ProgramBlockBytes, alignedLength - pos);
+                _mem.WriteBytes(address + (uint)pos, data, dataOffset + pos, chunk);
+                WaitForFlashReady(5000);
+                pos += chunk;
+            }
+
+            // Program a trailing partial double-word (if any), padding with 0xFF.
+            if (pos < length)
+            {
                 uint word0 = 0xFFFFFFFF;
                 uint word1 = 0xFFFFFFFF;
                 int remaining = length - pos;
@@ -572,9 +588,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
                 _mem.WriteWord(address + (uint)pos, word0);
                 _mem.WriteWord(address + (uint)pos + 4, word1);
-
-                WaitForFlashReady(1000);
-                pos += 8;
+                WaitForFlashReady(5000);
             }
 
             // Clear PG bit
