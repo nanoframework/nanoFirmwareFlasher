@@ -1059,6 +1059,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private int _productId;
         private byte _writeEndpoint;
         private byte _readEndpoint;
+        private string _endpointSource = "unknown";
         private bool _disposed;
 
         public string ProductName { get; private set; }
@@ -1157,6 +1158,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             // PID-based defaults.
             outEndpoint = GetWriteEndpointForPid(_productId);
             inEndpoint = 0x81;
+            _endpointSource = "PID heuristic (descriptors unavailable)";
 
             try
             {
@@ -1164,6 +1166,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 {
                     return;
                 }
+
+                var allEndpoints = new List<string>();
 
                 foreach (LibUsbDotNet.Info.UsbInterfaceInfo iface in _device.Configs[0].InterfaceInfoList)
                 {
@@ -1173,7 +1177,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                     foreach (LibUsbDotNet.Info.UsbEndpointInfo ep in iface.EndpointInfoList)
                     {
                         byte address = ep.Descriptor.EndpointID;
-                        bool isBulk = (ep.Descriptor.Attributes & 0x03) == 0x02;
+                        byte attrs = ep.Descriptor.Attributes;
+                        bool isBulk = (attrs & 0x03) == 0x02;
+
+                        allEndpoints.Add($"0x{address:X2}(attr=0x{attrs:X2})");
 
                         if (!isBulk)
                         {
@@ -1199,13 +1206,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                     {
                         outEndpoint = foundOut;
                         inEndpoint = foundIn;
+                        _endpointSource = $"descriptors [{string.Join(",", allEndpoints)}]";
                         return;
                     }
                 }
+
+                _endpointSource = allEndpoints.Count > 0
+                    ? $"PID heuristic (no bulk pair in descriptors [{string.Join(",", allEndpoints)}])"
+                    : "PID heuristic (empty descriptors)";
             }
             catch
             {
                 // Descriptor enumeration not available on this backend — keep the defaults.
+                _endpointSource = "PID heuristic (descriptor read failed)";
             }
         }
 
@@ -1231,7 +1244,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 throw new SwdProtocolException(
                     $"ST-LINK USB bulk write failed (PID 0x{_productId:X4}, OUT endpoint "
-                    + $"0x{_writeEndpoint:X2}). Error: {error}");
+                    + $"0x{_writeEndpoint:X2}, source: {_endpointSource}). Error: {error}");
             }
         }
 
@@ -1243,7 +1256,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 throw new SwdProtocolException(
                     $"ST-LINK USB bulk read failed (PID 0x{_productId:X4}, IN endpoint "
-                    + $"0x{_readEndpoint:X2}). Error: {error}");
+                    + $"0x{_readEndpoint:X2}, source: {_endpointSource}). Error: {error}");
             }
 
             return bytesRead;

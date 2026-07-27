@@ -23,6 +23,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly SwdProtocol _swd;
         private readonly ArmMemAp _mem;
         private readonly Stm32FlashProgrammer _flash;
+        private int _lastProgressPercent = -1;
         private bool _disposed;
 
         /// <summary>
@@ -125,6 +126,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             _swd = new SwdProtocol(_dap);
             _mem = new ArmMemAp(_swd);
             _flash = new Stm32FlashProgrammer(_mem);
+            _flash.ProgressReport = OnFlashProgress;
 
             try
             {
@@ -232,6 +234,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 $"  Writing {block.Data.Length} bytes @ 0x{block.Address:X8}");
                         }
 
+                        _lastProgressPercent = -1;
                         _flash.EraseAndProgram(block.Address, block.Data, 0, block.Data.Length);
 
                         if (Verify)
@@ -362,6 +365,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 try
                 {
                     byte[] data = File.ReadAllBytes(binFilePath);
+                    _lastProgressPercent = -1;
                     _flash.EraseAndProgram(flashAddress, data, 0, data.Length);
 
                     if (Verify)
@@ -443,6 +447,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// Progress callback for flash operations. Displays an in-place, updating progress
+        /// line (bytes and percentage) at diagnostic verbosity so long blocks show how much
+        /// has been flashed and where they stall.
+        /// </summary>
+        private void OnFlashProgress(string phase, int done, int total)
+        {
+            if (Verbosity < VerbosityLevel.Diagnostic || total <= 0)
+            {
+                return;
+            }
+
+            int percent = (int)((long)done * 100 / total);
+
+            // Throttle: only refresh the line when the percentage advances (or on completion).
+            if (percent == _lastProgressPercent && done < total)
+            {
+                return;
+            }
+
+            _lastProgressPercent = percent;
+
+            OutputWriter.ForegroundColor = ConsoleColor.DarkGray;
+            OutputWriter.Write($"\r    {phase} {done:N0}/{total:N0} bytes ({percent}%)   ");
+
+            if (done >= total)
+            {
+                OutputWriter.WriteLine();
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>

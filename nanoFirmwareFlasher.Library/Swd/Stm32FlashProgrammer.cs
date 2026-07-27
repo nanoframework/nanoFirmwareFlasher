@@ -98,6 +98,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         }
 
         /// <summary>
+        /// Optional callback invoked during flash operations to report progress. The
+        /// arguments are (phase, bytesCompleted, totalBytes) for the current block.
+        /// </summary>
+        internal Action<string, int, int> ProgressReport { get; set; }
+
+        private void ReportProgress(string phase, int done, int total)
+        {
+            ProgressReport?.Invoke(phase, done, total);
+        }
+
+        /// <summary>
         /// Gets the detected STM32 family.
         /// </summary>
         internal Stm32Family DetectedFamily => _family;
@@ -536,6 +547,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 _mem.WriteBytes(address + (uint)pos, data, dataOffset + pos, chunk);
                 WaitForFlashReady(5000);
                 pos += chunk;
+                ReportProgress("Writing", pos, length);
             }
 
             // Clear PG bit
@@ -565,6 +577,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 _mem.WriteBytes(address + (uint)pos, data, dataOffset + pos, chunk);
                 WaitForFlashReady(5000);
                 pos += chunk;
+                ReportProgress("Writing", pos, length);
             }
 
             // Program a trailing partial double-word (if any), padding with 0xFF.
@@ -590,6 +603,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 _mem.WriteWord(address + (uint)pos + 4, word1);
                 WaitForFlashReady(5000);
             }
+
+            ReportProgress("Writing", length, length);
 
             // Clear PG bit
             cr = _mem.ReadWord(_regs.FlashBase + _regs.CrOffset);
@@ -632,6 +647,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
                 WaitForFlashReady(1000);
                 pos += 32;
+                ReportProgress("Writing", Math.Min(pos, length), length);
             }
 
             // Clear PG bit
