@@ -1057,6 +1057,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private LibUsbDotNet.UsbEndpointWriter _writer;
         private LibUsbDotNet.UsbEndpointReader _reader;
         private int _productId;
+        private byte _writeEndpoint;
+        private byte _readEndpoint;
         private bool _disposed;
 
         public string ProductName { get; private set; }
@@ -1130,13 +1132,83 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 SerialNumber = string.Empty;
             }
 
-            // Open bulk endpoints. The IN endpoint is 0x81 for all ST-LINK variants.
-            // The OUT endpoint depends on the probe (see GetWriteEndpointForPid).
-            // Using the wrong endpoint makes every USB transfer fail on connect.
-            _writer = _device.OpenEndpointWriter(
-                (LibUsbDotNet.Main.WriteEndpointID)GetWriteEndpointForPid(_productId));
-            _reader = _device.OpenEndpointReader(LibUsbDotNet.Main.ReadEndpointID.Ep01);
+            // Open bulk endpoints. Prefer the endpoints advertised by the device's own USB
+            // descriptors (robust across all ST-LINK variants and clones); fall back to the
+            // PID-based heuristic if the descriptors can't be read. Using the wrong endpoint
+            // makes the very first USB transfer fail on connect.
+            DiscoverBulkEndpoints(out byte outEndpoint, out byte inEndpoint);
+
+            _writeEndpoint = outEndpoint;
+            _readEndpoint = inEndpoint;
+
+            _writer = _device.OpenEndpointWriter((LibUsbDotNet.Main.WriteEndpointID)outEndpoint);
+            _reader = _device.OpenEndpointReader((LibUsbDotNet.Main.ReadEndpointID)inEndpoint);
         }
+
+        /// <summary>
+        /// Determines the bulk OUT (command) and bulk IN (response) endpoint addresses for the
+        /// open device by inspecting its USB descriptors. Falls back to the PID-based defaults
+        /// (<see cref="GetWriteEndpointForPid"/> and 0x81) when the descriptors are unavailable.
+        /// The command IN endpoint is the lowest-address bulk IN (0x81), never the higher trace
+        /// endpoint (0x83).
+        /// </summary>
+        private void DiscoverBulkEndpoints(out byte outEndpoint, out byte inEndpoint)
+        {
+            // PID-based defaults.
+            outEndpoint = GetWriteEndpointForPid(_productId);
+            inEndpoint = 0x81;
+
+            try
+            {
+                if (_device.Configs == null || _device.Configs.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (LibUsbDotNet.Info.UsbInterfaceInfo iface in _device.Configs[0].InterfaceInfoList)
+                {
+                    byte foundOut = 0;
+                    byte foundIn = 0;
+
+                    foreach (LibUsbDotNet.Info.UsbEndpointInfo ep in iface.EndpointInfoList)
+                    {
+                        byte address = ep.Descriptor.EndpointID;
+                        bool isBulk = (ep.Descriptor.Attributes & 0x03) == 0x02;
+
+                        if (!isBulk)
+                        {
+                            continue;
+                        }
+
+                        if ((address & 0x80) == 0)
+                        {
+                            // Bulk OUT — take the first one (the command endpoint).
+                            if (foundOut == 0)
+                            {
+                                foundOut = address;
+                            }
+                        }
+                        else if (foundIn == 0 || address < foundIn)
+                        {
+                            // Bulk IN — take the lowest address (0x81), not trace (0x83).
+                            foundIn = address;
+                        }
+                    }
+
+                    if (foundOut != 0 && foundIn != 0)
+                    {
+                        outEndpoint = foundOut;
+                        inEndpoint = foundIn;
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // Descriptor enumeration not available on this backend — keep the defaults.
+            }
+        }
+
 
         /// <summary>
         /// Gets the bulk OUT endpoint address to use for a given ST-LINK product ID.
@@ -1158,7 +1230,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             if (error != LibUsbDotNet.Main.ErrorCode.None)
             {
                 throw new SwdProtocolException(
-                    $"ST-LINK USB bulk write failed. Error: {error}");
+                    $"ST-LINK USB bulk write failed (PID 0x{_productId:X4}, OUT endpoint "
+                    + $"0x{_writeEndpoint:X2}). Error: {error}");
             }
         }
 
@@ -1169,7 +1242,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             if (error != LibUsbDotNet.Main.ErrorCode.None)
             {
                 throw new SwdProtocolException(
-                    $"ST-LINK USB bulk read failed. Error: {error}");
+                    $"ST-LINK USB bulk read failed (PID 0x{_productId:X4}, IN endpoint "
+                    + $"0x{_readEndpoint:X2}). Error: {error}");
             }
 
             return bytesRead;
