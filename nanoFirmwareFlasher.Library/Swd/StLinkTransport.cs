@@ -129,17 +129,67 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void Open(string devicePath)
         {
-            _usb = StLinkUsbFactory.Create();
-            _usb.Open(devicePath);
+            // OpenOCD has a documented workaround for exactly this failure mode: "On certain
+            // host USB configurations... the STLINKv2 dongle seems to have its FW in a funky
+            // state ... the initial attempt to read the FW info via stlink_usb_version will
+            // fail and the device has to be reset in order to become operational." Their fix
+            // is a real USB port reset (not just a pipe/stall clear), then close, wait for
+            // re-enumeration, and reopen. Mirror that here: retry the initial handshake once
+            // with a full device reset in between.
+            const int maxOpenAttempts = 2;
+            SwdProtocolException lastError = null;
 
-            ProductName = _usb.ProductName ?? "ST-LINK";
-            SerialNumber = _usb.SerialNumber ?? string.Empty;
+            for (int attempt = 0; attempt < maxOpenAttempts; attempt++)
+            {
+                _usb = StLinkUsbFactory.Create();
+                _usb.Open(devicePath);
 
-            // Read and parse ST-LINK version
-            ReadVersion();
+                ProductName = _usb.ProductName ?? "ST-LINK";
+                SerialNumber = _usb.SerialNumber ?? string.Empty;
 
-            // Ensure we're in debug mode
-            LeaveCurrentMode();
+                try
+                {
+                    // Read and parse ST-LINK version
+                    ReadVersion();
+
+                    // Ensure we're in debug mode
+                    LeaveCurrentMode();
+
+                    return;
+                }
+                catch (SwdProtocolException ex)
+                {
+                    lastError = ex;
+
+                    if (attempt == maxOpenAttempts - 1)
+                    {
+                        break;
+                    }
+
+                    OutputWriter.WriteLine(
+                        "ST-LINK did not respond to the initial handshake - resetting the USB "
+                        + "device and retrying (known issue with some ST-LINK/V2 probes)...");
+
+                    // Full USB port reset (not just a pipe clear), then close and give the
+                    // device time to re-enumerate before reopening — matches OpenOCD's
+                    // stlink_usb_usb_open() retry behavior.
+                    try
+                    {
+                        _usb.ResetDevice();
+                    }
+                    catch
+                    {
+                        // Best-effort — proceed to close/reopen regardless.
+                    }
+
+                    _usb.Dispose();
+                    _usb = null;
+
+                    Thread.Sleep(1000);
+                }
+            }
+
+            throw lastError;
         }
 
         /// <summary>
@@ -1041,6 +1091,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         void WriteBulk(byte endpoint, byte[] data, int length);
         int ReadBulk(byte endpoint, byte[] buffer, int length);
         void ResetPipes();
+        void ResetDevice();
         string ProductName { get; }
         string SerialNumber { get; }
     }
@@ -1344,6 +1395,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             catch
             {
                 // ignore
+            }
+        }
+
+        public void ResetDevice()
+        {
+            // Full USB port reset (as opposed to a pipe/stall clear). This is the workaround
+            // OpenOCD uses for ST-LINK/V2 probes whose firmware needs a reset before the very
+            // first command succeeds (stlink_usb_usb_open() in OpenOCD's stlink_usb.c).
+            if (_device is LibUsbDotNet.IUsbDevice wholeDevice)
+            {
+                wholeDevice.ResetDevice();
             }
         }
 
