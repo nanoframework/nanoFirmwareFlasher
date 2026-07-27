@@ -138,6 +138,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             // with a full device reset in between.
             const int maxOpenAttempts = 2;
             SwdProtocolException lastError = null;
+            bool resetAttempted = false;
 
             for (int attempt = 0; attempt < maxOpenAttempts; attempt++)
             {
@@ -166,6 +167,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                         break;
                     }
 
+                    resetAttempted = true;
+
                     OutputWriter.WriteLine(
                         "ST-LINK did not respond to the initial handshake - resetting the USB "
                         + "device and retrying (known issue with some ST-LINK/V2 probes)...");
@@ -189,7 +192,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 }
             }
 
-            throw lastError;
+            // Make it unambiguous in the final error whether the reset-and-retry workaround
+            // already ran, so a repeat failure clearly means the probe doesn't recover even
+            // from a full USB port reset (as opposed to the retry simply not having triggered).
+            string suffix = resetAttempted
+                ? " (this occurred again even after a full USB device reset and reconnect.)"
+                : string.Empty;
+
+            throw new SwdProtocolException(lastError.Message + suffix, lastError);
         }
 
         /// <summary>
@@ -525,6 +535,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const int MaxTransferSize = 6144;
 
         /// <summary>
+        /// Conservative TAR auto-increment wrap boundary (bytes). When the target's MEM-AP
+        /// auto-increments TAR across multiple words within a single ST-LINK block
+        /// read/write command, some implementations wrap the address at this boundary
+        /// instead of continuing past it. OpenOCD guards against this by never letting a
+        /// single block command cross the boundary (see stlink_max_block_size() /
+        /// STLINK_MAX_RW16_32 usage in stlink_usb_read_ap_mem/write_ap_mem). 1024 bytes is
+        /// the safe default for all cores (OpenOCD raises it to 4096 only for Cortex-M3/M4,
+        /// detected via CPUID; 1024 is used here unconditionally to avoid needing that probe).
+        /// </summary>
+        private const uint TarAutoIncrementBlock = 1024;
+
+        /// <summary>
+        /// Returns the number of bytes that can be transferred starting at <paramref name="address"/>
+        /// before crossing the next <see cref="TarAutoIncrementBlock"/> boundary.
+        /// </summary>
+        internal static int GetTarBlockRemaining(uint address)
+        {
+            uint remaining = TarAutoIncrementBlock - ((TarAutoIncrementBlock - 1) & address);
+            return remaining == 0 ? 4 : (int)remaining;
+        }
+
+        /// <summary>
         /// Reads a 32-bit aligned block of memory.
         /// </summary>
         internal uint[] ReadMemory32(uint address, int wordCount)
@@ -535,9 +567,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             while (wordsRead < wordCount)
             {
                 int remaining = wordCount - wordsRead;
-                int chunkWords = Math.Min(remaining, MaxTransferSize / 4);
-                int chunkBytes = chunkWords * 4;
                 uint chunkAddr = address + (uint)(wordsRead * 4);
+
+                // Never let a single command cross the TAR auto-increment wrap boundary —
+                // doing so risks the target silently wrapping the address instead of
+                // continuing past it (see TarAutoIncrementBlock).
+                int boundaryLimitBytes = GetTarBlockRemaining(chunkAddr) & ~0x3;
+                int maxChunkBytes = Math.Min(MaxTransferSize, Math.Max(boundaryLimitBytes, 4));
+                int chunkWords = Math.Min(remaining, maxChunkBytes / 4);
+                int chunkBytes = chunkWords * 4;
 
                 byte[] cmd = BuildReadMemory32Command(chunkAddr, chunkBytes);
 
@@ -572,7 +610,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             while (offset < data.Length)
             {
                 int remaining = data.Length - offset;
-                int chunkLen = Math.Min(remaining, MaxTransferSize);
+                uint chunkAddr = address + (uint)offset;
+
+                // Never let a single command cross the TAR auto-increment wrap boundary (see
+                // TarAutoIncrementBlock / ReadMemory32).
+                int boundaryLimitBytes = GetTarBlockRemaining(chunkAddr) & ~0x3;
+                int maxChunkBytes = Math.Min(MaxTransferSize, Math.Max(boundaryLimitBytes, 4));
+                int chunkLen = Math.Min(remaining, maxChunkBytes);
 
                 // Round down to 4-byte alignment
                 chunkLen = (chunkLen / 4) * 4;
@@ -581,8 +625,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 {
                     break;
                 }
-
-                uint chunkAddr = address + (uint)offset;
 
                 byte[] cmd = BuildWriteMemory32Command(chunkAddr, chunkLen);
 

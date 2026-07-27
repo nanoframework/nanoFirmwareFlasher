@@ -476,6 +476,54 @@ namespace nanoFirmwareFlasher.Tests
 
         #endregion
 
+        #region TAR auto-increment wrap boundary (block memory chunking)
+
+        [TestMethod]
+        public void GetTarBlockRemaining_AlignedAddress_ReturnsFullBlock()
+        {
+            // Starting exactly on a 1024-byte boundary, a full block is available before the
+            // next boundary.
+            Assert.AreEqual(1024, StLinkTransport.GetTarBlockRemaining(0x08000000));
+            Assert.AreEqual(1024, StLinkTransport.GetTarBlockRemaining(0x08000400)); // +1024
+        }
+
+        [TestMethod]
+        public void GetTarBlockRemaining_MidBlockAddress_ReturnsBytesUntilNextBoundary()
+        {
+            // 0x08000010 is 16 bytes into the 1024-byte block starting at 0x08000000, so 1008
+            // bytes remain before the next boundary (0x08000400).
+            Assert.AreEqual(1024 - 16, StLinkTransport.GetTarBlockRemaining(0x08000010));
+        }
+
+        [TestMethod]
+        public void GetTarBlockRemaining_LastWordBeforeBoundary_ReturnsFourBytes()
+        {
+            // Regression guard: a single command must never cross the TAR auto-increment wrap
+            // boundary. Starting 4 bytes before a boundary, only that one word may be
+            // transferred in this command.
+            Assert.AreEqual(4, StLinkTransport.GetTarBlockRemaining(0x080003FC));
+        }
+
+        [TestMethod]
+        public void ReadMemory32Command_NeverRequestsMoreThanTarBlockRemaining()
+        {
+            // Regression guard for the silent-address-wrap bug: a large read starting a few
+            // bytes before a 1024-byte boundary must be split so the first command's byte
+            // count does not cross that boundary (mirrors OpenOCD's stlink_max_block_size(),
+            // which guards the same STLINK_DEBUG_READMEM_32BIT command).
+            uint address = 0x080003F0; // 16 bytes before the 0x08000400 boundary
+            int firstChunkMax = StLinkTransport.GetTarBlockRemaining(address);
+
+            byte[] cmd = StLinkTransport.BuildReadMemory32Command(address, firstChunkMax);
+
+            ushort encodedByteCount = (ushort)(cmd[6] | (cmd[7] << 8));
+
+            Assert.AreEqual(16, firstChunkMax, "16 bytes should remain before the boundary.");
+            Assert.AreEqual(firstChunkMax, encodedByteCount);
+        }
+
+        #endregion
+
         #region Connect-under-reset (DRIVE_NRST) command encoding
 
         [TestMethod]
