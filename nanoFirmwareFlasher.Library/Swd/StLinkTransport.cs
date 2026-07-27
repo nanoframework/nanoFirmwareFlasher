@@ -1144,6 +1144,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
             _writer = _device.OpenEndpointWriter((LibUsbDotNet.Main.WriteEndpointID)outEndpoint);
             _reader = _device.OpenEndpointReader((LibUsbDotNet.Main.ReadEndpointID)inEndpoint);
+
+            // Clear any stale/halted pipe state left by a previous session (common with
+            // ST-LINK/V2 dongles shared between tools). A halted pipe makes the first transfer
+            // fail even though the endpoints are correct. Best-effort: ignore if unsupported.
+            try
+            {
+                _writer.Reset();
+            }
+            catch
+            {
+                // Pipe reset not supported on this backend — continue.
+            }
+
+            try
+            {
+                _reader.Reset();
+                _reader.ReadFlush();
+            }
+            catch
+            {
+                // Pipe reset/flush not supported on this backend — continue.
+            }
         }
 
         /// <summary>
