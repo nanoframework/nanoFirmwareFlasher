@@ -20,7 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.21" />
+    <PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.23" />
   </ItemGroup>
 
   <ItemGroup>
