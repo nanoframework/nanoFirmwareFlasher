@@ -129,13 +129,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void Open(string devicePath)
         {
-            // OpenOCD has a documented workaround for exactly this failure mode: "On certain
-            // host USB configurations... the STLINKv2 dongle seems to have its FW in a funky
-            // state ... the initial attempt to read the FW info via stlink_usb_version will
-            // fail and the device has to be reset in order to become operational." Their fix
-            // is a real USB port reset (not just a pipe/stall clear), then close, wait for
-            // re-enumeration, and reopen. Mirror that here: retry the initial handshake once
-            // with a full device reset in between.
+            // Some probes need a full USB reset before the first handshake succeeds
+            // (documented OpenOCD workaround). Retry once with a reset in between.
             const int maxOpenAttempts = 2;
             SwdProtocolException lastError = null;
             bool resetAttempted = false;
@@ -150,10 +145,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
                 try
                 {
-                    // Read and parse ST-LINK version
                     ReadVersion();
-
-                    // Ensure we're in debug mode
                     LeaveCurrentMode();
 
                     return;
@@ -173,16 +165,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                         "ST-LINK did not respond to the initial handshake - resetting the USB "
                         + "device and retrying (known issue with some ST-LINK/V2 probes)...");
 
-                    // Full USB port reset (not just a pipe clear), then close and give the
-                    // device time to re-enumerate before reopening — matches OpenOCD's
-                    // stlink_usb_usb_open() retry behavior.
                     try
                     {
                         _usb.ResetDevice();
                     }
                     catch
                     {
-                        // Best-effort — proceed to close/reopen regardless.
+                        // Best-effort.
                     }
 
                     _usb.Dispose();
@@ -192,9 +181,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 }
             }
 
-            // Make it unambiguous in the final error whether the reset-and-retry workaround
-            // already ran, so a repeat failure clearly means the probe doesn't recover even
-            // from a full USB port reset (as opposed to the retry simply not having triggered).
+            // Note if a reset was already tried, so a repeat failure is unambiguous.
             string suffix = resetAttempted
                 ? " (this occurred again even after a full USB device reset and reconnect.)"
                 : string.Empty;
@@ -535,20 +522,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const int MaxTransferSize = 6144;
 
         /// <summary>
-        /// Conservative TAR auto-increment wrap boundary (bytes). When the target's MEM-AP
-        /// auto-increments TAR across multiple words within a single ST-LINK block
-        /// read/write command, some implementations wrap the address at this boundary
-        /// instead of continuing past it. OpenOCD guards against this by never letting a
-        /// single block command cross the boundary (see stlink_max_block_size() /
-        /// STLINK_MAX_RW16_32 usage in stlink_usb_read_ap_mem/write_ap_mem). 1024 bytes is
-        /// the safe default for all cores (OpenOCD raises it to 4096 only for Cortex-M3/M4,
-        /// detected via CPUID; 1024 is used here unconditionally to avoid needing that probe).
+        /// Safe TAR auto-increment wrap boundary (bytes). A single block command must not
+        /// cross this or the target may wrap the address instead of continuing (see
+        /// OpenOCD's stlink_max_block_size()). 1024 is the conservative default for all cores.
         /// </summary>
         private const uint TarAutoIncrementBlock = 1024;
 
         /// <summary>
-        /// Returns the number of bytes that can be transferred starting at <paramref name="address"/>
-        /// before crossing the next <see cref="TarAutoIncrementBlock"/> boundary.
+        /// Bytes transferable from <paramref name="address"/> before the next
+        /// <see cref="TarAutoIncrementBlock"/> boundary.
         /// </summary>
         internal static int GetTarBlockRemaining(uint address)
         {
@@ -569,9 +551,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 int remaining = wordCount - wordsRead;
                 uint chunkAddr = address + (uint)(wordsRead * 4);
 
-                // Never let a single command cross the TAR auto-increment wrap boundary —
-                // doing so risks the target silently wrapping the address instead of
-                // continuing past it (see TarAutoIncrementBlock).
+                // Cap chunk to the TAR wrap boundary (see TarAutoIncrementBlock).
                 int boundaryLimitBytes = GetTarBlockRemaining(chunkAddr) & ~0x3;
                 int maxChunkBytes = Math.Min(MaxTransferSize, Math.Max(boundaryLimitBytes, 4));
                 int chunkWords = Math.Min(remaining, maxChunkBytes / 4);
@@ -612,8 +592,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 int remaining = data.Length - offset;
                 uint chunkAddr = address + (uint)offset;
 
-                // Never let a single command cross the TAR auto-increment wrap boundary (see
-                // TarAutoIncrementBlock / ReadMemory32).
+                // Cap chunk to the TAR wrap boundary (see ReadMemory32).
                 int boundaryLimitBytes = GetTarBlockRemaining(chunkAddr) & ~0x3;
                 int maxChunkBytes = Math.Min(MaxTransferSize, Math.Max(boundaryLimitBytes, 4));
                 int chunkLen = Math.Min(remaining, maxChunkBytes);
@@ -1069,9 +1048,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         private byte[] SendCommand(byte[] cmd, int responseLength)
         {
-            // Some (notably clone) ST-LINK probes intermittently STALL the bulk pipes. Unlike
-            // libusb (which sets WinUSB's AUTO_CLEAR_STALL), LibUsbDotNet surfaces the stall as
-            // a hard failure, so recover it ourselves: reset the pipes and retry the command.
+            // Some probes stall the bulk pipes intermittently; reset and retry.
             const int maxAttempts = 3;
             SwdProtocolException lastError = null;
 
@@ -1170,9 +1147,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         private const int BulkTransferTimeout = 5000;
 
-        // Appended to bulk-transfer failures: the probe enumerated (so it's connected and on
-        // a driver LibUsbDotNet can open), but the transfer failed — almost always because the
-        // ST-LINK debug interface is on ST's proprietary driver instead of a WinUSB-class one.
+        // Appended to bulk-transfer failures when the probe enumerated but transfers failed.
         private const string DriverHint =
             " The probe was found but the USB transfer failed. If the ST-LINK debug interface is "
             + "still on ST's proprietary 'STM32 STLink' driver, bind it to a WinUSB-class driver "
@@ -1224,8 +1199,39 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             if (wholeDevice != null)
             {
                 wholeDevice.SetAutoDetachKernelDriver(true);
-                wholeDevice.SetConfiguration(1);
-                wholeDevice.ClaimInterface(0);
+
+                // Only reconfigure if not already on configuration 1.
+                bool needsConfiguration = true;
+
+                try
+                {
+                    if (wholeDevice.GetConfiguration(out byte currentConfig) && currentConfig == 1)
+                    {
+                        needsConfiguration = false;
+                    }
+                }
+                catch
+                {
+                    // Not supported on this backend — fall back to setting it.
+                }
+
+                if (needsConfiguration)
+                {
+                    wholeDevice.SetConfiguration(1);
+                }
+
+                // If another app (STM32CubeProgrammer, ST-LINK Utility, a leftover nanoff
+                // instance, etc.) already holds this interface, claiming fails and every
+                // later transfer would fail with a confusing low-level USB error instead.
+                if (!wholeDevice.ClaimInterface(0))
+                {
+                    throw new SwdProtocolException(
+                        "Failed to claim the ST-LINK USB interface. It is likely already in "
+                        + "use by another application (STM32CubeProgrammer, STM32CubeIDE, "
+                        + "ST-LINK Utility, or a previous nanoff instance that did not release "
+                        + "the probe). Close any application using the probe, unplug and "
+                        + "replug it, and try again.");
+                }
             }
 
             // Read product name and serial number
@@ -1418,8 +1424,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         public void ResetPipes()
         {
-            // Clear a stalled/halted bulk pipe (WinUsb_ResetPipe) and drop any stale data so a
-            // subsequent transfer can succeed. Best-effort: ignore backends that don't support it.
+            // Clear a stalled bulk pipe and drop stale data. Best-effort.
             try
             {
                 _writer?.Reset();
@@ -1442,9 +1447,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         public void ResetDevice()
         {
-            // Full USB port reset (as opposed to a pipe/stall clear). This is the workaround
-            // OpenOCD uses for ST-LINK/V2 probes whose firmware needs a reset before the very
-            // first command succeeds (stlink_usb_usb_open() in OpenOCD's stlink_usb.c).
+            // Full USB port reset (heavier than a pipe reset) — mirrors OpenOCD's
+            // stlink_usb_usb_open() retry workaround.
             if (_device is LibUsbDotNet.IUsbDevice wholeDevice)
             {
                 wholeDevice.ResetDevice();
