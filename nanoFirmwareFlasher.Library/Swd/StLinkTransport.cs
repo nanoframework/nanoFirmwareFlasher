@@ -1241,15 +1241,25 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         public void Open(string devicePath)
         {
-            // Try each known ST-LINK PID
-            for (int i = 0; i < KnownPids.Length && _device == null; i++)
+            // If a specific probe was requested (e.g. multiple ST-LINKs connected), open that
+            // exact device instead of grabbing the first one matching any known PID.
+            if (!string.IsNullOrEmpty(devicePath))
             {
-                var finder = new LibUsbDotNet.Main.UsbDeviceFinder(StLinkVid, KnownPids[i]);
-                _device = LibUsbDotNet.UsbDevice.OpenUsbDevice(finder);
+                _device = OpenByDevicePath(devicePath, out _productId);
+            }
 
-                if (_device != null)
+            if (_device == null)
+            {
+                // Try each known ST-LINK PID
+                for (int i = 0; i < KnownPids.Length && _device == null; i++)
                 {
-                    _productId = KnownPids[i];
+                    var finder = new LibUsbDotNet.Main.UsbDeviceFinder(StLinkVid, KnownPids[i]);
+                    _device = LibUsbDotNet.UsbDevice.OpenUsbDevice(finder);
+
+                    if (_device != null)
+                    {
+                        _productId = KnownPids[i];
+                    }
                 }
             }
 
@@ -1539,6 +1549,39 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 wholeDevice.ResetDevice();
             }
+        }
+
+        /// <summary>
+        /// Opens the specific ST-LINK whose device path matches <paramref name="devicePath"/>
+        /// (as returned by <see cref="EnumerateDevices"/>). Returns <see langword="null"/> if
+        /// no match is found, so the caller can fall back to opening any known-PID device.
+        /// </summary>
+        private static LibUsbDotNet.UsbDevice OpenByDevicePath(string devicePath, out int productId)
+        {
+            productId = 0;
+
+            foreach (LibUsbDotNet.Main.UsbRegistry reg in LibUsbDotNet.UsbDevice.AllDevices)
+            {
+                if (reg.Vid != StLinkVid || !IsKnownPid((ushort)reg.Pid))
+                {
+                    continue;
+                }
+
+                string candidatePath = reg.DevicePath ?? reg.SymbolicName ?? string.Empty;
+
+                if (candidatePath != devicePath)
+                {
+                    continue;
+                }
+
+                if (reg.Open(out LibUsbDotNet.UsbDevice dev))
+                {
+                    productId = reg.Pid;
+                    return dev;
+                }
+            }
+
+            return null;
         }
 
         internal static List<(string productName, string serialNumber, string devicePath)> EnumerateDevices()

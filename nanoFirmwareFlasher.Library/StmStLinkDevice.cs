@@ -96,78 +96,87 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     "On macOS, no additional drivers are needed.");
             }
 
-            string selectedPath = null;
+            List<(string productName, string serialNumber, string devicePath)> candidates;
 
             if (string.IsNullOrEmpty(probeId))
             {
-                ProbeId = probes[0].serialNumber;
-                ProbeName = probes[0].productName;
-                selectedPath = probes[0].devicePath;
+                // Auto-detect: try every connected probe in turn instead of failing hard on
+                // whichever one happens to enumerate first (e.g. a bad/clone dongle plugged
+                // in alongside a working probe).
+                candidates = probes;
             }
             else
             {
-                foreach (var probe in probes)
-                {
-                    if (probe.serialNumber == probeId)
-                    {
-                        ProbeId = probeId;
-                        ProbeName = probe.productName;
-                        selectedPath = probe.devicePath;
-                        break;
-                    }
-                }
+                var match = probes.FirstOrDefault(p => p.serialNumber == probeId);
 
-                if (selectedPath == null)
+                if (match.devicePath == null)
                 {
                     throw new CantConnectToJtagDeviceException(
                         $"ST-LINK probe with serial '{probeId}' not found.");
                 }
+
+                candidates = new List<(string productName, string serialNumber, string devicePath)> { match };
             }
 
-            _stLink = new StLinkTransport();
-            _swd = new SwdProtocol(_stLink);
-            _mem = new ArmMemAp(_swd);
-            _flash = new Stm32FlashProgrammer(_mem);
-            _flash.ProgressReport = OnFlashProgress;
+            Exception lastError = null;
 
-            try
+            foreach (var candidate in candidates)
             {
-                _stLink.Open(selectedPath);
+                _stLink = new StLinkTransport();
+                _swd = new SwdProtocol(_stLink);
+                _mem = new ArmMemAp(_swd);
+                _flash = new Stm32FlashProgrammer(_mem);
+                _flash.ProgressReport = OnFlashProgress;
 
-                int targetMillivolts = _stLink.ReadTargetVoltageMillivolts();
-
-                if (targetMillivolts >= 0 && targetMillivolts < 1500)
+                try
                 {
-                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                    OutputWriter.WriteLine(
-                        $"Warning: target voltage reads {targetMillivolts} mV — the target may not be powered.");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                    _stLink.Open(candidate.devicePath);
+
+                    int targetMillivolts = _stLink.ReadTargetVoltageMillivolts();
+
+                    if (targetMillivolts >= 0 && targetMillivolts < 1500)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine(
+                            $"Warning: target voltage reads {targetMillivolts} mV — the target may not be powered.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    _swd.Initialize();
+
+                    DpIdcode = _swd.DpIdcodeValue;
+
+                    // Halt core before reading IDCODE registers
+                    _swd.HaltCore();
+
+                    // Detect STM32 family
+                    var family = _flash.DetectFamily();
+                    DeviceName = family.ToString();
+                    DeviceCPU = $"STM32 ({family})";
+
+                    ProbeId = candidate.serialNumber;
+                    ProbeName = candidate.productName;
+
+                    return;
                 }
+                catch (Exception ex) when (ex is SwdProtocolException || !(ex is CantConnectToJtagDeviceException))
+                {
+                    lastError = ex;
 
-                _swd.Initialize();
-
-                DpIdcode = _swd.DpIdcodeValue;
-
-                // Halt core before reading IDCODE registers
-                _swd.HaltCore();
-
-                // Detect STM32 family
-                var family = _flash.DetectFamily();
-                DeviceName = family.ToString();
-                DeviceCPU = $"STM32 ({family})";
+                    _swd?.Dispose();
+                    _stLink?.Dispose();
+                }
             }
-            catch (SwdProtocolException ex)
+
+            if (candidates.Count > 1)
             {
-                Dispose();
                 throw new CantConnectToJtagDeviceException(
-                    $"Failed to connect to target via ST-LINK SWD: {ex.Message}");
+                    $"Failed to connect to any of the {candidates.Count} connected ST-LINK probes. "
+                    + $"Last error: {lastError?.Message}");
             }
-            catch (Exception ex) when (!(ex is CantConnectToJtagDeviceException))
-            {
-                Dispose();
-                throw new CantConnectToJtagDeviceException(
-                    $"Failed to initialize ST-LINK connection: {ex.Message}");
-            }
+
+            throw new CantConnectToJtagDeviceException(
+                $"Failed to connect to target via ST-LINK SWD: {lastError?.Message}");
         }
 
         /// <summary>
