@@ -110,6 +110,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
         /// <param name="partitionTableSize">Size of partition table.</param>
         /// <param name="noBackupConfig"><see langword="true"/> for skiping backup of configuration partition.</param>
+        /// <param name="configBackupPath">Path to persist the configuration partition backup to. If <see langword="null"/> or empty, a temporary
+        /// file is used and deleted after the configuration is restored (this is the default, pre-existing behavior).</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             EspTool espTool,
@@ -127,7 +129,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool massErase,
             VerbosityLevel verbosity,
             PartitionTableSize? partitionTableSize,
-            bool noBackupConfig)
+            bool noBackupConfig,
+            string configBackupPath = null)
         {
             ExitCodes operationResult = ExitCodes.OK;
             uint address = 0;
@@ -479,7 +482,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 int configPartitionAddress = 0;
                 int configPartitionSize = 0;
-                string configPartitionBackup = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                bool isTemporaryConfigBackup = string.IsNullOrEmpty(configBackupPath);
+                string configPartitionBackup = isTemporaryConfigBackup
+                    ? Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+                    : configBackupPath;
+
+                if (!isTemporaryConfigBackup)
+                {
+                    // make sure the destination directory exists for a user-requested persistent backup
+                    string configBackupDirectory = Path.GetDirectoryName(configPartitionBackup);
+
+                    if (!string.IsNullOrEmpty(configBackupDirectory) && !Directory.Exists(configBackupDirectory))
+                    {
+                        Directory.CreateDirectory(configBackupDirectory);
+                    }
+                }
 
                 // if mass erase wasn't requested or skip backup config partitition
                 if (!massErase && !noBackupConfig)
@@ -593,17 +610,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 }
 
-                // delete config partition backup
-                try
+                // delete config partition backup, unless a persistent path was requested
+                if (isTemporaryConfigBackup)
                 {
-                    if (File.Exists(configPartitionBackup))
+                    try
                     {
-                        File.Delete(configPartitionBackup);
+                        if (File.Exists(configPartitionBackup))
+                        {
+                            File.Delete(configPartitionBackup);
+                        }
                     }
-                }
-                catch
-                {
-                    // don't care
+                    catch
+                    {
+                        // don't care
+                    }
                 }
 
                 OutputWriter.ForegroundColor = ConsoleColor.White;

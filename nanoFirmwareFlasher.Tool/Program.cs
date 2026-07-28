@@ -67,12 +67,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!args.Any())
             {
                 // no argument provided, show help text and usage examples
-
-                // because of short-comings in CommandLine parsing 
-                // need to customize the output to provide a consistent output
-                var parser = new Parser(config => config.HelpWriter = null);
-                var result = parser.ParseArguments<Options>(new string[] { "", "" });
-
                 var helpText = new HelpText(
                     new HeadingInfo(_headerInfo),
                     _copyrightInfo)
@@ -85,7 +79,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         .AddPreOptionsLine("Follows some examples on how to use nanoff. For more detailed explanations please check:")
                         .AddPreOptionsLine("https://github.com/nanoframework/nanoFirmwareFlasher#usage")
                         .AddPreOptionsLine("")
-                        .AddPreOptionsLine(HelpText.RenderUsageText(result))
+                        .AddPreOptionsLine("  nanoff flash target ESP_WROVER_KIT")
+                        .AddPreOptionsLine("  nanoff flash platform esp32 serialport COM7")
+                        .AddPreOptionsLine("  nanoff list targets platform stm32")
+                        .AddPreOptionsLine("  nanoff details platform rpi_pico serialport COM11")
                         .AddPreOptionsLine("");
 
                 OutputWriter.WriteLine(helpText.ToString());
@@ -99,11 +96,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return (int)ExitCodes.OK;
             }
 
-            var parsedArguments = Parser.Default.ParseArguments<Options>(args);
-
-            await parsedArguments
-                .WithParsedAsync(RunOptionsAndReturnExitCodeAsync)
-                .WithNotParsedAsync(HandleErrorsAsync);
+            // verbs + words syntax is the only supported syntax from here on
+            // (e.g. "flash target ESP_WROVER_KIT masserase"); the legacy flat
+            // "--flag value" syntax was removed as part of the breaking change
+            // to nanoff's major version bump.
+            await RunVerbAsync(args);
 
             if (_verbosityLevel > VerbosityLevel.Quiet)
             {
@@ -170,6 +167,179 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return Task.CompletedTask;
             }
             _exitCode = ExitCodes.E9000;
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Entry point for the new verbs + words syntax: normalizes the bare-word
+        /// arguments, parses them against the per-verb option classes, and dispatches
+        /// to the matching <c>Run*Async</c> method.
+        /// </summary>
+        private static async Task RunVerbAsync(string[] args)
+        {
+            string[] normalizedArgs = VerbTokenizer.Normalize(args);
+
+            var verbParserResult = new Parser(config => config.HelpWriter = Console.Out)
+                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions>(normalizedArgs);
+
+            if (verbParserResult is Parsed<object> parsed)
+            {
+                switch (parsed.Value)
+                {
+                    case FlashOptions flashOptions:
+                        await RunFlashAsync(flashOptions);
+                        break;
+
+                    case DeployOptions deployOptions:
+                        await RunDeployAsync(deployOptions);
+                        break;
+
+                    case ListOptions listOptions:
+                        await RunListAsync(listOptions);
+                        break;
+
+                    case DetailsOptions detailsOptions:
+                        await RunDetailsAsync(detailsOptions);
+                        break;
+
+                    case IdentifyOptions identifyOptions:
+                        await RunIdentifyAsync(identifyOptions);
+                        break;
+
+                    case DriversOptions driversOptions:
+                        await RunDriversAsync(driversOptions);
+                        break;
+
+                    case CacheOptions cacheOptions:
+                        await RunCacheAsync(cacheOptions);
+                        break;
+                }
+            }
+            else if (verbParserResult is NotParsed<object> notParsed)
+            {
+                await HandleErrorsAsync(notParsed.Errors);
+            }
+        }
+
+        private static async Task RunFlashAsync(FlashOptions o)
+        {
+            _verbosityLevel = o.GetVerbosityLevel();
+
+            string validationError = FlashOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return;
+            }
+
+            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
+        }
+
+        private static async Task RunDeployAsync(DeployOptions o)
+        {
+            _verbosityLevel = o.GetVerbosityLevel();
+
+            string validationError = DeployOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return;
+            }
+
+            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
+        }
+
+        private static async Task RunListAsync(ListOptions o)
+        {
+            _verbosityLevel = o.GetVerbosityLevel();
+
+            string validationError = ListOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return;
+            }
+
+            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
+        }
+
+        private static async Task RunDetailsAsync(DetailsOptions o)
+        {
+            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
+        }
+
+        private static async Task RunIdentifyAsync(IdentifyOptions o)
+        {
+            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
+        }
+
+        private static async Task RunCacheAsync(CacheOptions o)
+        {
+            _verbosityLevel = o.GetVerbosityLevel();
+
+            string validationError = CacheOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return;
+            }
+
+            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
+        }
+
+        /// <summary>
+        /// The <c>drivers</c> verb is handled directly rather than through the legacy
+        /// dispatch: <c>drivers dfu</c>/<c>drivers jtag</c> now print install instructions
+        /// instead of running an installer (see proposal doc); only <c>drivers xds</c>
+        /// still runs the existing installer.
+        /// </summary>
+        private static Task RunDriversAsync(DriversOptions o)
+        {
+            _verbosityLevel = o.GetVerbosityLevel();
+
+            string validationError = DriversOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return Task.CompletedTask;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+            OutputWriter.WriteLine(_headerInfo);
+            OutputWriter.WriteLine(_copyrightInfo);
+            OutputWriter.WriteLine();
+
+            if (o.Dfu)
+            {
+                OutputWriter.WriteLine("To flash STM32 devices via USB DFU, install the WinUSB driver for the device's");
+                OutputWriter.WriteLine("DFU bootloader interface: put the device in DFU mode and use Zadig (zadig.akeo.ie)");
+                OutputWriter.WriteLine("to install the WinUSB driver for the 'STM32 BOOTLOADER' USB device.");
+                OutputWriter.WriteLine("No driver installation is required on Linux or macOS.");
+                _exitCode = ExitCodes.OK;
+            }
+            else if (o.Jtag)
+            {
+                OutputWriter.WriteLine("To flash STM32 devices via JTAG/SWD, install the ST-LINK USB driver: download the");
+                OutputWriter.WriteLine("'STSW-LINK009' ST-LINK driver package from STMicroelectronics' website, or install");
+                OutputWriter.WriteLine("it via the STM32CubeProgrammer installer.");
+                OutputWriter.WriteLine("No driver installation is required on Linux or macOS.");
+                _exitCode = ExitCodes.OK;
+            }
+            else if (o.Xds)
+            {
+                _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
+            }
+
             return Task.CompletedTask;
         }
 
@@ -571,17 +741,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
-            #region validate interface options
-
-            string interfaceError = Options.ValidateInterfaceOptions(o);
-
-            if (interfaceError != null)
-            {
-                _exitCode = ExitCodes.E9000;
-                _extraMessage = interfaceError;
-                return;
-            }
-
             // --deploy requires --image
             if (o.Deploy && string.IsNullOrEmpty(o.DeploymentImage))
             {
@@ -589,8 +748,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 _extraMessage = "--deploy requires --image to specify the deployment image path.";
                 return;
             }
-
-            #endregion
 
             #region firmware archive update if no device is required
             if (o.UpdateFwArchive)
@@ -862,20 +1019,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static void DisplayNoOperationMessage()
         {
-            // because of short-comings in CommandLine parsing 
-            // need to customize the output to provide a consistent output
-            var parser = new Parser(config => config.HelpWriter = null);
-            var result = parser.ParseArguments<Options>(new string[] { "", "" });
-
             var helpText = new HelpText(
                 new HeadingInfo(_headerInfo),
                 _copyrightInfo)
                     .AddPreOptionsLine("")
                     .AddPreOptionsLine("No operation was performed with the options supplied.")
                     .AddPreOptionsLine("")
-                    .AddPreOptionsLine(HelpText.RenderUsageText(result))
-                    .AddPreOptionsLine("")
-                    .AddOptions(result);
+                    .AddPreOptionsLine("Use 'nanoff help' or 'nanoff <verb> --help' (e.g. 'nanoff flash --help') for usage information.");
 
             OutputWriter.WriteLine(helpText.ToString());
         }
