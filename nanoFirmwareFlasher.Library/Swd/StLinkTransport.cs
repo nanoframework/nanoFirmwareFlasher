@@ -1124,6 +1124,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 if (attempt > 0)
                 {
                     _usb.ResetPipes();
+
+                    // Give the probe time to actually clear the stall — an immediate
+                    // retry doesn't reliably succeed, a delayed one does.
+                    Thread.Sleep(100);
                 }
 
                 try
