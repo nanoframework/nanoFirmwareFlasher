@@ -510,7 +510,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 try
                 {
-                    var connectedDevices = _nanoDeviceOperations.ListDevices(_verbosityLevel > VerbosityLevel.Normal);
+                    var connectedDevices = _nanoDeviceOperations.ListDevices(
+                        _verbosityLevel > VerbosityLevel.Normal,
+                        _verbosityLevel);
 
                     if (!connectedDevices.Any())
                     {
@@ -570,8 +572,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 // done here, this command has no further processing
-                _exitCode = ExitCodes.OK;
-
                 return;
             }
 
