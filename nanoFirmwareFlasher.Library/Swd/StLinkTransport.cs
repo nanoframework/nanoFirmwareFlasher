@@ -91,6 +91,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const byte StLinkModeDfu = 0x00;
         private const byte StLinkModeMass = 0x01;
 
+        // DFU sub-command
+        private const byte StLinkDfuExit = 0x07;
+
         // Status codes
         private const byte StLinkDebugErrOk = 0x80;
 
@@ -975,6 +978,24 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 leaveCmd[1] = StLinkDebugExit;
                 SendCommand(leaveCmd, 0);
             }
+            else if (mode == StLinkModeDfu)
+            {
+                // The probe reports it is still in its DFU/bootloader interface, not the
+                // normal runtime firmware — debug commands are not reliably implemented
+                // there (this explains otherwise-inexplicable failures/bad status codes on
+                // basic debug commands). Ask it to exit DFU and jump to the app firmware.
+                OutputWriter.WriteLine(
+                    "ST-LINK reports it is in DFU/bootloader mode, not normal runtime mode "
+                    + "— sending DFU_EXIT to switch to normal firmware...");
+
+                byte[] dfuExitCmd = new byte[CmdSize];
+                dfuExitCmd[0] = StLinkDfuCommand;
+                dfuExitCmd[1] = StLinkDfuExit;
+                SendCommand(dfuExitCmd, 0);
+
+                // Give the probe time to actually switch firmware modes.
+                Thread.Sleep(200);
+            }
         }
 
         private uint ReadDapRegister(byte port, byte addr)
@@ -1504,18 +1525,55 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         public int ReadBulk(byte endpoint, byte[] buffer, int length)
         {
-            var error = _reader.Read(buffer, 0, length, BulkTransferTimeout, out int bytesRead);
+            // USB bulk IN endpoints have no "peek"/BytesToRead-style check — the host can
+            // only find out whether data is available by actually issuing a read. The first
+            // attempt uses the full timeout, since a legitimate slow response (e.g. after a
+            // flash erase command) can genuinely take that long.
+            LibUsbDotNet.Main.ErrorCode error = _reader.Read(buffer, 0, length, BulkTransferTimeout, out int bytesRead);
 
-            if (error != LibUsbDotNet.Main.ErrorCode.None)
+            // ST-LINK command responses are always a fixed, known size for a given command —
+            // never a variable-length stream. A "successful" read that returns fewer bytes
+            // than requested is not a partial answer to accept; it is a sign the pipe is
+            // desynced (e.g. returning stale/leftover data from a previous command), so treat
+            // it the same as a failed attempt and retry.
+            if (error == LibUsbDotNet.Main.ErrorCode.None && bytesRead == length)
             {
-                throw new SwdProtocolException(
-                    $"ST-LINK USB bulk read failed (PID 0x{_productId:X4}, IN endpoint "
-                    + $"0x{_readEndpoint:X2}, source: {_endpointSource}). Error: {error} "
-                    + $"(Win32 {LibUsbDotNet.UsbDevice.LastErrorNumber}: {LibUsbDotNet.UsbDevice.LastErrorString})."
-                    + DriverHint);
+                return bytesRead;
             }
 
-            return bytesRead;
+            // A real timeout means the device had nothing to send for the whole timeout —
+            // retrying with the same wait is pointless, so let SendCommand's broader
+            // reset-and-resend retry handle it instead. Other errors (stall/fault/short read)
+            // are usually a transient driver-level glitch that clears almost instantly, so a
+            // few short bare retries (no pipe reset, no resend) are worth trying first.
+            const int quickRetries = 4;
+            const int quickRetryTimeout = 250;
+
+            if (error != LibUsbDotNet.Main.ErrorCode.IoTimedOut)
+            {
+                for (int attempt = 0; attempt < quickRetries; attempt++)
+                {
+                    Thread.Sleep(2);
+
+                    error = _reader.Read(buffer, 0, length, quickRetryTimeout, out bytesRead);
+
+                    if (error == LibUsbDotNet.Main.ErrorCode.None && bytesRead == length)
+                    {
+                        return bytesRead;
+                    }
+
+                    if (error == LibUsbDotNet.Main.ErrorCode.IoTimedOut)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            throw new SwdProtocolException(
+                $"ST-LINK USB bulk read failed (PID 0x{_productId:X4}, IN endpoint "
+                + $"0x{_readEndpoint:X2}, source: {_endpointSource}). Error: {error} "
+                + $"(Win32 {LibUsbDotNet.UsbDevice.LastErrorNumber}: {LibUsbDotNet.UsbDevice.LastErrorString})."
+                + DriverHint);
         }
 
         public void ResetPipes()
