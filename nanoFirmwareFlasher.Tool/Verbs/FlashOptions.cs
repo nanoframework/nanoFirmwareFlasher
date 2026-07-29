@@ -129,6 +129,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public string BackupFlash { get; set; }
 
         [Option(
+            "restore",
+            Required = false,
+            Default = null,
+            HelpText = "Path to also save a persistent copy of the configuration partition backup (ESP32 only). The configuration partition is always automatically backed up before flashing and restored afterward, regardless of this keyword; omitting it just means the backup is kept in a temporary file that's deleted once it's restored.")]
+        public string ConfigBackupPath { get; set; }
+
+        [Option(
             "checkpsram",
             Required = false,
             Default = false,

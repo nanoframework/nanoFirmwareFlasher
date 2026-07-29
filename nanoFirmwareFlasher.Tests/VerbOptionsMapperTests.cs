@@ -37,8 +37,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsFalse(legacy.NativeDfuUpdate);
             Assert.IsFalse(legacy.NativeStLinkUpdate);
             Assert.IsFalse(legacy.NativeSwdUpdate);
-            Assert.IsFalse(legacy.DfuUpdate);
-            Assert.IsFalse(legacy.JtagUpdate);
         }
 
         [TestMethod]
@@ -113,7 +111,6 @@ namespace nanoFirmwareFlasher.Tests
 
             Assert.IsTrue(legacy.NativeDfuUpdate);
             Assert.AreEqual("abc123", legacy.DfuDeviceId);
-            Assert.IsFalse(legacy.DfuUpdate);
         }
 
         [TestMethod]
@@ -128,7 +125,6 @@ namespace nanoFirmwareFlasher.Tests
 
             Assert.IsTrue(legacy.NativeStLinkUpdate);
             Assert.AreEqual("probe1", legacy.JtagDeviceId);
-            Assert.IsFalse(legacy.JtagUpdate);
         }
 
         [TestMethod]
@@ -216,6 +212,33 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual("esp32-flash-backup.bin", legacy.BackupFile);
         }
 
+        [TestMethod]
+        public void Flash_Restore_MapsToConfigBackupPath()
+        {
+            // "restore <path>" persists a copy of the automatic pre-flash configuration
+            // partition backup (ESP32 only); the backup+restore itself always happens
+            // regardless of this keyword.
+            var legacy = new FlashOptions
+            {
+                TargetName = "ESP_WROVER_KIT",
+                ConfigBackupPath = Path.Combine("backups", "config.bin")
+            }.ToLegacyOptions();
+
+            Assert.AreEqual(Path.Combine("backups", "config.bin"), legacy.ConfigBackupPath);
+            Assert.IsFalse(legacy.NoBackupConfig);
+        }
+
+        [TestMethod]
+        public void Flash_NoRestore_ConfigBackupPathStaysNull_AndBackupRestoreStillDefaultOn()
+        {
+            // Omitting "restore" doesn't skip the automatic backup+restore - it just means
+            // no persistent copy is kept (a temporary file is used and deleted afterward).
+            var legacy = new FlashOptions { TargetName = "ESP_WROVER_KIT" }.ToLegacyOptions();
+
+            Assert.IsNull(legacy.ConfigBackupPath);
+            Assert.IsFalse(legacy.NoBackupConfig);
+        }
+
         #endregion
 
 
@@ -264,6 +287,29 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsFalse(legacy.NanoDevice);
         }
 
+        [TestMethod]
+        public void Deploy_Address_MapsThroughToFlashAddress()
+        {
+            var legacy = new DeployOptions
+            {
+                DeploymentImage = "app.bin",
+                TargetName = "ST_STM32F769I_DISCOVERY",
+                Address = new[] { "0x08040000" }
+            }.ToLegacyOptions();
+
+            Assert.AreEqual(1, legacy.FlashAddress.Count);
+            Assert.AreEqual("0x08040000", legacy.FlashAddress[0]);
+        }
+
+        [TestMethod]
+        public void Deploy_NoAddress_MapsToEmptyFlashAddress()
+        {
+            var legacy = new DeployOptions { DeploymentImage = "app.bin" }.ToLegacyOptions();
+
+            Assert.IsNotNull(legacy.FlashAddress);
+            Assert.AreEqual(0, legacy.FlashAddress.Count);
+        }
+
         #endregion
 
         // ======================================================================
@@ -308,21 +354,19 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void List_Dfu_MapsToNativeDfuDevicesOnly()
+        public void List_Dfu_MapsToNativeDfuDevices()
         {
             var legacy = new ListOptions { Dfu = true }.ToLegacyOptions();
 
             Assert.IsTrue(legacy.ListNativeDfuDevices);
-            Assert.IsFalse(legacy.ListDevicesInDfuMode);
         }
 
         [TestMethod]
-        public void List_Jtag_MapsToNativeStLinkDevicesOnly()
+        public void List_Jtag_MapsToNativeStLinkDevices()
         {
             var legacy = new ListOptions { Jtag = true }.ToLegacyOptions();
 
             Assert.IsTrue(legacy.ListNativeStLinkDevices);
-            Assert.IsFalse(legacy.ListJtagDevices);
         }
 
         #endregion
@@ -347,6 +391,14 @@ namespace nanoFirmwareFlasher.Tests
             var legacy = new DetailsOptions { SerialPort = "COM7" }.ToLegacyOptions();
 
             Assert.IsTrue(legacy.NanoDevice);
+        }
+
+        [TestMethod]
+        public void Details_CheckPsRam_MapsThroughToLegacyOptions()
+        {
+            var legacy = new DetailsOptions { Platform = SupportedPlatform.esp32, SerialPort = "COM7", CheckPsRam = true }.ToLegacyOptions();
+
+            Assert.IsTrue(legacy.CheckPsRam);
         }
 
         [TestMethod]

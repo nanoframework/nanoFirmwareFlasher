@@ -15,25 +15,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// </summary>
     public class Options
     {
-        public bool ListDevicesInDfuMode { get; set; }
-
         public string DfuDeviceId { get; set; }
-
-        public bool DfuUpdate { get; set; }
-
-        public bool InstallDfuDrivers { get; set; }
-
-        public string JtagDeviceId { get; set; }
-
-        public bool ListJtagDevices { get; set; }
 
         public IList<string> HexFile { get; set; }
 
         public IList<string> BinFile { get; set; }
 
-        public bool JtagUpdate { get; set; }
-
-        public bool InstallJtagDrivers { get; set; }
+        public string JtagDeviceId { get; set; }
 
         public bool NativeDfuUpdate { get; set; }
 

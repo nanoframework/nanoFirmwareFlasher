@@ -38,11 +38,11 @@ nanoFirmwareFlasher.sln
 | Platform        | Connection Method           | Key Classes                              |
 |-----------------|-----------------------------|------------------------------------------|
 | ESP32 / S2 / S3 | Serial (native C# protocol) | `EspTool`, `Esp32Operations`, `Esp32Firmware` |
-| STM32           | JTAG, DFU                   | `StmJtagDevice`, `StmDfuDevice`, `Stm32Operations`, `Stm32Firmware` |
+| STM32           | Native DFU / SWD / ST-LINK (native C# protocols) | `StmNativeDfuDevice`, `StmSwdDevice`, `StmStLinkDevice`, `Stm32Operations`, `Stm32Firmware` |
 | TI CC13x2/CC26x2| TI Uniflash CLI             | `CC13x26x2Operations`, `CC13x26x2Firmware` |
 | Silabs Giant Gecko | J-Link / silink CLI      | `JLinkOperations`, `JLinkFirmware`, `SilinkCli` |
 
-> **Important:** ESP32 support uses a native C# implementation of the Espressif serial bootloader protocol (`EspTool` / `Esp32Serial/`). The `esptool` Python tool is no longer used (removed as of April 2026).
+> **Important:** ESP32 support uses a native C# implementation of the Espressif serial bootloader protocol (`EspTool` / `Esp32Serial/`). The `esptool` Python tool is no longer used (removed as of April 2026). STM32 support was similarly migrated to native C# protocol implementations (`StmNativeDfuDevice`, `StmSwdDevice`, `StmStLinkDevice`); the external STM32 CLI tool (`STM32_Programmer_CLI`, wrapped by the now-removed `StmDfuDevice`/`StmJtagDevice`/`StmDeviceBase` classes) has been fully removed and will not be reintroduced.
 
 ---
 

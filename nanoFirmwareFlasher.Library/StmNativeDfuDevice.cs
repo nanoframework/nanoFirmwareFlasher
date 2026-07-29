@@ -14,7 +14,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// STM32 DFU device using native USB instead of the STM32_Programmer_CLI.
-    /// Provides the same public API as <see cref="StmDfuDevice"/> but requires no external tools.
+    /// Provides USB DFU device flash operations, requiring no external tools.
     /// Cross-platform: uses WinUSB on Windows, libusb-1.0 on Linux/macOS.
     /// </summary>
     public class StmNativeDfuDevice : IDisposable, IStmFlashableDevice
@@ -68,7 +68,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 throw new CantConnectToDfuDeviceException(
                     "No STM32 DFU devices found. Make sure the device is in DFU mode. " +
-                    "On Windows, install the WinUSB driver by running: nanoff --installdfudrivers (or use Zadig: https://zadig.akeo.ie). " +
+                    "On Windows, install the WinUSB driver by running: nanoff drivers dfu (or use Zadig: https://zadig.akeo.ie). " +
                     "On Linux, install libusb: sudo apt install libusb-1.0-0, then add a udev rule: " +
                     "echo 'SUBSYSTEM==\"usb\", ATTR{idVendor}==\"0483\", ATTR{idProduct}==\"df11\", MODE=\"0666\"' | sudo tee /etc/udev/rules.d/70-st-dfu.rules && sudo udevadm control --reload-rules. " +
                     "On macOS, install libusb: brew install libusb.");
@@ -124,7 +124,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Lists connected STM32 DFU devices using native USB enumeration.
         /// </summary>
         /// <returns>A collection of connected STM DFU devices as (serial, deviceIndex) tuples,
-        /// matching the return format of <see cref="StmDfuDevice.ListDevices"/>.</returns>
+        /// matching the return format used by other STM32 device enumeration methods.</returns>
         public static List<(string serial, string device)> ListDevices()
         {
             var result = new List<(string serial, string device)>();

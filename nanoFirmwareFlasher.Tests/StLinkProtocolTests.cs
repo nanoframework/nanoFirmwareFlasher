@@ -123,8 +123,6 @@ namespace nanoFirmwareFlasher.Tests
         {
             // NativeStLink must be different from all other interface values
             Assert.AreNotEqual(Interface.None, Interface.NativeStLink);
-            Assert.AreNotEqual(Interface.Jtag, Interface.NativeStLink);
-            Assert.AreNotEqual(Interface.Dfu, Interface.NativeStLink);
             Assert.AreNotEqual(Interface.NativeDfu, Interface.NativeStLink);
             Assert.AreNotEqual(Interface.NativeSwd, Interface.NativeStLink);
         }
@@ -383,13 +381,12 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Interface_HasAllExpectedValues()
         {
-            // Verify all 6 interface values exist
+            // Verify all 4 interface values exist (external CLI-tool Jtag/Dfu were removed
+            // once the STM32 CLI tool support was dropped in favor of native-only transports)
             var values = Enum.GetValues(typeof(Interface));
-            Assert.AreEqual(6, values.Length, "Interface enum should have exactly 6 values");
+            Assert.AreEqual(4, values.Length, "Interface enum should have exactly 4 values");
 
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.None));
-            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.Jtag));
-            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.Dfu));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeDfu));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeSwd));
             Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeStLink));
@@ -415,34 +412,6 @@ namespace nanoFirmwareFlasher.Tests
         #endregion
 
         #region Phase 7: CLI-Free Robustness
-
-        [TestMethod]
-        public void StmDeviceBase_RunSTM32ProgrammerCLI_ThrowsOnMissingBinary()
-        {
-            // RunSTM32ProgrammerCLI should throw StLinkCliExecutionException when CLI binary is missing,
-            // not Win32Exception/FileNotFoundException
-            try
-            {
-                StmDeviceBase.RunSTM32ProgrammerCLI("--list");
-                // If CLI happens to exist, test is inconclusive
-            }
-            catch (StLinkCliExecutionException ex)
-            {
-                // Expected — should mention the tool name and suggest native alternatives
-                Assert.IsTrue(
-                    ex.Message.Contains("STM32_Programmer_CLI") || ex.Message.Contains("native"),
-                    $"Error message should reference the missing tool or native alternatives. Got: {ex.Message}");
-            }
-        }
-
-        [TestMethod]
-        public void StmDeviceBase_RunSTM32ProgrammerCLI_IsPublicStatic()
-        {
-            var method = typeof(StmDeviceBase).GetMethod("RunSTM32ProgrammerCLI");
-            Assert.IsNotNull(method, "RunSTM32ProgrammerCLI should exist");
-            Assert.IsTrue(method.IsStatic);
-            Assert.IsTrue(method.IsPublic);
-        }
 
         [TestMethod]
         public void JLinkCli_RunJLinkCLI_IsInternalMethod()
@@ -513,16 +482,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsTrue(
                 name.Contains("native") || name.Contains("uart"),
                 $"E9010 display should suggest native alternatives. Got: {name}");
-        }
-
-        [TestMethod]
-        public void StmDeviceBase_ExecuteListDevices_IsPublicStatic()
-        {
-            // ExecuteListDevices wraps RunSTM32ProgrammerCLI — verify it exists
-            var method = typeof(StmDeviceBase).GetMethod("ExecuteListDevices");
-            Assert.IsNotNull(method, "ExecuteListDevices should exist");
-            Assert.IsTrue(method.IsStatic);
-            Assert.IsTrue(method.IsPublic);
         }
 
         #endregion

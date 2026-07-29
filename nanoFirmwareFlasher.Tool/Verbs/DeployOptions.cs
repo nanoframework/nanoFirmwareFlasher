@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using CommandLine;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -39,6 +40,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = null,
             HelpText = "Path to deployment image file to be uploaded to device.")]
         public string DeploymentImage { get; set; }
+
+        [Option(
+            "address",
+            Required = false,
+            HelpText = "Address where to flash the deployment image. Hexadecimal format (e.g. 0x08040000). Required for STM32 targets; optional for ESP32/RP2040/RP2350 targets, which fall back to the firmware's default deployment partition address.")]
+        public IList<string> Address { get; set; }
 
         [Option(
             "file",

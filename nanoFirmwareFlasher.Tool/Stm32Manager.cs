@@ -75,44 +75,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.OK;
             }
-            if (_options.InstallDfuDrivers)
-            {
-                return Stm32Operations.InstallDfuDrivers(_verbosityLevel);
-            }
-
-            if (_options.InstallJtagDrivers)
-            {
-                return Stm32Operations.InstallJtagDrivers(_verbosityLevel);
-            }
-
-            if (_options.ListDevicesInDfuMode)
-            {
-                var connecteDevices = StmDfuDevice.ListDevices();
-
-                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-
-                if (connecteDevices.Count() == 0)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                    OutputWriter.WriteLine("No DFU devices found");
-                }
-                else
-                {
-                    OutputWriter.WriteLine("-- Connected DFU devices --");
-
-                    foreach ((string serial, string device) device in connecteDevices)
-                    {
-                        OutputWriter.WriteLine($"{device.serial} @ {device.device}");
-                    }
-
-                    OutputWriter.WriteLine("---------------------------");
-                }
-
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                // done here, this command has no further processing
-                return ExitCodes.OK;
-            }
 
             if (_options.ListNativeDfuDevices)
             {
@@ -135,34 +97,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
 
                     OutputWriter.WriteLine("----------------------------------------");
-                }
-
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                // done here, this command has no further processing
-                return ExitCodes.OK;
-            }
-
-            if (_options.ListJtagDevices)
-            {
-                var connecteDevices = StmJtagDevice.ListDevices();
-
-                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-
-                if (connecteDevices.Count == 0)
-                {
-                    OutputWriter.WriteLine("No JTAG devices found");
-                }
-                else
-                {
-                    OutputWriter.WriteLine("-- Connected JTAG devices --");
-
-                    foreach (string deviceId in connecteDevices)
-                    {
-                        OutputWriter.WriteLine(deviceId);
-                    }
-
-                    OutputWriter.WriteLine("---------------------------");
                 }
 
                 OutputWriter.ForegroundColor = ConsoleColor.White;
@@ -227,27 +161,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 // done here, this command has no further processing
                 return ExitCodes.OK;
-            }
-
-            var connectedStDfuDevices = new System.Collections.Generic.List<(string serial, string device)>();
-            var connectedStJtagDevices = new System.Collections.Generic.List<string>();
-
-            try
-            {
-                connectedStDfuDevices = StmDfuDevice.ListDevices();
-            }
-            catch
-            {
-                // CLI tool not available
-            }
-
-            try
-            {
-                connectedStJtagDevices = StmJtagDevice.ListDevices();
-            }
-            catch
-            {
-                // CLI tool not available
             }
 
             bool updateAndDeploy = false;
@@ -319,10 +232,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 #endregion
             }
             else if (!_options.NativeDfuUpdate && !_options.NativeSwdUpdate && !_options.NativeStLinkUpdate &&
-                (_options.BinFile.Any() || _options.HexFile.Any()) &&
-                connectedStDfuDevices.Count == 0 && connectedStJtagDevices.Count == 0)
+                (_options.BinFile.Any() || _options.HexFile.Any()))
             {
-                // No explicit interface and no CLI devices found — try native auto-detection
+                // No explicit interface — try native auto-detection
                 try
                 {
                     var nativeStLinkProbes = StmStLinkDevice.ListDevices();
@@ -395,60 +307,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // Native DFU enumeration not available
                 }
             }
-            else if (connectedStDfuDevices.Count != 0 &&
-                (_options.BinFile.Any() ||
-                 _options.HexFile.Any()))
-            {
-
-                #region STM32 DFU options
-
-                var dfuDevice = new StmDfuDevice(_options.DfuDeviceId);
-
-                if (!dfuDevice.DevicePresent)
-                {
-                    // no JTAG device found
-
-                    // done here, this command has no further processing
-                    return ExitCodes.E5001;
-                }
-
-                if (_verbosityLevel >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.WriteLine($"Connected to JTAG device with ID {dfuDevice.DfuId}");
-                }
-
-                return FlashDeviceFiles(dfuDevice);
-
-                #endregion
-
-            }
-            else if (connectedStJtagDevices.Count != 0 &&
-                    (_options.BinFile.Any() ||
-                     _options.HexFile.Any()))
-            {
-                // this has to be a JTAG connected device
-
-                #region STM32 JTAG options
-
-                var jtagDevice = new StmJtagDevice(_options.JtagDeviceId);
-
-                if (!jtagDevice.DevicePresent)
-                {
-                    // no JTAG device found
-
-                    // done here, this command has no further processing
-                    return ExitCodes.E5001;
-                }
-
-                if (_verbosityLevel >= VerbosityLevel.Normal)
-                {
-                    OutputWriter.WriteLine($"Connected to JTAG device with ID {jtagDevice.JtagId}");
-                }
-
-                return FlashDeviceFiles(jtagDevice);
-
-                #endregion
-            }
             else if (!string.IsNullOrEmpty(_options.TargetName))
             {
                 // update operation requested?
@@ -467,7 +325,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     Interface updateInterface = Interface.None;
 
-                    int selectedInterfaces = (_options.DfuUpdate ? 1 : 0) + (_options.JtagUpdate ? 1 : 0) + (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
+                    int selectedInterfaces = (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
 
                     if (selectedInterfaces > 1)
                     {
@@ -485,14 +343,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     else if (_options.NativeDfuUpdate)
                     {
                         updateInterface = Interface.NativeDfu;
-                    }
-                    else if (_options.DfuUpdate)
-                    {
-                        updateInterface = Interface.Dfu;
-                    }
-                    else if (_options.JtagUpdate)
-                    {
-                        updateInterface = Interface.Jtag;
                     }
 
                     var exitCode = await Stm32Operations.UpdateFirmwareAsync(
@@ -540,7 +390,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     Interface updateInterface = Interface.None;
 
-                    int selectedInterfacesDeploy = (_options.DfuUpdate ? 1 : 0) + (_options.JtagUpdate ? 1 : 0) + (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
+                    int selectedInterfacesDeploy = (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
 
                     if (selectedInterfacesDeploy > 1)
                     {
@@ -558,14 +408,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     else if (_options.NativeDfuUpdate)
                     {
                         updateInterface = Interface.NativeDfu;
-                    }
-                    else if (_options.DfuUpdate)
-                    {
-                        updateInterface = Interface.Dfu;
-                    }
-                    else if (_options.JtagUpdate)
-                    {
-                        updateInterface = Interface.Jtag;
                     }
 
                     var exitCode = await Stm32Operations.UpdateFirmwareAsync(

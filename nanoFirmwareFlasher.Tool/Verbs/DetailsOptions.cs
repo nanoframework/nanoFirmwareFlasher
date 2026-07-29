@@ -31,5 +31,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             Default = null,
             HelpText = "Serial port where device is connected to.")]
         public string SerialPort { get; set; }
+
+        [Option(
+            "checkpsram",
+            Required = false,
+            Default = false,
+            HelpText = "Perform check for PSRAM in device (ESP32 only).")]
+        public bool CheckPsRam { get; set; }
     }
 }

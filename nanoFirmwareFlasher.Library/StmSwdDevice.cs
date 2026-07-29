@@ -15,7 +15,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// STM32 SWD device using native CMSIS-DAP (USB HID) instead of external CLI tools.
-    /// Provides the same public API as <see cref="StmJtagDevice"/> but requires no
+    /// Provides JTAG/SWD device flash operations, requiring no
     /// STM32_Programmer_CLI, J-Link, or silink executables.
     /// Cross-platform: uses hid.dll on Windows, hidraw on Linux, IOKit on macOS.
     /// </summary>

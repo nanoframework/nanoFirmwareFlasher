@@ -76,18 +76,6 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsTrue(typeof(IStmFlashableDevice).IsAssignableFrom(typeof(StmNativeDfuDevice)));
         }
 
-        [TestMethod]
-        public void StmDfuDevice_ImplementsIStmFlashableDevice()
-        {
-            Assert.IsTrue(typeof(IStmFlashableDevice).IsAssignableFrom(typeof(StmDfuDevice)));
-        }
-
-        [TestMethod]
-        public void StmJtagDevice_ImplementsIStmFlashableDevice()
-        {
-            Assert.IsTrue(typeof(IStmFlashableDevice).IsAssignableFrom(typeof(StmJtagDevice)));
-        }
-
         #endregion
 
         #region FlashDeviceFiles helper tests

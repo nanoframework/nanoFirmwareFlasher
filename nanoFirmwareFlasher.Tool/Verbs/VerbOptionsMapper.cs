@@ -41,6 +41,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Esp32FlashMode = o.Esp32FlashMode,
                 Esp32FlashFrequency = o.Esp32FlashFrequency,
                 Esp32PartitionTableSize = o.Esp32PartitionTableSize,
+                // The configuration partition is always automatically backed up before
+                // flashing and restored afterward (ESP32 only) - NoBackupConfig stays
+                // false (the tool-wide default) since there's no keyword to skip it.
+                // "restore <path>" just additionally persists a copy of that backup.
+                ConfigBackupPath = o.ConfigBackupPath,
                 // J-Link (EFM32) doesn't have an "interface" concept like STM32, so deviceid
                 // is mapped here too - it's simply unused by other platforms' managers.
                 JLinkDeviceId = o.DeviceId,
@@ -97,7 +102,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 NetworkDeployment = o.NetworkDeployment,
                 HexFile = Array.Empty<string>(),
                 BinFile = Array.Empty<string>(),
-                FlashAddress = Array.Empty<string>(),
+                FlashAddress = o.Address ?? Array.Empty<string>(),
             };
 
             legacy.Deploy = !string.IsNullOrEmpty(o.DeploymentImage);
@@ -153,6 +158,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 TargetName = o.TargetName,
                 Platform = o.Platform,
                 SerialPort = o.SerialPort,
+                CheckPsRam = o.CheckPsRam,
                 DeviceDetails = true,
                 HexFile = Array.Empty<string>(),
                 BinFile = Array.Empty<string>(),
