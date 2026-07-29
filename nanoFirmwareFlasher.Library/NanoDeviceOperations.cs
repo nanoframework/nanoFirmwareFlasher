@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -35,11 +36,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// List connected .NET nanoFramework devices.
         /// </summary>
         /// <param name="getDeviceDetails">Set to <see langword="true"/> to get details from devices.</param>
-        /// <param name="verbosityLevel">Verbosity level. When set to <see cref="VerbosityLevel.Detailed"/> or higher,
-        /// diagnostic messages from the device enumeration process (port candidates, rejected/invalid devices, etc.)
-        /// are written out. This helps troubleshooting cases where a device is physically connected but not
-        /// recognized as a nanoFramework device.</param>
+        /// <param name="verbosityLevel">At <see cref="VerbosityLevel.Detailed"/> or higher, diagnostic messages
+        /// from the device enumeration process are written out.</param>
         /// <returns>An observable collection of <see cref="NanoDeviceBase"/>. devices</returns>
+        /// <exception cref="TimeoutException">Device enumeration didn't complete in time.</exception>
         public ObservableCollection<NanoDeviceBase> ListDevices(
             bool getDeviceDetails,
             VerbosityLevel verbosityLevel = VerbosityLevel.Normal)
@@ -57,16 +57,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // start device watchers
                 _serialDebuggerPort.StartDeviceWatchers();
 
+                const int enumerationTimeoutMilliseconds = 30000;
+                var enumerationStopwatch = Stopwatch.StartNew();
+
                 while (!_serialDebuggerPort.IsDevicesEnumerationComplete)
                 {
+                    if (enumerationStopwatch.ElapsedMilliseconds > enumerationTimeoutMilliseconds)
+                    {
+                        throw new TimeoutException("Timed out waiting for device enumeration to complete.");
+                    }
+
                     Thread.Sleep(100);
                 }
 
-                // Work around a race in the underlying debug library: it can raise the
-                // "enumeration complete" signal before an in-flight candidate device probe
-                // (started just before completion) has finished adding itself to
-                // NanoFrameworkDevices. Instead of trusting the flag immediately, wait for
-                // the device count to stay unchanged for a short window before returning.
+                // Work around a debug library race: "enumeration complete" can fire before an
+                // in-flight candidate probe finishes, so wait for the device count to settle.
                 int lastCount = -1;
                 int stableIterations = 0;
                 const int requiredStableIterations = 3;
@@ -97,10 +102,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            // Take a thread-safe snapshot instead of exposing the live collection: the debug
-            // library keeps mutating it on background threads (new candidate devices can still
-            // be probed/added after the settle loop above), so callers enumerating the live
-            // collection can hit "Collection was modified" exceptions.
+            // Snapshot instead of exposing the live collection, which the debug library keeps
+            // mutating on background threads (can throw "Collection was modified" otherwise).
             List<NanoDeviceBase> devicesSnapshot;
 
             lock (_serialDebuggerPort.NanoFrameworkDevices)
