@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -34,21 +36,85 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// List connected .NET nanoFramework devices.
         /// </summary>
         /// <param name="getDeviceDetails">Set to <see langword="true"/> to get details from devices.</param>
+        /// <param name="verbosityLevel">At <see cref="VerbosityLevel.Detailed"/> or higher, diagnostic messages
+        /// from the device enumeration process are written out.</param>
         /// <returns>An observable collection of <see cref="NanoDeviceBase"/>. devices</returns>
-        public ObservableCollection<NanoDeviceBase> ListDevices(bool getDeviceDetails)
+        /// <exception cref="TimeoutException">Device enumeration didn't complete in time.</exception>
+        public ObservableCollection<NanoDeviceBase> ListDevices(
+            bool getDeviceDetails,
+            VerbosityLevel verbosityLevel = VerbosityLevel.Normal)
         {
-            // start device watchers
-            _serialDebuggerPort.StartDeviceWatchers();
+            EventHandler<StringEventArgs> logHandler = null;
 
-            while (!_serialDebuggerPort.IsDevicesEnumerationComplete)
+            if (verbosityLevel >= VerbosityLevel.Detailed)
             {
-                Thread.Sleep(100);
+                logHandler = (sender, args) => OutputWriter.WriteLine($"  {args.EventText}");
+                _serialDebuggerPort.LogMessageAvailable += logHandler;
+            }
+
+            try
+            {
+                // start device watchers
+                _serialDebuggerPort.StartDeviceWatchers();
+
+                const int enumerationTimeoutMilliseconds = 30000;
+                var enumerationStopwatch = Stopwatch.StartNew();
+
+                while (!_serialDebuggerPort.IsDevicesEnumerationComplete)
+                {
+                    if (enumerationStopwatch.ElapsedMilliseconds > enumerationTimeoutMilliseconds)
+                    {
+                        throw new TimeoutException("Timed out waiting for device enumeration to complete.");
+                    }
+
+                    Thread.Sleep(100);
+                }
+
+                // Work around a debug library race: "enumeration complete" can fire before an
+                // in-flight candidate probe finishes, so wait for the device count to settle.
+                int lastCount = -1;
+                int stableIterations = 0;
+                const int requiredStableIterations = 3;
+                const int maxSettleIterations = 100;
+
+                for (int i = 0; i < maxSettleIterations && stableIterations < requiredStableIterations; i++)
+                {
+                    Thread.Sleep(300);
+
+                    int currentCount = _serialDebuggerPort.NanoFrameworkDevices.Count;
+
+                    if (currentCount == lastCount)
+                    {
+                        stableIterations++;
+                    }
+                    else
+                    {
+                        stableIterations = 0;
+                        lastCount = currentCount;
+                    }
+                }
+            }
+            finally
+            {
+                if (logHandler != null)
+                {
+                    _serialDebuggerPort.LogMessageAvailable -= logHandler;
+                }
+            }
+
+            // Snapshot instead of exposing the live collection, which the debug library keeps
+            // mutating on background threads (can throw "Collection was modified" otherwise).
+            List<NanoDeviceBase> devicesSnapshot;
+
+            lock (_serialDebuggerPort.NanoFrameworkDevices)
+            {
+                devicesSnapshot = new List<NanoDeviceBase>(_serialDebuggerPort.NanoFrameworkDevices);
             }
 
             if (getDeviceDetails)
             {
                 // get device details
-                foreach (NanoDeviceBase device in _serialDebuggerPort.NanoFrameworkDevices)
+                foreach (NanoDeviceBase device in devicesSnapshot)
                 {
                     _ = device.DebugEngine.Connect(
                         false,
@@ -85,7 +151,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            return _serialDebuggerPort.NanoFrameworkDevices;
+            return new ObservableCollection<NanoDeviceBase>(devicesSnapshot);
         }
 
         /// <summary>
