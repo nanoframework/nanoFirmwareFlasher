@@ -140,17 +140,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>
         /// Send FLASH_BEGIN command.
         /// Data format: [total_size:4][num_blocks:4][block_size:4][offset:4]
+        /// followed, for chips that support the extended parameter format,
+        /// by an [encrypted_write:4] flag (0 = plaintext).
         /// The ROM bootloader erases the region as part of this command.
         /// </summary>
         private void SendFlashBegin(int totalSize, int numBlocks, int blockSize, uint offset)
         {
             _client.PrepareForFlashOperations(_config);
 
-            byte[] data = new byte[16];
-            Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)totalSize);
-            Esp32CommandPacket.WriteUInt32LE(data, 4, (uint)numBlocks);
-            Esp32CommandPacket.WriteUInt32LE(data, 8, (uint)blockSize);
-            Esp32CommandPacket.WriteUInt32LE(data, 12, offset);
+            byte[] data = BuildFlashBeginParams(totalSize, numBlocks, blockSize, offset);
 
             // FLASH_BEGIN may take a long time due to flash erase
             var response = _client.SendCommand(
@@ -159,6 +157,34 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 timeoutMs: FlashBeginTimeoutMs);
 
             response.ThrowIfError();
+        }
+
+        /// <summary>
+        /// Builds the FLASH_BEGIN / FLASH_DEFL_BEGIN parameter block.
+        /// Mirrors esptool: the ESP32 and ESP8266 ROM bootloaders use the 16-byte
+        /// parameter format, while every later chip (S2, S3, C/H series, P4, ...)
+        /// and the flasher stub require an additional 4-byte encrypted-write flag.
+        /// Omitting that word on the newer ROM bootloaders makes them reject the
+        /// command with "Received message is invalid" (ROM error 0x05).
+        /// </summary>
+        private byte[] BuildFlashBeginParams(int firstWord, int numBlocks, int blockSize, uint offset)
+        {
+            bool useExtendedFormat = _client.IsStubRunning
+                || (_config.ChipType != "esp32" && _config.ChipType != "esp8266");
+
+            byte[] data = new byte[useExtendedFormat ? 20 : 16];
+            Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)firstWord);
+            Esp32CommandPacket.WriteUInt32LE(data, 4, (uint)numBlocks);
+            Esp32CommandPacket.WriteUInt32LE(data, 8, (uint)blockSize);
+            Esp32CommandPacket.WriteUInt32LE(data, 12, offset);
+
+            if (useExtendedFormat)
+            {
+                // Encrypted-write flag: 0 = plaintext (nanoff never flashes encrypted).
+                Esp32CommandPacket.WriteUInt32LE(data, 16, 0);
+            }
+
+            return data;
         }
 
         /// <summary>
@@ -298,11 +324,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         {
             _client.PrepareForFlashOperations(_config);
 
-            byte[] data = new byte[16];
-            Esp32CommandPacket.WriteUInt32LE(data, 0, (uint)uncompressedSize);
-            Esp32CommandPacket.WriteUInt32LE(data, 4, (uint)numBlocks);
-            Esp32CommandPacket.WriteUInt32LE(data, 8, (uint)blockSize);
-            Esp32CommandPacket.WriteUInt32LE(data, 12, offset);
+            byte[] data = BuildFlashBeginParams(uncompressedSize, numBlocks, blockSize, offset);
 
             var response = _client.SendCommand(
                 Esp32Command.FlashDeflBegin,

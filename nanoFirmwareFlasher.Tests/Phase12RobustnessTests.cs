@@ -449,7 +449,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             var method = typeof(NanoDeviceOperations).GetMethod("ListDevices");
             Assert.IsNotNull(method);
-            Assert.AreEqual(1, method.GetParameters().Length);
+            Assert.AreEqual(2, method.GetParameters().Length);
         }
 
         #endregion
