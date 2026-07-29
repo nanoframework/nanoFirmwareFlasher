@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher.Swd
@@ -1357,7 +1358,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 if (_device.Info != null && !string.IsNullOrEmpty(_device.Info.SerialString))
                 {
-                    SerialNumber = _device.Info.SerialString;
+                    SerialNumber = SanitizeSerialString(_device.Info.SerialString);
                 }
                 else
                 {
@@ -1669,7 +1670,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                         {
                             if (!string.IsNullOrEmpty(dev.Info.SerialString))
                             {
-                                serial = dev.Info.SerialString;
+                                serial = SanitizeSerialString(dev.Info.SerialString);
                             }
 
                             if (!string.IsNullOrEmpty(dev.Info.ProductString))
@@ -1695,6 +1696,35 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             }
 
             return devices;
+        }
+
+        /// <summary>
+        /// Old ST-LINK/V2 (DFU bootloader) firmware has a known bug: it writes the raw
+        /// serial bytes directly into the USB serial string descriptor instead of
+        /// properly UTF-16LE-encoding them as hex text (OpenOCD's stlink_usb.c calls
+        /// this out and works around it in stlink_usb_get_alternate_serial). Each
+        /// character LibUsbDotNet decodes from such a descriptor is really one raw
+        /// serial byte (high byte 0x00), so re-encode its low byte as 2 hex digits to
+        /// reconstruct the real serial instead of showing mojibake like "7ÿqNW46j?C".
+        /// </summary>
+        private static string SanitizeSerialString(string raw)
+        {
+            foreach (char c in raw)
+            {
+                if (c < 0x20 || c > 0x7E)
+                {
+                    var sb = new StringBuilder(raw.Length * 2);
+
+                    foreach (char ch in raw)
+                    {
+                        sb.Append(((byte)(ch & 0xFF)).ToString("X2"));
+                    }
+
+                    return sb.ToString();
+                }
+            }
+
+            return raw;
         }
 
         public void Dispose()
