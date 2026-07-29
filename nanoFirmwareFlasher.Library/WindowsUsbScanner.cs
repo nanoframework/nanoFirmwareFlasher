@@ -17,10 +17,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// </summary>
     public static class WindowsUsbScanner
     {
-        private const uint DIGCF_PRESENT = 0x00000002;
-        private const uint DIGCF_ALLCLASSES = 0x00000004;
-        private const uint SPDRP_HARDWAREID = 0x00000001;
-        private const int ERROR_INSUFFICIENT_BUFFER = 122;
+        private const uint DigcfPresent = 0x00000002;
+        private const uint DigcfAllClasses = 0x00000004;
+        private const uint SpdrpHardwareId = 0x00000001;
+        private const int ErrorInsufficientBuffer = 122;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct SP_DEVINFO_DATA
@@ -85,7 +85,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             try
             {
-                deviceInfoSet = SetupDiGetClassDevs(IntPtr.Zero, "USB", IntPtr.Zero, DIGCF_PRESENT | DIGCF_ALLCLASSES);
+                deviceInfoSet = SetupDiGetClassDevs(IntPtr.Zero, "USB", IntPtr.Zero, DigcfPresent | DigcfAllClasses);
 
                 if (deviceInfoSet == IntPtr.Zero || deviceInfoSet == new IntPtr(-1))
                 {
@@ -135,14 +135,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
             SetupDiGetDeviceRegistryProperty(
                 deviceInfoSet,
                 ref deviceInfo,
-                SPDRP_HARDWAREID,
+                SpdrpHardwareId,
                 out _,
                 null,
                 0,
                 out uint requiredSize);
 
             if (requiredSize == 0
-                || Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
+                || Marshal.GetLastWin32Error() != ErrorInsufficientBuffer)
             {
                 return string.Empty;
             }
@@ -152,7 +152,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!SetupDiGetDeviceRegistryProperty(
                     deviceInfoSet,
                     ref deviceInfo,
-                    SPDRP_HARDWAREID,
+                    SpdrpHardwareId,
                     out _,
                     buffer,
                     requiredSize,

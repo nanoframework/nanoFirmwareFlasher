@@ -215,71 +215,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else
                 {
-                    bool foundNative = false;
+                    updateInterface = DetectNativeInterface();
 
-                    try
+                    if (verbosity >= VerbosityLevel.Detailed)
                     {
-                        if (StmStLinkDevice.ListDevices().Count > 0)
+                        string label = updateInterface switch
                         {
-                            if (verbosity >= VerbosityLevel.Detailed)
-                            {
-                                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                                OutputWriter.WriteLine("Auto-detected ST-LINK probe — using native transport.");
-                                OutputWriter.ForegroundColor = ConsoleColor.White;
-                            }
+                            Interface.NativeStLink => "ST-LINK probe — using native transport.",
+                            Interface.NativeSwd => "CMSIS-DAP probe — using native SWD transport.",
+                            Interface.NativeDfu => "DFU device — using native USB DFU.",
+                            _ => null,
+                        };
 
-                            updateInterface = Interface.NativeStLink;
-                            foundNative = true;
-                        }
-                    }
-                    catch
-                    {
-                        // Native ST-LINK enumeration not available on this platform
-                    }
-
-                    if (!foundNative)
-                    {
-                        try
+                        if (label != null)
                         {
-                            if (StmSwdDevice.ListDevices().Count > 0)
-                            {
-                                if (verbosity >= VerbosityLevel.Detailed)
-                                {
-                                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                                    OutputWriter.WriteLine("Auto-detected CMSIS-DAP probe — using native SWD transport.");
-                                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                                }
-
-                                updateInterface = Interface.NativeSwd;
-                                foundNative = true;
-                            }
-                        }
-                        catch
-                        {
-                            // Native SWD enumeration not available
-                        }
-                    }
-
-                    if (!foundNative)
-                    {
-                        try
-                        {
-                            if (StmNativeDfuDevice.ListDevices().Count > 0)
-                            {
-                                if (verbosity >= VerbosityLevel.Detailed)
-                                {
-                                    OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-                                    OutputWriter.WriteLine("Auto-detected DFU device — using native USB DFU.");
-                                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                                }
-
-                                updateInterface = Interface.NativeDfu;
-                                foundNative = true;
-                            }
-                        }
-                        catch
-                        {
-                            // Native DFU enumeration not available on this platform
+                            OutputWriter.ForegroundColor = ConsoleColor.Cyan;
+                            OutputWriter.WriteLine($"Auto-detected {label}");
+                            OutputWriter.ForegroundColor = ConsoleColor.White;
                         }
                     }
                 }
@@ -776,6 +728,58 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
         }
 
+        /// <summary>
+        /// Auto-detects which native transport (ST-LINK, CMSIS-DAP/SWD, or USB DFU) has
+        /// a device connected, trying each in order and ignoring enumeration failures
+        /// (a transport may simply be unavailable on this platform). This is the single
+        /// source of truth for the auto-detect probe order, shared by direct bin/hex
+        /// file flashing (the Tool project's Stm32Manager) and target-based firmware
+        /// updates (<see cref="UpdateFirmwareAsync"/>), so the two entry points can't drift.
+        /// </summary>
+        /// <returns>
+        /// The first available native <see cref="Interface"/>, tried in ST-LINK,
+        /// CMSIS-DAP, USB DFU order, or <see cref="Interface.None"/> if none was found.
+        /// </returns>
+        public static Interface DetectNativeInterface()
+        {
+            try
+            {
+                if (StmStLinkDevice.ListDevices().Count > 0)
+                {
+                    return Interface.NativeStLink;
+                }
+            }
+            catch
+            {
+                // Native ST-LINK enumeration not available on this platform.
+            }
+
+            try
+            {
+                if (StmSwdDevice.ListDevices().Count > 0)
+                {
+                    return Interface.NativeSwd;
+                }
+            }
+            catch
+            {
+                // Native SWD enumeration not available on this platform.
+            }
+
+            try
+            {
+                if (StmNativeDfuDevice.ListDevices().Count > 0)
+                {
+                    return Interface.NativeDfu;
+                }
+            }
+            catch
+            {
+                // Native DFU enumeration not available on this platform.
+            }
+
+            return Interface.None;
+        }
     }
 
     /// <summary>

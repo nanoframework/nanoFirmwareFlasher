@@ -165,6 +165,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
                     if (attempt == maxOpenAttempts - 1)
                     {
+                        // Terminal failure — dispose the claimed-but-non-functional handle
+                        // before throwing. Relying on the finalizer would leak it: the
+                        // finalizer calls Dispose(false), which does not dispose _usb.
+                        _usb?.Dispose();
+                        _usb = null;
+
                         break;
                     }
 
@@ -634,7 +640,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         {
             byte[] resp = SendCommand(BuildGetLastRwStatus2Command(), 12);
 
-            if (resp != null && resp.Length >= 1 && resp[0] != StLinkDebugErrOk)
+            if (resp == null || resp.Length < 1)
+            {
+                throw new SwdProtocolException(
+                    $"ST-LINK memory write status unavailable at 0x{address:X8}: "
+                    + "no response to GETLASTRWSTATUS2.");
+            }
+
+            if (resp[0] != StLinkDebugErrOk)
             {
                 throw new SwdProtocolException(
                     $"ST-LINK memory write failed at 0x{address:X8}: status 0x{resp[0]:X2}.");

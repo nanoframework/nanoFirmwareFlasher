@@ -375,23 +375,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else if (!_options.NativeDfuUpdate && !_options.NativeSwdUpdate && !_options.NativeStLinkUpdate &&
                 (_options.BinFile.Any() || _options.HexFile.Any()))
             {
-                // No explicit native interface — auto-detect one.
+                // No explicit native interface — auto-detect one, using the same
+                // ST-LINK -> CMSIS-DAP -> USB DFU probe order as Stm32Operations'
+                // target-based update, so the two entry points can't drift.
                 // Enumeration failures (transport unavailable on this platform) are ignored,
                 // but once a probe/device is found, a connection failure is reported to the
                 // user instead of being silently swallowed and mistaken for "no device".
+                Interface detectedInterface = Stm32Operations.DetectNativeInterface();
 
-                bool stLinkPresent = false;
-
-                try
-                {
-                    stLinkPresent = StmStLinkDevice.ListDevices().Count > 0;
-                }
-                catch
-                {
-                    // Native ST-LINK enumeration not available
-                }
-
-                if (stLinkPresent)
+                if (detectedInterface == Interface.NativeStLink)
                 {
                     try
                     {
@@ -418,18 +410,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 }
 
-                bool swdPresent = false;
-
-                try
-                {
-                    swdPresent = StmSwdDevice.ListDevices().Count > 0;
-                }
-                catch
-                {
-                    // Native SWD enumeration not available
-                }
-
-                if (swdPresent)
+                if (detectedInterface == Interface.NativeSwd)
                 {
                     try
                     {
@@ -456,18 +437,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                 }
 
-                bool dfuPresent = false;
-
-                try
-                {
-                    dfuPresent = StmNativeDfuDevice.ListDevices().Count > 0;
-                }
-                catch
-                {
-                    // Native DFU enumeration not available
-                }
-
-                if (dfuPresent)
+                if (detectedInterface == Interface.NativeDfu)
                 {
                     try
                     {

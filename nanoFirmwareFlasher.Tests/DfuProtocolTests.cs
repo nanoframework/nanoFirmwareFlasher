@@ -90,6 +90,8 @@ namespace nanoFirmwareFlasher.Tests
         [DataRow(null)]
         [DataRow("Win32Error:ControlTransfer\n5:Access is denied.")]
         [DataRow("Pipe error: endpoint stalled")]
+        [DataRow("Win32Error:ControlTransfer\n1212:Some unrelated message.")]
+        [DataRow("Win32Error:ControlTransfer\n2580:Some unrelated message.")]
         [DataTestMethod]
         public void IsControlTimeout_NonTimeoutErrors_AreNotDetected(string error)
         {

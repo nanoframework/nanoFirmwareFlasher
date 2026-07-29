@@ -183,20 +183,29 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         private bool IsDualBank(Stm32Family family)
         {
-            // Flash size in Kbytes from the factory FLASH_SIZE register.
-            uint flashSizeKb = _mem.ReadWord(FlashSizeRegister) & 0xFFFF;
+            ushort devId = (ushort)(ChipIdcode & 0xFFF);
 
-            // Devices larger than 512 KB (e.g. the 1 MB STM32L475) are always dual-bank.
-            if (flashSizeKb != 0 && flashSizeKb != 0xFFFF && flashSizeKb > 512)
+            // L4+ (0x470 = STM32L4R/S, 0x471 = STM32L4P5/Q5) and all G4 devices select
+            // dual-bank mode via FLASH_OPTR bit 22 (DBANK), regardless of flash size -
+            // it is not automatic, so the option byte must always be checked.
+            if (family == Stm32Family.G4 || devId == 0x470 || devId == 0x471)
             {
-                return true;
+                uint optrDbank = _mem.ReadWord(_regs.FlashBase + 0x20); // FLASH_OPTR
+                return (optrDbank & (1U << 22)) != 0;
             }
 
-            // Smaller parts are dual-bank only when the DUALBANK/DBANK option bit is set.
-            uint optr = _mem.ReadWord(_regs.FlashBase + 0x20); // FLASH_OPTR
-            uint dualBankBit = family == Stm32Family.G4 ? (1U << 22) : (1U << 21);
+            // Classic L4 parts only support dual-bank when they have 1 MB of flash,
+            // selected via FLASH_OPTR bit 21 (DB1M). Smaller parts have no dual-bank
+            // option at all (bit reserved), so they are always single-bank.
+            uint flashSizeKb = _mem.ReadWord(FlashSizeRegister) & 0xFFFF;
 
-            return (optr & dualBankBit) != 0;
+            if (flashSizeKb == 0 || flashSizeKb == 0xFFFF || flashSizeKb < 1024)
+            {
+                return false;
+            }
+
+            uint optr = _mem.ReadWord(_regs.FlashBase + 0x20); // FLASH_OPTR
+            return (optr & (1U << 21)) != 0;
         }
 
         /// <summary>

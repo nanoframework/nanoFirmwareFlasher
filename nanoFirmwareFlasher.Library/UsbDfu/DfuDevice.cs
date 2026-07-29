@@ -184,9 +184,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
 
             if (sectors.Count == 0)
             {
-                throw new DfuOperationFailedException(
-                    "Could not determine the STM32 internal flash sector layout from the DFU " +
-                    "descriptor, so the device cannot be erased.");
+                // Descriptor-based sector layout could not be determined (unreadable
+                // string descriptor, non-standard iInterface text, missing/localized
+                // "@Internal Flash" prefix). Fall back to the legacy DfuSe mass-erase
+                // command (0x41, no address) instead of failing outright.
+                byte[] cmd = new byte[] { DfuConst.DfuSeErase };
+
+                Download(0, cmd);
+                WaitForEraseComplete("MassErase");
+                return;
             }
 
             foreach ((uint address, uint size) sector in sectors)
@@ -671,8 +677,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
                         $"Timeout waiting for {context} to complete after {DfuConst.EraseTimeout} ms.");
                 }
 
-                // Device is busy (dfuDNBUSY). Wait the advised poll timeout before retrying.
-                int pollMs = Math.Max(status.PollTimeout, DfuConst.StatusPollInterval);
+                // Device is busy (dfuDNBUSY). Wait the advised poll timeout before retrying,
+                // clamped to the remaining erase budget - PollTimeout is device-reported and
+                // up to 24 bits (~4.6 h), so a bogus value must not sleep past EraseTimeout.
+                int remainingMs = (int)Math.Max(
+                    0,
+                    DfuConst.EraseTimeout - stopwatch.ElapsedMilliseconds);
+                int pollMs = Math.Min(
+                    Math.Max(status.PollTimeout, DfuConst.StatusPollInterval),
+                    Math.Max(remainingMs, DfuConst.StatusPollInterval));
                 Thread.Sleep(pollMs);
             }
         }

@@ -83,6 +83,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         };
 
         private readonly ISwdTransport _dap;
+        private readonly StLinkTransport _stLink;
         private uint _currentApSel;
         private uint _currentDpBank;
         private bool _disposed;
@@ -95,6 +96,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         internal SwdProtocol(ISwdTransport dap)
         {
             _dap = dap ?? throw new ArgumentNullException(nameof(dap));
+            _stLink = _dap as StLinkTransport;
         }
 
         /// <summary>
@@ -127,7 +129,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 throw new SwdProtocolException("Failed to configure DAP transfers.");
             }
 
-            if (_dap is StLinkTransport stLinkAdapter)
+            if (_stLink != null)
             {
                 // ST-LINK is a high-level adapter: its ENTER_SWD connect already powers up
                 // the debug domain and configures the AP, and memory is accessed through the
@@ -135,7 +137,18 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 // The manual DAP-direct power-up and AP-register handshake are not reliably
                 // supported by ST-LINK firmware, so read the IDCODE natively and skip the
                 // manual ADIv5 bring-up.
-                DpIdcodeValue = stLinkAdapter.ReadIdCodes();
+                DpIdcodeValue = _stLink.ReadIdCodes();
+
+                // Same sanity check as the manual path below: a missing/short response
+                // reads back as 0, which otherwise only surfaces much later as a
+                // confusing "unrecognized device ID" from Stm32FlashProgrammer.DetectFamily,
+                // misdirecting users whose real problem is no target attached/powered.
+                if (DpIdcodeValue == 0 || DpIdcodeValue == 0xFFFFFFFF)
+                {
+                    throw new SwdProtocolException(
+                        $"Invalid DP IDCODE: 0x{DpIdcodeValue:X8}. Check target connection.");
+                }
+
                 return;
             }
 
@@ -326,13 +339,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void SystemReset()
         {
-            if (_dap is StLinkTransport stLink)
+            if (_stLink != null)
             {
                 // ST-LINK is a high-level adapter: manual MEM-AP register access does not work,
                 // so use the probe's native reset. This clears any halt-on-reset vector catch,
                 // issues a debug system reset and drives a hardware NRST pulse (equivalent to
                 // the board's reset button) so the core runs the freshly flashed firmware.
-                if (!stLink.ResetTarget())
+                if (!_stLink.ResetTarget())
                 {
                     throw new SwdProtocolException(
                         "The ST-LINK did not acknowledge any reset command (system reset or "
@@ -368,11 +381,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void HaltCore()
         {
-            if (_dap is StLinkTransport stLink)
+            if (_stLink != null)
             {
                 // Use the ST-LINK's native halt command (memory-mapped DHCSR access via
                 // manual MEM-AP is not available through the ST-LINK DAP-direct path).
-                stLink.HaltCore();
+                _stLink.HaltCore();
                 Thread.Sleep(10);
                 return;
             }
@@ -395,9 +408,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void ResumeCore()
         {
-            if (_dap is StLinkTransport stLink)
+            if (_stLink != null)
             {
-                stLink.RunCore();
+                _stLink.RunCore();
                 return;
             }
 
@@ -415,7 +428,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// (native) memory access, bypassing manual MEM-AP register access. This is the
         /// case for ST-LINK, which acts as a high-level adapter.
         /// </summary>
-        internal bool UsesNativeMemory => _dap is StLinkTransport;
+        internal bool UsesNativeMemory => _stLink != null;
 
         /// <summary>
         /// Reads a 32-bit word from target memory, using the transport's native memory
@@ -423,9 +436,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal uint ReadMemoryWord(uint address)
         {
-            if (_dap is StLinkTransport stLink)
+            if (_stLink != null)
             {
-                uint[] words = stLink.ReadMemory32(address, 1);
+                uint[] words = _stLink.ReadMemory32(address, 1);
                 return words.Length > 0 ? words[0] : 0;
             }
 
@@ -440,9 +453,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void WriteMemoryWord(uint address, uint value)
         {
-            if (_dap is StLinkTransport stLink)
+            if (_stLink != null)
             {
-                stLink.WriteMemory32(address, new byte[]
+                _stLink.WriteMemory32(address, new byte[]
                 {
                     (byte)(value & 0xFF),
                     (byte)((value >> 8) & 0xFF),
@@ -464,7 +477,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal uint[] ReadMemoryBlock(uint address, int wordCount)
         {
-            return ((StLinkTransport)_dap).ReadMemory32(address, wordCount);
+            if (_stLink == null)
+            {
+                throw new SwdProtocolException(
+                    "ReadMemoryBlock requires a native-memory transport (ST-LINK); "
+                    + "check UsesNativeMemory before calling.");
+            }
+
+            return _stLink.ReadMemory32(address, wordCount);
         }
 
         /// <summary>
@@ -473,7 +493,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void WriteMemoryBlock(uint address, byte[] data)
         {
-            ((StLinkTransport)_dap).WriteMemory32(address, data);
+            if (_stLink == null)
+            {
+                throw new SwdProtocolException(
+                    "WriteMemoryBlock requires a native-memory transport (ST-LINK); "
+                    + "check UsesNativeMemory before calling.");
+            }
+
+            _stLink.WriteMemory32(address, data);
         }
 
         #region IDisposable

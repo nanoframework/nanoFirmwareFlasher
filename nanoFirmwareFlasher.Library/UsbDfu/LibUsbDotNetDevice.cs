@@ -108,9 +108,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
                 return false;
             }
 
-            return errorString.Contains("121")
-                || errorString.Contains("258")
-                || errorString.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0;
+            if (errorString.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+
+            // LibUsbDotNet formats the Win32 error as "<code>:<message>" on its own line
+            // (e.g. "Win32Error:ControlTransfer\n121:Le délai de temporisation de sémaphore
+            // a expiré."). Match only the leading code token of a line, not any substring,
+            // so unrelated codes like 1212 or 2580 aren't mistaken for ERROR_SEM_TIMEOUT
+            // (121) or WAIT_TIMEOUT (258).
+            foreach (string line in errorString.Split('\n'))
+            {
+                string trimmed = line.Trim();
+
+                if (trimmed.StartsWith("121:", StringComparison.Ordinal)
+                    || trimmed.StartsWith("258:", StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public int GetDeviceDescriptor(byte[] buffer)
