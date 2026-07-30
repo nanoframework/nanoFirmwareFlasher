@@ -83,6 +83,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         };
 
         private readonly ISwdTransport _dap;
+        private readonly StLinkTransport _stLink;
         private uint _currentApSel;
         private uint _currentDpBank;
         private bool _disposed;
@@ -95,6 +96,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         internal SwdProtocol(ISwdTransport dap)
         {
             _dap = dap ?? throw new ArgumentNullException(nameof(dap));
+            _stLink = _dap as StLinkTransport;
         }
 
         /// <summary>
@@ -127,6 +129,29 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 throw new SwdProtocolException("Failed to configure DAP transfers.");
             }
 
+            if (_stLink != null)
+            {
+                // ST-LINK is a high-level adapter: its ENTER_SWD connect already powers up
+                // the debug domain and configures the AP, and memory is accessed through the
+                // probe's native read/write commands (see UsesNativeMemory / ReadMemoryWord).
+                // The manual DAP-direct power-up and AP-register handshake are not reliably
+                // supported by ST-LINK firmware, so read the IDCODE natively and skip the
+                // manual ADIv5 bring-up.
+                DpIdcodeValue = _stLink.ReadIdCodes();
+
+                // Same sanity check as the manual path below: a missing/short response
+                // reads back as 0, which otherwise only surfaces much later as a
+                // confusing "unrecognized device ID" from Stm32FlashProgrammer.DetectFamily,
+                // misdirecting users whose real problem is no target attached/powered.
+                if (DpIdcodeValue == 0 || DpIdcodeValue == 0xFFFFFFFF)
+                {
+                    throw new SwdProtocolException(
+                        $"Invalid DP IDCODE: 0x{DpIdcodeValue:X8}. Check target connection.");
+                }
+
+                return;
+            }
+
             // Perform JTAG-to-SWD switch sequence
             if (!_dap.SwjSequence(0, JtagToSwdSequence)) // 0 means 256 bits, but we only send needed
             {
@@ -149,33 +174,60 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             WriteDp(DpAbort,
                 AbortOrunerrclr | AbortWderrclr | AbortStkerrclr | AbortStkcmpclr);
 
-            // Power up debug and system
+            // Request debug + system power-up.
             WriteDp(DpCtrlStat, CtrlStatCsyspwrupreq | CtrlStatCdbgpwrupreq);
 
-            // Wait for power-up acknowledgment
-            int retries = 100;
-            uint ctrlStat;
+            // Poll for the power-up acknowledgment. Some probes (notably ST-LINK in
+            // DAP-direct mode) already power up the debug domain during their own connect
+            // and may not surface the ACK bits through this path, so a missing ACK is
+            // treated as non-fatal here and the connection is validated with a real AP
+            // read below.
+            uint ctrlStat = 0;
 
-            do
+            for (int i = 0; i < 50; i++)
             {
                 ctrlStat = ReadDp(DpCtrlStat);
-                retries--;
 
-                if (retries <= 0)
+                if ((ctrlStat & (CtrlStatCsyspwrupack | CtrlStatCdbgpwrupack))
+                    == (CtrlStatCsyspwrupack | CtrlStatCdbgpwrupack))
                 {
-                    throw new SwdProtocolException(
-                        "Timeout waiting for debug power-up. CTRL/STAT: 0x" + ctrlStat.ToString("X8"));
+                    break;
                 }
 
-                Thread.Sleep(10);
+                Thread.Sleep(2);
             }
-            while ((ctrlStat & (CtrlStatCsyspwrupack | CtrlStatCdbgpwrupack))
-                   != (CtrlStatCsyspwrupack | CtrlStatCdbgpwrupack));
 
             // Select AP 0, bank 0
             _currentApSel = 0;
             _currentDpBank = 0;
             WriteDp(DpSelect, 0);
+
+            bool powerAcked = (ctrlStat & (CtrlStatCsyspwrupack | CtrlStatCdbgpwrupack))
+                              == (CtrlStatCsyspwrupack | CtrlStatCdbgpwrupack);
+
+            if (!powerAcked)
+            {
+                // The ACK wasn't observed. Confirm whether the debug domain is actually up
+                // by reading the AP Identification Register. A plausible value means the
+                // probe powered up debug during connect and we can safely continue.
+                uint apIdr = 0;
+
+                try
+                {
+                    apIdr = ReadAp(ApIdr);
+                }
+                catch (SwdProtocolException)
+                {
+                    apIdr = 0;
+                }
+
+                if (apIdr == 0 || apIdr == 0xFFFFFFFF)
+                {
+                    throw new SwdProtocolException(
+                        $"Debug access could not be established. CTRL/STAT: 0x{ctrlStat:X8}, AP IDR: 0x{apIdr:X8}. " +
+                        "The target may be held in reset, unpowered, or in a low-power mode.");
+                }
+            }
         }
 
         /// <summary>
@@ -287,6 +339,22 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void SystemReset()
         {
+            if (_stLink != null)
+            {
+                // ST-LINK is a high-level adapter: manual MEM-AP register access does not work,
+                // so use the probe's native reset. This clears any halt-on-reset vector catch,
+                // issues a debug system reset and drives a hardware NRST pulse (equivalent to
+                // the board's reset button) so the core runs the freshly flashed firmware.
+                if (!_stLink.ResetTarget())
+                {
+                    throw new SwdProtocolException(
+                        "The ST-LINK did not acknowledge any reset command (system reset or "
+                        + "NRST pulse). The target was most likely not reset.");
+                }
+
+                return;
+            }
+
             const uint AIRCR_ADDR = 0xE000ED0C;
             const uint VECTKEY = 0x05FA0000;
             const uint SYSRESETREQ = 1U << 2;
@@ -313,6 +381,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void HaltCore()
         {
+            if (_stLink != null)
+            {
+                // Use the ST-LINK's native halt command (memory-mapped DHCSR access via
+                // manual MEM-AP is not available through the ST-LINK DAP-direct path).
+                _stLink.HaltCore();
+                Thread.Sleep(10);
+                return;
+            }
+
             const uint DHCSR_ADDR = 0xE000EDF0;
             const uint DBGKEY = 0xA05F0000;
             const uint C_DEBUGEN = 1U << 0;
@@ -331,6 +408,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// </summary>
         internal void ResumeCore()
         {
+            if (_stLink != null)
+            {
+                _stLink.RunCore();
+                return;
+            }
+
             const uint DHCSR_ADDR = 0xE000EDF0;
             const uint DBGKEY = 0xA05F0000;
             const uint C_DEBUGEN = 1U << 0;
@@ -338,6 +421,86 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             WriteAp(ApCsw, CswSize32 | CswAddrinc_Off | CswDbgSwEnable);
             WriteAp(ApTar, DHCSR_ADDR);
             WriteAp(ApDrw, DBGKEY | C_DEBUGEN); // C_HALT=0 → resume
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the underlying transport provides its own
+        /// (native) memory access, bypassing manual MEM-AP register access. This is the
+        /// case for ST-LINK, which acts as a high-level adapter.
+        /// </summary>
+        internal bool UsesNativeMemory => _stLink != null;
+
+        /// <summary>
+        /// Reads a 32-bit word from target memory, using the transport's native memory
+        /// access when available (ST-LINK) or manual MEM-AP access otherwise.
+        /// </summary>
+        internal uint ReadMemoryWord(uint address)
+        {
+            if (_stLink != null)
+            {
+                uint[] words = _stLink.ReadMemory32(address, 1);
+                return words.Length > 0 ? words[0] : 0;
+            }
+
+            WriteAp(ApCsw, CswSize32 | CswAddrinc_Off | CswDbgSwEnable);
+            WriteAp(ApTar, address);
+            return ReadAp(ApDrw);
+        }
+
+        /// <summary>
+        /// Writes a 32-bit word to target memory, using the transport's native memory
+        /// access when available (ST-LINK) or manual MEM-AP access otherwise.
+        /// </summary>
+        internal void WriteMemoryWord(uint address, uint value)
+        {
+            if (_stLink != null)
+            {
+                _stLink.WriteMemory32(address, new byte[]
+                {
+                    (byte)(value & 0xFF),
+                    (byte)((value >> 8) & 0xFF),
+                    (byte)((value >> 16) & 0xFF),
+                    (byte)((value >> 24) & 0xFF),
+                });
+
+                return;
+            }
+
+            WriteAp(ApCsw, CswSize32 | CswAddrinc_Off | CswDbgSwEnable);
+            WriteAp(ApTar, address);
+            WriteAp(ApDrw, value);
+        }
+
+        /// <summary>
+        /// Reads a block of 32-bit words using the transport's native memory access.
+        /// Only valid when <see cref="UsesNativeMemory"/> is <see langword="true"/>.
+        /// </summary>
+        internal uint[] ReadMemoryBlock(uint address, int wordCount)
+        {
+            if (_stLink == null)
+            {
+                throw new SwdProtocolException(
+                    "ReadMemoryBlock requires a native-memory transport (ST-LINK); "
+                    + "check UsesNativeMemory before calling.");
+            }
+
+            return _stLink.ReadMemory32(address, wordCount);
+        }
+
+        /// <summary>
+        /// Writes a block of raw bytes using the transport's native memory access.
+        /// Only valid when <see cref="UsesNativeMemory"/> is <see langword="true"/>.
+        /// </summary>
+        internal void WriteMemoryBlock(uint address, byte[] data)
+        {
+            if (_stLink == null)
+            {
+                throw new SwdProtocolException(
+                    "WriteMemoryBlock requires a native-memory transport (ST-LINK); "
+                    + "check UsesNativeMemory before calling.");
+            }
+
+            _stLink.WriteMemory32(address, data);
         }
 
         #region IDisposable

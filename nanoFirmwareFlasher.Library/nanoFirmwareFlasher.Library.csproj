@@ -102,16 +102,6 @@
         </None>
     </ItemGroup>
 
-    <!-- STLink executables for all platforms -->
-    <ItemGroup>
-        <None Include="..\lib\stlink\**" Link="stlink\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\stlinkMac\**" Link="stlinkMac\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-        <None Include="..\lib\stlinkLinux\**" Link="stlinkLinux\%(RecursiveDir)%(Filename)%(Extension)">
-        </None>
-    </ItemGroup>
-
     <!-- J-Link executables for all platforms -->
     <ItemGroup>
         <None Include="..\lib\jlinkCmds\**" Link="jlinkCmds\%(RecursiveDir)%(Filename)%(Extension)">

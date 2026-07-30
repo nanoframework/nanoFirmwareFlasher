@@ -42,7 +42,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
 
         // Timeouts (milliseconds)
         internal const int ControlTransferTimeout = 5000;
-        internal const int EraseTimeout = 30000;
+
+        // Overall budget for a flash erase to complete. STM32 bootloaders run the
+        // erase synchronously inside the DFU_GETSTATUS handler and stop servicing
+        // the USB control pipe while erasing, so the individual GET_STATUS transfers
+        // may be aborted by the USB stack (WinUSB ERROR_SEM_TIMEOUT) and must be
+        // retried until the operation finishes. A full-chip mass erase on the larger
+        // STM32 parts (e.g. 2 MB F7) can take tens of seconds.
+        internal const int EraseTimeout = 60000;
         internal const int StatusPollInterval = 50;
         internal const int MaxStatusPolls = 600; // 30 seconds at 50ms intervals
     }

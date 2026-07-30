@@ -34,7 +34,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
             {
                 throw new DfuOperationFailedException(
                     "No STM32 DFU device found. Make sure the device is in DFU mode. " +
-                    "On Windows, install the WinUSB driver by running: nanoff --installdfudrivers, or use Zadig (https://zadig.akeo.ie). " +
+                    "On Windows, install the WinUSB driver using Zadig (https://zadig.akeo.ie). " +
                     "On Linux, install libusb: sudo apt install libusb-1.0-0 and add a udev rule for VID 0483. " +
                     "On macOS, install libusb: brew install libusb.");
             }
@@ -58,9 +58,16 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
 
             if (!success)
             {
-                throw new DfuOperationFailedException(
-                    $"USB control transfer OUT failed (request=0x{request:X2}, value=0x{value:X4}). " +
-                    $"Error: {UsbDevice.LastErrorString}");
+                string errorString = UsbDevice.LastErrorString;
+                string message = $"USB control transfer OUT failed (request=0x{request:X2}, value=0x{value:X4}). " +
+                    $"Error: {errorString}";
+
+                if (IsControlTimeout(errorString))
+                {
+                    throw new DfuControlTimeoutException(message);
+                }
+
+                throw new DfuOperationFailedException(message);
             }
         }
 
@@ -72,12 +79,57 @@ namespace nanoFramework.Tools.FirmwareFlasher.UsbDfu
 
             if (!success)
             {
-                throw new DfuOperationFailedException(
-                    $"USB control transfer IN failed (request=0x{request:X2}, value=0x{value:X4}). " +
-                    $"Error: {UsbDevice.LastErrorString}");
+                string errorString = UsbDevice.LastErrorString;
+                string message = $"USB control transfer IN failed (request=0x{request:X2}, value=0x{value:X4}). " +
+                    $"Error: {errorString}";
+
+                if (IsControlTimeout(errorString))
+                {
+                    throw new DfuControlTimeoutException(message);
+                }
+
+                throw new DfuOperationFailedException(message);
             }
 
             return transferred;
+        }
+
+        /// <summary>
+        /// Determines whether a failed control transfer was aborted because it timed out.
+        /// LibUsbDotNet embeds the underlying Win32 error number in the error string as
+        /// "&lt;code&gt;:&lt;message&gt;". ERROR_SEM_TIMEOUT (121) and WAIT_TIMEOUT (258) are
+        /// raised by WinUSB when the device stops servicing the control pipe, which happens
+        /// while an STM32 bootloader runs a long synchronous flash erase.
+        /// </summary>
+        internal static bool IsControlTimeout(string errorString)
+        {
+            if (string.IsNullOrEmpty(errorString))
+            {
+                return false;
+            }
+
+            if (errorString.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+
+            // LibUsbDotNet formats the Win32 error as "<code>:<message>" on its own line
+            // (e.g. "Win32Error:ControlTransfer\n121:Le délai de temporisation de sémaphore
+            // a expiré."). Match only the leading code token of a line, not any substring,
+            // so unrelated codes like 1212 or 2580 aren't mistaken for ERROR_SEM_TIMEOUT
+            // (121) or WAIT_TIMEOUT (258).
+            foreach (string line in errorString.Split('\n'))
+            {
+                string trimmed = line.Trim();
+
+                if (trimmed.StartsWith("121:", StringComparison.Ordinal)
+                    || trimmed.StartsWith("258:", StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public int GetDeviceDescriptor(byte[] buffer)
