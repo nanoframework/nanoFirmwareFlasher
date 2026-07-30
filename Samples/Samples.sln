@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDeviceDetails", "GetDevi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateNanoDeviceClr", "UpdateNanoDeviceClr\UpdateNanoDeviceClr.csproj", "{CACA196F-7922-40D9-9971-EB18B1ECDEA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdatePicoDevice", "UpdatePicoDevice\UpdatePicoDevice.csproj", "{B7A3C2D1-4E5F-6A7B-8C9D-0E1F2A3B4C5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CACA196F-7922-40D9-9971-EB18B1ECDEA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7A3C2D1-4E5F-6A7B-8C9D-0E1F2A3B4C5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7A3C2D1-4E5F-6A7B-8C9D-0E1F2A3B4C5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7A3C2D1-4E5F-6A7B-8C9D-0E1F2A3B4C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7A3C2D1-4E5F-6A7B-8C9D-0E1F2A3B4C5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

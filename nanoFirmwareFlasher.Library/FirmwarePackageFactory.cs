@@ -43,6 +43,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     fwVersion,
                     false);
             }
+            else if (nanoDevice.Platform.StartsWith("RP_PICO"))
+            {
+                return new PicoFirmware(
+                    nanoDevice.TargetName,
+                    fwVersion,
+                    false);
+            }
             else
             {
                 throw new NotSupportedException($"FirmwarePackageFactory doesn't support generating packages for {nanoDevice.Platform} platform");

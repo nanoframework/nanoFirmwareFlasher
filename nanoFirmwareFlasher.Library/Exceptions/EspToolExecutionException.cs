@@ -4,18 +4,16 @@
 //
 
 using System;
-using System.Runtime.Serialization;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
-    /// Error executing an esptool command.
+    /// Error executing an ESP32 serial protocol command.
     /// </summary>
-    [Serializable]
     public class EspToolExecutionException : Exception
     {
         /// <summary>
-        /// Error message from esptool.
+        /// Error message from ESP32 serial operation.
         /// </summary>
         public string ExecutionError;
 
@@ -42,15 +40,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display.</param>
         public EspToolExecutionException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        /// ESP32 tool execution exception.
-        /// </summary>
-        /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context.</param>
-        protected EspToolExecutionException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

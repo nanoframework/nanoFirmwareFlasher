@@ -1,50 +1,14 @@
-<Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <!-- esptool executables for all platforms -->
-	<ItemGroup>
-        <Content Include="..\lib\esptool\esptoolWin\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolWin</PackagePath>
-        </Content>
-        <Content Include="..\lib\esptool\esptoolMac\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolMac</PackagePath>
-        </Content>
-        <Content Include="..\lib\esptool\esptoolLinux\**">
-            <Pack>true</Pack>
-			<PackagePath>tools\$(PackageTfmSubFolder)any\esptool\esptoolLinux</PackagePath>
-        </Content>
-    </ItemGroup>
-
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <!-- ESP32 nanoFramework bootloader files -->
     <ItemGroup>
         <Content Include="..\lib\esp32bootloader\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\esp32bootloader</PackagePath>
         </Content>
-        <Content Include="..\lib\esp32s2bootloader\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\esp32s2bootloader</PackagePath>
-        </Content>
-    </ItemGroup>
-
-    <!-- STLink executables for all platforms -->
-    <ItemGroup>
-        <Content Include="..\lib\stlink\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\stlink</PackagePath>
-        </Content>
-        <Content Include="..\lib\stlinkMac\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\stlinkMac</PackagePath>
-        </Content>
-        <Content Include="..\lib\stlinkLinux\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\stlinkLinux</PackagePath>        
-        </Content>
     </ItemGroup>
 
     <!-- J-Link executables for all platforms -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(IncludeJLinkCli)' == 'true'">
         <Content Include="..\lib\jlinkCmds\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\jlinkCmds</PackagePath>
@@ -61,6 +25,10 @@
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\jlinkLinux</PackagePath>  
         </Content>
+    </ItemGroup>
+
+    <!-- silink executable (Windows only, for Silabs VCP baud rate) -->
+    <ItemGroup Condition="'$(IncludeSilinkCli)' == 'true'">
         <Content Include="..\lib\silink\**">
             <Pack>true</Pack>
             <PackagePath>tools\$(PackageTfmSubFolder)any\silink</PackagePath>  
@@ -68,7 +36,7 @@
     </ItemGroup>
 
     <!-- TI Uniflash tool -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(IncludeUniflashCli)' == 'true'">
         <Content Include="..\lib\uniflash\**">
             <Pack>true</Pack>
            <PackagePath>tools\$(PackageTfmSubFolder)any\uniflash</PackagePath>  

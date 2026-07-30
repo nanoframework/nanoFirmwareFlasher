@@ -1,0 +1,736 @@
+//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using nanoFramework.Tools.FirmwareFlasher;
+using nanoFramework.Tools.FirmwareFlasher.Swd;
+
+namespace nanoFirmwareFlasher.Tests
+{
+    /// <summary>
+    /// Tests for the Phase 5 ST-LINK V2/V3 protocol transport.
+    /// All tests are unit tests that verify protocol constants, command encoding,
+    /// clock divisor mapping, and TransferRequest ↔ DAP register mapping
+    /// without requiring real hardware.
+    /// </summary>
+    [TestClass]
+    public class StLinkProtocolTests
+    {
+        #region ISwdTransport implementation
+
+        [TestMethod]
+        public void StLinkTransport_Implements_ISwdTransport()
+        {
+            // StLinkTransport should implement ISwdTransport
+            Assert.IsTrue(typeof(ISwdTransport).IsAssignableFrom(typeof(StLinkTransport)));
+        }
+
+        [TestMethod]
+        public void StLinkTransport_Implements_IDisposable()
+        {
+            Assert.IsTrue(typeof(IDisposable).IsAssignableFrom(typeof(StLinkTransport)));
+        }
+
+        [TestMethod]
+        public void StLinkTransport_PacketSize_Is64()
+        {
+            var transport = new StLinkTransport();
+            Assert.AreEqual(64, transport.PacketSize);
+        }
+
+        [TestMethod]
+        public void StLinkTransport_ProductName_DefaultsToNull()
+        {
+            var transport = new StLinkTransport();
+            Assert.IsNull(transport.ProductName);
+        }
+
+        [TestMethod]
+        public void StLinkTransport_SerialNumber_DefaultsToNull()
+        {
+            var transport = new StLinkTransport();
+            Assert.IsNull(transport.SerialNumber);
+        }
+
+        #endregion
+
+        #region StmStLinkDevice public API
+
+        [TestMethod]
+        public void StmStLinkDevice_HasExpectedPublicProperties()
+        {
+            // Verify the public API matches what integration code expects
+            var type = typeof(StmStLinkDevice);
+
+            Assert.IsNotNull(type.GetProperty("DevicePresent"));
+            Assert.IsNotNull(type.GetProperty("ProbeId"));
+            Assert.IsNotNull(type.GetProperty("ProbeName"));
+            Assert.IsNotNull(type.GetProperty("DeviceName"));
+            Assert.IsNotNull(type.GetProperty("DeviceCPU"));
+            Assert.IsNotNull(type.GetProperty("DpIdcode"));
+            Assert.IsNotNull(type.GetProperty("DoMassErase"));
+            Assert.IsNotNull(type.GetProperty("Verbosity"));
+        }
+
+        [TestMethod]
+        public void StmStLinkDevice_HasExpectedPublicMethods()
+        {
+            var type = typeof(StmStLinkDevice);
+
+            Assert.IsNotNull(type.GetMethod("FlashHexFiles"));
+            Assert.IsNotNull(type.GetMethod("FlashBinFiles"));
+            Assert.IsNotNull(type.GetMethod("MassErase"));
+            Assert.IsNotNull(type.GetMethod("ResetMcu"));
+            Assert.IsNotNull(type.GetMethod("StartExecution"));
+            Assert.IsNotNull(type.GetMethod("ListDevices"));
+            Assert.IsNotNull(type.GetMethod("Dispose"));
+        }
+
+        [TestMethod]
+        public void StmStLinkDevice_ListDevices_ReturnsListType()
+        {
+            // Static method should return List<string>
+            var method = typeof(StmStLinkDevice).GetMethod("ListDevices");
+            Assert.IsNotNull(method);
+            Assert.AreEqual(typeof(List<string>), method.ReturnType);
+            Assert.IsTrue(method.IsStatic);
+        }
+
+        [TestMethod]
+        public void StmStLinkDevice_Implements_IDisposable()
+        {
+            Assert.IsTrue(typeof(IDisposable).IsAssignableFrom(typeof(StmStLinkDevice)));
+        }
+
+        #endregion
+
+        #region Interface enum
+
+        [TestMethod]
+        public void Interface_NativeStLink_EnumValueExists()
+        {
+            // Verify the NativeStLink value exists in the Interface enum
+            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeStLink));
+        }
+
+        [TestMethod]
+        public void Interface_NativeStLink_IsDistinctFromOthers()
+        {
+            // NativeStLink must be different from all other interface values
+            Assert.AreNotEqual(Interface.None, Interface.NativeStLink);
+            Assert.AreNotEqual(Interface.Jtag, Interface.NativeStLink);
+            Assert.AreNotEqual(Interface.Dfu, Interface.NativeStLink);
+            Assert.AreNotEqual(Interface.NativeDfu, Interface.NativeStLink);
+            Assert.AreNotEqual(Interface.NativeSwd, Interface.NativeStLink);
+        }
+
+        [TestMethod]
+        public void Interface_AllValues_AreUnique()
+        {
+            var values = Enum.GetValues(typeof(Interface)).Cast<int>().ToArray();
+            int distinctCount = values.Distinct().Count();
+            Assert.AreEqual(values.Length, distinctCount, "All Interface enum values must be unique");
+        }
+
+        #endregion
+
+        #region TransferRequest DAP register mapping
+
+        [TestMethod]
+        public void TransferRequest_DpRead_MapsTo_StLinkDpPort()
+        {
+            // DP read: APnDP=0 (bit 0), RnW=1 (bit 1) → request = 0x02
+            var req = TransferRequest.DpRead(0x00);
+
+            // ST-LINK transport interprets: isAp=(request & 0x01)!=0 → false
+            bool isAp = (req.Request & 0x01) != 0;
+            bool isRead = (req.Request & 0x02) != 0;
+            byte regAddr = (byte)(req.Request & 0x0C);
+
+            Assert.IsFalse(isAp, "DP read should not be AP");
+            Assert.IsTrue(isRead, "DP read should be a read");
+            Assert.AreEqual((byte)0x00, regAddr);
+        }
+
+        [TestMethod]
+        public void TransferRequest_ApRead_MapsTo_StLinkApPort()
+        {
+            // AP read: APnDP=1 (bit 0), RnW=1 (bit 1) → request = 0x03
+            var req = TransferRequest.ApRead(0x00);
+
+            bool isAp = (req.Request & 0x01) != 0;
+            bool isRead = (req.Request & 0x02) != 0;
+            byte regAddr = (byte)(req.Request & 0x0C);
+
+            Assert.IsTrue(isAp, "AP read should be AP");
+            Assert.IsTrue(isRead, "AP read should be a read");
+            Assert.AreEqual((byte)0x00, regAddr);
+        }
+
+        [TestMethod]
+        public void TransferRequest_DpWrite_MapsTo_StLinkDpPort()
+        {
+            // DP write: APnDP=0, RnW=0 → request = 0x00
+            var req = TransferRequest.DpWrite(0x04, 0xAABBCCDD);
+
+            bool isAp = (req.Request & 0x01) != 0;
+            bool isRead = (req.Request & 0x02) != 0;
+            byte regAddr = (byte)(req.Request & 0x0C);
+
+            Assert.IsFalse(isAp, "DP write should not be AP");
+            Assert.IsFalse(isRead, "DP write should not be a read");
+            Assert.AreEqual((byte)0x04, regAddr);
+            Assert.AreEqual(0xAABBCCDDu, req.Data);
+        }
+
+        [TestMethod]
+        public void TransferRequest_ApWrite_MapsTo_StLinkApPort()
+        {
+            // AP write: APnDP=1, RnW=0 → request = 0x01
+            var req = TransferRequest.ApWrite(0x0C, 0x11223344);
+
+            bool isAp = (req.Request & 0x01) != 0;
+            bool isRead = (req.Request & 0x02) != 0;
+            byte regAddr = (byte)(req.Request & 0x0C);
+
+            Assert.IsTrue(isAp, "AP write should be AP");
+            Assert.IsFalse(isRead, "AP write should not be a read");
+            Assert.AreEqual((byte)0x0C, regAddr);
+            Assert.AreEqual(0x11223344u, req.Data);
+        }
+
+        [TestMethod]
+        public void TransferRequest_AllDpAddresses_MapCorrectly()
+        {
+            byte[] addrs = { 0x00, 0x04, 0x08, 0x0C };
+
+            foreach (byte addr in addrs)
+            {
+                var req = TransferRequest.DpRead(addr);
+                byte regAddr = (byte)(req.Request & 0x0C);
+                Assert.AreEqual(addr, regAddr, $"DP address 0x{addr:X2} should map to register address 0x{addr:X2}");
+            }
+        }
+
+        [TestMethod]
+        public void TransferRequest_AllApAddresses_MapCorrectly()
+        {
+            byte[] addrs = { 0x00, 0x04, 0x08, 0x0C };
+
+            foreach (byte addr in addrs)
+            {
+                var req = TransferRequest.ApRead(addr);
+                byte regAddr = (byte)(req.Request & 0x0C);
+                Assert.AreEqual(addr, regAddr, $"AP address 0x{addr:X2} should map to register address 0x{addr:X2}");
+            }
+        }
+
+        #endregion
+
+        #region StLinkTransport no-op methods
+
+        [TestMethod]
+        public void StLinkTransport_TransferConfigure_ReturnsTrue()
+        {
+            // TransferConfigure is a no-op on ST-LINK, should always succeed
+            var transport = new StLinkTransport();
+            Assert.IsTrue(transport.TransferConfigure(0, 100, 0));
+        }
+
+        [TestMethod]
+        public void StLinkTransport_SwdConfigure_ReturnsTrue()
+        {
+            // SwdConfigure is a no-op on ST-LINK, should always succeed
+            var transport = new StLinkTransport();
+            Assert.IsTrue(transport.SwdConfigure(0));
+        }
+
+        [TestMethod]
+        public void StLinkTransport_SwjSequence_ReturnsTrue()
+        {
+            // SwjSequence is a no-op on ST-LINK, should always succeed
+            var transport = new StLinkTransport();
+            Assert.IsTrue(transport.SwjSequence(51, new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x9E, 0xE7 }));
+        }
+
+        #endregion
+
+        #region SwdProtocol uses ISwdTransport
+
+        [TestMethod]
+        public void SwdProtocol_AcceptsISwdTransport()
+        {
+            // SwdProtocol constructor should accept any ISwdTransport, including StLinkTransport
+            var type = typeof(SwdProtocol);
+            var constructor = type.GetConstructor(
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public,
+                null,
+                new[] { typeof(ISwdTransport) },
+                null);
+
+            Assert.IsNotNull(constructor, "SwdProtocol should have a constructor that accepts ISwdTransport");
+        }
+
+        [TestMethod]
+        public void SwdProtocol_AcceptsStLinkTransport()
+        {
+            // Since StLinkTransport implements ISwdTransport, it should be passable to SwdProtocol
+            var stLink = new StLinkTransport();
+            Assert.IsInstanceOfType(stLink, typeof(ISwdTransport));
+
+            // Verify we can create a SwdProtocol with it (via reflection since internal)
+            var type = typeof(SwdProtocol);
+            var constructor = type.GetConstructor(
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public,
+                null,
+                new[] { typeof(ISwdTransport) },
+                null);
+            Assert.IsNotNull(constructor);
+
+            var swd = constructor.Invoke(new object[] { stLink });
+            Assert.IsNotNull(swd);
+        }
+
+        #endregion
+
+        #region StLinkTransport enumerate (graceful when no device connected)
+
+        [TestMethod]
+        public void StLinkTransport_Enumerate_ReturnsListType()
+        {
+            // The static Enumerate method should return a properly typed list
+            var method = typeof(StLinkTransport).GetMethod("Enumerate",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+
+            Assert.IsNotNull(method, "StLinkTransport should have an Enumerate method");
+        }
+
+        [TestMethod]
+        public void StmStLinkDevice_ListDevices_ReturnsNonNull()
+        {
+            // ListDevices should return a non-null list even when no devices are connected
+            var devices = StmStLinkDevice.ListDevices();
+            Assert.IsNotNull(devices);
+        }
+
+        #endregion
+
+        #region Bulk OUT endpoint selection by ST-LINK variant
+
+        [TestMethod]
+        public void GetWriteEndpointForPid_StandaloneV2_UsesEndpoint02()
+        {
+            // The standalone ST-LINK/V2 dongle (PID 0x3748) uses bulk OUT endpoint 0x02.
+            Assert.AreEqual((byte)0x02, LibUsbDotNetStLinkUsb.GetWriteEndpointForPid(0x3748));
+        }
+
+        [DataRow(0x374B)] // ST-LINK/V2-1 (embedded on Nucleo/Discovery, e.g. STM32F769I-DISCO)
+        [DataRow(0x3752)] // ST-LINK/V2-1 without mass storage
+        [DataRow(0x374D)] // ST-LINK/V3 bootloader
+        [DataRow(0x374E)] // ST-LINK/V3E
+        [DataRow(0x374F)] // ST-LINK/V3S
+        [DataRow(0x3753)] // ST-LINK/V3 (2 VCP)
+        [DataTestMethod]
+        public void GetWriteEndpointForPid_EmbeddedV2_1AndV3_UseEndpoint01(int pid)
+        {
+            // Embedded ST-LINK/V2-1 and all ST-LINK/V3 variants use bulk OUT endpoint 0x01.
+            // Regression test for boards with embedded ST-LINK failing to connect (E5002).
+            Assert.AreEqual((byte)0x01, LibUsbDotNetStLinkUsb.GetWriteEndpointForPid(pid));
+        }
+
+        #endregion
+
+        #region Enter-SWD debug command encoding
+
+        [TestMethod]
+        public void EnterSwdCommand_UsesApiV2EnterCommand()
+        {
+            byte[] cmd = StLinkTransport.BuildEnterSwdCommand();
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x30, cmd[1], "byte 1 must be STLINK_DEBUG_APIV2_ENTER");
+        }
+
+        [TestMethod]
+        public void EnterSwdCommand_SelectsSwdWireProtocol_NotJtag()
+        {
+            // The third byte selects the wire protocol. It MUST be 0xA3 (SWD).
+            // A value of 0x00 would select JTAG and break every SWD-only board
+            // (Nucleo/Discovery, e.g. STM32F769I-DISCO). Regression test.
+            byte[] cmd = StLinkTransport.BuildEnterSwdCommand();
+
+            Assert.AreEqual((byte)0xA3, cmd[2], "byte 2 must be STLINK_DEBUG_ENTER_SWD (0xA3)");
+        }
+
+        #endregion
+
+        #region Block memory command encoding (opcode regression)
+
+        [TestMethod]
+        public void ReadMemory32Command_UsesBlockReadOpcode_Not36()
+        {
+            // Regression guard: block memory reads MUST use 0x07 (STLINK_DEBUG_READMEM_32BIT).
+            // A previous bug used 0x36 (READ_DEBUG_REG), which returns a status word instead of
+            // memory data, causing bogus IDCODE reads (0x1D) and failed flashing on real ST-LINK
+            // hardware (e.g. embedded ST-LINK/V2-1 on B-L475E-IOT01A).
+            byte[] cmd = StLinkTransport.BuildReadMemory32Command(0x08000000, 4);
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x07, cmd[1], "byte 1 must be STLINK_DEBUG_READMEM_32BIT (0x07), not 0x36");
+        }
+
+        [TestMethod]
+        public void WriteMemory32Command_UsesBlockWriteOpcode_Not35()
+        {
+            // Regression guard: block memory writes MUST use 0x08 (STLINK_DEBUG_WRITEMEM_32BIT),
+            // not 0x35 (WRITE_DEBUG_REG).
+            byte[] cmd = StLinkTransport.BuildWriteMemory32Command(0x20000000, 8);
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x08, cmd[1], "byte 1 must be STLINK_DEBUG_WRITEMEM_32BIT (0x08), not 0x35");
+        }
+
+        [TestMethod]
+        public void ReadMemory32Command_EncodesAddressAndLength_LittleEndian()
+        {
+            byte[] cmd = StLinkTransport.BuildReadMemory32Command(0x08004008, 256);
+
+            // Address 0x08004008, little-endian in bytes 2..5.
+            Assert.AreEqual((byte)0x08, cmd[2]);
+            Assert.AreEqual((byte)0x40, cmd[3]);
+            Assert.AreEqual((byte)0x00, cmd[4]);
+            Assert.AreEqual((byte)0x08, cmd[5]);
+
+            // Byte count 256 (0x0100), little-endian in bytes 6..7.
+            Assert.AreEqual((byte)0x00, cmd[6]);
+            Assert.AreEqual((byte)0x01, cmd[7]);
+        }
+
+        [TestMethod]
+        public void WriteMemory32Command_EncodesAddressAndLength_LittleEndian()
+        {
+            byte[] cmd = StLinkTransport.BuildWriteMemory32Command(0x2000FFFC, 512);
+
+            // Address 0x2000FFFC, little-endian in bytes 2..5.
+            Assert.AreEqual((byte)0xFC, cmd[2]);
+            Assert.AreEqual((byte)0xFF, cmd[3]);
+            Assert.AreEqual((byte)0x00, cmd[4]);
+            Assert.AreEqual((byte)0x20, cmd[5]);
+
+            // Byte count 512 (0x0200), little-endian in bytes 6..7.
+            Assert.AreEqual((byte)0x00, cmd[6]);
+            Assert.AreEqual((byte)0x02, cmd[7]);
+        }
+
+        #endregion
+
+        #region UsesNativeMemory routing
+
+        [TestMethod]
+        public void SwdProtocol_UsesNativeMemory_TrueForStLinkTransport()
+        {
+            // ST-LINK is a high-level adapter (HLA): memory access must go through the probe's
+            // native READMEM/WRITEMEM commands, not manual DAP-direct AP transfers (which return
+            // AP IDR 0 on ST-LINK firmware). SwdProtocol signals this via UsesNativeMemory.
+            using (var stLink = new StLinkTransport())
+            using (var swd = new SwdProtocol(stLink))
+            {
+                Assert.IsTrue(swd.UsesNativeMemory);
+            }
+        }
+
+        [TestMethod]
+        public void SwdProtocol_UsesNativeMemory_FalseForNonStLinkTransport()
+        {
+            // A non-ST-LINK (e.g. CMSIS-DAP) transport uses the manual DAP-direct memory path.
+            using (var fake = new FakeSwdTransport())
+            using (var swd = new SwdProtocol(fake))
+            {
+                Assert.IsFalse(swd.UsesNativeMemory);
+            }
+        }
+
+        /// <summary>
+        /// Minimal non-ST-LINK <see cref="ISwdTransport"/> for routing tests.
+        /// </summary>
+        private sealed class FakeSwdTransport : ISwdTransport
+        {
+            public string ProductName => "Fake";
+            public string SerialNumber => "0";
+            public int PacketSize => 64;
+            public bool Connect() => true;
+            public void Disconnect() { }
+            public bool SetClock(uint frequencyHz) => true;
+            public bool TransferConfigure(byte idleCycles, ushort waitRetry, ushort matchRetry) => true;
+            public bool SwdConfigure(byte turnaround = 0) => true;
+            public bool SwjSequence(byte bitCount, byte[] data) => true;
+            public uint[] ExecuteTransfer(byte dapIndex, TransferRequest[] requests) => Array.Empty<uint>();
+            public byte SwjPins(byte pinOutput, byte pinSelect, uint waitUs) => 0;
+            public void Dispose() { }
+        }
+
+        #endregion
+
+        #region GETLASTRWSTATUS2 command encoding
+
+        [TestMethod]
+        public void GetLastRwStatus2Command_UsesCorrectOpcode()
+        {
+            byte[] cmd = StLinkTransport.BuildGetLastRwStatus2Command();
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x3E, cmd[1], "byte 1 must be GETLASTRWSTATUS2 (0x3E)");
+        }
+
+        #endregion
+
+        #region TAR auto-increment wrap boundary (block memory chunking)
+
+        [TestMethod]
+        public void GetTarBlockRemaining_AlignedAddress_ReturnsFullBlock()
+        {
+            // Starting exactly on a 1024-byte boundary, a full block is available before the
+            // next boundary.
+            Assert.AreEqual(1024, StLinkTransport.GetTarBlockRemaining(0x08000000));
+            Assert.AreEqual(1024, StLinkTransport.GetTarBlockRemaining(0x08000400)); // +1024
+        }
+
+        [TestMethod]
+        public void GetTarBlockRemaining_MidBlockAddress_ReturnsBytesUntilNextBoundary()
+        {
+            // 0x08000010 is 16 bytes into the 1024-byte block starting at 0x08000000, so 1008
+            // bytes remain before the next boundary (0x08000400).
+            Assert.AreEqual(1024 - 16, StLinkTransport.GetTarBlockRemaining(0x08000010));
+        }
+
+        [TestMethod]
+        public void GetTarBlockRemaining_LastWordBeforeBoundary_ReturnsFourBytes()
+        {
+            // Regression guard: a single command must never cross the TAR auto-increment wrap
+            // boundary. Starting 4 bytes before a boundary, only that one word may be
+            // transferred in this command.
+            Assert.AreEqual(4, StLinkTransport.GetTarBlockRemaining(0x080003FC));
+        }
+
+        [TestMethod]
+        public void ReadMemory32Command_NeverRequestsMoreThanTarBlockRemaining()
+        {
+            // Regression guard for the silent-address-wrap bug: a large read starting a few
+            // bytes before a 1024-byte boundary must be split so the first command's byte
+            // count does not cross that boundary (mirrors OpenOCD's stlink_max_block_size(),
+            // which guards the same STLINK_DEBUG_READMEM_32BIT command).
+            uint address = 0x080003F0; // 16 bytes before the 0x08000400 boundary
+            int firstChunkMax = StLinkTransport.GetTarBlockRemaining(address);
+
+            byte[] cmd = StLinkTransport.BuildReadMemory32Command(address, firstChunkMax);
+
+            ushort encodedByteCount = (ushort)(cmd[6] | (cmd[7] << 8));
+
+            Assert.AreEqual(16, firstChunkMax, "16 bytes should remain before the boundary.");
+            Assert.AreEqual(firstChunkMax, encodedByteCount);
+        }
+
+        #endregion
+
+        #region Connect-under-reset (DRIVE_NRST) command encoding
+
+        [TestMethod]
+        public void DriveNrstCommand_UsesApiV2DriveNrstOpcode()
+        {
+            // Connect-under-reset asserts the target NRST line before entering SWD so a
+            // running/low-power application can't gate the debug port. The command MUST be
+            // STLINK_DEBUG_APIV2_DRIVE_NRST (0x3C).
+            byte[] cmd = StLinkTransport.BuildDriveNrstCommand(0x00);
+
+            Assert.AreEqual((byte)0xF2, cmd[0], "byte 0 must be STLINK_DEBUG_COMMAND");
+            Assert.AreEqual((byte)0x3C, cmd[1], "byte 1 must be STLINK_DEBUG_APIV2_DRIVE_NRST (0x3C)");
+        }
+
+        [TestMethod]
+        [DataRow((byte)0x00)] // NRST low (assert reset)
+        [DataRow((byte)0x01)] // NRST high (release reset)
+        [DataRow((byte)0x02)] // NRST pulse
+        public void DriveNrstCommand_EncodesRequestedState(byte state)
+        {
+            byte[] cmd = StLinkTransport.BuildDriveNrstCommand(state);
+
+            Assert.AreEqual(state, cmd[2], "byte 2 must carry the requested NRST state");
+        }
+
+        #endregion
+
+        #region Dispose safety
+
+        [TestMethod]
+        public void StLinkTransport_Dispose_DoesNotThrow_WhenNotOpened()
+        {
+            // Disposing without opening should not throw
+            var transport = new StLinkTransport();
+            transport.Dispose();
+        }
+
+        [TestMethod]
+        public void StLinkTransport_DoubleDispose_DoesNotThrow()
+        {
+            var transport = new StLinkTransport();
+            transport.Dispose();
+            transport.Dispose(); // second dispose should not throw
+        }
+
+        #endregion
+
+        #region Phase 6: Consolidation — auto-detection
+
+        [TestMethod]
+        public void Stm32Operations_ResetMcu_IsStaticMethod()
+        {
+            var method = typeof(Stm32Operations).GetMethod("ResetMcu");
+            Assert.IsNotNull(method);
+            Assert.IsTrue(method.IsStatic);
+        }
+
+        [TestMethod]
+        public void Stm32Operations_MassErase_IsStaticMethod()
+        {
+            var method = typeof(Stm32Operations).GetMethod("MassErase");
+            Assert.IsNotNull(method);
+            Assert.IsTrue(method.IsStatic);
+        }
+
+        [TestMethod]
+        public void Stm32Operations_UpdateFirmwareAsync_HasInterfaceParameter()
+        {
+            // Verify that UpdateFirmwareAsync accepts an Interface parameter
+            var method = typeof(Stm32Operations).GetMethod("UpdateFirmwareAsync");
+            Assert.IsNotNull(method);
+
+            var parameters = method.GetParameters();
+            bool hasInterfaceParam = false;
+
+            foreach (var param in parameters)
+            {
+                if (param.ParameterType == typeof(Interface))
+                {
+                    hasInterfaceParam = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(hasInterfaceParam, "UpdateFirmwareAsync should have an Interface parameter");
+        }
+
+        [TestMethod]
+        public void Interface_HasAllExpectedValues()
+        {
+            // Verify all 6 interface values exist
+            var values = Enum.GetValues(typeof(Interface));
+            Assert.AreEqual(6, values.Length, "Interface enum should have exactly 6 values");
+
+            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.None));
+            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.Jtag));
+            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.Dfu));
+            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeDfu));
+            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeSwd));
+            Assert.IsTrue(Enum.IsDefined(typeof(Interface), Interface.NativeStLink));
+        }
+
+        [TestMethod]
+        public void StmSwdDevice_ListDevices_IsNotPlatformRestricted()
+        {
+            // After Phase 4/6, ListDevices should work on all platforms (no Windows-only guard)
+            // It should return a list (possibly empty) without throwing
+            var result = StmSwdDevice.ListDevices();
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public void StmStLinkDevice_ListDevices_WorksOnAllPlatforms()
+        {
+            // ListDevices should work on all platforms without throwing
+            var result = StmStLinkDevice.ListDevices();
+            Assert.IsNotNull(result);
+        }
+
+        #endregion
+
+        #region Phase 7: CLI-Free Robustness
+
+        [TestMethod]
+        public void JLinkCli_RunJLinkCLI_IsInternalMethod()
+        {
+            // RunJLinkCLI should be internal (not public)
+            var method = typeof(JLinkCli).GetMethod(
+                "RunJLinkCLI",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            Assert.IsNotNull(method, "RunJLinkCLI should exist as internal static method");
+        }
+
+        [TestMethod]
+        public void SilinkCli_RunSilinkCLI_IsInternalMethod()
+        {
+            // RunSilinkCLI should be internal (not public)
+            var method = typeof(SilinkCli).GetMethod(
+                "RunSilinkCLI",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            Assert.IsNotNull(method, "RunSilinkCLI should exist as internal static method");
+        }
+
+        [TestMethod]
+        public void ExitCodes_E1000_DisplaySuggestsNativeAlternatives()
+        {
+            // E1000 (No DFU device) should suggest native alternatives
+            var memberInfo = typeof(ExitCodes).GetField("E1000");
+            Assert.IsNotNull(memberInfo);
+
+            var displayAttr = memberInfo.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false);
+            Assert.AreEqual(1, displayAttr.Length, "E1000 should have a Display attribute");
+
+            var name = ((System.ComponentModel.DataAnnotations.DisplayAttribute)displayAttr[0]).Name;
+            Assert.IsNotNull(name);
+            Assert.IsTrue(
+                name.Contains("nativedfu") || name.Contains("native") || name.Contains("uart"),
+                $"E1000 display should suggest native alternatives. Got: {name}");
+        }
+
+        [TestMethod]
+        public void ExitCodes_E5001_DisplaySuggestsNativeAlternatives()
+        {
+            // E5001 (No JTAG device) should suggest native alternatives
+            var memberInfo = typeof(ExitCodes).GetField("E5001");
+            Assert.IsNotNull(memberInfo);
+
+            var displayAttr = memberInfo.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false);
+            Assert.AreEqual(1, displayAttr.Length);
+
+            var name = ((System.ComponentModel.DataAnnotations.DisplayAttribute)displayAttr[0]).Name;
+            Assert.IsNotNull(name);
+            Assert.IsTrue(
+                name.Contains("nativestlink") || name.Contains("nativeswd") || name.Contains("native"),
+                $"E5001 display should suggest native alternatives. Got: {name}");
+        }
+
+        [TestMethod]
+        public void ExitCodes_E9010_DisplaySuggestsNativeAlternatives()
+        {
+            // E9010 (No device connected) should suggest native alternatives
+            var memberInfo = typeof(ExitCodes).GetField("E9010");
+            Assert.IsNotNull(memberInfo);
+
+            var displayAttr = memberInfo.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false);
+            Assert.AreEqual(1, displayAttr.Length);
+
+            var name = ((System.ComponentModel.DataAnnotations.DisplayAttribute)displayAttr[0]).Name;
+            Assert.IsNotNull(name);
+            Assert.IsTrue(
+                name.Contains("native") || name.Contains("uart"),
+                $"E9010 display should suggest native alternatives. Got: {name}");
+        }
+
+        #endregion
+    }
+}

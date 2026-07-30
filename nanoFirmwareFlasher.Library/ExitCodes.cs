@@ -23,7 +23,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// No DFU device found
         /// </summary>
-        [Display(Name = "No DFU device found. Make sure it's connected and has booted in DFU mode")]
+        [Display(Name = "No DFU device found. Make sure it's connected and has booted in DFU mode. Try --nativedfu for tool-free DFU or --uart for serial bootloader.")]
         E1000 = 1000,
 
         /// <summary>
@@ -84,14 +84,60 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Error executing file deployment on nano device.")]
         E2003 = 2003,
 
+        //////////////////////////////
+        // Raspberry Pi Pico Errors //
+        //////////////////////////////
+
+        /// <summary>
+        /// Generic Pico flashing error.
+        /// </summary>
+        [Display(Name = "Error flashing Raspberry Pi Pico device.")]
+        E3000 = 3000,
+
+        /// <summary>
+        /// UF2 drive not found (device not in BOOTSEL mode).
+        /// </summary>
+        [Display(Name = "Pico UF2 drive not found. Make sure the device is connected in BOOTSEL mode (hold BOOTSEL button while connecting USB).")]
+        E3001 = 3001,
+
+        /// <summary>
+        /// Failed to copy UF2 file to device.
+        /// </summary>
+        [Display(Name = "Failed to copy firmware file to Pico UF2 drive.")]
+        E3002 = 3002,
+
+        /// <summary>
+        /// Invalid or corrupt UF2 file.
+        /// </summary>
+        [Display(Name = "Invalid or corrupt UF2 file.")]
+        E3003 = 3003,
+
+        /// <summary>
+        /// Device not recognized as RP2040/RP2350.
+        /// </summary>
+        [Display(Name = "Connected device not recognized as RP2040 or RP2350.")]
+        E3004 = 3004,
+
+        /// <summary>
+        /// Timeout waiting for UF2 drive to appear.
+        /// </summary>
+        [Display(Name = "Timeout waiting for Pico UF2 drive to appear. Make sure the device is in BOOTSEL mode.")]
+        E3005 = 3005,
+
+        /// <summary>
+        /// Multiple Pico devices in BOOTSEL mode — cannot determine deploy target.
+        /// </summary>
+        [Display(Name = "Multiple Pico devices found in BOOTSEL mode. Disconnect extra devices so only the target remains.")]
+        E3006 = 3006,
+
         ////////////////////////
         // ESP32 tools Errors //
         ////////////////////////
 
         /// <summary>
-        /// Error executing esptool command
+        /// Error executing ESP32 serial command
         /// </summary>
-        [Display(Name = "Error executing esptool command.")]
+        [Display(Name = "Error executing ESP32 serial command.")]
         E4000 = 4000,
 
         /// <summary>
@@ -137,7 +183,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// No JTAG device found
         /// </summary>
-        [Display(Name = "No JTAG device found. Make sure it's connected")]
+        [Display(Name = "No JTAG device found. Make sure it's connected. Try --nativestlink or --nativeswd for tool-free flashing.")]
         E5001 = 5001,
 
         /// <summary>
@@ -193,6 +239,44 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Failed to reset MCU on connected device.")]
         E5010 = 5010,
+
+        /// <summary>
+        /// Flash verification failed — read-back data does not match written data.
+        /// </summary>
+        [Display(Name = "Flash verification failed — read-back data does not match the written data.")]
+        E5022 = 5022,
+
+        //////////////////////////////
+        // Native DFU Errors //
+        //////////////////////////////
+
+        /// <summary>
+        /// Native USB DFU not supported on this platform.
+        /// </summary>
+        [Display(Name = "Native USB DFU is only supported on Windows. Use --dfu for CLI-based DFU or --uart for serial bootloader.")]
+        E5030 = 5030,
+
+        /// <summary>
+        /// Native USB DFU protocol error.
+        /// </summary>
+        [Display(Name = "DFU protocol error during native USB transfer.")]
+        E5031 = 5031,
+
+        //////////////////////////////
+        // Native SWD (CMSIS-DAP)   //
+        //////////////////////////////
+
+        /// <summary>
+        /// Native SWD not supported on this platform.
+        /// </summary>
+        [Display(Name = "Native SWD via CMSIS-DAP is only supported on Windows.")]
+        E5040 = 5040,
+
+        /// <summary>
+        /// Native SWD protocol error.
+        /// </summary>
+        [Display(Name = "SWD protocol error during native CMSIS-DAP transfer.")]
+        E5041 = 5041,
 
         ////////////////
         // COM Errors //
@@ -315,7 +399,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Couldn't find any device connected
         /// </summary>
-        [Display(Name = "Couldn't find any device connected.")]
+        [Display(Name = "Couldn't find any device connected. For STM32, try: --nativestlink, --nativeswd, --nativedfu, or --uart.")]
         E9010 = 9010,
 
         /// <summary>

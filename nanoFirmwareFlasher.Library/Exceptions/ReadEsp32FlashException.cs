@@ -4,18 +4,16 @@
 //
 
 using System;
-using System.Runtime.Serialization;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// Error reading from ESP32 flash.
     /// </summary>
-    [Serializable]
     public class ReadEsp32FlashException : Exception
     {
         /// <summary>
-        /// Error message from esptool.
+        /// Error message from ESP32 serial operation.
         /// </summary>
         public string ExecutionError;
 
@@ -34,15 +32,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="message">Message to display.</param>
         /// <param name="innerException">The exception to display.</param>
         public ReadEsp32FlashException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        /// ESP32 tool flash exception.
-        /// </summary>
-        /// <param name="info">Serialized information.</param>
-        /// <param name="context">Streamed context.</param>
-        protected ReadEsp32FlashException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

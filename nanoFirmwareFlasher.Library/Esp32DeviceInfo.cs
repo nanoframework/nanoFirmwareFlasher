@@ -137,7 +137,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             deviceInfo.AppendLine($"Features {Features}");
-            deviceInfo.AppendLine($"Flash size {GetFlashSizeAsString()} {GetFlashDeviceId()} from {GetFlashManufacturer()} (manufacturer 0x{FlashManufacturerId} device 0x{FlashDeviceId})");
+            deviceInfo.AppendLine($"Flash size {GetFlashSizeAsString()} {GetFlashDeviceId()} from {GetFlashManufacturer()} (manufacturer 0x{FlashManufacturerId:X2} device 0x{FlashDeviceId:X4})");
 
             switch (PSRamAvailable)
             {

@@ -12,7 +12,7 @@ namespace ListJtagDevicesApp
     {
         static void Main(string[] args)
         {
-            var connecteDevices = StmJtagDevice.ListDevices();
+            var connecteDevices = StmStLinkDevice.ListDevices();
 
             if (connecteDevices.Count == 0)
             {

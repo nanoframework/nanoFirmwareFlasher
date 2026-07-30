@@ -455,11 +455,24 @@ Exit
             {
                 appName = "JLinkExe";
                 appDir = Path.Combine(Utilities.ExecutingPath, "jlinkLinux");
+            }
 
+            string exePath = Path.Combine(appDir, appName);
+
+            if (!File.Exists(exePath))
+            {
+                throw new CantConnectToJLinkDeviceException(
+                    $"J-Link CLI not found at '{exePath}'. " +
+                    "The J-Link tool is not installed or was excluded from the package.");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
                 Process jlinkExe_ = new Process();
 
                 // Making sure J-Link is executable
-                jlinkExe_.StartInfo = new ProcessStartInfo("chmod", $"+x {Path.Combine(appDir, appName)}")
+                jlinkExe_.StartInfo = new ProcessStartInfo("chmod", $"+x {exePath}")
                 {
                     WorkingDirectory = appDir,
                     UseShellExecute = false,
@@ -478,25 +491,36 @@ Exit
                 }
             }
 
-            Process jlinkCli = new();
-            string parameter = $" -nogui 1 -device default -si swd -CommandFile {cmdFilesDir}";
-
-            jlinkCli.StartInfo = new ProcessStartInfo(Path.Combine(appDir, appName), parameter)
+            try
             {
-                WorkingDirectory = appDir,
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
+                Process jlinkCli = new();
+                string parameter = $" -nogui 1 -device default -si swd -CommandFile {cmdFilesDir}";
 
-            // start J-Link Programmer CLI and...
-            jlinkCli.Start();
+                jlinkCli.StartInfo = new ProcessStartInfo(exePath, parameter)
+                {
+                    WorkingDirectory = appDir,
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
 
-            // ... wait for exit (30secs max!)
-            jlinkCli.WaitForExit((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+                // start J-Link Programmer CLI and...
+                jlinkCli.Start();
 
-            return jlinkCli.StandardOutput.ReadToEnd();
+                // ... wait for exit (30secs max!)
+                jlinkCli.WaitForExit((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+
+                return jlinkCli.StandardOutput.ReadToEnd();
+            }
+            catch (CantConnectToJLinkDeviceException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new CantConnectToJLinkDeviceException(ex.Message);
+            }
         }
 
         private static ExitCodes ProcessFilePaths(
