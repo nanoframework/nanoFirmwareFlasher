@@ -122,17 +122,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public string ClrFile { get; set; }
 
         [Option(
-            "backupflash",
+            "backup",
             Required = false,
             Default = null,
-            HelpText = "Back up the device's entire current flash contents to this file path before flashing (ESP32 only). Omit this keyword entirely to skip the backup (this is the tool-wide default).")]
-        public string BackupFlash { get; set; }
+            HelpText = "Back up the device's entire current flash contents before flashing (ESP32 only). Takes an optional file path; if omitted, a randomly named file is generated. Omit this keyword entirely to skip the backup (this is the tool-wide default).")]
+        public string Backup { get; set; }
 
         [Option(
             "restore",
             Required = false,
             Default = null,
-            HelpText = "Path to also save a persistent copy of the configuration partition backup (ESP32 only). The configuration partition is always automatically backed up before flashing and restored afterward, regardless of this keyword; omitting it just means the backup is kept in a temporary file that's deleted once it's restored.")]
+            HelpText = "Also save a persistent copy of the configuration partition backup (ESP32 only) at this file path. The configuration partition is always automatically backed up before flashing and restored afterward regardless of this keyword; omit the path (or the keyword entirely) to keep the backup in a temporary file that's deleted once it's restored.")]
         public string ConfigBackupPath { get; set; }
 
         [Option(

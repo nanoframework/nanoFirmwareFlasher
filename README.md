@@ -204,18 +204,26 @@ nanoff deploy target ESP32_PSRAM_REV0 serialport COM31 image "c:\esp32-backups\m
 To back up the device's entire current flash contents to a file before flashing.
 
 ```console
-nanoff flash target ESP32_PSRAM_REV0 serialport COM31 backupflash ./backups/esp32.bin
+nanoff flash target ESP32_PSRAM_REV0 serialport COM31 backup ./backups/esp32.bin
 ```
 
-Omitting `backupflash` entirely means no whole-flash backup is taken — this is the default.
+`backup` can also be used on its own, with no path, in which case a randomly named file is generated (in the current directory):
+
+```console
+nanoff flash target ESP32_PSRAM_REV0 serialport COM31 backup
+```
+
+Omitting `backup` entirely means no whole-flash backup is taken — this is the default.
 
 #### Keep a copy of the configuration partition backup (ESP32)
 
-The configuration partition is **always** automatically backed up before flashing and restored afterward — there is no way (nor need) to turn this off. Add `restore <path>` if you also want to keep a persistent copy of that backup; otherwise it's kept in a temporary file that's deleted once it's restored.
+The configuration partition is **always** automatically backed up before flashing and restored afterward — there is no way (nor need) to turn this off. Add `restore <path>` if you also want to keep a persistent copy of that backup:
 
 ```console
 nanoff flash target ESP32_PSRAM_REV0 serialport COM31 restore ./backups/config.bin
 ```
+
+`restore` can also be used bare, with no path — this is equivalent to omitting it: the backup is still taken and restored, just kept in a temporary file that's deleted once it's restored, rather than a path you specify.
 
 ### `flash` — STM32
 

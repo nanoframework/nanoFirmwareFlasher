@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using CommandLine;
 
@@ -53,8 +54,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
             IReadOnlyDictionary<string, bool> keywords = null;
             bool verbSeen = false;
 
-            foreach (string token in args)
+            for (int i = 0; i < args.Length; i++)
             {
+                string token = args[i];
+
                 if (token == "help")
                 {
                     result.Add("--help");
@@ -89,6 +92,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 if (keywords != null && keywords.ContainsKey(token))
                 {
+                    // "backup" and "restore" take an optional value: with no following value they
+                    // still need to reach CommandLineParser as either a concrete value ("backup",
+                    // which always needs a real file to write to) or not at all ("restore", where
+                    // omitting it is already the default behavior).
+                    if (token == "backup" && !NextTokenIsValue(args, i, keywords))
+                    {
+                        result.Add("--backup");
+                        result.Add(GenerateRandomBackupFileName());
+                        continue;
+                    }
+
+                    if (token == "restore" && !NextTokenIsValue(args, i, keywords))
+                    {
+                        // bare "restore": no persistent path requested, same as omitting the keyword
+                        continue;
+                    }
+
                     result.Add("--" + token);
                 }
                 else
@@ -100,6 +120,42 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             return result.ToArray();
         }
+
+        /// <summary>
+        /// Determines whether the token following <paramref name="index"/> should be consumed as
+        /// the current keyword's value, as opposed to being absent, another keyword, or an
+        /// already-dashed token.
+        /// </summary>
+        private static bool NextTokenIsValue(string[] args, int index, IReadOnlyDictionary<string, bool> keywords)
+        {
+            if (index + 1 >= args.Length)
+            {
+                return false;
+            }
+
+            string next = args[index + 1];
+
+            if (next.Length > 0 && next[0] == '-')
+            {
+                return false;
+            }
+
+            if (next == "help" || next == "version")
+            {
+                return false;
+            }
+
+            return keywords == null || !keywords.ContainsKey(next);
+        }
+
+        /// <summary>
+        /// Generates a random file name for a bare "backup" keyword (no path given).
+        /// </summary>
+        private static string GenerateRandomBackupFileName()
+        {
+            return $"esp32-backup-{Path.GetRandomFileName().Replace(".", "-")}.bin";
+        }
+
 
         private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, bool>> s_keywordMapCache = new ConcurrentDictionary<Type, IReadOnlyDictionary<string, bool>>();
 

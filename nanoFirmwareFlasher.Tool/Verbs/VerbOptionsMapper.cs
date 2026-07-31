@@ -52,14 +52,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 SetVcpBaudRate = o.VcpBaudRate,
             };
 
-            // "backupflash <path>" backs up the device's ENTIRE flash contents (ESP32 only),
-            // matching today's --backuppath/--backupfile behavior exactly. Not given => no
-            // backup at all (today's default). Splits the single path into directory + file name.
-            if (!string.IsNullOrEmpty(o.BackupFlash))
+            // "backup [path]" backs up the device's ENTIRE flash contents (ESP32 only); the
+            // tokenizer already generates a random path when the keyword is used bare, so
+            // "not given" (empty here) is the only case meaning "no backup at all".
+            if (!string.IsNullOrEmpty(o.Backup))
             {
-                string backupDirectory = Path.GetDirectoryName(o.BackupFlash);
+                string backupDirectory = Path.GetDirectoryName(o.Backup);
                 legacy.BackupPath = string.IsNullOrEmpty(backupDirectory) ? "." : backupDirectory;
-                legacy.BackupFile = Path.GetFileName(o.BackupFlash);
+                legacy.BackupFile = Path.GetFileName(o.Backup);
             }
 
             bool noTargetInfo = string.IsNullOrEmpty(o.TargetName) && o.Platform is null;

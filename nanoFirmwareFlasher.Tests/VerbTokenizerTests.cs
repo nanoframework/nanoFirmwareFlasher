@@ -261,22 +261,90 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void EndToEnd_FlashBackupFlash_ParsesPathAsValue()
+        public void EndToEnd_FlashBackup_ParsesPathAsValue()
         {
-            var result = ParseNormalized("flash", "target", "ESP_WROVER_KIT", "backupflash", "./backups/esp32.bin", "masserase");
+            var result = ParseNormalized("flash", "target", "ESP_WROVER_KIT", "backup", "./backups/esp32.bin", "masserase");
 
             var options = (FlashOptions)result.Value;
-            Assert.AreEqual("./backups/esp32.bin", options.BackupFlash);
+            Assert.AreEqual("./backups/esp32.bin", options.Backup);
             Assert.IsTrue(options.MassErase);
         }
 
         [TestMethod]
-        public void EndToEnd_FlashNoBackupFlashKeyword_BackupFlashStaysNull()
+        public void EndToEnd_FlashNoBackupKeyword_BackupStaysNull()
         {
             var result = ParseNormalized("flash", "target", "ESP_WROVER_KIT");
 
             var options = (FlashOptions)result.Value;
-            Assert.IsNull(options.BackupFlash);
+            Assert.IsNull(options.Backup);
+        }
+
+        [TestMethod]
+        public void Normalize_BareBackup_AtEndOfArgs_GeneratesRandomValue()
+        {
+            var result = VerbTokenizer.Normalize(new[] { "flash", "target", "ESP_WROVER_KIT", "backup" });
+
+            Assert.AreEqual("--backup", result[3]);
+            Assert.AreEqual(5, result.Length);
+            Assert.IsFalse(string.IsNullOrEmpty(result[4]));
+        }
+
+        [TestMethod]
+        public void Normalize_BareBackup_FollowedByAnotherKeyword_GeneratesRandomValueAndKeepsFollowingKeyword()
+        {
+            var result = VerbTokenizer.Normalize(new[] { "flash", "target", "ESP_WROVER_KIT", "backup", "masserase" });
+
+            CollectionAssert.AreEqual(
+                new[] { "flash", "--target", "ESP_WROVER_KIT", "--backup" },
+                new[] { result[0], result[1], result[2], result[3] });
+            Assert.IsFalse(string.IsNullOrEmpty(result[4]));
+            Assert.AreEqual("--masserase", result[5]);
+        }
+
+        [TestMethod]
+        public void EndToEnd_FlashBareBackup_GeneratesNonEmptyValue()
+        {
+            var result = ParseNormalized("flash", "target", "ESP_WROVER_KIT", "backup", "masserase");
+
+            var options = (FlashOptions)result.Value;
+            Assert.IsFalse(string.IsNullOrEmpty(options.Backup));
+            Assert.IsTrue(options.MassErase);
+        }
+
+        [TestMethod]
+        public void EndToEnd_FlashRestoreWithPath_ParsesPathAsValue()
+        {
+            var result = ParseNormalized("flash", "target", "ESP_WROVER_KIT", "restore", "./backups/config.bin", "masserase");
+
+            var options = (FlashOptions)result.Value;
+            Assert.AreEqual("./backups/config.bin", options.ConfigBackupPath);
+            Assert.IsTrue(options.MassErase);
+        }
+
+        [TestMethod]
+        public void Normalize_BareRestore_AtEndOfArgs_DroppedEntirely()
+        {
+            var result = VerbTokenizer.Normalize(new[] { "flash", "target", "ESP_WROVER_KIT", "restore" });
+
+            CollectionAssert.AreEqual(new[] { "flash", "--target", "ESP_WROVER_KIT" }, result);
+        }
+
+        [TestMethod]
+        public void Normalize_BareRestore_FollowedByAnotherKeyword_DroppedButKeywordKept()
+        {
+            var result = VerbTokenizer.Normalize(new[] { "flash", "target", "ESP_WROVER_KIT", "restore", "masserase" });
+
+            CollectionAssert.AreEqual(new[] { "flash", "--target", "ESP_WROVER_KIT", "--masserase" }, result);
+        }
+
+        [TestMethod]
+        public void EndToEnd_FlashBareRestore_ConfigBackupPathStaysNull()
+        {
+            var result = ParseNormalized("flash", "target", "ESP_WROVER_KIT", "restore", "masserase");
+
+            var options = (FlashOptions)result.Value;
+            Assert.IsNull(options.ConfigBackupPath);
+            Assert.IsTrue(options.MassErase);
         }
 
         #endregion

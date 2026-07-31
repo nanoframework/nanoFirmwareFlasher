@@ -177,9 +177,9 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void Flash_NoBackupFlash_NoBackupPathOrFile()
+        public void Flash_NoBackup_NoBackupPathOrFile()
         {
-            // "backupflash" not given => no whole-flash backup at all (tool default)
+            // "backup" not given => no whole-flash backup at all (tool default)
             var legacy = new FlashOptions { TargetName = "ESP_WROVER_KIT" }.ToLegacyOptions();
 
             Assert.IsTrue(string.IsNullOrEmpty(legacy.BackupPath));
@@ -187,12 +187,12 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void Flash_BackupFlash_SplitsIntoDirectoryAndFileName()
+        public void Flash_Backup_SplitsIntoDirectoryAndFileName()
         {
             var legacy = new FlashOptions
             {
                 TargetName = "ESP_WROVER_KIT",
-                BackupFlash = Path.Combine("backups", "esp32-flash-backup.bin")
+                Backup = Path.Combine("backups", "esp32-flash-backup.bin")
             }.ToLegacyOptions();
 
             Assert.AreEqual("backups", legacy.BackupPath);
@@ -200,12 +200,12 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void Flash_BackupFlashWithFileNameOnly_UsesCurrentDirectory()
+        public void Flash_BackupWithFileNameOnly_UsesCurrentDirectory()
         {
             var legacy = new FlashOptions
             {
                 TargetName = "ESP_WROVER_KIT",
-                BackupFlash = "esp32-flash-backup.bin"
+                Backup = "esp32-flash-backup.bin"
             }.ToLegacyOptions();
 
             Assert.AreEqual(".", legacy.BackupPath);
