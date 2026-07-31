@@ -162,12 +162,97 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
-            if (errors.All(e => e.Tag == ErrorType.HelpRequestedError || e.Tag == ErrorType.VersionRequestedError))
+            if (errors.All(e => e.Tag == ErrorType.HelpRequestedError || e.Tag == ErrorType.HelpVerbRequestedError || e.Tag == ErrorType.VersionRequestedError))
             {
                 return Task.CompletedTask;
             }
             _exitCode = ExitCodes.E9000;
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Example command lines shown in each verb's help screen (<c>nanoff &lt;verb&gt; help</c>
+        /// / <c>nanoff &lt;verb&gt; --help</c>), keyed by that verb's option class.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<Type, string[]> s_verbExamples = new Dictionary<Type, string[]>
+        {
+            [typeof(FlashOptions)] = new[]
+            {
+                "nanoff flash target ESP_WROVER_KIT serialport COM31",
+                "nanoff flash target ST_STM32F769I_DISCOVERY interface jtag",
+                "nanoff flash platform esp32 serialport COM31 masserase",
+                "nanoff flash serialport COM9 clrfile C:\\nf-interpreter\\build\\nanoclr.bin",
+            },
+            [typeof(DeployOptions)] = new[]
+            {
+                "nanoff deploy target ESP32_PSRAM_REV0 serialport COM31 image app.bin",
+                "nanoff deploy target ST_STM32F769I_DISCOVERY image app.bin address 0x08040000",
+                "nanoff deploy file C:\\path\\deploy.json",
+                "nanoff deploy network C:\\path\\deploy.json",
+            },
+            [typeof(ListOptions)] = new[]
+            {
+                "nanoff list ports",
+                "nanoff list devices",
+                "nanoff list targets platform esp32",
+                "nanoff list dfu",
+            },
+            [typeof(DetailsOptions)] = new[]
+            {
+                "nanoff details platform esp32 serialport COM31",
+                "nanoff details serialport COM9",
+            },
+            [typeof(IdentifyOptions)] = new[]
+            {
+                "nanoff identify platform esp32 serialport COM31",
+            },
+            [typeof(DriversOptions)] = new[]
+            {
+                "nanoff drivers dfu",
+                "nanoff drivers jtag",
+                "nanoff drivers xds",
+            },
+            [typeof(CacheOptions)] = new[]
+            {
+                "nanoff cache clear",
+                "nanoff cache download platform esp32 archivepath c:\\firmware",
+            },
+        };
+
+        /// <summary>
+        /// Builds and prints help for the verb parser, adding an "Examples:" section for the
+        /// specific verb being asked about (<c>nanoff &lt;verb&gt; help</c>/<c>--help</c>), or
+        /// the list of verbs when no specific verb was requested (<c>nanoff help</c>/<c>--help</c>).
+        /// </summary>
+        /// <param name="result">The verb parser result (Parsed or NotParsed).</param>
+        /// <param name="args">The original (pre-normalization) arguments, used to detect which verb, if any, was requested.</param>
+        private static void DisplayVerbHelp(ParserResult<object> result, string[] args)
+        {
+            Type requestedVerbType = args.Length > 0 && VerbTokenizer.KnownVerbs.TryGetValue(args[0], out Type verbType)
+                ? verbType
+                : null;
+
+            var helpText = HelpText.AutoBuild(
+                result,
+                h =>
+                {
+                    if (requestedVerbType != null
+                        && s_verbExamples.TryGetValue(requestedVerbType, out string[] examples))
+                    {
+                        h.AddPreOptionsLine("");
+                        h.AddPreOptionsLine("Examples:");
+                        foreach (string example in examples)
+                        {
+                            h.AddPreOptionsLine($"  {example}");
+                        }
+                    }
+
+                    return h;
+                },
+                e => e,
+                verbsIndex: true);
+
+            OutputWriter.WriteLine(helpText.ToString());
         }
 
         /// <summary>
@@ -179,7 +264,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             string[] normalizedArgs = VerbTokenizer.Normalize(args);
 
-            var verbParserResult = new Parser(config => config.HelpWriter = Console.Out)
+            var verbParserResult = new Parser(config => config.HelpWriter = null)
                 .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions>(normalizedArgs);
 
             if (verbParserResult is Parsed<object> parsed)
@@ -217,6 +302,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else if (verbParserResult is NotParsed<object> notParsed)
             {
+                if (notParsed.Errors.Any(e => e.Tag == ErrorType.VersionRequestedError))
+                {
+                    OutputWriter.WriteLine(_headerInfo);
+                }
+                else if (notParsed.Errors.Any(e => e.Tag == ErrorType.HelpRequestedError || e.Tag == ErrorType.HelpVerbRequestedError))
+                {
+                    DisplayVerbHelp(verbParserResult, args);
+                }
+
                 await HandleErrorsAsync(notParsed.Errors);
             }
         }
