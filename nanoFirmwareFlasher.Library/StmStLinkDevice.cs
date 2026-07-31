@@ -14,8 +14,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// STM32 device using a native ST-LINK V2/V3 debug probe (USB bulk protocol).
-    /// Provides JTAG/SWD device flash operations, requiring no
-    /// STM32_Programmer_CLI executable.
+    /// No external tools are required.
     /// Cross-platform: uses WinUSB on Windows, libusb-1.0 on Linux/macOS.
     /// </summary>
     public class StmStLinkDevice : IDisposable, IStmFlashableDevice
@@ -24,6 +23,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly SwdProtocol _swd;
         private readonly ArmMemAp _mem;
         private readonly Stm32FlashProgrammer _flash;
+        private int _lastProgressPercent = -1;
         private bool _disposed;
 
         /// <summary>
@@ -89,72 +89,94 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 throw new CantConnectToJtagDeviceException(
                     "No ST-LINK debug probes found. Make sure a probe is connected and the correct driver is installed. " +
-                    "On Windows, install the WinUSB driver using Zadig (https://zadig.akeo.ie). " +
+                    "On Windows, the native transport uses raw USB (LibUsbDotNet), so the ST-LINK debug interface must be bound to a WinUSB-class driver (WinUSB, libusbK or libusb-win32): use Zadig (https://zadig.akeo.ie) to install WinUSB on the 'ST-Link Debug' interface. " +
+                    "ST's proprietary STSW-LINK009 driver is not compatible with this transport; reinstall it (https://www.st.com/en/development-tools/stsw-link009.html) only to restore STM32CubeProgrammer/STM32CubeIDE for that probe. " +
                     "On Linux, add a udev rule: echo 'SUBSYSTEM==\"usb\", ATTR{idVendor}==\"0483\", MODE=\"0666\"' " +
                     "| sudo tee /etc/udev/rules.d/70-st-link.rules && sudo udevadm control --reload-rules. " +
                     "On macOS, no additional drivers are needed.");
             }
 
-            string selectedPath = null;
+            List<(string productName, string serialNumber, string devicePath)> candidates;
 
             if (string.IsNullOrEmpty(probeId))
             {
-                ProbeId = probes[0].serialNumber;
-                ProbeName = probes[0].productName;
-                selectedPath = probes[0].devicePath;
+                // Auto-detect: try every connected probe in turn instead of failing hard on
+                // whichever one happens to enumerate first (e.g. a bad/clone dongle plugged
+                // in alongside a working probe).
+                candidates = probes;
             }
             else
             {
-                foreach (var probe in probes)
-                {
-                    if (probe.serialNumber == probeId)
-                    {
-                        ProbeId = probeId;
-                        ProbeName = probe.productName;
-                        selectedPath = probe.devicePath;
-                        break;
-                    }
-                }
+                var match = probes.FirstOrDefault(p => p.serialNumber == probeId);
 
-                if (selectedPath == null)
+                if (match.devicePath == null)
                 {
                     throw new CantConnectToJtagDeviceException(
                         $"ST-LINK probe with serial '{probeId}' not found.");
                 }
+
+                candidates = new List<(string productName, string serialNumber, string devicePath)> { match };
             }
 
-            _stLink = new StLinkTransport();
-            _swd = new SwdProtocol(_stLink);
-            _mem = new ArmMemAp(_swd);
-            _flash = new Stm32FlashProgrammer(_mem);
+            Exception lastError = null;
 
-            try
+            foreach (var candidate in candidates)
             {
-                _stLink.Open(selectedPath);
-                _swd.Initialize();
+                _stLink = new StLinkTransport();
+                _swd = new SwdProtocol(_stLink);
+                _mem = new ArmMemAp(_swd);
+                _flash = new Stm32FlashProgrammer(_mem);
+                _flash.ProgressReport = OnFlashProgress;
 
-                DpIdcode = _swd.DpIdcodeValue;
+                try
+                {
+                    _stLink.Open(candidate.devicePath);
 
-                // Halt core before reading IDCODE registers
-                _swd.HaltCore();
+                    int targetMillivolts = _stLink.ReadTargetVoltageMillivolts();
 
-                // Detect STM32 family
-                var family = _flash.DetectFamily();
-                DeviceName = family.ToString();
-                DeviceCPU = $"STM32 ({family})";
+                    if (targetMillivolts >= 0 && targetMillivolts < 1500)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                        OutputWriter.WriteLine(
+                            $"Warning: target voltage reads {targetMillivolts} mV — the target may not be powered.");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    _swd.Initialize();
+
+                    DpIdcode = _swd.DpIdcodeValue;
+
+                    // Halt core before reading IDCODE registers
+                    _swd.HaltCore();
+
+                    // Detect STM32 family
+                    var family = _flash.DetectFamily();
+                    DeviceName = family.ToString();
+                    DeviceCPU = $"STM32 ({family})";
+
+                    ProbeId = candidate.serialNumber;
+                    ProbeName = candidate.productName;
+
+                    return;
+                }
+                catch (Exception ex) when (ex is SwdProtocolException || !(ex is CantConnectToJtagDeviceException))
+                {
+                    lastError = ex;
+
+                    _swd?.Dispose();
+                    _stLink?.Dispose();
+                }
             }
-            catch (SwdProtocolException ex)
+
+            if (candidates.Count > 1)
             {
-                Dispose();
                 throw new CantConnectToJtagDeviceException(
-                    $"Failed to connect to target via ST-LINK SWD: {ex.Message}");
+                    $"Failed to connect to any of the {candidates.Count} connected ST-LINK probes. "
+                    + $"Last error: {lastError?.Message}");
             }
-            catch (Exception ex) when (!(ex is CantConnectToJtagDeviceException))
-            {
-                Dispose();
-                throw new CantConnectToJtagDeviceException(
-                    $"Failed to initialize ST-LINK connection: {ex.Message}");
-            }
+
+            throw new CantConnectToJtagDeviceException(
+                $"Failed to connect to target via ST-LINK SWD: {lastError?.Message}");
         }
 
         /// <summary>
@@ -234,6 +256,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                 $"  Writing {block.Data.Length} bytes @ 0x{block.Address:X8}");
                         }
 
+                        _lastProgressPercent = -1;
                         _flash.EraseAndProgram(block.Address, block.Data, 0, block.Data.Length);
 
                         if (Verify)
@@ -364,6 +387,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 try
                 {
                     byte[] data = File.ReadAllBytes(binFilePath);
+                    _lastProgressPercent = -1;
                     _flash.EraseAndProgram(flashAddress, data, 0, data.Length);
 
                     if (Verify)
@@ -445,6 +469,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// Progress callback for flash operations. Displays an in-place, updating progress
+        /// line (bytes and percentage) at diagnostic verbosity so long blocks show how much
+        /// has been flashed and where they stall.
+        /// </summary>
+        private void OnFlashProgress(string phase, int done, int total)
+        {
+            if (Verbosity < VerbosityLevel.Diagnostic || total <= 0)
+            {
+                return;
+            }
+
+            int percent = (int)((long)done * 100 / total);
+
+            // Throttle: only refresh the line when the percentage advances (or on completion).
+            if (percent == _lastProgressPercent && done < total)
+            {
+                return;
+            }
+
+            _lastProgressPercent = percent;
+
+            OutputWriter.ForegroundColor = ConsoleColor.DarkGray;
+            OutputWriter.Write($"\r    {phase} {done:N0}/{total:N0} bytes ({percent}%)   ");
+
+            if (done >= total)
+            {
+                OutputWriter.WriteLine();
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>

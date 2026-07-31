@@ -15,6 +15,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly Options _options;
         private readonly VerbosityLevel _verbosityLevel;
 
+        // ST vendor id and the ST-LINK / DFU product ids used to detect a probe that is
+        // physically connected but missing a WinUSB-compatible driver.
+        private const ushort StVendorId = 0x0483;
+        private const ushort StDfuProductId = 0xDF11;
+        private static readonly ushort[] s_stLinkProductIds = { 0x3748, 0x374B, 0x374D, 0x374E, 0x374F, 0x3752, 0x3753 };
+
         public Stm32Manager(Options options, VerbosityLevel verbosityLevel)
         {
             if (options == null)
@@ -52,15 +58,86 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (_options.HexFile.Any())
             {
-                return device.FlashHexFiles(_options.HexFile);
+                return FlashAndReset(device, () => device.FlashHexFiles(_options.HexFile));
             }
 
             if (_options.BinFile.Any())
             {
-                return device.FlashBinFiles(_options.BinFile, _options.FlashAddress);
+                return FlashAndReset(device, () => device.FlashBinFiles(_options.BinFile, _options.FlashAddress));
             }
 
             return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// Runs the supplied flash operation and, on success, resets the MCU so it starts
+        /// running the freshly flashed firmware. Reset is applied for the native ST-LINK and
+        /// CMSIS-DAP/SWD transports (which support a debug reset).
+        /// </summary>
+        private static ExitCodes FlashAndReset(IStmFlashableDevice device, Func<ExitCodes> flashOperation)
+        {
+            ExitCodes result = flashOperation();
+
+            if (result != ExitCodes.OK)
+            {
+                return result;
+            }
+
+            if (device is StmStLinkDevice stLinkDevice)
+            {
+                stLinkDevice.ResetMcu();
+            }
+            else if (device is StmSwdDevice swdDevice)
+            {
+                swdDevice.ResetMcu();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// When a native ST-LINK enumeration comes up empty but an ST-LINK probe is physically
+        /// connected, prints guidance on installing a WinUSB-compatible driver.
+        /// </summary>
+        private static void ShowStLinkDriverHintIfPresent()
+        {
+            if (!WindowsUsbScanner.IsUsbDevicePresent(StVendorId, s_stLinkProductIds))
+            {
+                return;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+            OutputWriter.WriteLine();
+            OutputWriter.WriteLine("An ST-LINK probe is connected but has no driver the native transport can use.");
+            OutputWriter.WriteLine("The native transport uses raw USB (LibUsbDotNet), which needs a WinUSB-class");
+            OutputWriter.WriteLine("driver on the 'ST-Link Debug' interface (interface 0):");
+            OutputWriter.WriteLine("  - Recommended: bind it to WinUSB with Zadig (https://zadig.akeo.ie) ->");
+            OutputWriter.WriteLine("    select 'ST-Link Debug' (USB ID 0483 374B, interface 0) -> WinUSB -> Install.");
+            OutputWriter.WriteLine("  - ST's proprietary STSW-LINK009 driver is NOT compatible with this transport.");
+            OutputWriter.WriteLine("    Reinstall it only to restore STM32CubeProgrammer / STM32CubeIDE for that probe:");
+            OutputWriter.WriteLine("    https://www.st.com/en/development-tools/stsw-link009.html");
+            OutputWriter.WriteLine("    Note: Zadig replaces ST's driver, so ST tools won't use that probe until reverted.");
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+        }
+
+        /// <summary>
+        /// When a native DFU enumeration comes up empty but an STM32 DFU device is physically
+        /// connected, prints guidance on installing a WinUSB-compatible driver.
+        /// </summary>
+        private static void ShowDfuDriverHintIfPresent()
+        {
+            if (!WindowsUsbScanner.IsUsbDevicePresent(StVendorId, new ushort[] { StDfuProductId }))
+            {
+                return;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+            OutputWriter.WriteLine();
+            OutputWriter.WriteLine("An STM32 device in DFU mode is connected but is not accessible through a WinUSB");
+            OutputWriter.WriteLine("driver, which the native transport requires.");
+            OutputWriter.WriteLine("Bind it to WinUSB: Zadig (https://zadig.akeo.ie) -> select the 'STM32 BOOTLOADER'");
+            OutputWriter.WriteLine("device (USB ID 0483 DF11) -> WinUSB -> Install/Replace Driver.");
+            OutputWriter.ForegroundColor = ConsoleColor.White;
         }
 
         /// <inheritdoc />
@@ -86,6 +163,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Yellow;
                     OutputWriter.WriteLine("No DFU devices found via native USB enumeration");
+                    ShowDfuDriverHintIfPresent();
                 }
                 else
                 {
@@ -144,6 +222,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Yellow;
                     OutputWriter.WriteLine("No ST-LINK probes found via native USB enumeration");
+                    ShowStLinkDriverHintIfPresent();
                 }
                 else
                 {
@@ -234,78 +313,105 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else if (!_options.NativeDfuUpdate && !_options.NativeSwdUpdate && !_options.NativeStLinkUpdate &&
                 (_options.BinFile.Any() || _options.HexFile.Any()))
             {
-                // No explicit interface — try native auto-detection
-                try
-                {
-                    var nativeStLinkProbes = StmStLinkDevice.ListDevices();
+                // No explicit native interface — auto-detect one, using the same
+                // ST-LINK -> CMSIS-DAP -> USB DFU probe order as Stm32Operations'
+                // target-based update, so the two entry points can't drift.
+                // Enumeration failures (transport unavailable on this platform) are ignored,
+                // but once a probe/device is found, a connection failure is reported to the
+                // user instead of being silently swallowed and mistaken for "no device".
+                Interface detectedInterface = Stm32Operations.DetectNativeInterface();
 
-                    if (nativeStLinkProbes.Count > 0)
+                if (detectedInterface == Interface.NativeStLink)
+                {
+                    try
                     {
                         using var stLinkDevice = new StmStLinkDevice(_options.JtagDeviceId);
 
-                        if (stLinkDevice.DevicePresent)
+                        if (!stLinkDevice.DevicePresent)
                         {
-                            if (_verbosityLevel >= VerbosityLevel.Normal)
-                            {
-                                OutputWriter.WriteLine($"Auto-detected ST-LINK probe {stLinkDevice.ProbeId} — using native transport");
-                            }
-
-                            return FlashDeviceFiles(stLinkDevice);
+                            return ExitCodes.E5001;
                         }
+
+                        if (_verbosityLevel >= VerbosityLevel.Normal)
+                        {
+                            OutputWriter.WriteLine($"Auto-detected ST-LINK probe {stLinkDevice.ProbeId} — using native transport");
+                        }
+
+                        return FlashDeviceFiles(stLinkDevice);
+                    }
+                    catch (CantConnectToJtagDeviceException ex)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Red;
+                        OutputWriter.WriteLine($"ERROR: {ex.Message}");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E5002;
                     }
                 }
-                catch
-                {
-                    // Native ST-LINK enumeration not available
-                }
 
-                try
+                if (detectedInterface == Interface.NativeSwd)
                 {
-                    var nativeSwdProbes = StmSwdDevice.ListDevices();
-
-                    if (nativeSwdProbes.Count > 0)
+                    try
                     {
                         using var swdDevice = new StmSwdDevice(_options.JtagDeviceId);
 
-                        if (swdDevice.DevicePresent)
+                        if (!swdDevice.DevicePresent)
                         {
-                            if (_verbosityLevel >= VerbosityLevel.Normal)
-                            {
-                                OutputWriter.WriteLine($"Auto-detected CMSIS-DAP probe {swdDevice.ProbeId} — using native SWD");
-                            }
-
-                            return FlashDeviceFiles(swdDevice);
+                            return ExitCodes.E5001;
                         }
+
+                        if (_verbosityLevel >= VerbosityLevel.Normal)
+                        {
+                            OutputWriter.WriteLine($"Auto-detected CMSIS-DAP probe {swdDevice.ProbeId} — using native SWD");
+                        }
+
+                        return FlashDeviceFiles(swdDevice);
+                    }
+                    catch (CantConnectToJtagDeviceException ex)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Red;
+                        OutputWriter.WriteLine($"ERROR: {ex.Message}");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E5002;
                     }
                 }
-                catch
-                {
-                    // Native SWD enumeration not available
-                }
 
-                try
+                if (detectedInterface == Interface.NativeDfu)
                 {
-                    var nativeDfuDevices = StmNativeDfuDevice.ListDevices();
-
-                    if (nativeDfuDevices.Count > 0)
+                    try
                     {
                         using var nativeDfuDevice = new StmNativeDfuDevice(_options.DfuDeviceId);
 
-                        if (nativeDfuDevice.DevicePresent)
+                        if (!nativeDfuDevice.DevicePresent)
                         {
-                            if (_verbosityLevel >= VerbosityLevel.Normal)
-                            {
-                                OutputWriter.WriteLine($"Auto-detected DFU device {nativeDfuDevice.DfuId} — using native USB DFU");
-                            }
-
-                            return FlashDeviceFiles(nativeDfuDevice);
+                            return ExitCodes.E1000;
                         }
+
+                        if (_verbosityLevel >= VerbosityLevel.Normal)
+                        {
+                            OutputWriter.WriteLine($"Auto-detected DFU device {nativeDfuDevice.DfuId} — using native USB DFU");
+                        }
+
+                        return FlashDeviceFiles(nativeDfuDevice);
+                    }
+                    catch (CantConnectToDfuDeviceException ex)
+                    {
+                        OutputWriter.ForegroundColor = ConsoleColor.Red;
+                        OutputWriter.WriteLine($"ERROR: {ex.Message}");
+                        OutputWriter.ForegroundColor = ConsoleColor.White;
+                        return ExitCodes.E1005;
                     }
                 }
-                catch
-                {
-                    // Native DFU enumeration not available
-                }
+
+                // No native ST-LINK, CMSIS-DAP or DFU device was found for the flash operation.
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine("No STM32 device was found to flash the specified file(s).");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                ShowStLinkDriverHintIfPresent();
+                ShowDfuDriverHintIfPresent();
+
+                return ExitCodes.E9010;
             }
             else if (!string.IsNullOrEmpty(_options.TargetName))
             {

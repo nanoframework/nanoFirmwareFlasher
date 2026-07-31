@@ -27,7 +27,7 @@ nanoFirmwareFlasher.sln
 │   ├── Options.cs                 # CommandLine options (CommandLineParser library)
 │   └── *Manager.cs                # Per-platform CLI managers (Esp32, Stm32, TI, Silabs)
 ├── nanoFirmwareFlasher.Tests/     # Unit tests (MSTest)
-├── lib/                           # Bundled third-party CLI tools (jlink, stlink, silink, uniflash, esp32 bootloaders)
+├── lib/                           # Bundled third-party CLI tools (jlink, silink, uniflash, esp32 bootloaders)
 └── Samples/                       # Sample apps demonstrating library usage
 ```
 
@@ -153,7 +153,7 @@ Uses **Nerdbank.GitVersioning** (`version.json`). The version is automatically d
 
 ## Known Issues and Workarounds
 
-- **STM32 Cube Programmer** has a known bug where it fails when the tool installation path contains diacritic characters. Users must install `nanoff` to a plain ASCII path when targeting STM32 devices.
+- **STM32 native transports** require the probe's debug interface to be bound to a WinUSB-class driver (WinUSB/libusbK/libusb-win32) on Windows, because the transport uses raw USB via LibUsbDotNet. Bind the `ST-Link Debug` interface to WinUSB with Zadig. ST's proprietary STSW-LINK009 driver is **not** compatible with the native transport (reinstall it only to restore STM32CubeProgrammer/STM32CubeIDE for that probe). For a `STM32 BOOTLOADER` device in DFU mode, also bind it to WinUSB with Zadig. No external STM32 CLI tool is used anymore.
 - **ESP32-S2**: It is not possible to safely auto-detect the best image; users must always specify `--target`.
 - **FeatherS2, TinyS2, some S3 modules**: Must be placed in download mode manually (hold BOOT, click RESET, release BOOT) before flashing.
 - When running `dotnet restore` in locked mode fails, it usually means a package was added/updated without regenerating the lock file. Run `dotnet restore --force-evaluate` to regenerate it.
