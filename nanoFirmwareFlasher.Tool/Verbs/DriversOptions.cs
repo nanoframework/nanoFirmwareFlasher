@@ -39,19 +39,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns><see langword="null"/> if valid, or an error message describing the constraint violation.</returns>
         public static string Validate(DriversOptions o)
         {
-            int count = (o.Dfu ? 1 : 0) + (o.Jtag ? 1 : 0) + (o.Xds ? 1 : 0);
-
-            if (count == 0)
-            {
-                return "drivers requires one of dfu, jtag or xds.";
-            }
-
-            if (count > 1)
-            {
-                return "Only one of dfu, jtag or xds can be specified at a time.";
-            }
-
-            return null;
+            return ValidateMutuallyExclusive("drivers", requireOne: true, "dfu, jtag or xds", o.Dfu, o.Jtag, o.Xds);
         }
     }
 }

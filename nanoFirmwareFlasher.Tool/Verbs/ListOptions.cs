@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using CommandLine;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -96,19 +95,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns><see langword="null"/> if valid, or an error message describing the constraint violation.</returns>
         public static string Validate(ListOptions o)
         {
-            int count = new[] { o.Targets, o.Devices, o.Ports, o.Dfu, o.Jtag, o.JLink, o.NativeSwd }.Count(b => b);
-
-            if (count == 0)
-            {
-                return "list requires one of targets, devices, ports, dfu, jtag, jlink or nativeswd.";
-            }
-
-            if (count > 1)
-            {
-                return "Only one of targets, devices, ports, dfu, jtag, jlink or nativeswd can be specified at a time.";
-            }
-
-            return null;
+            return ValidateMutuallyExclusive(
+                "list",
+                requireOne: true,
+                "targets, devices, ports, dfu, jtag, jlink or nativeswd",
+                o.Targets, o.Devices, o.Ports, o.Dfu, o.Jtag, o.JLink, o.NativeSwd);
         }
     }
 }

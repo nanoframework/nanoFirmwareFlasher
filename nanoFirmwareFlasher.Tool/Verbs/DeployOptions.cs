@@ -67,22 +67,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns><see langword="null"/> if valid, or an error message describing the constraint violation.</returns>
         public static string Validate(DeployOptions o)
         {
-            int count =
-                (string.IsNullOrEmpty(o.DeploymentImage) ? 0 : 1) +
-                (string.IsNullOrEmpty(o.FileDeployment) ? 0 : 1) +
-                (string.IsNullOrEmpty(o.NetworkDeployment) ? 0 : 1);
-
-            if (count == 0)
-            {
-                return "deploy requires one of image, file or network to specify what to deploy.";
-            }
-
-            if (count > 1)
-            {
-                return "Only one of image, file or network can be specified at a time.";
-            }
-
-            return null;
+            return ValidateMutuallyExclusive(
+                "deploy",
+                requireOne: true,
+                "image, file or network",
+                !string.IsNullOrEmpty(o.DeploymentImage),
+                !string.IsNullOrEmpty(o.FileDeployment),
+                !string.IsNullOrEmpty(o.NetworkDeployment));
         }
     }
 }

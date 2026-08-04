@@ -223,12 +223,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return "fromarchive requires archivepath to specify the firmware archive location.";
             }
 
-            if ((o.Dfu ? 1 : 0) + (o.Jtag ? 1 : 0) + (o.NativeSwd ? 1 : 0) > 1)
-            {
-                return "Only one of dfu, jtag or nativeswd can be specified.";
-            }
-
-            return null;
+            return ValidateMutuallyExclusive("flash", requireOne: false, "dfu, jtag or nativeswd", o.Dfu, o.Jtag, o.NativeSwd);
         }
     }
 }

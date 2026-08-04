@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using CommandLine;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -75,6 +76,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 default:
                     throw new ArgumentException("Invalid option for Verbosity");
             }
+        }
+
+        /// <summary>
+        /// Validates a set of mutually-exclusive keywords, shared by every verb's <c>Validate</c>
+        /// method: an error is returned if more than one is set, or (when <paramref name="requireOne"/>
+        /// is <see langword="true"/>) if none are set.
+        /// </summary>
+        /// <param name="verb">The verb name, used in the "requires one of" message.</param>
+        /// <param name="requireOne">Whether at least one of the keywords must be set.</param>
+        /// <param name="keywordNames">The keyword names as shown in error messages, e.g. "dfu, jtag or xds".</param>
+        /// <param name="isSet">Whether each keyword is set, in any order.</param>
+        internal static string ValidateMutuallyExclusive(string verb, bool requireOne, string keywordNames, params bool[] isSet)
+        {
+            int count = isSet.Count(b => b);
+
+            if (requireOne && count == 0)
+            {
+                return $"{verb} requires one of {keywordNames}.";
+            }
+
+            if (count > 1)
+            {
+                return $"Only one of {keywordNames} can be specified at a time.";
+            }
+
+            return null;
         }
     }
 }
