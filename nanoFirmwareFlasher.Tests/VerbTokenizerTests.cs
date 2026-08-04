@@ -89,21 +89,21 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Normalize_UnrecognizedWord_TreatedAsValue()
         {
-            // "jtag" is not a keyword in the flash verb's vocabulary (it's an enum value for "interface")
-            var result = VerbTokenizer.Normalize(new[] { "flash", "target", "ST_STM32F769I_DISCOVERY", "interface", "jtag" });
+            // "myapp.pe" is not a keyword in the flash verb's vocabulary, just image's value
+            var result = VerbTokenizer.Normalize(new[] { "flash", "target", "ST_STM32F769I_DISCOVERY", "image", "myapp.pe" });
 
             CollectionAssert.AreEqual(
-                new[] { "flash", "--target", "ST_STM32F769I_DISCOVERY", "--interface", "jtag" },
+                new[] { "flash", "--target", "ST_STM32F769I_DISCOVERY", "--image", "myapp.pe" },
                 result);
         }
 
         [TestMethod]
         public void Normalize_MultiValueKeyword_ValuesPassThroughUntouched()
         {
-            var result = VerbTokenizer.Normalize(new[] { "flash", "binfile", "app.bin", "address", "0x08000000" });
+            var result = VerbTokenizer.Normalize(new[] { "flash", "image", "app.bin", "address", "0x08000000" });
 
             CollectionAssert.AreEqual(
-                new[] { "flash", "--binfile", "app.bin", "--address", "0x08000000" },
+                new[] { "flash", "--image", "app.bin", "--address", "0x08000000" },
                 result);
         }
 
@@ -221,11 +221,11 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void EndToEnd_FlashWithBareWords_ParsesCorrectly()
         {
-            var result = ParseNormalized("flash", "target", "ST_STM32F769I_DISCOVERY", "interface", "jtag", "masserase");
+            var result = ParseNormalized("flash", "target", "ST_STM32F769I_DISCOVERY", "jtag", "masserase");
 
             var options = (FlashOptions)result.Value;
             Assert.AreEqual("ST_STM32F769I_DISCOVERY", options.TargetName);
-            Assert.AreEqual(FlashInterface.Jtag, options.Interface);
+            Assert.IsTrue(options.Jtag);
             Assert.IsTrue(options.MassErase);
         }
 

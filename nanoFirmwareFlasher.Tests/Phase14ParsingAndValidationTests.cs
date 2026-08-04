@@ -263,11 +263,11 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Integration_InferPlatformFromTarget_ThenValidateConstraints()
         {
-            // Simulates: nanoff flash target ST_NUCLEO144_F746ZG interface jtag
+            // Simulates: nanoff flash target ST_NUCLEO144_F746ZG jtag
             var o = new FlashOptions
             {
                 TargetName = "ST_NUCLEO144_F746ZG",
-                Interface = FlashInterface.Jtag
+                Jtag = true
             };
 
             // Step 1: infer platform

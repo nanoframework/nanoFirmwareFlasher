@@ -27,11 +27,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public SupportedPlatform? Platform { get; set; }
 
         [Option(
-            "interface",
+            "dfu",
             Required = false,
-            Default = null,
-            HelpText = "Flashing interface to use. Acceptable values are: dfu, jtag, nativeswd. If omitted the best available interface is auto-detected.")]
-        public FlashInterface? Interface { get; set; }
+            Default = false,
+            HelpText = "Force USB DFU as the flashing interface (STM32 only). If omitted, along with jtag and nativeswd, the best available interface is auto-detected.")]
+        public bool Dfu { get; set; }
+
+        [Option(
+            "jtag",
+            Required = false,
+            Default = false,
+            HelpText = "Force JTAG/ST-LINK as the flashing interface (STM32 only). If omitted, along with dfu and nativeswd, the best available interface is auto-detected.")]
+        public bool Jtag { get; set; }
+
+        [Option(
+            "nativeswd",
+            Required = false,
+            Default = false,
+            HelpText = "Force a generic CMSIS-DAP probe as the flashing interface (STM32 only). If omitted, along with dfu and jtag, the best available interface is auto-detected.")]
+        public bool NativeSwd { get; set; }
 
         [Option(
             "deviceid",
@@ -97,29 +111,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool NoFitCheck { get; set; }
 
         [Option(
-            "hexfile",
+            "image",
             Required = false,
-            HelpText = "HEX file(s) to be flashed into the device. Only JTAG connected targets are supported.")]
-        public IList<string> HexFile { get; set; }
+            HelpText = "Local image file(s) to use instead of downloading from the online repository: a custom CLR binary (when used with target/platform or a bare serial port), or file(s) to flash directly to the device (STM32/Silabs). Raw binary by default; use hex if the file(s) are Intel HEX format.")]
+        public IList<string> Image { get; set; }
 
         [Option(
-            "binfile",
+            "hex",
             Required = false,
-            HelpText = "BIN file(s) to be flashed into the device.")]
-        public IList<string> BinFile { get; set; }
+            Default = false,
+            HelpText = "Treat image as Intel HEX file(s) (self-addressed) instead of raw binary. Only applies to direct STM32 JTAG-connected flashing.")]
+        public bool Hex { get; set; }
 
         [Option(
             "address",
             Required = false,
-            HelpText = "Address(es) where to flash the BIN file(s). Hexadecimal format (e.g. 0x08000000). Required when specifying a BIN file with the binfile keyword.")]
+            HelpText = "Address(es) where to flash the image file(s). Hexadecimal format (e.g. 0x08000000). Required when flashing a raw binary image directly (not needed with hex, or when image is a CLR override).")]
         public IList<string> FlashAddress { get; set; }
-
-        [Option(
-            "clrfile",
-            Required = false,
-            Default = null,
-            HelpText = "Path to file with CLR image.")]
-        public string ClrFile { get; set; }
 
         [Option(
             "backup",
@@ -197,15 +205,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns><see langword="null"/> if valid, or an error message describing the constraint violation.</returns>
         public static string Validate(FlashOptions o)
         {
-            if (o.BinFile != null && o.BinFile.Count > 0
+            // image is only a raw-address flash when there's positive evidence of a direct
+            // STM32/Silabs connection; otherwise it's a CLR override (target/platform-based
+            // update, or a bare serial port for a generic nanoDevice), which needs no address.
+            bool looksLikeClrOverride =
+                !string.IsNullOrEmpty(o.TargetName) ||
+                (o.Platform == null && !o.Dfu && !o.Jtag && !o.NativeSwd && !string.IsNullOrEmpty(o.SerialPort));
+
+            if (o.Image != null && o.Image.Count > 0 && !o.Hex && !looksLikeClrOverride
                 && (o.FlashAddress == null || o.FlashAddress.Count == 0))
             {
-                return "binfile requires address to specify the flash address(es).";
+                return "image requires address to specify the flash address(es), unless hex is used.";
             }
 
             if (o.FromFwArchive && string.IsNullOrEmpty(o.FwArchivePath))
             {
                 return "fromarchive requires archivepath to specify the firmware archive location.";
+            }
+
+            if ((o.Dfu ? 1 : 0) + (o.Jtag ? 1 : 0) + (o.NativeSwd ? 1 : 0) > 1)
+            {
+                return "Only one of dfu, jtag or nativeswd can be specified.";
             }
 
             return null;

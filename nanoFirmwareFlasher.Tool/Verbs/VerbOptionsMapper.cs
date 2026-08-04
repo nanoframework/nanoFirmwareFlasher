@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -29,10 +30,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 Verify = o.Verify,
                 ResetMcu = o.ResetMcu,
                 FitCheck = o.NoFitCheck,
-                HexFile = o.HexFile ?? Array.Empty<string>(),
-                BinFile = o.BinFile ?? Array.Empty<string>(),
+                // Image serves two purposes depending on which platform manager ends up
+                // reading it: a raw file (or files) to flash directly (STM32/Silabs), or a
+                // CLR override for a target/platform-based or generic nanoDevice update
+                // (ESP32/Pico/nanoDevice). Both legacy fields are populated in parallel since
+                // only the relevant manager for the resolved platform ever reads its own field.
+                HexFile = o.Hex ? (o.Image ?? Array.Empty<string>()) : Array.Empty<string>(),
+                BinFile = !o.Hex ? (o.Image ?? Array.Empty<string>()) : Array.Empty<string>(),
                 FlashAddress = o.FlashAddress ?? Array.Empty<string>(),
-                ClrFile = o.ClrFile,
+                ClrFile = o.Image?.FirstOrDefault(),
                 CheckPsRam = o.CheckPsRam,
                 FromFwArchive = o.FromFwArchive,
                 FwArchivePath = o.FwArchivePath,
@@ -65,24 +71,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool noTargetInfo = string.IsNullOrEmpty(o.TargetName) && o.Platform is null;
             legacy.NanoDevice = noTargetInfo && !string.IsNullOrEmpty(o.SerialPort);
 
-            // nativedfu folds into "dfu" and nativestlink folds into "jtag" (see proposal doc);
-            // both use the native, no-external-tool implementations.
-            switch (o.Interface)
+            // "dfu"/"jtag" fold into the native, no-external-tool implementations
+            // (nativedfu -> dfu, nativestlink -> jtag; see proposal doc); FlashOptions.Validate
+            // guarantees at most one of the three is set.
+            if (o.Dfu)
             {
-                case FlashInterface.Dfu:
-                    legacy.NativeDfuUpdate = true;
-                    legacy.DfuDeviceId = o.DeviceId;
-                    break;
-
-                case FlashInterface.Jtag:
-                    legacy.NativeStLinkUpdate = true;
-                    legacy.JtagDeviceId = o.DeviceId;
-                    break;
-
-                case FlashInterface.NativeSwd:
-                    legacy.NativeSwdUpdate = true;
-                    legacy.JtagDeviceId = o.DeviceId;
-                    break;
+                legacy.NativeDfuUpdate = true;
+                legacy.DfuDeviceId = o.DeviceId;
+            }
+            else if (o.Jtag)
+            {
+                legacy.NativeStLinkUpdate = true;
+                legacy.JtagDeviceId = o.DeviceId;
+            }
+            else if (o.NativeSwd)
+            {
+                legacy.NativeSwdUpdate = true;
+                legacy.JtagDeviceId = o.DeviceId;
             }
 
             return legacy;

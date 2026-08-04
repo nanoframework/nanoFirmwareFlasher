@@ -161,19 +161,22 @@ namespace nanoFirmwareFlasher.Tests
         #region FlashOptions
 
         [TestMethod]
-        public void Parse_FlashInterface_ParsesEnumCaseInsensitive()
+        public void Parse_FlashJtagFlag_SetsJtagTrue()
         {
-            var result = Parse("flash", "--target", "ST_STM32F769I_DISCOVERY", "--interface", "jtag");
+            var result = Parse("flash", "--target", "ST_STM32F769I_DISCOVERY", "--jtag");
 
-            Assert.AreEqual(FlashInterface.Jtag, ((FlashOptions)result.Value).Interface);
+            Assert.IsTrue(((FlashOptions)result.Value).Jtag);
         }
 
         [TestMethod]
-        public void Parse_FlashNoInterface_DefaultsToNull()
+        public void Parse_FlashNoInterfaceFlag_DefaultsToFalse()
         {
             var result = Parse("flash", "--target", "ESP_WROVER_KIT");
 
-            Assert.IsNull(((FlashOptions)result.Value).Interface);
+            var options = (FlashOptions)result.Value;
+            Assert.IsFalse(options.Dfu);
+            Assert.IsFalse(options.Jtag);
+            Assert.IsFalse(options.NativeSwd);
         }
 
         [TestMethod]
@@ -227,7 +230,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void FlashOptions_Validate_BinFileWithoutAddress_ReturnsError()
         {
-            var options = new FlashOptions { BinFile = new[] { "app.bin" } };
+            var options = new FlashOptions { Jtag = true, Image = new[] { "app.bin" } };
 
             Assert.IsNotNull(FlashOptions.Validate(options));
         }
@@ -237,9 +240,36 @@ namespace nanoFirmwareFlasher.Tests
         {
             var options = new FlashOptions
             {
-                BinFile = new[] { "app.bin" },
+                Jtag = true,
+                Image = new[] { "app.bin" },
                 FlashAddress = new[] { "0x08000000" }
             };
+
+            Assert.IsNull(FlashOptions.Validate(options));
+        }
+
+        [TestMethod]
+        public void FlashOptions_Validate_HexImageWithoutAddress_ReturnsNull()
+        {
+            var options = new FlashOptions { Jtag = true, Image = new[] { "app.hex" }, Hex = true };
+
+            Assert.IsNull(FlashOptions.Validate(options));
+        }
+
+        [TestMethod]
+        public void FlashOptions_Validate_ImageWithTarget_NoAddressNeeded()
+        {
+            // Simulates a CLR override for a target/platform-based update: no address required.
+            var options = new FlashOptions { TargetName = "ESP_WROVER_KIT", Image = new[] { "nanoclr.bin" } };
+
+            Assert.IsNull(FlashOptions.Validate(options));
+        }
+
+        [TestMethod]
+        public void FlashOptions_Validate_ImageWithSerialPortOnly_NoAddressNeeded()
+        {
+            // Simulates a CLR override for a generic nanoDevice update: no address required.
+            var options = new FlashOptions { SerialPort = "COM7", Image = new[] { "nanoclr.bin" } };
 
             Assert.IsNull(FlashOptions.Validate(options));
         }
@@ -261,6 +291,22 @@ namespace nanoFirmwareFlasher.Tests
                 FromFwArchive = true,
                 FwArchivePath = "./fw-cache"
             };
+
+            Assert.IsNull(FlashOptions.Validate(options));
+        }
+
+        [TestMethod]
+        public void FlashOptions_Validate_MultipleInterfaceFlags_ReturnsError()
+        {
+            var options = new FlashOptions { TargetName = "ST_STM32F769I_DISCOVERY", Jtag = true, Dfu = true };
+
+            Assert.IsNotNull(FlashOptions.Validate(options));
+        }
+
+        [TestMethod]
+        public void FlashOptions_Validate_SingleInterfaceFlag_ReturnsNull()
+        {
+            var options = new FlashOptions { TargetName = "ST_STM32F769I_DISCOVERY", Jtag = true };
 
             Assert.IsNull(FlashOptions.Validate(options));
         }

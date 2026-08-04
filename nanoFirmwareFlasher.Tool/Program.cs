@@ -179,9 +179,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
             [typeof(FlashOptions)] = new[]
             {
                 "nanoff flash target ESP_WROVER_KIT serialport COM31",
-                "nanoff flash target ST_STM32F769I_DISCOVERY interface jtag",
+                "nanoff flash target ST_STM32F769I_DISCOVERY jtag",
                 "nanoff flash platform esp32 serialport COM31 masserase",
-                "nanoff flash serialport COM9 clrfile C:\\nf-interpreter\\build\\nanoclr.bin",
+                "nanoff flash serialport COM9 image C:\\nf-interpreter\\build\\nanoclr.bin",
             },
             [typeof(DeployOptions)] = new[]
             {
@@ -315,11 +315,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
         }
 
-        private static async Task RunFlashAsync(FlashOptions o)
+        /// <summary>
+        /// Common shape for every verb: set verbosity, run its <c>Validate</c> if it has one
+        /// and bail out with E9000 on a validation error, otherwise map to <see cref="Options"/> and dispatch.
+        /// </summary>
+        private static async Task RunVerbOptionsAsync<T>(T o, Func<T, Options> toLegacyOptions, Func<T, string> validate = null) where T : VerbOptionsBase
         {
             _verbosityLevel = o.GetVerbosityLevel();
 
-            string validationError = FlashOptions.Validate(o);
+            string validationError = validate?.Invoke(o);
 
             if (validationError != null)
             {
@@ -328,66 +332,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return;
             }
 
-            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
+            await RunOptionsAndReturnExitCodeAsync(toLegacyOptions(o));
         }
 
-        private static async Task RunDeployAsync(DeployOptions o)
-        {
-            _verbosityLevel = o.GetVerbosityLevel();
+        private static Task RunFlashAsync(FlashOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), FlashOptions.Validate);
 
-            string validationError = DeployOptions.Validate(o);
+        private static Task RunDeployAsync(DeployOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), DeployOptions.Validate);
 
-            if (validationError != null)
-            {
-                _exitCode = ExitCodes.E9000;
-                _extraMessage = validationError;
-                return;
-            }
+        private static Task RunListAsync(ListOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), ListOptions.Validate);
 
-            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
-        }
+        private static Task RunDetailsAsync(DetailsOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions());
 
-        private static async Task RunListAsync(ListOptions o)
-        {
-            _verbosityLevel = o.GetVerbosityLevel();
+        private static Task RunIdentifyAsync(IdentifyOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions());
 
-            string validationError = ListOptions.Validate(o);
-
-            if (validationError != null)
-            {
-                _exitCode = ExitCodes.E9000;
-                _extraMessage = validationError;
-                return;
-            }
-
-            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
-        }
-
-        private static async Task RunDetailsAsync(DetailsOptions o)
-        {
-            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
-        }
-
-        private static async Task RunIdentifyAsync(IdentifyOptions o)
-        {
-            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
-        }
-
-        private static async Task RunCacheAsync(CacheOptions o)
-        {
-            _verbosityLevel = o.GetVerbosityLevel();
-
-            string validationError = CacheOptions.Validate(o);
-
-            if (validationError != null)
-            {
-                _exitCode = ExitCodes.E9000;
-                _extraMessage = validationError;
-                return;
-            }
-
-            await RunOptionsAndReturnExitCodeAsync(o.ToLegacyOptions());
-        }
+        private static Task RunCacheAsync(CacheOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), CacheOptions.Validate);
 
         /// <summary>
         /// The <c>drivers</c> verb is handled directly rather than through the legacy
@@ -437,49 +395,40 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Runs a platform manager's <see cref="IManager.ProcessAsync"/>, mapping specific
+        /// exception types to their exit code (and optionally their message), with
+        /// <paramref name="defaultExitCode"/>/message used for anything else unmapped.
+        /// <see cref="NoOperationPerformedException"/> is always handled the same way.
+        /// </summary>
+        private static async Task RunManagerAsync(IManager manager, ExitCodes defaultExitCode, params (Type ExceptionType, ExitCodes ExitCode, bool IncludeMessage)[] exceptionMappings)
+        {
+            try
+            {
+                _exitCode = await manager.ProcessAsync();
+            }
+            catch (NoOperationPerformedException)
+            {
+                DisplayNoOperationMessage();
+            }
+            catch (Exception ex)
+            {
+                var mapping = Array.Find(exceptionMappings, m => m.ExceptionType == ex.GetType());
+
+                _exitCode = mapping.ExceptionType != null ? mapping.ExitCode : defaultExitCode;
+
+                if (mapping.ExceptionType == null || mapping.IncludeMessage)
+                {
+                    _extraMessage = ex.Message;
+                }
+            }
+        }
+
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
         {
             bool operationPerformed = false;
 
-            #region parse verbosity option
-
-            switch (o.Verbosity)
-            {
-                // quiet
-                case "q":
-                case "quiet":
-                    _verbosityLevel = VerbosityLevel.Quiet;
-                    break;
-
-                // minimal
-                case "m":
-                case "minimal":
-                    _verbosityLevel = VerbosityLevel.Minimal;
-                    break;
-
-                // normal
-                case "n":
-                case "normal":
-                    _verbosityLevel = VerbosityLevel.Normal;
-                    break;
-
-                // detailed
-                case "d":
-                case "detailed":
-                    _verbosityLevel = VerbosityLevel.Detailed;
-                    break;
-
-                // diagnostic
-                case "diag":
-                case "diagnostic":
-                    _verbosityLevel = VerbosityLevel.Diagnostic;
-                    break;
-
-                default:
-                    throw new ArgumentException("Invalid option for Verbosity");
-            }
-
-            #endregion
+            _verbosityLevel = VerbOptionsBase.ParseVerbosity(o.Verbosity);
 
             OutputWriter.ForegroundColor = ConsoleColor.White;
 
@@ -689,24 +638,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else
                 {
-                    try
-                    {
-                        _exitCode = await manager.ProcessAsync();
-                    }
-                    catch (CantConnectToNanoDeviceException ex)
-                    {
-                        _exitCode = ExitCodes.E2001;
-                        _extraMessage = ex.Message;
-                    }
-                    catch (NoOperationPerformedException)
-                    {
-                        DisplayNoOperationMessage();
-                    }
-                    catch (Exception ex)
-                    {
-                        _exitCode = ExitCodes.E2002;
-                        _extraMessage = ex.Message;
-                    }
+                    await RunManagerAsync(
+                        manager,
+                        ExitCodes.E2002,
+                        (typeof(CantConnectToNanoDeviceException), ExitCodes.E2001, true));
                 }
 
                 return;
@@ -889,37 +824,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.esp32)
             {
-                var manager = new Esp32Manager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (EspToolExecutionException ex)
-                {
-                    _exitCode = ExitCodes.E4000;
-                    _extraMessage = ex.Message;
-                }
-                catch (ReadEsp32FlashException ex)
-                {
-                    _exitCode = ExitCodes.E4004;
-                    _extraMessage = ex.Message;
-                }
-                catch (WriteEsp32FlashException ex)
-                {
-                    _exitCode = ExitCodes.E4003;
-                    _extraMessage = ex.Message;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    // exception with 
-                    _exitCode = ExitCodes.E4000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(
+                    new Esp32Manager(o, _verbosityLevel),
+                    ExitCodes.E4000,
+                    (typeof(EspToolExecutionException), ExitCodes.E4000, true),
+                    (typeof(ReadEsp32FlashException), ExitCodes.E4004, true),
+                    (typeof(WriteEsp32FlashException), ExitCodes.E4003, true));
 
                 operationPerformed = true;
             }
@@ -930,32 +840,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.stm32)
             {
-                var manager = new Stm32Manager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (CantConnectToDfuDeviceException)
-                {
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E1005;
-                }
-                catch (CantConnectToJtagDeviceException)
-                {
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E5002;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    // exception with 
-                    _exitCode = ExitCodes.E5000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(
+                    new Stm32Manager(o, _verbosityLevel),
+                    ExitCodes.E5000,
+                    (typeof(CantConnectToDfuDeviceException), ExitCodes.E1005, false),
+                    (typeof(CantConnectToJtagDeviceException), ExitCodes.E5002, false));
 
                 operationPerformed = true;
             }
@@ -966,22 +855,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.ti_simplelink)
             {
-                var manager = new TIManager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    // exception with 
-                    _exitCode = ExitCodes.E5000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(new TIManager(o, _verbosityLevel), ExitCodes.E5000);
 
                 operationPerformed = true;
             }
@@ -992,32 +866,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.efm32)
             {
-                var manager = new SilabsManager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (CantConnectToJLinkDeviceException)
-                {
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E8001;
-                }
-                catch (SilinkExecutionException)
-                {
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E8002;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    // exception with 
-                    _exitCode = ExitCodes.E8000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(
+                    new SilabsManager(o, _verbosityLevel),
+                    ExitCodes.E8000,
+                    (typeof(CantConnectToJLinkDeviceException), ExitCodes.E8001, false),
+                    (typeof(SilinkExecutionException), ExitCodes.E8002, false));
 
                 operationPerformed = true;
             }
@@ -1028,21 +881,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.rpi_pico)
             {
-                var manager = new PicoManager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    _exitCode = ExitCodes.E3000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(new PicoManager(o, _verbosityLevel), ExitCodes.E3000);
 
                 operationPerformed = true;
             }

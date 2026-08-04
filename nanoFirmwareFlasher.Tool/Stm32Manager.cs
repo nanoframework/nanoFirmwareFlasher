@@ -140,6 +140,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.ForegroundColor = ConsoleColor.White;
         }
 
+        /// <summary>
+        /// Resolves the interface explicitly requested via --interface for a --target update/deploy
+        /// operation. Returns <see cref="Interface.None"/> (which triggers auto-detection in
+        /// <see cref="Stm32Operations"/>) when none was requested, or an error if more than one was.
+        /// </summary>
+        private ExitCodes? TryResolveManualInterface(out Interface updateInterface)
+        {
+            updateInterface = Interface.None;
+
+            int selectedInterfaces = (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
+
+            if (selectedInterfaces > 1)
+            {
+                // can't select multiple interfaces simultaneously
+                return ExitCodes.E9000;
+            }
+
+            if (_options.NativeStLinkUpdate)
+            {
+                updateInterface = Interface.NativeStLink;
+            }
+            else if (_options.NativeSwdUpdate)
+            {
+                updateInterface = Interface.NativeSwd;
+            }
+            else if (_options.NativeDfuUpdate)
+            {
+                updateInterface = Interface.NativeDfu;
+            }
+
+            return null;
+        }
+
         /// <inheritdoc />
         public async Task<ExitCodes> ProcessAsync()
         {
@@ -429,26 +462,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         appFlashAddress = _options.FlashAddress.ElementAt(0);
                     }
 
-                    Interface updateInterface = Interface.None;
-
-                    int selectedInterfaces = (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
-
-                    if (selectedInterfaces > 1)
+                    if (TryResolveManualInterface(out Interface updateInterface) is ExitCodes interfaceError)
                     {
-                        // can't select multiple interfaces simultaneously
-                        return ExitCodes.E9000;
-                    }
-                    else if (_options.NativeStLinkUpdate)
-                    {
-                        updateInterface = Interface.NativeStLink;
-                    }
-                    else if (_options.NativeSwdUpdate)
-                    {
-                        updateInterface = Interface.NativeSwd;
-                    }
-                    else if (_options.NativeDfuUpdate)
-                    {
-                        updateInterface = Interface.NativeDfu;
+                        return interfaceError;
                     }
 
                     var exitCode = await Stm32Operations.UpdateFirmwareAsync(
@@ -494,26 +510,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         return ExitCodes.E9009;
                     }
 
-                    Interface updateInterface = Interface.None;
-
-                    int selectedInterfacesDeploy = (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
-
-                    if (selectedInterfacesDeploy > 1)
+                    if (TryResolveManualInterface(out Interface updateInterface) is ExitCodes interfaceError)
                     {
-                        // can't select multiple interfaces simultaneously
-                        return ExitCodes.E9000;
-                    }
-                    else if (_options.NativeStLinkUpdate)
-                    {
-                        updateInterface = Interface.NativeStLink;
-                    }
-                    else if (_options.NativeSwdUpdate)
-                    {
-                        updateInterface = Interface.NativeSwd;
-                    }
-                    else if (_options.NativeDfuUpdate)
-                    {
-                        updateInterface = Interface.NativeDfu;
+                        return interfaceError;
                     }
 
                     var exitCode = await Stm32Operations.UpdateFirmwareAsync(

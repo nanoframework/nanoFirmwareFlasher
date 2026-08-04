@@ -105,7 +105,7 @@ namespace nanoFirmwareFlasher.Tests
             var legacy = new FlashOptions
             {
                 TargetName = "ST_STM32F769I_DISCOVERY",
-                Interface = FlashInterface.Dfu,
+                Dfu = true,
                 DeviceId = "abc123"
             }.ToLegacyOptions();
 
@@ -119,7 +119,7 @@ namespace nanoFirmwareFlasher.Tests
             var legacy = new FlashOptions
             {
                 TargetName = "ST_STM32F769I_DISCOVERY",
-                Interface = FlashInterface.Jtag,
+                Jtag = true,
                 DeviceId = "probe1"
             }.ToLegacyOptions();
 
@@ -133,7 +133,7 @@ namespace nanoFirmwareFlasher.Tests
             var legacy = new FlashOptions
             {
                 TargetName = "ST_STM32F769I_DISCOVERY",
-                Interface = FlashInterface.NativeSwd,
+                NativeSwd = true,
                 DeviceId = "probe2"
             }.ToLegacyOptions();
 
@@ -174,6 +174,25 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsNotNull(legacy.BinFile);
             Assert.IsNotNull(legacy.FlashAddress);
             Assert.AreEqual(0, legacy.HexFile.Count);
+        }
+
+        [TestMethod]
+        public void Flash_Image_MapsToBinFileAndClrFile()
+        {
+            var legacy = new FlashOptions { Jtag = true, Image = new[] { "app.bin" }, FlashAddress = new[] { "0x08000000" } }.ToLegacyOptions();
+
+            CollectionAssert.AreEqual(new[] { "app.bin" }, (System.Collections.ICollection)legacy.BinFile);
+            Assert.AreEqual(0, legacy.HexFile.Count);
+            Assert.AreEqual("app.bin", legacy.ClrFile);
+        }
+
+        [TestMethod]
+        public void Flash_ImageWithHex_MapsToHexFile()
+        {
+            var legacy = new FlashOptions { Jtag = true, Image = new[] { "app.hex" }, Hex = true }.ToLegacyOptions();
+
+            CollectionAssert.AreEqual(new[] { "app.hex" }, (System.Collections.ICollection)legacy.HexFile);
+            Assert.AreEqual(0, legacy.BinFile.Count);
         }
 
         [TestMethod]

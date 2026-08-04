@@ -88,6 +88,7 @@ nanoff flash target ESP32_PSRAM_REV0 serialport COM31
 ```
 
 - Each verb has its own set of keywords. A keyword either takes the next token as its value (`target ESP32_PSRAM_REV0`) or is a standalone flag with no value (`masserase`).
+- Except for the verb itself (which must always be bare, e.g. `flash`, not `--flash`), keywords can be written with or without the `--` prefix: `flash --target ESP32_PSRAM_REV0 --serialport COM31` works exactly like the bare form above.
 - `nanoff help` and `nanoff <verb> help` (as well as the usual `nanoff --help`/`nanoff <verb> --help`) print the full, authoritative list of keywords for that verb — use them if anything below looks out of date.
 - `nanoff version`/`nanoff --version` prints the installed version.
 
@@ -128,9 +129,9 @@ You will also need to know the COM port used by your device for most operations.
 
 ## `flash`
 
-Flash firmware onto a target device — from the online repository (`target`/`platform` + `fwversion`/`preview`), from a local firmware archive (`fromarchive archivepath <path>`), or by flashing local HEX/BIN files directly (`hexfile`/`binfile`/`address`).
+Flash firmware onto a target device — from the online repository (`target`/`platform` + `fwversion`/`preview`), from a local firmware archive (`fromarchive archivepath <path>`), or by flashing a local image directly (`image`/`address`, or `image hex` for Intel HEX files).
 
-Common keywords across all platforms: `target`, `platform`, `interface dfu|jtag|nativeswd` (STM32 only, omit for auto-detect), `deviceid` (DFU/JTAG/SWD probe, or J-Link probe id for EFM32), `fwversion`, `preview`, `masserase`, `verify`, `reset`, `nofitcheck`, `serialport`, `clrfile`, `fromarchive`/`archivepath`.
+Common keywords across all platforms: `target`, `platform`, `dfu`/`jtag`/`nativeswd` (STM32 only, force a specific interface — omit all three for auto-detect), `deviceid` (DFU/JTAG/SWD probe, or J-Link probe id for EFM32), `fwversion`, `preview`, `masserase`, `verify`, `reset`, `nofitcheck`, `serialport`, `image` (a local CLR/firmware file to use instead of downloading — see each platform's examples), `fromarchive`/`archivepath`.
 
 There are multiple ESP32 images available, some are built specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards).
 
@@ -179,13 +180,13 @@ To update the firmware of an ESP32-S2 target connected to COM31 with a local CLR
 This file has to be a binary file with a valid CLR from a build. No other checks or validations are performed on the file content.
 
 ```console
-nanoff flash target ESP32_S2 serialport COM31 clrfile "C:\nf-interpreter\build\nanoCLR.bin"
+nanoff flash target ESP32_S2 serialport COM31 image "C:\nf-interpreter\build\nanoCLR.bin"
 ```
 
 On Linux/macOS:
 
 ```console
-nanoff flash target ESP32_S2 serialport /dev/ttyUSB0 clrfile ~/nf-interpreter/build/nanoCLR.bin
+nanoff flash target ESP32_S2 serialport /dev/ttyUSB0 image ~/nf-interpreter/build/nanoCLR.bin
 ```
 
 You can adjust the name of the core image you want to use. Refer to the previous section to get the full list.
@@ -227,7 +228,7 @@ nanoff flash target ESP32_PSRAM_REV0 serialport COM31 restore ./backups/config.b
 
 ### `flash` — STM32
 
-STM32 flashing is fully native (DFU, JTAG/ST-LINK and CMSIS-DAP/SWD) — no external tools or drivers are required. If you don't specify `interface`, `nanoff` auto-detects the best available connection.
+STM32 flashing is fully native (DFU, JTAG/ST-LINK and CMSIS-DAP/SWD) — no external tools or drivers are required. If you don't specify `dfu`, `jtag` or `nativeswd`, `nanoff` auto-detects the best available connection.
 
 #### Update the firmware of a specific STM32 target
 
@@ -237,10 +238,10 @@ To update the firmware of the ST_STM32F769I_DISCOVERY target to the latest avail
 nanoff flash target ST_STM32F769I_DISCOVERY
 ```
 
-To force a specific interface (`dfu`, `jtag` for ST-LINK, or `nativeswd` for CMSIS-DAP probes):
+To force a specific interface (`dfu`, `jtag` for ST-LINK, or `nativeswd` for CMSIS-DAP probes) — only one of the three can be given:
 
 ```console
-nanoff flash target ST_STM32F769I_DISCOVERY interface jtag
+nanoff flash target ST_STM32F769I_DISCOVERY jtag
 ```
 
 #### Flash a custom BIN file directly to an STM32 device
@@ -248,13 +249,19 @@ nanoff flash target ST_STM32F769I_DISCOVERY interface jtag
 To flash a local BIN file (for example a managed application deployment image) directly to a connected STM32 device, without going through the online firmware repository. You have to specify the flash address (hexadecimal format).
 
 ```console
-nanoff flash interface jtag binfile "c:\dev\my awesome app\bin\debug\my_awesome_app.bin" address 0x08000000
+nanoff flash jtag image "c:\dev\my awesome app\bin\debug\my_awesome_app.bin" address 0x08000000
 ```
 
 On Linux/macOS, quote the path the same way you would for any shell command with spaces in it:
 
 ```console
-nanoff flash interface jtag binfile "/home/user/dev/my awesome app/bin/debug/my_awesome_app.bin" address 0x08000000
+nanoff flash jtag image "/home/user/dev/my awesome app/bin/debug/my_awesome_app.bin" address 0x08000000
+```
+
+If the file is an Intel HEX file instead of raw binary, add `hex` — the address is embedded in the file, so `address` isn't needed:
+
+```console
+nanoff flash jtag image "c:\dev\my awesome app\bin\debug\my_awesome_app.hex" hex
 ```
 
 #### List all STM32 devices available with JTAG/ST-LINK connection
@@ -301,7 +308,7 @@ To update the firmware of a Silabs target with a local firmware file (for exampl
 This file has to be a binary file with a valid Booter and CLR from a build. No checks or validations are performed on the file(s) content.
 
 ```console
-nanoff flash platform efm32 binfile "C:\nf-interpreter\build\nanobooter-nanoclr.bin" address 0x0
+nanoff flash platform efm32 image "C:\nf-interpreter\build\nanobooter-nanoclr.bin" address 0x0
 ```
 
 #### List all Silabs devices available with J-Link connection
@@ -359,13 +366,13 @@ To update the firmware of a nano device with a local firmware file (for example 
 This file has to be a binary file with a valid nanoCLR from a build. No checks or validations are performed on the file content.
 
 ```console
-nanoff flash serialport COM9 clrfile "C:\nf-interpreter\build\nanoclr.bin"
+nanoff flash serialport COM9 image "C:\nf-interpreter\build\nanoclr.bin"
 ```
 
 On Linux/macOS:
 
 ```console
-nanoff flash serialport /dev/ttyACM0 clrfile ~/nf-interpreter/build/nanoclr.bin
+nanoff flash serialport /dev/ttyACM0 image ~/nf-interpreter/build/nanoclr.bin
 ```
 
 ## `deploy`

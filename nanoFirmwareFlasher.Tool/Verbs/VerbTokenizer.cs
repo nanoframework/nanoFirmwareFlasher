@@ -34,6 +34,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         };
 
         /// <summary>
+        /// Keywords that take an optional value, mapped to what to do when used bare (no value
+        /// follows): return a concrete value to still emit (e.g. a generated file name), or
+        /// <see langword="null"/> to drop the keyword entirely (same as omitting it).
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, Func<string>> s_bareValueGenerators = new Dictionary<string, Func<string>>(StringComparer.Ordinal)
+        {
+            ["backup"] = GenerateRandomBackupFileName,
+            ["restore"] = () => null,
+        };
+
+        /// <summary>
         /// Normalizes a raw, bare-word argument list into the <c>--keyword value</c> form.
         /// </summary>
         /// <param name="args">The raw command line arguments, e.g. <c>["flash", "target", "ESP_WROVER_KIT", "masserase"]</c>.</param>
@@ -90,32 +101,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     continue;
                 }
 
-                if (keywords != null && keywords.ContainsKey(token))
+                if (keywords == null || !keywords.ContainsKey(token))
                 {
-                    // "backup" and "restore" take an optional value: with no following value they
-                    // still need to reach CommandLineParser as either a concrete value ("backup",
-                    // which always needs a real file to write to) or not at all ("restore", where
-                    // omitting it is already the default behavior).
-                    if (token == "backup" && !NextTokenIsValue(args, i, keywords))
-                    {
-                        result.Add("--backup");
-                        result.Add(GenerateRandomBackupFileName());
-                        continue;
-                    }
+                    // not a recognized keyword for this verb: treat as a value
+                    result.Add(token);
+                    continue;
+                }
 
-                    if (token == "restore" && !NextTokenIsValue(args, i, keywords))
+                if (!NextTokenIsValue(args, i, keywords) && s_bareValueGenerators.TryGetValue(token, out Func<string> generateBareValue))
+                {
+                    string bareValue = generateBareValue();
+
+                    if (bareValue == null)
                     {
-                        // bare "restore": no persistent path requested, same as omitting the keyword
+                        // e.g. bare "restore": drop it entirely, same as omitting the keyword
                         continue;
                     }
 
                     result.Add("--" + token);
+                    result.Add(bareValue);
+                    continue;
                 }
-                else
-                {
-                    // not a recognized keyword for this verb: treat as a value
-                    result.Add(token);
-                }
+
+                result.Add("--" + token);
             }
 
             return result.ToArray();
