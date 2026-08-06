@@ -654,10 +654,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
 #else
                 if (File.Exists(backupFilename))
                 {
-                    File.Delete(backupFilename);
+                    // File.Replace is atomic: the existing backup is only ever
+                    // touched once the staged file is confirmed in place
+                    File.Replace(tempFilename, backupFilename, null);
                 }
-
-                File.Move(tempFilename, backupFilename);
+                else
+                {
+                    File.Move(tempFilename, backupFilename);
+                }
 #endif
             }
             catch
