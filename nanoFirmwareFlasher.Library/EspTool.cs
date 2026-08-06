@@ -625,9 +625,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.WriteLine($"Reading config partition (0x{address:X}, {size} bytes) to {backupFilename}...");
             }
 
-            // read into a temporary file first, so a failed or partial read can never
-            // leave a stale (or half-written) file at the persistent backup path
-            string tempFilename = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            // read into a staging file next to the destination first, so a failed or
+            // partial read never touches (or discards) whatever backup already exists
+            // at backupFilename; only replace it once the staged read has fully succeeded
+            string backupDirectory = Path.GetDirectoryName(Path.GetFullPath(backupFilename));
+            string tempFilename = Path.Combine(string.IsNullOrEmpty(backupDirectory) ? "." : backupDirectory, Path.GetRandomFileName());
 
             try
             {
@@ -646,24 +648,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
                     });
 
-                // read succeeded: atomically make it available at the requested path
-                File.Copy(tempFilename, backupFilename, true);
+                // read succeeded: atomically replace whatever is (or isn't) at the requested path
+#if NET5_0_OR_GREATER
+                File.Move(tempFilename, backupFilename, true);
+#else
+                if (File.Exists(backupFilename))
+                {
+                    File.Delete(backupFilename);
+                }
+
+                File.Move(tempFilename, backupFilename);
+#endif
             }
             catch
             {
-                // don't leave a stale backup file available to be flashed
-                try
-                {
-                    if (File.Exists(backupFilename))
-                    {
-                        File.Delete(backupFilename);
-                    }
-                }
-                catch
-                {
-                    // don't care
-                }
-
+                // the read (or the replace) failed: leave any existing backup untouched
                 return ExitCodes.E9016;
             }
             finally

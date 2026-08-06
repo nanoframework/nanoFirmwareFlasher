@@ -365,6 +365,24 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsNotNull(ListOptions.Validate(new ListOptions { Jtag = true, Dfu = true }));
         }
 
+        [TestMethod]
+        public void ListOptions_Validate_FromArchiveWithoutTargets_ReturnsError()
+        {
+            Assert.IsNotNull(ListOptions.Validate(new ListOptions { Devices = true, FromFwArchive = true, FwArchivePath = "./fw-cache" }));
+        }
+
+        [TestMethod]
+        public void ListOptions_Validate_TargetsFromArchiveWithoutArchivePath_ReturnsError()
+        {
+            Assert.IsNotNull(ListOptions.Validate(new ListOptions { Targets = true, FromFwArchive = true }));
+        }
+
+        [TestMethod]
+        public void ListOptions_Validate_TargetsFromArchiveComplete_ReturnsNull()
+        {
+            Assert.IsNull(ListOptions.Validate(new ListOptions { Targets = true, FromFwArchive = true, FwArchivePath = "./fw-cache" }));
+        }
+
         #endregion
 
         // ======================================================================

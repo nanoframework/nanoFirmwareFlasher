@@ -337,6 +337,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             catch (ArgumentException)
             {
                 _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
                 return;
             }
 
@@ -379,6 +380,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             catch (ArgumentException)
             {
                 _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
                 return Task.CompletedTask;
             }
 
@@ -460,6 +462,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             catch (ArgumentException)
             {
                 _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
                 return;
             }
 

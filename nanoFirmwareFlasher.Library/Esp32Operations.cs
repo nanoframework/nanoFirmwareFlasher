@@ -580,64 +580,69 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     OutputWriter.WriteLine($"Flashing firmware...");
                 }
 
-                // write to flash
-                operationResult = espTool.WriteFlash(firmware.FlashPartitions);
-
-                if (operationResult == ExitCodes.OK)
+                try
                 {
-                    if (verbosity >= VerbosityLevel.Normal)
+                    // write to flash
+                    operationResult = espTool.WriteFlash(firmware.FlashPartitions);
+
+                    if (operationResult == ExitCodes.OK)
                     {
-                        // output the start of operation message for verbosity normal and above
-
-                        // clear output of the progress, move cursor up and clear line
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                        Console.Write(new string(' ', Console.WindowWidth));
-                        int currentLineCursor = Console.CursorTop;
-                        Console.SetCursorPosition(0, currentLineCursor - 1);
-                        Console.Write(new string(' ', Console.WindowWidth));
-                        Console.SetCursorPosition(0, currentLineCursor - 1);
-
-                        // operation completed output
-                        // output the full message as usual after the progress completes
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-                        OutputWriter.Write($"Flashing firmware...");
-                        OutputWriter.ForegroundColor = ConsoleColor.Green;
-                        OutputWriter.WriteLine("OK".PadRight(Console.WindowWidth - Console.CursorLeft));
-
-                        // warn user if reboot is not possible
-                        if (espTool.CouldntResetTarget)
+                        if (verbosity >= VerbosityLevel.Normal)
                         {
-                            OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                            // output the start of operation message for verbosity normal and above
 
-                            OutputWriter.WriteLine("");
-                            OutputWriter.WriteLine("**********************************************");
-                            OutputWriter.WriteLine("The connected device is in 'download mode'.");
-                            OutputWriter.WriteLine("Please reset the chip manually to run nanoCLR.");
-                            OutputWriter.WriteLine("**********************************************");
-                            OutputWriter.WriteLine("");
+                            // clear output of the progress, move cursor up and clear line
+                            Console.SetCursorPosition(0, Console.CursorTop);
+                            Console.Write(new string(' ', Console.WindowWidth));
+                            int currentLineCursor = Console.CursorTop;
+                            Console.SetCursorPosition(0, currentLineCursor - 1);
+                            Console.Write(new string(' ', Console.WindowWidth));
+                            Console.SetCursorPosition(0, currentLineCursor - 1);
 
+                            // operation completed output
+                            // output the full message as usual after the progress completes
                             OutputWriter.ForegroundColor = ConsoleColor.White;
+                            OutputWriter.Write($"Flashing firmware...");
+                            OutputWriter.ForegroundColor = ConsoleColor.Green;
+                            OutputWriter.WriteLine("OK".PadRight(Console.WindowWidth - Console.CursorLeft));
+
+                            // warn user if reboot is not possible
+                            if (espTool.CouldntResetTarget)
+                            {
+                                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+
+                                OutputWriter.WriteLine("");
+                                OutputWriter.WriteLine("**********************************************");
+                                OutputWriter.WriteLine("The connected device is in 'download mode'.");
+                                OutputWriter.WriteLine("Please reset the chip manually to run nanoCLR.");
+                                OutputWriter.WriteLine("**********************************************");
+                                OutputWriter.WriteLine("");
+
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
+                            }
                         }
-                    }
-                    else
-                    {
-                        OutputWriter.WriteLine("");
+                        else
+                        {
+                            OutputWriter.WriteLine("");
+                        }
                     }
                 }
-
-                // delete config partition backup, unless a persistent path was requested
-                if (isTemporaryConfigBackup)
+                finally
                 {
-                    try
+                    // delete config partition backup, unless a persistent path was requested
+                    if (isTemporaryConfigBackup)
                     {
-                        if (File.Exists(configPartitionBackup))
+                        try
                         {
-                            File.Delete(configPartitionBackup);
+                            if (File.Exists(configPartitionBackup))
+                            {
+                                File.Delete(configPartitionBackup);
+                            }
                         }
-                    }
-                    catch
-                    {
-                        // don't care
+                        catch
+                        {
+                            // don't care
+                        }
                     }
                 }
 

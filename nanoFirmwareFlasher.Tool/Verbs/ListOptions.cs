@@ -106,6 +106,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return mutuallyExclusiveError;
             }
 
+            if (o.FromFwArchive && !o.Targets)
+            {
+                return "fromarchive can only be used with targets.";
+            }
+
             if (o.FromFwArchive && string.IsNullOrEmpty(o.FwArchivePath))
             {
                 return "fromarchive requires archivepath to specify the firmware archive location.";
