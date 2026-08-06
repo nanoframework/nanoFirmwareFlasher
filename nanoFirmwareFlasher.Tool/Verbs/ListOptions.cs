@@ -95,11 +95,23 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns><see langword="null"/> if valid, or an error message describing the constraint violation.</returns>
         public static string Validate(ListOptions o)
         {
-            return ValidateMutuallyExclusive(
+            string mutuallyExclusiveError = ValidateMutuallyExclusive(
                 "list",
                 requireOne: true,
                 "targets, devices, ports, dfu, jtag, jlink or nativeswd",
                 o.Targets, o.Devices, o.Ports, o.Dfu, o.Jtag, o.JLink, o.NativeSwd);
+
+            if (mutuallyExclusiveError != null)
+            {
+                return mutuallyExclusiveError;
+            }
+
+            if (o.FromFwArchive && string.IsNullOrEmpty(o.FwArchivePath))
+            {
+                return "fromarchive requires archivepath to specify the firmware archive location.";
+            }
+
+            return null;
         }
     }
 }

@@ -168,6 +168,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 HexFile = Array.Empty<string>(),
                 BinFile = Array.Empty<string>(),
                 FlashAddress = Array.Empty<string>(),
+                // DetailsOptions has no keywords for these ESP32-specific fields, so fall
+                // back to the values Esp32Manager/EspTool expect as their defaults.
+                BaudRate = 921600,
+                Esp32FlashMode = "dio",
+                Esp32FlashFrequency = 40,
             };
 
             bool noTargetInfo = string.IsNullOrEmpty(o.TargetName) && o.Platform is null;
@@ -188,6 +193,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 HexFile = Array.Empty<string>(),
                 BinFile = Array.Empty<string>(),
                 FlashAddress = Array.Empty<string>(),
+                // IdentifyOptions has no keywords for these ESP32-specific fields, so fall
+                // back to the values Esp32Manager/EspTool expect as their defaults.
+                BaudRate = 921600,
+                Esp32FlashMode = "dio",
+                Esp32FlashFrequency = 40,
             };
 
             if (o.Platform is null && !string.IsNullOrEmpty(o.SerialPort))

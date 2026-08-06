@@ -67,16 +67,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <returns><see langword="null"/> if valid, or an error message describing the constraint violation.</returns>
         public static string Validate(CacheOptions o)
         {
-            int count = (o.Clear ? 1 : 0) + (o.Download ? 1 : 0);
+            string mutuallyExclusiveError = ValidateMutuallyExclusive("cache", requireOne: true, "clear or download", o.Clear, o.Download);
 
-            if (count == 0)
+            if (mutuallyExclusiveError != null)
             {
-                return "cache requires one of clear or download.";
-            }
-
-            if (count > 1)
-            {
-                return "Only one of clear or download can be specified at a time.";
+                return mutuallyExclusiveError;
             }
 
             if (o.Download)

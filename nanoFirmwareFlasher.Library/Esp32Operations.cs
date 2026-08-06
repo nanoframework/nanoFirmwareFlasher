@@ -480,27 +480,37 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (operationResult == ExitCodes.OK)
             {
-                int configPartitionAddress = 0;
-                int configPartitionSize = 0;
-                bool isTemporaryConfigBackup = string.IsNullOrEmpty(configBackupPath);
-                string configPartitionBackup = isTemporaryConfigBackup
-                    ? Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-                    : configBackupPath;
-
-                if (!isTemporaryConfigBackup)
-                {
-                    // make sure the destination directory exists for a user-requested persistent backup
-                    string configBackupDirectory = Path.GetDirectoryName(configPartitionBackup);
-
-                    if (!string.IsNullOrEmpty(configBackupDirectory) && !Directory.Exists(configBackupDirectory))
-                    {
-                        Directory.CreateDirectory(configBackupDirectory);
-                    }
-                }
+                bool isTemporaryConfigBackup = true;
+                string configPartitionBackup = null;
 
                 // if mass erase wasn't requested or skip backup config partitition
                 if (!massErase && !noBackupConfig)
                 {
+                    int configPartitionAddress = 0;
+                    int configPartitionSize = 0;
+                    isTemporaryConfigBackup = string.IsNullOrEmpty(configBackupPath);
+                    configPartitionBackup = isTemporaryConfigBackup
+                        ? Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+                        : configBackupPath;
+
+                    if (!isTemporaryConfigBackup)
+                    {
+                        // make sure the destination directory exists for a user-requested persistent backup
+                        string configBackupDirectory = Path.GetDirectoryName(configPartitionBackup);
+
+                        if (!string.IsNullOrEmpty(configBackupDirectory) && !Directory.Exists(configBackupDirectory))
+                        {
+                            try
+                            {
+                                Directory.CreateDirectory(configBackupDirectory);
+                            }
+                            catch
+                            {
+                                return ExitCodes.E9002;
+                            }
+                        }
+                    }
+
                     // check if the update file includes a partition table
                     if (File.Exists(Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv")))
                     {
@@ -529,11 +539,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         // backup config partition
-                        // ignore failures
-                        _ = espTool.BackupConfigPartition(
+                        ExitCodes backupResult = espTool.BackupConfigPartition(
                             configPartitionBackup,
                             configPartitionAddress,
                             configPartitionSize);
+
+                        if (backupResult != ExitCodes.OK)
+                        {
+                            return backupResult;
+                        }
 
                         if (verbosity >= VerbosityLevel.Normal)
                         {
@@ -551,6 +565,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             OutputWriter.WriteLine("OK");
                         }
 
+                        // only make the backup available to WriteFlash once it has been read successfully
                         firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
                     }
                 }

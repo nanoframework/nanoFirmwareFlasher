@@ -310,6 +310,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     DisplayVerbHelp(verbParserResult, args);
                 }
+                else
+                {
+                    // the parser's HelpWriter is disabled, so parsing errors (e.g. an
+                    // unknown option) aren't rendered automatically; do it explicitly
+                    DisplayVerbHelp(verbParserResult, args);
+
+                    // make sure Main() actually reports the resulting exit code
+                    _verbosityLevel = VerbosityLevel.Normal;
+                }
 
                 await HandleErrorsAsync(notParsed.Errors);
             }
@@ -321,7 +330,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         private static async Task RunVerbOptionsAsync<T>(T o, Func<T, Options> toLegacyOptions, Func<T, string> validate = null) where T : VerbOptionsBase
         {
-            _verbosityLevel = o.GetVerbosityLevel();
+            try
+            {
+                _verbosityLevel = o.GetVerbosityLevel();
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                return;
+            }
 
             string validationError = validate?.Invoke(o);
 
@@ -355,7 +372,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         private static Task RunDriversAsync(DriversOptions o)
         {
-            _verbosityLevel = o.GetVerbosityLevel();
+            try
+            {
+                _verbosityLevel = o.GetVerbosityLevel();
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                return Task.CompletedTask;
+            }
 
             string validationError = DriversOptions.Validate(o);
 
@@ -428,7 +453,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         {
             bool operationPerformed = false;
 
-            _verbosityLevel = VerbOptionsBase.ParseVerbosity(o.Verbosity);
+            try
+            {
+                _verbosityLevel = VerbOptionsBase.ParseVerbosity(o.Verbosity);
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                return;
+            }
 
             OutputWriter.ForegroundColor = ConsoleColor.White;
 
@@ -509,7 +542,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (string.IsNullOrEmpty(o.FwArchivePath))
                     {
                         _exitCode = ExitCodes.E9000;
-                        _extraMessage = "--archivepath is required when --fromarchive is specified.";
+                        _extraMessage = "fromarchive requires archivepath to specify the firmware archive location.";
                         return;
                     }
 
@@ -760,11 +793,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
-            // --deploy requires --image
+            // deploy requires image
             if (o.Deploy && string.IsNullOrEmpty(o.DeploymentImage))
             {
                 _exitCode = ExitCodes.E9000;
-                _extraMessage = "--deploy requires --image to specify the deployment image path.";
+                _extraMessage = "deploy requires image to specify the deployment image path.";
                 return;
             }
 
@@ -775,20 +808,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (o.FromFwArchive)
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = "Incompatible option --fromarchive combined with --updatearchive.";
+                    _extraMessage = "Incompatible option fromarchive combined with download.";
                     return;
                 }
                 if (string.IsNullOrEmpty(o.FwArchivePath))
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--archivepath is required when --updatearchive is specified.";
+                    _extraMessage = "download requires archivepath to specify the firmware archive location.";
                     return;
                 }
 
                 if (o.Platform is null && string.IsNullOrEmpty(o.TargetName))
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--platform or --target is required when --updatearchive is specified.";
+                    _extraMessage = "download requires platform or target to specify what firmware to download.";
                     return;
                 }
 
@@ -808,14 +841,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (o.FromFwArchive)
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--archivepath is required when --fromarchive is specified.";
+                    _extraMessage = "fromarchive requires archivepath to specify the firmware archive location.";
                     return;
                 }
             }
             else if (!o.FromFwArchive)
             {
                 _exitCode = ExitCodes.E9000;
-                _extraMessage = $"--fromarchive is required when --archivepath is specified.";
+                _extraMessage = "archivepath requires fromarchive to be specified.";
                 return;
             }
             #endregion

@@ -431,5 +431,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Can't find the target in the firmware archive.")]
         E9015 = 9015,
+
+        /// <summary>
+        /// Error backing up the configuration partition.
+        /// </summary>
+        [Display(Name = "Error backing up the configuration partition.")]
+        E9016 = 9016,
     }
 }

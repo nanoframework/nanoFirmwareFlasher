@@ -14,11 +14,11 @@ Is part of .NET **nanoFramework** toolbox, along with other various tools that a
 It makes use of a couple of 3rd party tools for some platforms:
 
 - Texas Instruments Uniflash (TI CC13x2/CC26x2)
-   You can find the Uniflash tool and licensing information [here](http://www.ti.com/tool/download/UNIFLASH).
+   You can find the [Uniflash tool download and licensing information](http://www.ti.com/tool/download/UNIFLASH).
 - SEGGER J-Link (Silabs Giant Gecko)
-   You can find the J-Link, licensing information and documentation [here](https://www.segger.com/downloads/jlink/).
+   You can find the [J-Link download, licensing information and documentation](https://www.segger.com/downloads/jlink/).
 
-We are also distributing this tool as a .NET library so it can be integrated in 3rd party applications. Please check the [README](Samples\README.md) in the Samples folder for more details along with sample applications.
+We are also distributing this tool as a .NET library so it can be integrated in 3rd party applications. Please check the [README](Samples/README.md) in the Samples folder for more details along with sample applications.
 
 > [!Note]: we are implementing the Espressif and STM32 communication protocols in C# and we are not using `esptool` or the STM32 Cube Programmer CLI to flash devices anymore. ESP32 stopped using `esptool` before April 2026; STM32 stopped requiring the STM32 Cube Programmer CLI tool at the same time — DFU, JTAG and SWD connections are now all native, with no external tool or driver-signing prompts required for flashing.
 
@@ -165,7 +165,7 @@ In case `nanoff` detects this situation the following warning is shown:
 To update the firmware of an ESP32 target connected to COM31, to the latest available development version.
 
 ```console
-nanoff flash target ESP32_PSRAM_REV0 serialport COM31
+nanoff flash target ESP32_PSRAM_REV0 serialport COM31 preview
 ```
 
 On Linux or macOS, use the device path for your board instead of a COM port, e.g.:
@@ -228,7 +228,7 @@ nanoff flash target ESP32_PSRAM_REV0 serialport COM31 restore ./backups/config.b
 
 ### `flash` — STM32
 
-STM32 flashing is fully native (DFU, JTAG/ST-LINK and CMSIS-DAP/SWD) — no external tools or drivers are required. If you don't specify `dfu`, `jtag` or `nativeswd`, `nanoff` auto-detects the best available connection.
+STM32 flashing is fully native (DFU, JTAG/ST-LINK and CMSIS-DAP/SWD) — the STM32 Cube Programmer CLI tool is not required. On Windows, the connection still needs the appropriate WinUSB-class driver bound to the device (see [`drivers`](#drivers--stm32-dfu)); no driver installation is required on Linux or macOS. If you don't specify `dfu`, `jtag` or `nativeswd`, `nanoff` auto-detects the best available connection.
 
 #### Update the firmware of a specific STM32 target
 
@@ -408,7 +408,7 @@ To deploy a managed application to a ST_STM32F769I_DISCOVERY target, which has t
 >Note: The binary file with the deployment image can be found on the Release or Debug folder of a Visual Studio project after a successful build. This file contains everything that's required to deploy a managed application to a target (meaning application executable and all referenced libraries and assemblies).
 
 ```console
-nanoff deploy target ST_STM32F769I_DISCOVERY image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin" address 0x08040000
+nanoff deploy target ST_STM32F769I_DISCOVERY image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin" address 0x08080000
 ```
 
 ### `deploy` — Silabs Giant Gecko
@@ -876,7 +876,7 @@ nanoff drivers xds
 ### `cache` — clear
 
 If needed one can clear the local cache of firmware packages that are stored there.
-As additional information, the cache location is the directory `.nanoFramework\fw_cache` in the user folder.
+As additional information, the cache location is the directory `.nanoFramework\fw_cache` in the user folder on Windows, or `~/.nanoFramework/fw_cache` on Linux and macOS.
 
 ```console
 nanoff cache clear

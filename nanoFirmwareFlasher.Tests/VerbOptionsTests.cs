@@ -446,6 +446,19 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsNull(CacheOptions.Validate(options));
         }
 
+        [TestMethod]
+        public void CacheOptions_Validate_DownloadWithTargetOnly_ReturnsNull()
+        {
+            var options = new CacheOptions
+            {
+                Download = true,
+                FwArchivePath = "./fw-cache",
+                TargetName = "ESP32_PSRAM_REV0"
+            };
+
+            Assert.IsNull(CacheOptions.Validate(options));
+        }
+
         #endregion
     }
 }

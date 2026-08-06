@@ -100,7 +100,7 @@ namespace nanoFirmwareFlasher.Tests
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
-            Assert.IsTrue(output.Output.Contains("--archivepath is required when --fromarchive is specified."));
+            Assert.IsTrue(output.Output.Contains("fromarchive requires archivepath to specify the firmware archive location."));
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.IsTrue(output.Output.Contains("download requires archivepath to specify the firmware archive location."));
 
             output.Reset();
-            actual = Program.Main(["cache", "download", "archivepath", $"{SupportedPlatform.ti_simplelink}", "verbosity", "diagnostic"])
+            actual = Program.Main(["cache", "download", "archivepath", archiveDirectory, "verbosity", "diagnostic"])
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
@@ -142,7 +142,7 @@ namespace nanoFirmwareFlasher.Tests
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual((int)ExitCodes.E9000, actual);
-            Assert.IsTrue(output.Output.Contains("--fromarchive is required when --archivepath is specified."));
+            Assert.IsTrue(output.Output.Contains("archivepath requires fromarchive to be specified."));
         }
     }
 }

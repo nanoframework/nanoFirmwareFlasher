@@ -625,20 +625,61 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.WriteLine($"Reading config partition (0x{address:X}, {size} bytes) to {backupFilename}...");
             }
 
-            _flashController.ReadFlashToFile(
-                backupFilename,
-                (uint)address,
-                size,
-                (bytesRead, totalBytes) =>
-                {
-                    if (Verbosity >= VerbosityLevel.Normal)
+            // read into a temporary file first, so a failed or partial read can never
+            // leave a stale (or half-written) file at the persistent backup path
+            string tempFilename = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+            try
+            {
+                _flashController.ReadFlashToFile(
+                    tempFilename,
+                    (uint)address,
+                    size,
+                    (bytesRead, totalBytes) =>
                     {
-                        int percent = (int)((long)bytesRead * 100 / totalBytes);
-                        int tw = GetTerminalWidth();
-                        string msg = $"\rBacking up config partition... {percent}%";
-                        OutputWriter.Write(msg.PadRight(tw + 1));
+                        if (Verbosity >= VerbosityLevel.Normal)
+                        {
+                            int percent = (int)((long)bytesRead * 100 / totalBytes);
+                            int tw = GetTerminalWidth();
+                            string msg = $"\rBacking up config partition... {percent}%";
+                            OutputWriter.Write(msg.PadRight(tw + 1));
+                        }
+                    });
+
+                // read succeeded: atomically make it available at the requested path
+                File.Copy(tempFilename, backupFilename, true);
+            }
+            catch
+            {
+                // don't leave a stale backup file available to be flashed
+                try
+                {
+                    if (File.Exists(backupFilename))
+                    {
+                        File.Delete(backupFilename);
                     }
-                });
+                }
+                catch
+                {
+                    // don't care
+                }
+
+                return ExitCodes.E9016;
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(tempFilename))
+                    {
+                        File.Delete(tempFilename);
+                    }
+                }
+                catch
+                {
+                    // don't care
+                }
+            }
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {
