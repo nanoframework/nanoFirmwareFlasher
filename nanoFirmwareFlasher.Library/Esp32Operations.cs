@@ -516,8 +516,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         if (verbosity >= VerbosityLevel.Normal)
                         {
+                            // no trailing newline, since the progress (or the completion
+                            // message below) overwrites this same line via \r
                             OutputWriter.ForegroundColor = ConsoleColor.White;
-                            OutputWriter.WriteLine($"Backup configuration...");
+                            OutputWriter.Write($"Backup configuration...");
                         }
 
                         // can't do this without a partition table
@@ -570,13 +572,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (verbosity >= VerbosityLevel.Normal)
                         {
-                            // clear output of the progress, move cursor up and clear line
-                            Console.SetCursorPosition(0, Console.CursorTop);
-                            Console.Write(new string(' ', Console.WindowWidth));
-                            int currentLineCursor = Console.CursorTop;
-                            Console.SetCursorPosition(0, currentLineCursor - 1);
-                            Console.Write(new string(' ', Console.WindowWidth));
-                            Console.SetCursorPosition(0, currentLineCursor - 1);
+                            // clear output of the progress and rewrite the completion message
+                            ClearLine();
 
                             OutputWriter.ForegroundColor = ConsoleColor.White;
                             OutputWriter.Write($"Backup configuration...");
