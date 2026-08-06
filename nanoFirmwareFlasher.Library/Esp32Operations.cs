@@ -110,6 +110,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="verbosity">Set verbosity level of progress and error messages.</param>
         /// <param name="partitionTableSize">Size of partition table.</param>
         /// <param name="noBackupConfig"><see langword="true"/> for skiping backup of configuration partition.</param>
+        /// <param name="configBackupPath">Path to persist the configuration partition backup to. If <see langword="null"/> or empty, a temporary
+        /// file is used and deleted after the configuration is restored (this is the default, pre-existing behavior).</param>
         /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
         public static async System.Threading.Tasks.Task<ExitCodes> UpdateFirmwareAsync(
             EspTool espTool,
@@ -127,7 +129,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool massErase,
             VerbosityLevel verbosity,
             PartitionTableSize? partitionTableSize,
-            bool noBackupConfig)
+            bool noBackupConfig,
+            string configBackupPath = null)
         {
             ExitCodes operationResult = ExitCodes.OK;
             uint address = 0;
@@ -477,20 +480,46 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (operationResult == ExitCodes.OK)
             {
-                int configPartitionAddress = 0;
-                int configPartitionSize = 0;
-                string configPartitionBackup = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                bool isTemporaryConfigBackup = true;
+                string configPartitionBackup = null;
 
                 // if mass erase wasn't requested or skip backup config partitition
                 if (!massErase && !noBackupConfig)
                 {
+                    int configPartitionAddress = 0;
+                    int configPartitionSize = 0;
+                    isTemporaryConfigBackup = string.IsNullOrEmpty(configBackupPath);
+                    configPartitionBackup = isTemporaryConfigBackup
+                        ? Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+                        : configBackupPath;
+
+                    if (!isTemporaryConfigBackup)
+                    {
+                        // make sure the destination directory exists for a user-requested persistent backup
+                        string configBackupDirectory = Path.GetDirectoryName(configPartitionBackup);
+
+                        if (!string.IsNullOrEmpty(configBackupDirectory) && !Directory.Exists(configBackupDirectory))
+                        {
+                            try
+                            {
+                                Directory.CreateDirectory(configBackupDirectory);
+                            }
+                            catch
+                            {
+                                return ExitCodes.E9002;
+                            }
+                        }
+                    }
+
                     // check if the update file includes a partition table
                     if (File.Exists(Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv")))
                     {
                         if (verbosity >= VerbosityLevel.Normal)
                         {
+                            // no trailing newline, since the progress (or the completion
+                            // message below) overwrites this same line via \r
                             OutputWriter.ForegroundColor = ConsoleColor.White;
-                            OutputWriter.WriteLine($"Backup configuration...");
+                            OutputWriter.Write($"Backup configuration...");
                         }
 
                         // can't do this without a partition table
@@ -504,29 +533,47 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Regex regex = new Regex(pattern);
                         Match match = regex.Match(partitionDetails);
 
-                        if (match.Success)
+                        bool addressParsed = match.Success && int.TryParse(match.Groups[1].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionAddress);
+                        bool sizeParsed = match.Success && int.TryParse(match.Groups[2].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionSize);
+
+                        if (!addressParsed || !sizeParsed)
                         {
-                            // just try to parse, ignore failures
-                            int.TryParse(match.Groups[1].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionAddress);
-                            int.TryParse(match.Groups[2].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionSize);
+                            // can't safely back up (or later flash) an unknown region: bail out
+                            // rather than risk reading/writing at address 0 with size 0
+                            return ExitCodes.E4006;
                         }
 
                         // backup config partition
-                        // ignore failures
-                        _ = espTool.BackupConfigPartition(
+                        ExitCodes backupResult = espTool.BackupConfigPartition(
                             configPartitionBackup,
                             configPartitionAddress,
                             configPartitionSize);
 
+                        if (backupResult != ExitCodes.OK)
+                        {
+                            // don't leave a partial/stale temporary backup file behind
+                            if (isTemporaryConfigBackup)
+                            {
+                                try
+                                {
+                                    if (File.Exists(configPartitionBackup))
+                                    {
+                                        File.Delete(configPartitionBackup);
+                                    }
+                                }
+                                catch
+                                {
+                                    // don't care
+                                }
+                            }
+
+                            return backupResult;
+                        }
+
                         if (verbosity >= VerbosityLevel.Normal)
                         {
-                            // clear output of the progress, move cursor up and clear line
-                            Console.SetCursorPosition(0, Console.CursorTop);
-                            Console.Write(new string(' ', Console.WindowWidth));
-                            int currentLineCursor = Console.CursorTop;
-                            Console.SetCursorPosition(0, currentLineCursor - 1);
-                            Console.Write(new string(' ', Console.WindowWidth));
-                            Console.SetCursorPosition(0, currentLineCursor - 1);
+                            // clear output of the progress and rewrite the completion message
+                            ClearLine();
 
                             OutputWriter.ForegroundColor = ConsoleColor.White;
                             OutputWriter.Write($"Backup configuration...");
@@ -534,6 +581,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             OutputWriter.WriteLine("OK");
                         }
 
+                        // only make the backup available to WriteFlash once it has been read successfully
                         firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
                     }
                 }
@@ -543,73 +591,120 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     // output the start of operation message for verbosity normal and above
-                    // otherwise the progress is shown
+                    // otherwise the progress is shown; no trailing newline, since the progress
+                    // (or the completion message below) overwrites this same line via \r
                     OutputWriter.ForegroundColor = ConsoleColor.White;
-                    OutputWriter.WriteLine($"Flashing firmware...");
+                    OutputWriter.Write($"Flashing firmware...");
                 }
 
-                // write to flash
-                operationResult = espTool.WriteFlash(firmware.FlashPartitions);
-
-                if (operationResult == ExitCodes.OK)
-                {
-                    if (verbosity >= VerbosityLevel.Normal)
-                    {
-                        // output the start of operation message for verbosity normal and above
-
-                        // clear output of the progress, move cursor up and clear line
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                        Console.Write(new string(' ', Console.WindowWidth));
-                        int currentLineCursor = Console.CursorTop;
-                        Console.SetCursorPosition(0, currentLineCursor - 1);
-                        Console.Write(new string(' ', Console.WindowWidth));
-                        Console.SetCursorPosition(0, currentLineCursor - 1);
-
-                        // operation completed output
-                        // output the full message as usual after the progress completes
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-                        OutputWriter.Write($"Flashing firmware...");
-                        OutputWriter.ForegroundColor = ConsoleColor.Green;
-                        OutputWriter.WriteLine("OK".PadRight(Console.WindowWidth - Console.CursorLeft));
-
-                        // warn user if reboot is not possible
-                        if (espTool.CouldntResetTarget)
-                        {
-                            OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-
-                            OutputWriter.WriteLine("");
-                            OutputWriter.WriteLine("**********************************************");
-                            OutputWriter.WriteLine("The connected device is in 'download mode'.");
-                            OutputWriter.WriteLine("Please reset the chip manually to run nanoCLR.");
-                            OutputWriter.WriteLine("**********************************************");
-                            OutputWriter.WriteLine("");
-
-                            OutputWriter.ForegroundColor = ConsoleColor.White;
-                        }
-                    }
-                    else
-                    {
-                        OutputWriter.WriteLine("");
-                    }
-                }
-
-                // delete config partition backup
                 try
                 {
-                    if (File.Exists(configPartitionBackup))
+                    try
                     {
-                        File.Delete(configPartitionBackup);
+                        // write to flash
+                        operationResult = espTool.WriteFlash(firmware.FlashPartitions);
+                    }
+                    catch (Exception)
+                    {
+                        // couldn't complete the write, report it as a defined failure instead
+                        // of letting the exception fault this method's task
+                        operationResult = ExitCodes.E4003;
+                    }
+
+                    if (operationResult == ExitCodes.OK)
+                    {
+                        if (verbosity >= VerbosityLevel.Normal)
+                        {
+                            try
+                            {
+                                // output the start of operation message for verbosity normal and above
+
+                                // clear output of the progress and rewrite the completion message
+                                ClearLine();
+
+                                // operation completed output
+                                // output the full message as usual after the progress completes
+                                OutputWriter.ForegroundColor = ConsoleColor.White;
+                                OutputWriter.Write($"Flashing firmware...");
+                                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                OutputWriter.WriteLine("OK");
+
+                                // warn user if reboot is not possible
+                                if (espTool.CouldntResetTarget)
+                                {
+                                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+
+                                    OutputWriter.WriteLine("");
+                                    OutputWriter.WriteLine("**********************************************");
+                                    OutputWriter.WriteLine("The connected device is in 'download mode'.");
+                                    OutputWriter.WriteLine("Please reset the chip manually to run nanoCLR.");
+                                    OutputWriter.WriteLine("**********************************************");
+                                    OutputWriter.WriteLine("");
+
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                                }
+                            }
+                            catch
+                            {
+                                // the write itself succeeded; a failure rendering the
+                                // completion message doesn't change that
+                            }
+                        }
+                        else
+                        {
+                            OutputWriter.WriteLine("");
+                        }
                     }
                 }
-                catch
+                finally
                 {
-                    // don't care
+                    // delete config partition backup, unless a persistent path was requested
+                    if (isTemporaryConfigBackup)
+                    {
+                        try
+                        {
+                            if (File.Exists(configPartitionBackup))
+                            {
+                                File.Delete(configPartitionBackup);
+                            }
+                        }
+                        catch
+                        {
+                            // don't care
+                        }
+                    }
                 }
 
                 OutputWriter.ForegroundColor = ConsoleColor.White;
             }
 
             return operationResult;
+        }
+
+        /// <summary>
+        /// Get the maximum safe line width for carriage-return based progress.
+        /// Returns Console.WindowWidth - 1 (to avoid auto-wrap), with a reasonable fallback.
+        /// </summary>
+        private static int GetTerminalWidth()
+        {
+            try
+            {
+                int w = Console.WindowWidth;
+                return w > 1 ? w - 1 : 79;
+            }
+            catch
+            {
+                return 79;
+            }
+        }
+
+        /// <summary>
+        /// Clear the current console line (overwrite with spaces) and return cursor to start.
+        /// </summary>
+        private static void ClearLine()
+        {
+            int width = GetTerminalWidth();
+            OutputWriter.Write("\r" + new string(' ', width) + "\r");
         }
 
         /// <summary>

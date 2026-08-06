@@ -140,6 +140,39 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.ForegroundColor = ConsoleColor.White;
         }
 
+        /// <summary>
+        /// Resolves the interface explicitly requested via --interface for a --target update/deploy
+        /// operation. Returns <see cref="Interface.None"/> (which triggers auto-detection in
+        /// <see cref="Stm32Operations"/>) when none was requested, or an error if more than one was.
+        /// </summary>
+        private ExitCodes? TryResolveManualInterface(out Interface updateInterface)
+        {
+            updateInterface = Interface.None;
+
+            int selectedInterfaces = (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
+
+            if (selectedInterfaces > 1)
+            {
+                // can't select multiple interfaces simultaneously
+                return ExitCodes.E9000;
+            }
+
+            if (_options.NativeStLinkUpdate)
+            {
+                updateInterface = Interface.NativeStLink;
+            }
+            else if (_options.NativeSwdUpdate)
+            {
+                updateInterface = Interface.NativeSwd;
+            }
+            else if (_options.NativeDfuUpdate)
+            {
+                updateInterface = Interface.NativeDfu;
+            }
+
+            return null;
+        }
+
         /// <inheritdoc />
         public async Task<ExitCodes> ProcessAsync()
         {
@@ -150,39 +183,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.WriteLine($"Cannot determine the best matching target for a {SupportedPlatform.stm32} device.");
                 OutputWriter.WriteLine();
                 OutputWriter.ForegroundColor = ConsoleColor.White;
-                return ExitCodes.OK;
-            }
-            if (_options.InstallJtagDrivers)
-            {
-                return Stm32Operations.InstallJtagDrivers(_verbosityLevel);
-            }
-
-            if (_options.ListDevicesInDfuMode)
-            {
-                var connecteDevices = StmNativeDfuDevice.ListDevices();
-
-                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-
-                if (connecteDevices.Count() == 0)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                    OutputWriter.WriteLine("No DFU devices found");
-                }
-                else
-                {
-                    OutputWriter.WriteLine("-- Connected DFU devices --");
-
-                    foreach ((string serial, string device) device in connecteDevices)
-                    {
-                        OutputWriter.WriteLine($"{device.serial} @ {device.device}");
-                    }
-
-                    OutputWriter.WriteLine("---------------------------");
-                }
-
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                // done here, this command has no further processing
                 return ExitCodes.OK;
             }
 
@@ -208,35 +208,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
 
                     OutputWriter.WriteLine("----------------------------------------");
-                }
-
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                // done here, this command has no further processing
-                return ExitCodes.OK;
-            }
-
-            if (_options.ListJtagDevices)
-            {
-                var connecteDevices = StmStLinkDevice.ListDevices();
-
-                OutputWriter.ForegroundColor = ConsoleColor.Cyan;
-
-                if (connecteDevices.Count == 0)
-                {
-                    OutputWriter.WriteLine("No JTAG devices found");
-                    ShowStLinkDriverHintIfPresent();
-                }
-                else
-                {
-                    OutputWriter.WriteLine("-- Connected JTAG devices --");
-
-                    foreach (string deviceId in connecteDevices)
-                    {
-                        OutputWriter.WriteLine(deviceId);
-                    }
-
-                    OutputWriter.WriteLine("---------------------------");
                 }
 
                 OutputWriter.ForegroundColor = ConsoleColor.White;
@@ -491,34 +462,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         appFlashAddress = _options.FlashAddress.ElementAt(0);
                     }
 
-                    Interface updateInterface = Interface.None;
-
-                    int selectedInterfaces = (_options.DfuUpdate ? 1 : 0) + (_options.JtagUpdate ? 1 : 0) + (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
-
-                    if (selectedInterfaces > 1)
+                    if (TryResolveManualInterface(out Interface updateInterface) is ExitCodes interfaceError)
                     {
-                        // can't select multiple interfaces simultaneously
-                        return ExitCodes.E9000;
-                    }
-                    else if (_options.NativeStLinkUpdate)
-                    {
-                        updateInterface = Interface.NativeStLink;
-                    }
-                    else if (_options.NativeSwdUpdate)
-                    {
-                        updateInterface = Interface.NativeSwd;
-                    }
-                    else if (_options.NativeDfuUpdate)
-                    {
-                        updateInterface = Interface.NativeDfu;
-                    }
-                    else if (_options.DfuUpdate)
-                    {
-                        updateInterface = Interface.Dfu;
-                    }
-                    else if (_options.JtagUpdate)
-                    {
-                        updateInterface = Interface.Jtag;
+                        return interfaceError;
                     }
 
                     var exitCode = await Stm32Operations.UpdateFirmwareAsync(
@@ -564,34 +510,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         return ExitCodes.E9009;
                     }
 
-                    Interface updateInterface = Interface.None;
-
-                    int selectedInterfacesDeploy = (_options.DfuUpdate ? 1 : 0) + (_options.JtagUpdate ? 1 : 0) + (_options.NativeDfuUpdate ? 1 : 0) + (_options.NativeSwdUpdate ? 1 : 0) + (_options.NativeStLinkUpdate ? 1 : 0);
-
-                    if (selectedInterfacesDeploy > 1)
+                    if (TryResolveManualInterface(out Interface updateInterface) is ExitCodes interfaceError)
                     {
-                        // can't select multiple interfaces simultaneously
-                        return ExitCodes.E9000;
-                    }
-                    else if (_options.NativeStLinkUpdate)
-                    {
-                        updateInterface = Interface.NativeStLink;
-                    }
-                    else if (_options.NativeSwdUpdate)
-                    {
-                        updateInterface = Interface.NativeSwd;
-                    }
-                    else if (_options.NativeDfuUpdate)
-                    {
-                        updateInterface = Interface.NativeDfu;
-                    }
-                    else if (_options.DfuUpdate)
-                    {
-                        updateInterface = Interface.Dfu;
-                    }
-                    else if (_options.JtagUpdate)
-                    {
-                        updateInterface = Interface.Jtag;
+                        return interfaceError;
                     }
 
                     var exitCode = await Stm32Operations.UpdateFirmwareAsync(

@@ -1,26 +1,26 @@
-{
-  "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
-  "version": "2.5",
-  "assemblyVersion": {
-    "precision": "minor"
-  },
-  "nuGetPackageVersion": {
-    "semVer": 2.0
-  },
-  "publicReleaseRefSpec": [
-    "^refs/heads/main$",
-    "^refs/heads/develop$",
-    "^refs/heads/v\\d+(?:\\.\\d+)?$"
-  ],
-  "cloudBuild": {
-    "setVersionVariables": true,
-    "setAllVariables": true,
-    "buildNumber": {
-      "enabled": true,
-      "includeCommitId": { "when": "nonPublicReleaseOnly" }
+﻿{
+    "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
+    "version": "3.0-preview.{height}",
+    "assemblyVersion": {
+        "precision": "minor"
+    },
+    "nuGetPackageVersion": {
+        "semVer": 2.0
+    },
+    "publicReleaseRefSpec": [
+        "^refs/heads/main$",
+        "^refs/heads/develop$",
+        "^refs/heads/v\\d+(?:\\.\\d+)?$"
+    ],
+    "cloudBuild": {
+        "setVersionVariables": true,
+        "setAllVariables": true,
+        "buildNumber": {
+            "enabled": true,
+            "includeCommitId": { "when": "nonPublicReleaseOnly" }
+        }
+    },
+    "release": {
+        "branchName": "release-v{version}"
     }
-  },
-  "release": {
-    "branchName": "release-v{version}"
-  }
 }

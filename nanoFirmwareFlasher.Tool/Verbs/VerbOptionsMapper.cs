@@ -1,0 +1,233 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.IO;
+using System.Linq;
+
+namespace nanoFramework.Tools.FirmwareFlasher
+{
+    /// <summary>
+    /// Adapts the new per-verb option classes into the legacy flat <see cref="Options"/> bag,
+    /// so the existing platform managers and <c>Program.RunOptionsAndReturnExitCodeAsync</c>
+    /// dispatch logic can be reused unchanged.
+    /// </summary>
+    public static class VerbOptionsMapper
+    {
+        public static Options ToLegacyOptions(this FlashOptions o)
+        {
+            var legacy = new Options
+            {
+                Verbosity = o.Verbosity,
+                SuppressNanoFFVersionCheck = o.SuppressNanoFFVersionCheck,
+                TargetName = o.TargetName,
+                Platform = o.Platform,
+                SerialPort = o.SerialPort,
+                FwVersion = o.FwVersion,
+                Preview = o.Preview,
+                Update = true,
+                MassErase = o.MassErase,
+                Verify = o.Verify,
+                ResetMcu = o.ResetMcu,
+                FitCheck = o.NoFitCheck,
+                // Image serves two purposes depending on which platform manager ends up
+                // reading it: a raw file (or files) to flash directly (STM32/Silabs), or a
+                // CLR override for a target/platform-based or generic nanoDevice update
+                // (ESP32/Pico/nanoDevice). Both legacy fields are populated in parallel since
+                // only the relevant manager for the resolved platform ever reads its own field.
+                HexFile = o.Hex ? (o.Image ?? Array.Empty<string>()) : Array.Empty<string>(),
+                BinFile = !o.Hex ? (o.Image ?? Array.Empty<string>()) : Array.Empty<string>(),
+                FlashAddress = o.FlashAddress ?? Array.Empty<string>(),
+                ClrFile = o.Image?.FirstOrDefault(),
+                CheckPsRam = o.CheckPsRam,
+                FromFwArchive = o.FromFwArchive,
+                FwArchivePath = o.FwArchivePath,
+                Uf2Deploy = o.Uf2Deploy,
+                BaudRate = o.BaudRate,
+                Esp32FlashMode = o.Esp32FlashMode,
+                Esp32FlashFrequency = o.Esp32FlashFrequency,
+                Esp32PartitionTableSize = o.Esp32PartitionTableSize,
+                // The configuration partition is always automatically backed up before
+                // flashing and restored afterward (ESP32 only) - NoBackupConfig stays
+                // false (the tool-wide default) since there's no keyword to skip it.
+                // "restore <path>" just additionally persists a copy of that backup.
+                ConfigBackupPath = o.ConfigBackupPath,
+                // J-Link (EFM32) doesn't have an "interface" concept like STM32, so deviceid
+                // is mapped here too - it's simply unused by other platforms' managers.
+                JLinkDeviceId = o.DeviceId,
+                SetVcpBaudRate = o.VcpBaudRate,
+            };
+
+            // "backup [path]" backs up the device's ENTIRE flash contents (ESP32 only); the
+            // tokenizer already generates a random path when the keyword is used bare, so
+            // "not given" (empty here) is the only case meaning "no backup at all".
+            if (!string.IsNullOrEmpty(o.Backup))
+            {
+                string backupDirectory = Path.GetDirectoryName(o.Backup);
+                legacy.BackupPath = string.IsNullOrEmpty(backupDirectory) ? "." : backupDirectory;
+                legacy.BackupFile = Path.GetFileName(o.Backup);
+            }
+
+            bool noTargetInfo = string.IsNullOrEmpty(o.TargetName) && o.Platform is null;
+            legacy.NanoDevice = noTargetInfo && !string.IsNullOrEmpty(o.SerialPort);
+
+            // "dfu"/"jtag" fold into the native, no-external-tool implementations
+            // (nativedfu -> dfu, nativestlink -> jtag; see proposal doc); FlashOptions.Validate
+            // guarantees at most one of the three is set.
+            if (o.Dfu)
+            {
+                legacy.NativeDfuUpdate = true;
+                legacy.DfuDeviceId = o.DeviceId;
+            }
+            else if (o.Jtag)
+            {
+                legacy.NativeStLinkUpdate = true;
+                legacy.JtagDeviceId = o.DeviceId;
+            }
+            else if (o.NativeSwd)
+            {
+                legacy.NativeSwdUpdate = true;
+                legacy.JtagDeviceId = o.DeviceId;
+            }
+
+            return legacy;
+        }
+
+        public static Options ToLegacyOptions(this DeployOptions o)
+        {
+            var legacy = new Options
+            {
+                Verbosity = o.Verbosity,
+                SuppressNanoFFVersionCheck = o.SuppressNanoFFVersionCheck,
+                TargetName = o.TargetName,
+                Platform = o.Platform,
+                SerialPort = o.SerialPort,
+                DeploymentImage = o.DeploymentImage,
+                FileDeployment = o.FileDeployment,
+                NetworkDeployment = o.NetworkDeployment,
+                HexFile = Array.Empty<string>(),
+                BinFile = Array.Empty<string>(),
+                FlashAddress = o.Address ?? Array.Empty<string>(),
+            };
+
+            legacy.Deploy = !string.IsNullOrEmpty(o.DeploymentImage);
+
+            bool noTargetInfo = string.IsNullOrEmpty(o.TargetName) && o.Platform is null;
+            legacy.NanoDevice = noTargetInfo && legacy.Deploy && !string.IsNullOrEmpty(o.SerialPort);
+
+            return legacy;
+        }
+
+        public static Options ToLegacyOptions(this ListOptions o)
+        {
+            var legacy = new Options
+            {
+                Verbosity = o.Verbosity,
+                SuppressNanoFFVersionCheck = o.SuppressNanoFFVersionCheck,
+                Platform = o.Platform,
+                Preview = o.Preview,
+                FromFwArchive = o.FromFwArchive,
+                FwArchivePath = o.FwArchivePath,
+                HexFile = Array.Empty<string>(),
+                BinFile = Array.Empty<string>(),
+                FlashAddress = Array.Empty<string>(),
+                ListTargets = o.Targets,
+                ListDevices = o.Devices,
+                ListComPorts = o.Ports,
+                ListNativeDfuDevices = o.Dfu,
+                ListNativeStLinkDevices = o.Jtag,
+                ListJLinkDevices = o.JLink,
+                ListNativeSwdDevices = o.NativeSwd,
+            };
+
+            // the legacy platform auto-detection only looks at the *external tool* list
+            // flags, not the native ones, so resolve the platform here instead.
+            if (legacy.Platform is null && (o.Dfu || o.Jtag || o.NativeSwd))
+            {
+                legacy.Platform = SupportedPlatform.stm32;
+            }
+            else if (legacy.Platform is null && o.JLink)
+            {
+                legacy.Platform = SupportedPlatform.efm32;
+            }
+
+            return legacy;
+        }
+
+        public static Options ToLegacyOptions(this DetailsOptions o)
+        {
+            var legacy = new Options
+            {
+                Verbosity = o.Verbosity,
+                SuppressNanoFFVersionCheck = o.SuppressNanoFFVersionCheck,
+                TargetName = o.TargetName,
+                Platform = o.Platform,
+                SerialPort = o.SerialPort,
+                CheckPsRam = o.CheckPsRam,
+                DeviceDetails = true,
+                HexFile = Array.Empty<string>(),
+                BinFile = Array.Empty<string>(),
+                FlashAddress = Array.Empty<string>(),
+                // DetailsOptions has no keywords for these ESP32-specific fields, so fall
+                // back to the values Esp32Manager/EspTool expect as their defaults.
+                BaudRate = 921600,
+                Esp32FlashMode = "dio",
+                Esp32FlashFrequency = 40,
+            };
+
+            bool noTargetInfo = string.IsNullOrEmpty(o.TargetName) && o.Platform is null;
+            legacy.NanoDevice = noTargetInfo && !string.IsNullOrEmpty(o.SerialPort);
+
+            return legacy;
+        }
+
+        public static Options ToLegacyOptions(this IdentifyOptions o)
+        {
+            var legacy = new Options
+            {
+                Verbosity = o.Verbosity,
+                SuppressNanoFFVersionCheck = o.SuppressNanoFFVersionCheck,
+                Platform = o.Platform,
+                SerialPort = o.SerialPort,
+                IdentifyFirmware = true,
+                HexFile = Array.Empty<string>(),
+                BinFile = Array.Empty<string>(),
+                FlashAddress = Array.Empty<string>(),
+                // IdentifyOptions has no keywords for these ESP32-specific fields, so fall
+                // back to the values Esp32Manager/EspTool expect as their defaults.
+                BaudRate = 921600,
+                Esp32FlashMode = "dio",
+                Esp32FlashFrequency = 40,
+            };
+
+            if (o.Platform is null && !string.IsNullOrEmpty(o.SerialPort))
+            {
+                // the generic nanoDevice path only surfaces IdentifyFirmware from within
+                // its Update branch, so ask it to run an update-check without deploying.
+                legacy.NanoDevice = true;
+                legacy.Update = true;
+            }
+
+            return legacy;
+        }
+
+        public static Options ToLegacyOptions(this CacheOptions o)
+        {
+            return new Options
+            {
+                Verbosity = o.Verbosity,
+                SuppressNanoFFVersionCheck = o.SuppressNanoFFVersionCheck,
+                Platform = o.Platform,
+                TargetName = o.TargetName,
+                FwVersion = o.FwVersion,
+                Preview = o.Preview,
+                FwArchivePath = o.FwArchivePath,
+                ClearCache = o.Clear,
+                UpdateFwArchive = o.Download,
+                HexFile = Array.Empty<string>(),
+                BinFile = Array.Empty<string>(),
+                FlashAddress = Array.Empty<string>(),
+            };
+        }
+    }
+}

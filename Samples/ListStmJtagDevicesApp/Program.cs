@@ -12,6 +12,7 @@ namespace ListJtagDevicesApp
     {
         static void Main(string[] args)
         {
+            // Native ST-LINK V2/V3 enumeration (no external tools required)
             var connecteDevices = StmStLinkDevice.ListDevices();
 
             if (connecteDevices.Count == 0)

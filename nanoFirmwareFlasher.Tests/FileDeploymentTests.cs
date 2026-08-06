@@ -47,7 +47,7 @@ namespace nanoFirmwareFlasher.Tests
             #endregion
 
             #region Deploy content files
-            int actual = Program.Main(["--filedeployment", deployJsonPath])
+            int actual = Program.Main(["deploy", "file", deployJsonPath])
                     .GetAwaiter().GetResult();
 
             Assert.IsFalse(output.Output.Contains("No operation was performed with the options supplied."));

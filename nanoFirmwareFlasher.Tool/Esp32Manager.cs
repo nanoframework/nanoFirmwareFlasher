@@ -183,7 +183,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _options.MassErase,
                     _verbosityLevel,
                     _options.Esp32PartitionTableSize,
-                    _options.NoBackupConfig);
+                    _options.NoBackupConfig,
+                    _options.ConfigBackupPath);
 
                 if (exitCode != ExitCodes.OK || _options.IdentifyFirmware)
                 {
