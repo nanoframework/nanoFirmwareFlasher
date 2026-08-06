@@ -531,11 +531,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         Regex regex = new Regex(pattern);
                         Match match = regex.Match(partitionDetails);
 
-                        if (match.Success)
+                        bool addressParsed = match.Success && int.TryParse(match.Groups[1].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionAddress);
+                        bool sizeParsed = match.Success && int.TryParse(match.Groups[2].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionSize);
+
+                        if (!addressParsed || !sizeParsed)
                         {
-                            // just try to parse, ignore failures
-                            int.TryParse(match.Groups[1].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionAddress);
-                            int.TryParse(match.Groups[2].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionSize);
+                            // can't safely back up (or later flash) an unknown region: bail out
+                            // rather than risk reading/writing at address 0 with size 0
+                            return ExitCodes.E4006;
                         }
 
                         // backup config partition
@@ -546,6 +549,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         if (backupResult != ExitCodes.OK)
                         {
+                            // don't leave a partial/stale temporary backup file behind
+                            if (isTemporaryConfigBackup)
+                            {
+                                try
+                                {
+                                    if (File.Exists(configPartitionBackup))
+                                    {
+                                        File.Delete(configPartitionBackup);
+                                    }
+                                }
+                                catch
+                                {
+                                    // don't care
+                                }
+                            }
+
                             return backupResult;
                         }
 
@@ -575,45 +594,63 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (verbosity >= VerbosityLevel.Normal)
                 {
                     // output the start of operation message for verbosity normal and above
-                    // otherwise the progress is shown
+                    // otherwise the progress is shown; no trailing newline, since the progress
+                    // (or the completion message below) overwrites this same line via \r
                     OutputWriter.ForegroundColor = ConsoleColor.White;
-                    OutputWriter.WriteLine($"Flashing firmware...");
+                    OutputWriter.Write($"Flashing firmware...");
                 }
 
                 try
                 {
-                    // write to flash
-                    operationResult = espTool.WriteFlash(firmware.FlashPartitions);
+                    try
+                    {
+                        // write to flash
+                        operationResult = espTool.WriteFlash(firmware.FlashPartitions);
+                    }
+                    catch (Exception)
+                    {
+                        // couldn't complete the write, report it as a defined failure instead
+                        // of letting the exception fault this method's task
+                        operationResult = ExitCodes.E4003;
+                    }
 
                     if (operationResult == ExitCodes.OK)
                     {
                         if (verbosity >= VerbosityLevel.Normal)
                         {
-                            // output the start of operation message for verbosity normal and above
-
-                            // clear output of the progress and rewrite the completion message
-                            ClearLine();
-
-                            // operation completed output
-                            // output the full message as usual after the progress completes
-                            OutputWriter.ForegroundColor = ConsoleColor.White;
-                            OutputWriter.Write($"Flashing firmware...");
-                            OutputWriter.ForegroundColor = ConsoleColor.Green;
-                            OutputWriter.WriteLine("OK");
-
-                            // warn user if reboot is not possible
-                            if (espTool.CouldntResetTarget)
+                            try
                             {
-                                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                                // output the start of operation message for verbosity normal and above
 
-                                OutputWriter.WriteLine("");
-                                OutputWriter.WriteLine("**********************************************");
-                                OutputWriter.WriteLine("The connected device is in 'download mode'.");
-                                OutputWriter.WriteLine("Please reset the chip manually to run nanoCLR.");
-                                OutputWriter.WriteLine("**********************************************");
-                                OutputWriter.WriteLine("");
+                                // clear output of the progress and rewrite the completion message
+                                ClearLine();
 
+                                // operation completed output
+                                // output the full message as usual after the progress completes
                                 OutputWriter.ForegroundColor = ConsoleColor.White;
+                                OutputWriter.Write($"Flashing firmware...");
+                                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                                OutputWriter.WriteLine("OK");
+
+                                // warn user if reboot is not possible
+                                if (espTool.CouldntResetTarget)
+                                {
+                                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+
+                                    OutputWriter.WriteLine("");
+                                    OutputWriter.WriteLine("**********************************************");
+                                    OutputWriter.WriteLine("The connected device is in 'download mode'.");
+                                    OutputWriter.WriteLine("Please reset the chip manually to run nanoCLR.");
+                                    OutputWriter.WriteLine("**********************************************");
+                                    OutputWriter.WriteLine("");
+
+                                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                                }
+                            }
+                            catch
+                            {
+                                // the write itself succeeded; a failure rendering the
+                                // completion message doesn't change that
                             }
                         }
                         else
@@ -621,12 +658,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             OutputWriter.WriteLine("");
                         }
                     }
-                }
-                catch (Exception)
-                {
-                    // couldn't complete the write, report it as a defined failure instead
-                    // of letting the exception fault this method's task
-                    operationResult = ExitCodes.E4003;
                 }
                 finally
                 {
