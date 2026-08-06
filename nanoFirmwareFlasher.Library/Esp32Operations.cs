@@ -591,20 +591,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         {
                             // output the start of operation message for verbosity normal and above
 
-                            // clear output of the progress, move cursor up and clear line
-                            Console.SetCursorPosition(0, Console.CursorTop);
-                            Console.Write(new string(' ', Console.WindowWidth));
-                            int currentLineCursor = Console.CursorTop;
-                            Console.SetCursorPosition(0, currentLineCursor - 1);
-                            Console.Write(new string(' ', Console.WindowWidth));
-                            Console.SetCursorPosition(0, currentLineCursor - 1);
+                            // clear output of the progress and rewrite the completion message
+                            ClearLine();
 
                             // operation completed output
                             // output the full message as usual after the progress completes
                             OutputWriter.ForegroundColor = ConsoleColor.White;
                             OutputWriter.Write($"Flashing firmware...");
                             OutputWriter.ForegroundColor = ConsoleColor.Green;
-                            OutputWriter.WriteLine("OK".PadRight(Console.WindowWidth - Console.CursorLeft));
+                            OutputWriter.WriteLine("OK");
 
                             // warn user if reboot is not possible
                             if (espTool.CouldntResetTarget)
@@ -626,6 +621,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             OutputWriter.WriteLine("");
                         }
                     }
+                }
+                catch (Exception)
+                {
+                    // couldn't complete the write, report it as a defined failure instead
+                    // of letting the exception fault this method's task
+                    operationResult = ExitCodes.E4003;
                 }
                 finally
                 {
@@ -650,6 +651,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return operationResult;
+        }
+
+        /// <summary>
+        /// Get the maximum safe line width for carriage-return based progress.
+        /// Returns Console.WindowWidth - 1 (to avoid auto-wrap), with a reasonable fallback.
+        /// </summary>
+        private static int GetTerminalWidth()
+        {
+            try
+            {
+                int w = Console.WindowWidth;
+                return w > 1 ? w - 1 : 79;
+            }
+            catch
+            {
+                return 79;
+            }
+        }
+
+        /// <summary>
+        /// Clear the current console line (overwrite with spaces) and return cursor to start.
+        /// </summary>
+        private static void ClearLine()
+        {
+            int width = GetTerminalWidth();
+            OutputWriter.Write("\r" + new string(' ', width) + "\r");
         }
 
         /// <summary>
