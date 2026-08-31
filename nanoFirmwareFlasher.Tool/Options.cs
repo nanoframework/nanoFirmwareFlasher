@@ -33,13 +33,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "Use DFU to update the device.")]
         public bool DfuUpdate { get; set; }
 
-        [Option(
-            "installdfudrivers",
-            Required = false,
-            Default = false,
-            HelpText = "Install STM32 DFU drivers.")]
-        public bool InstallDfuDrivers { get; set; }
-
         #endregion
 
 

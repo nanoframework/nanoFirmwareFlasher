@@ -31,6 +31,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             Unknown,
             F0,
             F1,
+            F3,
             F4,
             F7,
             H7,
@@ -57,6 +58,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             internal uint PgBit;   // programming enable
             internal uint SerBit;  // sector erase (F4/F7) or page erase (L4/G0)
             internal uint MerBit;  // mass erase
+            internal uint Mer2Bit; // second-bank mass erase (dual-bank families, e.g. L4 MER2)
             internal uint StrtBit; // start
             internal uint LockBit; // lock
 
@@ -76,6 +78,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         private const uint DbgmcuIdcode_M0 = 0x40015800;    // Cortex-M0/M0+
         private const uint DbgmcuIdcode_M33 = 0x44024000;   // Cortex-M33 (H5, U5)
 
+        // Factory FLASH_SIZE register (size in Kbytes, 16-bit) for L4/G4.
+        private const uint FlashSizeRegister = 0x1FFF75E0;
+
+        // Block size (bytes) for bulk flash programming. Uses the transport's native block
+        // write (one USB transfer) instead of a word-at-a-time loop. A multiple of 8 so it is
+        // valid for both 32-bit (F4/F7) and 64-bit double-word (L4-style) programming.
+        private const int ProgramBlockBytes = 2048;
+
         #endregion
 
         private readonly ArmMemAp _mem;
@@ -85,6 +95,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         internal Stm32FlashProgrammer(ArmMemAp mem)
         {
             _mem = mem ?? throw new ArgumentNullException(nameof(mem));
+        }
+
+        /// <summary>
+        /// Optional callback invoked during flash operations to report progress. The
+        /// arguments are (phase, bytesCompleted, totalBytes) for the current block.
+        /// </summary>
+        internal Action<string, int, int> ProgressReport { get; set; }
+
+        private void ReportProgress(string phase, int done, int total)
+        {
+            ProgressReport?.Invoke(phase, done, total);
         }
 
         /// <summary>
@@ -121,9 +142,70 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             ushort devId = (ushort)(idcode & 0xFFF);
 
             _family = ClassifyDevice(devId);
+
+            if (_family == Stm32Family.Unknown)
+            {
+                throw new SwdProtocolException(
+                    $"Unrecognized STM32 device. DBGMCU IDCODE: 0x{idcode:X8}, device ID: 0x{devId:X3}. " +
+                    "Either the device ID could not be read or it is not in the supported device table.");
+            }
+
             _regs = GetFlashRegisters(_family);
 
+            // Dual-bank families only erase bank 1 with MER1; a full mass erase must also set
+            // the bank-2 mass-erase bit (MER2). Determine it from the actual device config.
+            _regs.Mer2Bit = GetSecondBankMassEraseBit(_family);
+
             return _family;
+        }
+
+        /// <summary>
+        /// Returns the FLASH_CR bit that mass-erases the second bank (MER2) for dual-bank
+        /// devices, or 0 for single-bank devices. Reading only MER1 leaves the second bank
+        /// (e.g. 0x08080000+ on a 1 MB STM32L4) intact.
+        /// </summary>
+        private uint GetSecondBankMassEraseBit(Stm32Family family)
+        {
+            switch (family)
+            {
+                case Stm32Family.L4:
+                case Stm32Family.G4:
+                    // On L4/G4, FLASH_CR MER2 is bit 15.
+                    return IsDualBank(family) ? (1U << 15) : 0U;
+
+                default:
+                    return 0U;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the connected device is configured as dual-bank flash.
+        /// </summary>
+        private bool IsDualBank(Stm32Family family)
+        {
+            ushort devId = (ushort)(ChipIdcode & 0xFFF);
+
+            // L4+ (0x470 = STM32L4R/S, 0x471 = STM32L4P5/Q5) and all G4 devices select
+            // dual-bank mode via FLASH_OPTR bit 22 (DBANK), regardless of flash size -
+            // it is not automatic, so the option byte must always be checked.
+            if (family == Stm32Family.G4 || devId == 0x470 || devId == 0x471)
+            {
+                uint optrDbank = _mem.ReadWord(_regs.FlashBase + 0x20); // FLASH_OPTR
+                return (optrDbank & (1U << 22)) != 0;
+            }
+
+            // Classic L4 parts only support dual-bank when they have 1 MB of flash,
+            // selected via FLASH_OPTR bit 21 (DB1M). Smaller parts have no dual-bank
+            // option at all (bit reserved), so they are always single-bank.
+            uint flashSizeKb = _mem.ReadWord(FlashSizeRegister) & 0xFFFF;
+
+            if (flashSizeKb == 0 || flashSizeKb == 0xFFFF || flashSizeKb < 1024)
+            {
+                return false;
+            }
+
+            uint optr = _mem.ReadWord(_regs.FlashBase + 0x20); // FLASH_OPTR
+            return (optr & (1U << 21)) != 0;
         }
 
         /// <summary>
@@ -178,16 +260,18 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 // Clear any pending errors
                 ClearFlashErrors();
 
-                // Set MER bit and start
-                uint cr = _regs.MerBit | _regs.StrtBit;
+                // Set the mass-erase bit(s) and start. Dual-bank families need both MER1 and
+                // MER2, otherwise only the first bank is erased.
+                uint massEraseBits = _regs.MerBit | _regs.Mer2Bit;
+                uint cr = massEraseBits | _regs.StrtBit;
                 _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
 
                 // Wait for completion
                 WaitForFlashReady(timeoutMs);
 
-                // Clear MER bit
+                // Clear MER bit(s)
                 cr = _mem.ReadWord(_regs.FlashBase + _regs.CrOffset);
-                cr &= ~_regs.MerBit;
+                cr &= ~massEraseBits;
                 _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
             }
             finally
@@ -458,23 +542,21 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
             _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
 
-            // Write data word by word
+            // Program using the transport's native block write instead of one word per USB
+            // transaction. While PG is set, the flash controller stalls the bus for each
+            // 32-bit word it programs, so a block write is paced correctly by hardware; we
+            // confirm completion by polling BSY once per block. The previous word-at-a-time
+            // loop issued two USB round-trips for every 4 bytes, which made large images
+            // (hundreds of KB) appear to hang.
             int pos = 0;
 
             while (pos < length)
             {
-                uint word = 0xFFFFFFFF;
-                int remaining = length - pos;
-
-                for (int b = 0; b < 4 && b < remaining; b++)
-                {
-                    word &= ~(0xFFU << (b * 8));
-                    word |= (uint)data[dataOffset + pos + b] << (b * 8);
-                }
-
-                _mem.WriteWord(address + (uint)pos, word);
-                WaitForFlashReady(1000);
-                pos += 4;
+                int chunk = Math.Min(ProgramBlockBytes, length - pos);
+                _mem.WriteBytes(address + (uint)pos, data, dataOffset + pos, chunk);
+                WaitForFlashReady(5000);
+                pos += chunk;
+                ReportProgress("Writing", pos, length);
             }
 
             // Clear PG bit
@@ -490,11 +572,26 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             cr |= _regs.PgBit;
             _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
 
+            // These families program a 64-bit double-word at a time: the flash controller
+            // starts programming once both 32-bit words are written, stalling the bus in
+            // between. A block write (multiple of 8 bytes) is therefore paced correctly by
+            // hardware; poll BSY once per block. This replaces the previous double-word per
+            // USB round-trip loop, which was far too slow for large images.
+            int alignedLength = length & ~7; // whole 64-bit double-words
             int pos = 0;
 
-            while (pos < length)
+            while (pos < alignedLength)
             {
-                // Write two 32-bit words (one 64-bit double word)
+                int chunk = Math.Min(ProgramBlockBytes, alignedLength - pos);
+                _mem.WriteBytes(address + (uint)pos, data, dataOffset + pos, chunk);
+                WaitForFlashReady(5000);
+                pos += chunk;
+                ReportProgress("Writing", pos, length);
+            }
+
+            // Program a trailing partial double-word (if any), padding with 0xFF.
+            if (pos < length)
+            {
                 uint word0 = 0xFFFFFFFF;
                 uint word1 = 0xFFFFFFFF;
                 int remaining = length - pos;
@@ -513,10 +610,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
                 _mem.WriteWord(address + (uint)pos, word0);
                 _mem.WriteWord(address + (uint)pos + 4, word1);
-
-                WaitForFlashReady(1000);
-                pos += 8;
+                WaitForFlashReady(5000);
             }
+
+            ReportProgress("Writing", length, length);
 
             // Clear PG bit
             cr = _mem.ReadWord(_regs.FlashBase + _regs.CrOffset);
@@ -559,6 +656,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
                 WaitForFlashReady(1000);
                 pos += 32;
+                ReportProgress("Writing", Math.Min(pos, length), length);
             }
 
             // Clear PG bit
@@ -603,6 +701,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 case 0x420: // STM32F100 Low/Med density Value Line
                 case 0x428: // STM32F100 High density Value Line
                     return Stm32Family.F1;
+
+                // F3 family (F1-style page flash, 2 KB pages)
+                case 0x422: // STM32F302xB/C, F303xB/C, F358
+                case 0x432: // STM32F373/378
+                case 0x438: // STM32F303x6/8, F328, F334
+                case 0x439: // STM32F301/302x6/8, F318
+                case 0x446: // STM32F302xD/E, F303xD/E, F398
+                    return Stm32Family.F3;
 
                 // F4 family
                 case 0x411: // STM32F2xx
@@ -702,6 +808,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 case Stm32Family.F0:
                 case Stm32Family.F1:
+                case Stm32Family.F3:
                 case Stm32Family.L0:
                     return new FlashRegisters
                     {
@@ -717,7 +824,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                         BsyBit = 1U << 0,    // BSY
                         EopBit = 1U << 5,    // EOP
                         SectorShift = 0,
-                        PageSize = family == Stm32Family.L0 ? 128U : 1024U,
+                        PageSize = family == Stm32Family.L0 ? 128U
+                            : family == Stm32Family.F3 ? 2048U
+                            : 1024U,
                     };
 
                 case Stm32Family.F4:

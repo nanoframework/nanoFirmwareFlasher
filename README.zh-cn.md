@@ -236,14 +236,6 @@ nanoff --listdfu
 nanoff --installjtagdrivers
 ```
 
-### 安装STM32 DFU驱动程序
-
-为STM32 DFU连接的设备安装驱动程序。  
-
-```shell
-nanoff --installdfudrivers
-```
-
 ## TI CC13x2使用示例
 
 ### 更新指定TI CC13x2设备的固件  

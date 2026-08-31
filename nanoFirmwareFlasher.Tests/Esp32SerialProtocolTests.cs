@@ -1533,6 +1533,88 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(16, raw[2] | (raw[3] << 8)); // Data length = 16
         }
 
+        /// <summary>
+        /// Build a FLASH_BEGIN / FLASH_DEFL_BEGIN parameter block via the controller's private
+        /// <c>BuildFlashBeginParams</c>, for the given chip type and stub state. The bootloader
+        /// client is created without opening its serial port.
+        /// </summary>
+        private static byte[] InvokeBuildFlashBeginParams(
+            string chipType,
+            bool stubRunning,
+            int firstWord,
+            int numBlocks,
+            int blockSize,
+            uint offset)
+        {
+            var client = new Esp32BootloaderClient("COM_TEST_DUMMY")
+            {
+                IsStubRunning = stubRunning,
+            };
+
+            Esp32ChipConfig config = Esp32ChipConfigs.GetByType(chipType);
+            Assert.IsNotNull(config, $"Expected a chip config for '{chipType}'.");
+
+            var controller = new Esp32FlashController(client, config);
+
+            var method = typeof(Esp32FlashController).GetMethod(
+                "BuildFlashBeginParams",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+
+            Assert.IsNotNull(method, "BuildFlashBeginParams method should exist");
+
+            object? result = method.Invoke(
+                controller,
+                new object[] { firstWord, numBlocks, blockSize, offset });
+
+            Assert.IsNotNull(result, "BuildFlashBeginParams should return a byte array.");
+
+            return (byte[])result;
+        }
+
+        [TestMethod]
+        public void FlashController_FlashBeginParams_Esp32Rom_UsesLegacy16ByteFormat()
+        {
+            // Classic ESP32 ROM bootloader uses the legacy 16-byte parameter format.
+            byte[] data = InvokeBuildFlashBeginParams(
+                "esp32", stubRunning: false, 0x10000, 4, 0x4000, 0x1000);
+
+            Assert.AreEqual(16, data.Length, "ESP32 ROM FLASH_BEGIN must use the 16-byte format.");
+            Assert.AreEqual(0x10000u, Esp32CommandPacket.ReadUInt32LE(data, 0));
+            Assert.AreEqual(4u, Esp32CommandPacket.ReadUInt32LE(data, 4));
+            Assert.AreEqual(0x4000u, Esp32CommandPacket.ReadUInt32LE(data, 8));
+            Assert.AreEqual(0x1000u, Esp32CommandPacket.ReadUInt32LE(data, 12));
+
+            byte[] raw = Esp32CommandPacket.BuildRaw(Esp32Command.FlashBegin, data);
+            Assert.AreEqual(16, raw[2] | (raw[3] << 8), "Raw packet data length must be 16.");
+        }
+
+        [DataTestMethod]
+        [DataRow("esp32s2", false)] // Newer ROM bootloaders require the extended format
+        [DataRow("esp32s3", false)]
+        [DataRow("esp32", true)]    // The stub always uses the extended format, even on classic ESP32
+        public void FlashController_FlashBeginParams_ExtendedFormat_Adds20ByteEncryptedFlag(
+            string chipType,
+            bool stubRunning)
+        {
+            byte[] data = InvokeBuildFlashBeginParams(
+                chipType, stubRunning, 0x10000, 4, 0x4000, 0x1000);
+
+            Assert.AreEqual(20, data.Length, "Extended FLASH_BEGIN must use the 20-byte format.");
+
+            // The first four words match the legacy layout.
+            Assert.AreEqual(0x10000u, Esp32CommandPacket.ReadUInt32LE(data, 0));
+            Assert.AreEqual(4u, Esp32CommandPacket.ReadUInt32LE(data, 4));
+            Assert.AreEqual(0x4000u, Esp32CommandPacket.ReadUInt32LE(data, 8));
+            Assert.AreEqual(0x1000u, Esp32CommandPacket.ReadUInt32LE(data, 12));
+
+            // The extra word is the encrypted-write flag, always 0 (plaintext).
+            Assert.AreEqual(0u, Esp32CommandPacket.ReadUInt32LE(data, 16),
+                "Encrypted-write flag must be 0.");
+
+            byte[] raw = Esp32CommandPacket.BuildRaw(Esp32Command.FlashBegin, data);
+            Assert.AreEqual(20, raw[2] | (raw[3] << 8), "Raw packet data length must be 20.");
+        }
+
         [TestMethod]
         public void FlashController_FlashDataPacket_HasHeaderAndBlock()
         {

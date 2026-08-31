@@ -298,33 +298,6 @@ namespace nanoFirmwareFlasher.Tests
 
         #endregion
 
-        #region StLinkCliExecutionException
-
-        [TestMethod]
-        public void StLinkCliExecutionException_DefaultConstructor()
-        {
-            var ex = new StLinkCliExecutionException();
-            Assert.IsNotNull(ex);
-        }
-
-        [TestMethod]
-        public void StLinkCliExecutionException_MessageConstructor()
-        {
-            var ex = new StLinkCliExecutionException("STM32 CLI error");
-            Assert.AreEqual("STM32 CLI error", ex.Message);
-        }
-
-        [TestMethod]
-        public void StLinkCliExecutionException_InnerExceptionConstructor()
-        {
-            var inner = new InvalidOperationException("exe not found");
-            var ex = new StLinkCliExecutionException("CLI error", inner);
-            Assert.AreEqual("CLI error", ex.Message);
-            Assert.AreSame(inner, ex.InnerException);
-        }
-
-        #endregion
-
         #region UniflashCliExecutionException
 
         [TestMethod]
@@ -392,7 +365,6 @@ namespace nanoFirmwareFlasher.Tests
                 typeof(NoOperationPerformedException),
                 typeof(ReadEsp32FlashException),
                 typeof(SilinkExecutionException),
-                typeof(StLinkCliExecutionException),
                 typeof(UniflashCliExecutionException),
                 typeof(WriteEsp32FlashException),
             };

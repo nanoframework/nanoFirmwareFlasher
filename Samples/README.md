@@ -34,7 +34,7 @@ This console application lists all the ST Microelectronics JTAG devices connecte
 A single line of code is all it takes:
 
 ```csharp
-var connecteDevices = StmJtagDevice.ListDevices();
+var connecteDevices = StmStLinkDevice.ListDevices();
 ```
 
 To output the devices, just need to iterate over the devices collection, like this:

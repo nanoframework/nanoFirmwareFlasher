@@ -7,22 +7,6 @@
         </Content>
     </ItemGroup>
 
-    <!-- STLink executables for all platforms (optional — native transports available) -->
-    <ItemGroup Condition="'$(IncludeStLinkCli)' == 'true'">
-        <Content Include="..\lib\stlink\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\stlink</PackagePath>
-        </Content>
-        <Content Include="..\lib\stlinkMac\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\stlinkMac</PackagePath>
-        </Content>
-        <Content Include="..\lib\stlinkLinux\**">
-            <Pack>true</Pack>
-            <PackagePath>tools\$(PackageTfmSubFolder)any\stlinkLinux</PackagePath>        
-        </Content>
-    </ItemGroup>
-
     <!-- J-Link executables for all platforms -->
     <ItemGroup Condition="'$(IncludeJLinkCli)' == 'true'">
         <Content Include="..\lib\jlinkCmds\**">

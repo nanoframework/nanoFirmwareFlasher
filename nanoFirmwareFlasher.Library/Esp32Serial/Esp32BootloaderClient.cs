@@ -74,6 +74,24 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         private const uint Esp32E22RtcCntlOption1Reg = 0x3F408128;
         private const uint Esp32E22RtcCntlForceDownloadBootMask = 0x1u;
 
+        // Shared strapping/watchdog bit masks and unlock key for the ESP32-S2/S3
+        // USB-OTG watchdog reset path (identical values on both chips).
+        private const uint Esp32RtcWdtWkey = 0x50D83AA1;
+        private const uint Esp32GpioStrapSpiBootMask = 0x1u << 3;
+        private const uint Esp32RtcCntlForceDownloadBootMask = 0x1u;
+
+        private const uint Esp32S2GpioStrapReg = 0x3F404038;
+        private const uint Esp32S2RtcCntlOption1Reg = 0x3F408128;
+        private const uint Esp32S2RtcWdtConfig0Reg = 0x3F408094;
+        private const uint Esp32S2RtcWdtConfig1Reg = 0x3F408098;
+        private const uint Esp32S2RtcWdtWprotectReg = 0x3F4080AC;
+
+        private const uint Esp32S3GpioStrapReg = 0x60004038;
+        private const uint Esp32S3RtcCntlOption1Reg = 0x6000812C;
+        private const uint Esp32S3RtcWdtConfig0Reg = 0x60008098;
+        private const uint Esp32S3RtcWdtConfig1Reg = 0x6000809C;
+        private const uint Esp32S3RtcWdtWprotectReg = 0x600080B0;
+
         private SerialPort _port;
         private bool _disposed;
         private bool _isUsbJtag;
@@ -576,6 +594,57 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     return;
                 }
 
+                if (_runtimeConfig?.ChipType == "esp32s2" && _runtimeConfig.UsesUsbOtg)
+                {
+                    if (CanWatchdogReset(Esp32S2GpioStrapReg, Esp32S2RtcCntlOption1Reg))
+                    {
+                        PerformWatchdogReset(
+                            Esp32S2RtcWdtWprotectReg,
+                            Esp32S2RtcWdtConfig0Reg,
+                            Esp32S2RtcWdtConfig1Reg);
+                        return;
+                    }
+
+                    // USB-OTG boards need the longer reset timing.
+                    Esp32ResetSequence.HardReset(_port, true);
+                    return;
+                }
+
+                if (_runtimeConfig?.ChipType == "esp32s3")
+                {
+                    // Clear force-download-boot so the chip doesn't get stuck in download
+                    // mode after reset (arduino-esp32 #6762). Upstream does this on every
+                    // S3 reset path (UART, USB-Serial/JTAG and USB-OTG) before any reset,
+                    // so it must run regardless of the transport. Best-effort.
+                    try
+                    {
+                        WriteRegister(Esp32S3RtcCntlOption1Reg, 0, Esp32RtcCntlForceDownloadBootMask);
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore transient failures (e.g. during monitoring) — matches upstream.
+                    }
+
+                    if (_runtimeConfig.UsesUsbOtg)
+                    {
+                        if (CanWatchdogReset(Esp32S3GpioStrapReg, Esp32S3RtcCntlOption1Reg))
+                        {
+                            PerformWatchdogReset(
+                                Esp32S3RtcWdtWprotectReg,
+                                Esp32S3RtcWdtConfig0Reg,
+                                Esp32S3RtcWdtConfig1Reg);
+                            return;
+                        }
+
+                        // USB-OTG boards need the longer reset timing.
+                        Esp32ResetSequence.HardReset(_port, true);
+                        return;
+                    }
+
+                    // Non-USB-OTG S3 (UART or USB-Serial/JTAG): fall through to the
+                    // default reset below after clearing the force-download bit.
+                }
+
                 if (_runtimeConfig?.ChipType == "esp32e22" && _runtimeConfig.UsesUsbOtg)
                 {
                     uint strapReg = ReadRegister(Esp32E22GpioStrapReg);
@@ -778,6 +847,36 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             WriteRegister(Esp32S31LpWdtConfig0Reg, (1u << 31) | (5u << 28) | (1u << 8) | 2u);
             WriteRegister(Esp32S31LpWdtWprotectReg, 0);
             Thread.Sleep(500);
+        }
+
+        /// <summary>
+        /// Determine whether an RTC watchdog reset is safe, mirroring esptool: only when the
+        /// chip is being held in download mode via the strapping pin (GPIO0 low, i.e. the SPI
+        /// boot strap bit is clear) while the force-download-boot bit is cleared. In that state
+        /// a plain reset would not re-sample the pins, so the watchdog reset is used instead.
+        /// </summary>
+        private bool CanWatchdogReset(uint gpioStrapReg, uint option1Reg)
+        {
+            uint strapReg = ReadRegister(gpioStrapReg);
+            uint forceDownloadReg = ReadRegister(option1Reg);
+
+            return (strapReg & Esp32GpioStrapSpiBootMask) == 0
+                && (forceDownloadReg & Esp32RtcCntlForceDownloadBootMask) == 0;
+        }
+
+        /// <summary>
+        /// Perform an RTC watchdog reset (ESP32-S2/S3 USB-OTG). Configures the RTC WDT to fire
+        /// almost immediately, which resets the chip out of the bootloader when the DTR/RTS
+        /// reset lines aren't wired through the native USB connection. Matches esptool's
+        /// watchdog_reset() register sequence.
+        /// </summary>
+        private void PerformWatchdogReset(uint wprotectReg, uint config0Reg, uint config1Reg)
+        {
+            WriteRegister(wprotectReg, Esp32RtcWdtWkey);   // unlock
+            WriteRegister(config1Reg, 2000);               // set WDT timeout
+            WriteRegister(config0Reg, (1u << 31) | (5u << 28) | (1u << 8) | 2u); // enable WDT
+            WriteRegister(wprotectReg, 0);                 // lock
+            Thread.Sleep(500);                             // wait for reset to take effect
         }
 
         #region Sync Implementation

@@ -340,7 +340,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 try
                 {
-                    var connectedDevices = _nanoDeviceOperations.ListDevices(_verbosityLevel > VerbosityLevel.Normal);
+                    var connectedDevices = _nanoDeviceOperations.ListDevices(
+                        _verbosityLevel > VerbosityLevel.Normal,
+                        _verbosityLevel);
 
                     if (!connectedDevices.Any())
                     {
@@ -400,8 +402,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 // done here, this command has no further processing
-                _exitCode = ExitCodes.OK;
-
                 return;
             }
 
@@ -523,6 +523,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // JTAG related
                 if (
                     o.ListJtagDevices ||
+                    o.ListNativeStLinkDevices ||
+                    o.ListNativeSwdDevices ||
                     !string.IsNullOrEmpty(o.JtagDeviceId) ||
                     o.HexFile.Any() ||
                     o.BinFile.Any())
@@ -532,6 +534,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // DFU related
                 else if (
                     o.ListDevicesInDfuMode ||
+                    o.ListNativeDfuDevices ||
                     o.DfuUpdate ||
                     !string.IsNullOrEmpty(o.DfuDeviceId))
                 {
@@ -548,14 +551,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.Platform = SupportedPlatform.ti_simplelink;
                 }
                 else if (
-                    o.InstallDfuDrivers
-                    || o.InstallJtagDrivers)
+                    o.InstallJtagDrivers)
                 {
                     o.Platform = SupportedPlatform.stm32;
                 }
                 // ESP32 related
                 else if (
                     !string.IsNullOrEmpty(o.SerialPort) &&
+                    // a pure file/network deployment uses the wire protocol and is platform independent:
+                    // it must not be misclassified as an ESP32 firmware operation (which would connect through
+                    // the esptool bootloader and leave the device unable to answer wire protocol requests)
+                    string.IsNullOrEmpty(o.FileDeployment) &&
+                    string.IsNullOrEmpty(o.NetworkDeployment) &&
                     ((o.BaudRate != 921600) ||
                     (o.Esp32FlashMode != "dio") ||
                     (o.Esp32FlashFrequency != 40)))
