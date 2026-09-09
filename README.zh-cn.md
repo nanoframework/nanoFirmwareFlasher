@@ -22,6 +22,18 @@
 
 ## 安装.NET **nanoFramework** 固件刷写工具
 
+当前版本的 nanoff 以 .NET 10 为目标。安装或更新工具前，请先安装 .NET 10 SDK。安装工具后运行 nanoff 时也需要 .NET 10 Runtime。
+
+可以使用以下命令检查计算机上已安装的 SDK 和 Runtime：
+
+```shell
+dotnet --list-sdks
+dotnet --list-runtimes
+dotnet --info
+```
+
+如果没有列出 .NET 10 SDK，请从 [.NET 10 下载页面](https://dotnet.microsoft.com/download/dotnet/10.0)安装，然后重试命令。如果使用较旧的 SDK，它无法识别 `net10.0` 工具包时可能会错误地报告找不到 `DotnetToolSettings.xml`；这并不表示发布的工具包缺少该文件。
+
 使用以下.NET Core CLI命令一键安装.NET **nanoFramework** 固件刷写工具:  
 
 ```shell
@@ -55,6 +67,8 @@ export PATH=$PATH:~/.dotnet/tools
 ```
 
 ## 更新.NET **nanoFramework**固件flash  
+
+更新 nanoff 同样需要 .NET 10 SDK。如果更新报告找不到 `DotnetToolSettings.xml`，请使用上面的命令确认已安装 .NET 10 SDK，必要时先安装它。
 
 要更新.NET **nanoFramework** 固件刷写工具，请使用.NET Core CLI命令:  
 

@@ -26,6 +26,18 @@ We are also distributing this tool as a .NET library so it can be integrated in 
 
 ## Install .NET **nanoFramework** Firmware Flasher
 
+The current version of nanoff targets .NET 10. Install the .NET 10 SDK before installing or updating the tool. The .NET 10 runtime is also required to run nanoff after it has been installed.
+
+You can check the SDKs and runtimes installed on your machine with:
+
+```console
+dotnet --list-sdks
+dotnet --list-runtimes
+dotnet --info
+```
+
+If no .NET 10 SDK is listed, install it from the [.NET 10 download page](https://dotnet.microsoft.com/download/dotnet/10.0), then retry the command. An older SDK can report that `DotnetToolSettings.xml` is missing when it cannot consume the `net10.0` tool package; this does not mean that the package was published without that file.
+
 Perform a one-time install of the .NET **nanoFramework** Firmware Flasher tool using the following .NET Core CLI command:
 
 ```console
@@ -63,6 +75,8 @@ export PATH=$PATH:~/.dotnet/tools
 ```
 
 ## Update .NET **nanoFramework** Firmware Flasher
+
+The .NET 10 SDK is required when updating nanoff as well. If the update reports that `DotnetToolSettings.xml` was not found, verify that the .NET 10 SDK is installed with the commands above and install it if necessary.
 
 To update .NET **nanoFramework** Firmware Flasher tool use the following .NET Core CLI command:
 
