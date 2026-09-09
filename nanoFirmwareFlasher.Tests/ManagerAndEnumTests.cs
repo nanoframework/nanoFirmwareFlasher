@@ -22,14 +22,14 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void TIManager_NullOptions_ThrowsArgumentNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new TIManager(null, VerbosityLevel.Normal));
+            Assert.ThrowsExactly<ArgumentNullException>(() => new TIManager(null, VerbosityLevel.Normal));
         }
 
         [TestMethod]
         public void TIManager_WrongPlatform_ThrowsNotSupported()
         {
             var options = new Options { Platform = SupportedPlatform.esp32 };
-            Assert.Throws<NotSupportedException>(() => new TIManager(options, VerbosityLevel.Normal));
+            Assert.ThrowsExactly<NotSupportedException>(() => new TIManager(options, VerbosityLevel.Normal));
         }
 
         [TestMethod]
@@ -47,14 +47,14 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Esp32Manager_NullOptions_ThrowsArgumentNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new Esp32Manager(null, VerbosityLevel.Normal));
+            Assert.ThrowsExactly<ArgumentNullException>(() => new Esp32Manager(null, VerbosityLevel.Normal));
         }
 
         [TestMethod]
         public void Esp32Manager_WrongPlatform_ThrowsNotSupported()
         {
             var options = new Options { Platform = SupportedPlatform.stm32 };
-            Assert.Throws<NotSupportedException>(() => new Esp32Manager(options, VerbosityLevel.Normal));
+            Assert.ThrowsExactly<NotSupportedException>(() => new Esp32Manager(options, VerbosityLevel.Normal));
         }
 
         [TestMethod]
@@ -72,14 +72,14 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Stm32Manager_NullOptions_ThrowsArgumentNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new Stm32Manager(null, VerbosityLevel.Normal));
+            Assert.ThrowsExactly<ArgumentNullException>(() => new Stm32Manager(null, VerbosityLevel.Normal));
         }
 
         [TestMethod]
         public void Stm32Manager_WrongPlatform_ThrowsNotSupported()
         {
             var options = new Options { Platform = SupportedPlatform.esp32 };
-            Assert.Throws<NotSupportedException>(() => new Stm32Manager(options, VerbosityLevel.Normal));
+            Assert.ThrowsExactly<NotSupportedException>(() => new Stm32Manager(options, VerbosityLevel.Normal));
         }
 
         [TestMethod]

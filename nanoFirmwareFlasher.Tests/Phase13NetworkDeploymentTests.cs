@@ -53,7 +53,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void NetworkDeploymentManager_Constructor_MissingFile_Throws()
         {
-            Assert.Throws<DirectoryNotFoundException>(() =>
+            Assert.ThrowsExactly<DirectoryNotFoundException>(() =>
                 new NetworkDeploymentManager(@"C:\nonexistent\config.json", "COM1", VerbosityLevel.Quiet));
         }
 
@@ -63,7 +63,7 @@ namespace nanoFirmwareFlasher.Tests
             string testDir = TestDirectoryHelper.GetTestDirectory(TestContext);
             string configPath = Path.Combine(testDir, "bad.json");
             File.WriteAllText(configPath, "NOT JSON{{{");
-            Assert.Throws<System.Text.Json.JsonException>(() =>
+            Assert.ThrowsExactly<System.Text.Json.JsonException>(() =>
                 new NetworkDeploymentManager(configPath, "COM1", VerbosityLevel.Quiet));
         }
 
@@ -118,7 +118,7 @@ namespace nanoFirmwareFlasher.Tests
         public void GetConfigureAuthentication_InvalidValue_ThrowsArgumentException()
         {
             var manager = CreateManager(MinimalConfig);
-            Assert.Throws<ArgumentException>(() => manager.GetConfigureAuthentication("INVALID"));
+            Assert.ThrowsExactly<ArgumentException>(() => manager.GetConfigureAuthentication("INVALID"));
         }
 
         #endregion
@@ -151,7 +151,7 @@ namespace nanoFirmwareFlasher.Tests
         public void GetConfigurationOptions_InvalidValue_ThrowsArgumentException()
         {
             var manager = CreateManager(MinimalConfig);
-            Assert.Throws<ArgumentException>(() => manager.GetConfigurationOptions("BOGUS"));
+            Assert.ThrowsExactly<ArgumentException>(() => manager.GetConfigurationOptions("BOGUS"));
         }
 
         #endregion
@@ -182,7 +182,7 @@ namespace nanoFirmwareFlasher.Tests
         public void GetRadioType_InvalidValue_ThrowsArgumentException()
         {
             var manager = CreateManager(MinimalConfig);
-            Assert.Throws<ArgumentException>(() => manager.GetRadioType("802.11ac"));
+            Assert.ThrowsExactly<ArgumentException>(() => manager.GetRadioType("802.11ac"));
         }
 
         #endregion
@@ -239,7 +239,7 @@ namespace nanoFirmwareFlasher.Tests
         public void GetWirelessAPOptions_InvalidValue_ThrowsArgumentException()
         {
             var manager = CreateManager(MinimalConfig);
-            Assert.Throws<ArgumentException>(() => manager.GetWirelessAPOptions("RANDOMAP"));
+            Assert.ThrowsExactly<ArgumentException>(() => manager.GetWirelessAPOptions("RANDOMAP"));
         }
 
         #endregion
@@ -282,14 +282,14 @@ namespace nanoFirmwareFlasher.Tests
         public void GetMacAddress_WrongLength_ThrowsArgumentException()
         {
             var manager = CreateManager(MinimalConfig);
-            Assert.Throws<ArgumentException>(() => manager.GetMacAddress("AABB"));
+            Assert.ThrowsExactly<ArgumentException>(() => manager.GetMacAddress("AABB"));
         }
 
         [TestMethod]
         public void GetMacAddress_InvalidHex_ThrowsFormatException()
         {
             var manager = CreateManager(MinimalConfig);
-            Assert.Throws<FormatException>(() => manager.GetMacAddress("GG:HH:II:JJ:KK:LL"));
+            Assert.ThrowsExactly<FormatException>(() => manager.GetMacAddress("GG:HH:II:JJ:KK:LL"));
         }
 
         #endregion
@@ -607,7 +607,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void FileDeploymentManager_Constructor_MissingFile_Throws()
         {
-            Assert.Throws<DirectoryNotFoundException>(() =>
+            Assert.ThrowsExactly<DirectoryNotFoundException>(() =>
                 new FileDeploymentManager(@"C:\nonexistent\deploy.json", "COM1", VerbosityLevel.Quiet));
         }
 

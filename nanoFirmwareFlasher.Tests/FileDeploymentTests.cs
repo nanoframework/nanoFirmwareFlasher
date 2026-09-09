@@ -219,7 +219,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void FileDeploymentManager_Constructor_ThrowsForMissingFile()
         {
-            Assert.Throws<DirectoryNotFoundException>(() =>
+            Assert.ThrowsExactly<DirectoryNotFoundException>(() =>
                 new FileDeploymentManager(@"C:\nonexistent\deploy.json", "COM3", VerbosityLevel.Quiet));
         }
 
@@ -231,7 +231,7 @@ namespace nanoFirmwareFlasher.Tests
 
             File.WriteAllText(jsonPath, "not valid json {{{");
 
-            Assert.Throws<JsonException>(() =>
+            Assert.ThrowsExactly<JsonException>(() =>
                 new FileDeploymentManager(jsonPath, "COM3", VerbosityLevel.Quiet));
         }
 

@@ -153,7 +153,7 @@ namespace nanoFirmwareFlasher.Tests
         public void Parse_NonExistentFile_ThrowsFileNotFound()
         {
             Assert.IsNotNull(_testDir, "Test directory should be initialized");
-            Assert.Throws<FileNotFoundException>(() =>
+            Assert.ThrowsExactly<FileNotFoundException>(() =>
                 IntelHexParser.Parse(Path.Combine(_testDir, "nonexistent.hex")));
         }
 
@@ -163,7 +163,7 @@ namespace nanoFirmwareFlasher.Tests
             string hexContent = "INVALID_LINE\n";
             string hexFile = WriteHexFile(hexContent);
 
-            Assert.Throws<FormatException>(() => IntelHexParser.Parse(hexFile));
+            Assert.ThrowsExactly<FormatException>(() => IntelHexParser.Parse(hexFile));
         }
 
         [TestMethod]
@@ -177,7 +177,7 @@ namespace nanoFirmwareFlasher.Tests
             string hexContent = badRecord + "\n" + MakeEofRecord() + "\n";
             string hexFile = WriteHexFile(hexContent);
 
-            Assert.Throws<FormatException>(() => IntelHexParser.Parse(hexFile));
+            Assert.ThrowsExactly<FormatException>(() => IntelHexParser.Parse(hexFile));
         }
 
         #endregion
@@ -380,7 +380,7 @@ namespace nanoFirmwareFlasher.Tests
                 MakeEofRecord() + "\n";
             string hexFile = WriteHexFile(hexContent);
 
-            Assert.Throws<FormatException>(() => IntelHexParser.Parse(hexFile));
+            Assert.ThrowsExactly<FormatException>(() => IntelHexParser.Parse(hexFile));
         }
 
         [TestMethod]

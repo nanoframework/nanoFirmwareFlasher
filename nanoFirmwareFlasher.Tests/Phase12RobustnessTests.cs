@@ -142,7 +142,7 @@ namespace nanoFirmwareFlasher.Tests
                 }
             }
 
-            Assert.Throws<IOException>(() =>
+            Assert.ThrowsExactly<IOException>(() =>
                 FirmwarePackage.SafeExtractZipToDirectory(zipPath, extractDir));
         }
 
@@ -314,7 +314,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void FirmwarePackageFactory_NullDevice_ThrowsArgumentNull()
         {
-            Assert.Throws<ArgumentNullException>(() =>
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
                 FirmwarePackageFactory.GetFirmwarePackage(null, "1.0.0"));
         }
 
@@ -372,7 +372,7 @@ namespace nanoFirmwareFlasher.Tests
             var options = CreateOptions(SupportedPlatform.ti_simplelink);
             var manager = new TIManager(options, VerbosityLevel.Quiet);
 
-            Assert.Throws<NoOperationPerformedException>(() =>
+            Assert.ThrowsExactly<NoOperationPerformedException>(() =>
                 manager.ProcessAsync().GetAwaiter().GetResult());
         }
 
@@ -427,11 +427,11 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void NanoDeviceOperations_UpdateDeviceClrAsync_NullPort_ThrowsArgumentNull()
+        public async System.Threading.Tasks.Task NanoDeviceOperations_UpdateDeviceClrAsync_NullPort_ThrowsArgumentNull()
         {
             using (var ops = new NanoDeviceOperations())
             {
-                Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await Assert.ThrowsExactlyAsync<ArgumentNullException>(async () =>
                     await ops.UpdateDeviceClrAsync(null, "1.0.0", false, null, null));
             }
         }

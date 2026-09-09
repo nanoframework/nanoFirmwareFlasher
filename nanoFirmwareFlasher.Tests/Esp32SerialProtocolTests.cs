@@ -142,7 +142,7 @@ namespace nanoFirmwareFlasher.Tests
             // Escape byte at end with no following byte is invalid
             byte[] encoded = { 0x01, 0xDB };
 
-            Assert.Throws<InvalidOperationException>(() => SlipFraming.Decode(encoded));
+            Assert.ThrowsExactly<InvalidOperationException>(() => SlipFraming.Decode(encoded));
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace nanoFirmwareFlasher.Tests
             // 0xDB followed by invalid byte
             byte[] encoded = { 0x01, 0xDB, 0xFF, 0x02 };
 
-            Assert.Throws<InvalidOperationException>(() => SlipFraming.Decode(encoded));
+            Assert.ThrowsExactly<InvalidOperationException>(() => SlipFraming.Decode(encoded));
         }
 
         [TestMethod]
@@ -475,13 +475,13 @@ namespace nanoFirmwareFlasher.Tests
         {
             byte[] payload = { 0x01, 0x08, 0x00 }; // Only 3 bytes, minimum is 8
 
-            Assert.Throws<InvalidOperationException>(() => Esp32ResponsePacket.Parse(payload));
+            Assert.ThrowsExactly<InvalidOperationException>(() => Esp32ResponsePacket.Parse(payload));
         }
 
         [TestMethod]
         public void ResponsePacket_Parse_NullPayload_ThrowsException()
         {
-            Assert.Throws<InvalidOperationException>(() => Esp32ResponsePacket.Parse(null));
+            Assert.ThrowsExactly<InvalidOperationException>(() => Esp32ResponsePacket.Parse(null));
         }
 
         [TestMethod]
@@ -494,7 +494,7 @@ namespace nanoFirmwareFlasher.Tests
                 0x00, 0x00
             };
 
-            Assert.Throws<InvalidOperationException>(() => Esp32ResponsePacket.Parse(payload));
+            Assert.ThrowsExactly<InvalidOperationException>(() => Esp32ResponsePacket.Parse(payload));
         }
 
         [TestMethod]
@@ -522,7 +522,7 @@ namespace nanoFirmwareFlasher.Tests
             };
 
             var response = Esp32ResponsePacket.Parse(payload);
-            Assert.Throws<Esp32BootloaderException>(() => response.ThrowIfError());
+            Assert.ThrowsExactly<Esp32BootloaderException>(() => response.ThrowIfError());
         }
 
         [TestMethod]
@@ -1814,7 +1814,7 @@ namespace nanoFirmwareFlasher.Tests
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
                 System.Runtime.InteropServices.OSPlatform.Windows))
             {
-                Assert.Throws<EspToolExecutionException>(() =>
+                Assert.ThrowsExactly<EspToolExecutionException>(() =>
                 {
                     new EspTool("COM999", 115200, "dio", 40, null, VerbosityLevel.Quiet);
                 });
@@ -2064,7 +2064,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             string json = @"{ ""data"": ""AAAA"", ""data_start"": 100, ""entry"": 200 }";
 
-            Assert.Throws<FormatException>(() => Esp32StubImage.ParseJson(json));
+            Assert.ThrowsExactly<FormatException>(() => Esp32StubImage.ParseJson(json));
         }
 
         [TestMethod]
