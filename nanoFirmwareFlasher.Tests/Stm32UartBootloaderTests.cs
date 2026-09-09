@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -22,41 +22,37 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void ReadMemory_ZeroLength_Throws()
         {
             var bootloader = new Stm32UartBootloader();
 
             // Should throw without needing a serial connection
-            bootloader.ReadMemory(0x08000000, 0);
+            Assert.Throws<ArgumentOutOfRangeException>(() => bootloader.ReadMemory(0x08000000, 0));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void ReadMemory_ExceedsMaxLength_Throws()
         {
             var bootloader = new Stm32UartBootloader();
 
             // Exceeds max 256 bytes
-            bootloader.ReadMemory(0x08000000, 257);
+            Assert.Throws<ArgumentOutOfRangeException>(() => bootloader.ReadMemory(0x08000000, 257));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void WriteMemory_EmptyData_Throws()
         {
             var bootloader = new Stm32UartBootloader();
 
-            bootloader.WriteMemory(0x08000000, Array.Empty<byte>());
+            Assert.Throws<ArgumentOutOfRangeException>(() => bootloader.WriteMemory(0x08000000, Array.Empty<byte>()));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void WriteMemory_ExceedsMaxBlockSize_Throws()
         {
             var bootloader = new Stm32UartBootloader();
 
-            bootloader.WriteMemory(0x08000000, new byte[257]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => bootloader.WriteMemory(0x08000000, new byte[257]));
         }
 
         [TestMethod]

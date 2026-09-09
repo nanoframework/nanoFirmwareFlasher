@@ -559,10 +559,9 @@ namespace nanoFirmwareFlasher.Tests
         #region Flash Registers â€” Unknown throws
 
         [TestMethod]
-        [ExpectedException(typeof(TargetInvocationException))]
         public void GetFlashRegisters_Unknown_Throws()
         {
-            GetFlashRegisters(GetFamilyValue("Unknown"));
+            Assert.Throws<TargetInvocationException>(() => GetFlashRegisters(GetFamilyValue("Unknown")));
         }
 
         #endregion

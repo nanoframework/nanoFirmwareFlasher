@@ -137,23 +137,21 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void SlipDecode_TrailingEscape_ThrowsException()
         {
             // Escape byte at end with no following byte is invalid
             byte[] encoded = { 0x01, 0xDB };
 
-            SlipFraming.Decode(encoded);
+            Assert.Throws<InvalidOperationException>(() => SlipFraming.Decode(encoded));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void SlipDecode_InvalidEscapeSequence_ThrowsException()
         {
             // 0xDB followed by invalid byte
             byte[] encoded = { 0x01, 0xDB, 0xFF, 0x02 };
 
-            SlipFraming.Decode(encoded);
+            Assert.Throws<InvalidOperationException>(() => SlipFraming.Decode(encoded));
         }
 
         [TestMethod]
@@ -473,23 +471,20 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void ResponsePacket_Parse_TooShort_ThrowsException()
         {
             byte[] payload = { 0x01, 0x08, 0x00 }; // Only 3 bytes, minimum is 8
 
-            Esp32ResponsePacket.Parse(payload);
+            Assert.Throws<InvalidOperationException>(() => Esp32ResponsePacket.Parse(payload));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void ResponsePacket_Parse_NullPayload_ThrowsException()
         {
-            Esp32ResponsePacket.Parse(null);
+            Assert.Throws<InvalidOperationException>(() => Esp32ResponsePacket.Parse(null));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void ResponsePacket_Parse_WrongDirection_ThrowsException()
         {
             byte[] payload = new byte[]
@@ -499,7 +494,7 @@ namespace nanoFirmwareFlasher.Tests
                 0x00, 0x00
             };
 
-            Esp32ResponsePacket.Parse(payload);
+            Assert.Throws<InvalidOperationException>(() => Esp32ResponsePacket.Parse(payload));
         }
 
         [TestMethod]
@@ -517,7 +512,6 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Esp32BootloaderException))]
         public void ResponsePacket_ThrowIfError_ErrorThrowsException()
         {
             byte[] payload = new byte[]
@@ -528,7 +522,7 @@ namespace nanoFirmwareFlasher.Tests
             };
 
             var response = Esp32ResponsePacket.Parse(payload);
-            response.ThrowIfError();
+            Assert.Throws<Esp32BootloaderException>(() => response.ThrowIfError());
         }
 
         [TestMethod]
@@ -1820,7 +1814,7 @@ namespace nanoFirmwareFlasher.Tests
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
                 System.Runtime.InteropServices.OSPlatform.Windows))
             {
-                Assert.ThrowsException<EspToolExecutionException>(() =>
+                Assert.Throws<EspToolExecutionException>(() =>
                 {
                     new EspTool("COM999", 115200, "dio", 40, null, VerbosityLevel.Quiet);
                 });
@@ -2070,7 +2064,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             string json = @"{ ""data"": ""AAAA"", ""data_start"": 100, ""entry"": 200 }";
 
-            Assert.ThrowsException<FormatException>(() => Esp32StubImage.ParseJson(json));
+            Assert.Throws<FormatException>(() => Esp32StubImage.ParseJson(json));
         }
 
         [TestMethod]

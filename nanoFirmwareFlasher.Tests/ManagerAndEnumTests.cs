@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -20,18 +20,16 @@ namespace nanoFirmwareFlasher.Tests
         #region TIManager constructor validation
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void TIManager_NullOptions_ThrowsArgumentNull()
         {
-            new TIManager(null, VerbosityLevel.Normal);
+            Assert.Throws<ArgumentNullException>(() => new TIManager(null, VerbosityLevel.Normal));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(NotSupportedException))]
         public void TIManager_WrongPlatform_ThrowsNotSupported()
         {
             var options = new Options { Platform = SupportedPlatform.esp32 };
-            new TIManager(options, VerbosityLevel.Normal);
+            Assert.Throws<NotSupportedException>(() => new TIManager(options, VerbosityLevel.Normal));
         }
 
         [TestMethod]
@@ -47,18 +45,16 @@ namespace nanoFirmwareFlasher.Tests
         #region Esp32Manager constructor validation
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Esp32Manager_NullOptions_ThrowsArgumentNull()
         {
-            new Esp32Manager(null, VerbosityLevel.Normal);
+            Assert.Throws<ArgumentNullException>(() => new Esp32Manager(null, VerbosityLevel.Normal));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(NotSupportedException))]
         public void Esp32Manager_WrongPlatform_ThrowsNotSupported()
         {
             var options = new Options { Platform = SupportedPlatform.stm32 };
-            new Esp32Manager(options, VerbosityLevel.Normal);
+            Assert.Throws<NotSupportedException>(() => new Esp32Manager(options, VerbosityLevel.Normal));
         }
 
         [TestMethod]
@@ -74,18 +70,16 @@ namespace nanoFirmwareFlasher.Tests
         #region Stm32Manager constructor validation
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Stm32Manager_NullOptions_ThrowsArgumentNull()
         {
-            new Stm32Manager(null, VerbosityLevel.Normal);
+            Assert.Throws<ArgumentNullException>(() => new Stm32Manager(null, VerbosityLevel.Normal));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(NotSupportedException))]
         public void Stm32Manager_WrongPlatform_ThrowsNotSupported()
         {
             var options = new Options { Platform = SupportedPlatform.esp32 };
-            new Stm32Manager(options, VerbosityLevel.Normal);
+            Assert.Throws<NotSupportedException>(() => new Stm32Manager(options, VerbosityLevel.Normal));
         }
 
         [TestMethod]

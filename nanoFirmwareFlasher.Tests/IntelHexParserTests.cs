@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -150,25 +150,23 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FileNotFoundException))]
         public void Parse_NonExistentFile_ThrowsFileNotFound()
         {
             Assert.IsNotNull(_testDir, "Test directory should be initialized");
-            IntelHexParser.Parse(Path.Combine(_testDir, "nonexistent.hex"));
+            Assert.Throws<FileNotFoundException>(() =>
+                IntelHexParser.Parse(Path.Combine(_testDir, "nonexistent.hex")));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormatException))]
         public void Parse_InvalidStartCode_ThrowsFormatException()
         {
             string hexContent = "INVALID_LINE\n";
             string hexFile = WriteHexFile(hexContent);
 
-            IntelHexParser.Parse(hexFile);
+            Assert.Throws<FormatException>(() => IntelHexParser.Parse(hexFile));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormatException))]
         public void Parse_BadChecksum_ThrowsFormatException()
         {
             // Valid format but manually corrupted checksum
@@ -179,7 +177,7 @@ namespace nanoFirmwareFlasher.Tests
             string hexContent = badRecord + "\n" + MakeEofRecord() + "\n";
             string hexFile = WriteHexFile(hexContent);
 
-            IntelHexParser.Parse(hexFile);
+            Assert.Throws<FormatException>(() => IntelHexParser.Parse(hexFile));
         }
 
         #endregion
@@ -382,7 +380,7 @@ namespace nanoFirmwareFlasher.Tests
                 MakeEofRecord() + "\n";
             string hexFile = WriteHexFile(hexContent);
 
-            Assert.ThrowsException<FormatException>(() => IntelHexParser.Parse(hexFile));
+            Assert.Throws<FormatException>(() => IntelHexParser.Parse(hexFile));
         }
 
         [TestMethod]

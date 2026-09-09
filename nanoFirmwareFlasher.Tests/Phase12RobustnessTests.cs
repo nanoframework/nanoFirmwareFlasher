@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -142,7 +142,7 @@ namespace nanoFirmwareFlasher.Tests
                 }
             }
 
-            Assert.ThrowsException<IOException>(() =>
+            Assert.Throws<IOException>(() =>
                 FirmwarePackage.SafeExtractZipToDirectory(zipPath, extractDir));
         }
 
@@ -314,7 +314,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void FirmwarePackageFactory_NullDevice_ThrowsArgumentNull()
         {
-            Assert.ThrowsException<ArgumentNullException>(() =>
+            Assert.Throws<ArgumentNullException>(() =>
                 FirmwarePackageFactory.GetFirmwarePackage(null, "1.0.0"));
         }
 
@@ -372,7 +372,7 @@ namespace nanoFirmwareFlasher.Tests
             var options = CreateOptions(SupportedPlatform.ti_simplelink);
             var manager = new TIManager(options, VerbosityLevel.Quiet);
 
-            Assert.ThrowsException<NoOperationPerformedException>(() =>
+            Assert.Throws<NoOperationPerformedException>(() =>
                 manager.ProcessAsync().GetAwaiter().GetResult());
         }
 
@@ -431,7 +431,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             using (var ops = new NanoDeviceOperations())
             {
-                Assert.ThrowsExceptionAsync<ArgumentNullException>(async () =>
+                Assert.ThrowsAsync<ArgumentNullException>(async () =>
                     await ops.UpdateDeviceClrAsync(null, "1.0.0", false, null, null));
             }
         }

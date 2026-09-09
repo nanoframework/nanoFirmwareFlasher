@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -38,32 +38,28 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseVerbosity_InvalidInput_ThrowsArgumentException()
         {
-            Options.ParseVerbosity("invalid");
+            Assert.Throws<ArgumentException>(() => Options.ParseVerbosity("invalid"));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseVerbosity_Empty_ThrowsArgumentException()
         {
-            Options.ParseVerbosity("");
+            Assert.Throws<ArgumentException>(() => Options.ParseVerbosity(""));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseVerbosity_CaseSensitive_UpperQ_ThrowsArgumentException()
         {
             // The parser is case-sensitive, matching Program.cs behavior
-            Options.ParseVerbosity("Q");
+            Assert.Throws<ArgumentException>(() => Options.ParseVerbosity("Q"));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseVerbosity_Null_ThrowsArgumentException()
         {
-            Options.ParseVerbosity(null);
+            Assert.Throws<ArgumentException>(() => Options.ParseVerbosity(null));
         }
 
         #endregion
