@@ -902,7 +902,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #region Standalone MCUboot / SMP options (no explicit platform)
 
-            if (!operationPerformed && (o.McubootTarget || o.ListMcuImages || o.EraseImage.HasValue))
+            if (!operationPerformed && (o.McubootTarget || o.ListMcuImages))
             {
                 var manager = new McubootManager(o, _verbosityLevel);
 

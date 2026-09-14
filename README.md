@@ -484,12 +484,6 @@ Image 0 Slot 0  version=1.2.3.4  hash=abcd1234...  [active, confirmed, bootable]
 Image 0 Slot 1  version=1.3.0.0  hash=ef567890...  [pending, bootable]
 ```
 
-#### Erase the secondary slot
-
-```console
-nanoff --mcuboot --erase-image --serialport COM31
-```
-
 ### Serial port
 
 All MCUboot SMP operations use `--serialport` for the SMP transport. The SMP baud rate is fixed at **115200 baud** — the standard MCUboot serial SMP default. Note this is different from the ESP32 flash baud rate (default 1,500,000).
@@ -518,7 +512,6 @@ All MCUboot SMP operations use `--serialport` for the SMP transport. The SMP bau
 | `--keygen <path>` | — | Generate a new ECDSA P-256 signing key and write to path. Exits after generation. |
 | `--getpub <path>` | — | Extract public key from `--sign-key` as a C source file. Requires `--sign-key`. Exits after extraction. |
 | `--list-images` | false | List images in the MCUboot primary and secondary slots via SMP. Requires `--serialport`. |
-| `--erase-image` | false | Erase the MCUboot secondary slot via SMP. Requires `--serialport`. |
 
 ## Plain connection usage examples
 

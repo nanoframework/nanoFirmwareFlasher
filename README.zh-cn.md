@@ -431,12 +431,6 @@ nanoff --mcuboot --update --target ORGPAL_PALTHREE --serialport COM3 --sign-key 
 nanoff --mcuboot --list-images --serialport COM31
 ```
 
-#### 擦除次槽
-
-```console
-nanoff --mcuboot --erase-image --serialport COM31
-```
-
 ### MCUboot / SMP 选项参考
 
 | 选项 | 默认值 | 描述 |
@@ -452,7 +446,6 @@ nanoff --mcuboot --erase-image --serialport COM31
 | `--keygen <路径>` | — | 生成新的 ECDSA P-256 签名密钥并写入路径。生成后退出。 |
 | `--getpub <路径>` | — | 从 `--sign-key` 提取公钥为 C 源文件。需要 `--sign-key`。提取后退出。 |
 | `--list-images` | false | 通过 SMP 列出 MCUboot 主槽和次槽中的镜像。需要 `--serialport`。 |
-| `--erase-image` | false | 通过 SMP 擦除 MCUboot 次槽。需要 `--serialport`。 |
 
 ## 普通连接使用示例
 

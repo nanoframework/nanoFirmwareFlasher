@@ -10,7 +10,5 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         State = 0,
         /// <summary>Chunked firmware image upload to a target slot.</summary>
         Upload = 1,
-        /// <summary>Erase the secondary (upgrade) image slot.</summary>
-        Erase = 5,
     }
 }

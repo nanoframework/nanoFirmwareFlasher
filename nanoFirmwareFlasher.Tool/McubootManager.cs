@@ -63,11 +63,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return await RunWithClientAsync(ListImagesAsync);
             }
 
-            if (_options.EraseImage.HasValue)
-            {
-                return await RunWithClientAsync(EraseImageStandaloneAsync);
-            }
-
             return await UploadFlowAsync();
         }
 
@@ -177,50 +172,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             OutputWriter.ForegroundColor = ConsoleColor.White;
             return ExitCodes.OK;
-        }
-
-        private async Task<ExitCodes> EraseImageStandaloneAsync(McumgrClient client)
-        {
-            try
-            {
-                // Image whose secondary (upgrade) slot to erase, from --erase-image: 0 = CLR, 1 = deployment.
-                byte imageIndex = _options.EraseImage.Value;
-
-                if (imageIndex > 1)
-                {
-                    OutputWriter.ForegroundColor = ConsoleColor.Red;
-                    OutputWriter.WriteLine($"Invalid --erase-image value {imageIndex}. Use 0 (CLR) or 1 (deployment).");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                    return ExitCodes.E9000;
-                }
-
-                await client.EraseImageAsync(imageIndex);
-
-                if (_verbosity >= VerbosityLevel.Normal)
-                {
-                    string imageLabel = imageIndex == 0 ? "CLR" : "deployment";
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine($"{imageLabel} secondary slot erased.");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
-                }
-
-                return ExitCodes.OK;
-            }
-            catch (McumgrProtocolException ex)
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.Red;
-                OutputWriter.WriteLine($"Image erase failed: {ex.Message}");
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-                return ExitCodes.E10017;
-            }
-            catch (McumgrTimeoutException ex)
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.Red;
-                OutputWriter.WriteLine($"Image erase timed out: {ex.Message}");
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-                return ExitCodes.E10007;
-            }
         }
 
         private async Task<ExitCodes> UploadFlowAsync()

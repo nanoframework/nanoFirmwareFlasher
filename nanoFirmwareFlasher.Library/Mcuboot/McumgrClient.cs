@@ -440,52 +440,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             }
         }
 
-        /// <summary>
-        /// Erases the secondary (upgrade) slot of one image.
-        /// </summary>
-        /// <param name="imageIndex">Image to target: 0 = CLR, 1 = deployment.</param>
-        /// <param name="ct">Cancellation token.</param>
-        /// <remarks>
-        /// The SMP image-erase command (group 1, id 5) carries a single "slot" field holding a
-        /// global slot index, where image N's primary slot is 2N and its secondary slot is 2N+1
-        /// (see the mcumgr SMP img_mgmt protocol). There is no separate "image" field. This always
-        /// sends the secondary slot's index, matching stock mcumgr img_mgmt, which erases only the
-        /// non-active slot and rejects a request to erase the active/primary one.
-        /// </remarks>
-        public Task EraseImageAsync(byte imageIndex, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            try
-            {
-                EraseImageCore(imageIndex, ct);
-
-                return Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                return Task.FromException(ex);
-            }
-        }
-
-        private void EraseImageCore(byte imageIndex, CancellationToken ct)
-        {
-            // Global slot index: image N secondary = 2N + 1.
-            int slot = (imageIndex * 2) + 1;
-
-            byte[] payload = EncodeImageErase(slot);
-
-            SendCommand(SmpOpCode.Write, SmpGroup.Image, (byte)ImageCommandId.Erase, payload, ct);
-            byte[] rsp = ReceiveFrame(ct).Payload;
-
-            SmpReturnCode rc = DecodeRc(rsp);
-
-            if (rc != SmpReturnCode.Ok)
-            {
-                throw new McumgrProtocolException($"Image erase failed: rc={rc}", (int)rc);
-            }
-        }
-
         #endregion
 
         #region nanoFramework Custom Group (64)
@@ -726,21 +680,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             w.WriteStartMap(1);
             w.WriteTextString(key);
             w.WriteTextString(value);
-            w.WriteEndMap();
-
-            return w.Encode();
-        }
-
-        internal static byte[] EncodeImageErase(int slot)
-        {
-            var w = new CborWriter();
-
-            // { "slot": <uint> } — global slot index (image N: primary 2N, secondary 2N+1).
-            w.WriteStartMap(1);
-
-            w.WriteTextString("slot");
-            w.WriteUInt32((uint)slot);
-
             w.WriteEndMap();
 
             return w.Encode();

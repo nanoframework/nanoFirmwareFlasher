@@ -524,13 +524,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool ListMcuImages { get; set; }
 
         [Option(
-            "erase-image",
-            Required = false,
-            Default = null,
-            HelpText = "Erase the MCUboot secondary slot of the given image via SMP without uploading: 0 = CLR, 1 = deployment. Requires --serialport.")]
-        public byte? EraseImage { get; set; }
-
-        [Option(
             "secondary-slot",
             Required = false,
             Default = null,
