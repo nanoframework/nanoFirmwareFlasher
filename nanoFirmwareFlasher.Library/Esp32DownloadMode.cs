@@ -13,15 +13,16 @@ namespace nanoFramework.Tools.FirmwareFlasher
     internal static class Esp32DownloadMode
     {
         /// <summary>
-        /// Timeout for the debug engine connection, in milliseconds.
+        /// Timeout for the debug engine connection, in milliseconds. A device that is busy running
+        /// an application can take its time answering.
         /// </summary>
-        private const int ConnectTimeout = 2000;
+        private const int ConnectTimeout = 5000;
 
         /// <summary>
-        /// Timeout for the reboot request, in milliseconds. Kept short because older debug library
+        /// Timeout for the reboot request, in milliseconds. Capped because older debug library
         /// versions wait five times this long for a ping that a device in the ROM never sends.
         /// </summary>
-        private const int RebootTimeout = 500;
+        private const int RebootTimeout = 2000;
 
         /// <summary>
         /// Requests the ROM download mode from the firmware running on the specified serial port.

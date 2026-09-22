@@ -35,8 +35,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>Retries when opening the serial port to tolerate USB re-enumeration delays.</summary>
         private const int OpenPortRetryAttempts = 5;
 
-        /// <summary>Time given to the ROM to come up after a download mode request, in milliseconds.</summary>
-        private const int DownloadModeSettleMs = 1000;
+        /// <summary>
+        /// Time given to the device after a download mode request, in milliseconds. It answers the
+        /// request before rebooting, so whatever the application runs on its way out happens in here,
+        /// as does the USB enumeration of the ROM.
+        /// </summary>
+        private const int DownloadModeSettleMs = 3000;
 
         /// <summary>Retries for reset sequence execution when control line operations transiently fail.</summary>
         private const int ResetReconnectAttempts = 3;
