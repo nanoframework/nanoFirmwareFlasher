@@ -188,7 +188,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return;
             }
 
-            _client = new Esp32BootloaderClient(_serialPort, verbosity: Verbosity);
+            _client = new Esp32BootloaderClient(_serialPort, verbosity: Verbosity)
+            {
+                RequestDownloadModeFromFirmware = () => Esp32DownloadMode.TryRequest(_serialPort, Verbosity)
+            };
+
             _client.Connect();
 
             _chipDetector = new Esp32ChipDetector(_client);

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
@@ -33,6 +34,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         /// <summary>Retries when opening the serial port to tolerate USB re-enumeration delays.</summary>
         private const int OpenPortRetryAttempts = 5;
+
+        /// <summary>
+        /// Time given to the device after a download mode request, in milliseconds. It answers the
+        /// request before rebooting, so whatever the application runs on its way out happens in here,
+        /// as does the USB enumeration of the ROM.
+        /// </summary>
+        private const int DownloadModeSettleMs = 3000;
 
         /// <summary>Retries for reset sequence execution when control line operations transiently fail.</summary>
         private const int ResetReconnectAttempts = 3;
@@ -92,6 +100,24 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         private const uint Esp32S3RtcWdtConfig1Reg = 0x6000809C;
         private const uint Esp32S3RtcWdtWprotectReg = 0x600080B0;
 
+        /// <summary>
+        /// Register and mask holding FORCE_DOWNLOAD_BOOT, by chip type, as the ESP-IDF register
+        /// headers have them. RTC_CNTL on the older chips, LP_AON on C5, C6, C61, H2 and H21 (a two
+        /// bit field on the C5), LP_SYS on the P4. The classic ESP32 has no such bit and is absent.
+        /// </summary>
+        private static readonly Dictionary<string, (uint Register, uint Mask)> s_forceDownloadBootRegisters = new()
+        {
+            { "esp32c3", (0x600080F4, 0x00000001) },
+            { "esp32c5", (0x600B1034, 0x60000000) },
+            { "esp32c6", (0x600B1034, 0x40000000) },
+            { "esp32c61", (0x600B1034, 0x40000000) },
+            { "esp32h2", (0x600B1034, 0x40000000) },
+            { "esp32h21", (0x600B1034, 0x40000000) },
+            { "esp32p4", (0x50110008, 0x00000004) },
+            { "esp32s2", (0x3F408128, 0x00000001) },
+            { "esp32s3", (0x6000812C, 0x00000001) },
+        };
+
         private SerialPort _port;
         private bool _disposed;
         private bool _isUsbJtag;
@@ -113,6 +139,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
         /// <summary>Verbosity level for output messages.</summary>
         internal VerbosityLevel Verbosity { get; set; }
+
+        /// <summary>
+        /// Optional request for the firmware running on the device to reboot into the ROM download
+        /// mode. Called with the serial port closed, when the reset sequences have failed and the
+        /// operator would otherwise be asked for the BOOT button. Returns whether the request was
+        /// sent.
+        /// </summary>
+        internal Func<bool> RequestDownloadModeFromFirmware { get; set; }
 
         /// <summary>
         /// Create a new bootloader client for the specified serial port.
@@ -179,6 +213,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             bool synced = false;
             bool promptShown = false;
+            bool downloadModeRequested = false;
             bool staleHeavyLastAttempt = false;
             int consecutiveTimeoutHeavy = 0;
 
@@ -319,7 +354,20 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     OutputWriter.WriteLine("[Connect] Post-reset: 0 bytes in buffer (no boot log)");
                 }
 
-                if (!promptShown && attempt >= promptAfterAttempt)
+                // Before asking for the button, give a device that is still running nanoFramework the
+                // chance to take itself into the ROM download mode. The sync below then talks to the
+                // ROM, so the prompt is held back for this attempt.
+                bool downloadModeEntered = false;
+
+                if (!downloadModeRequested
+                    && attempt >= promptAfterAttempt
+                    && RequestDownloadModeFromFirmware != null)
+                {
+                    downloadModeRequested = true;
+                    downloadModeEntered = TryDownloadModeRequest();
+                }
+
+                if (!promptShown && !downloadModeEntered && attempt >= promptAfterAttempt)
                 {
                     OutputWriter.ForegroundColor = ConsoleColor.Magenta;
                     OutputWriter.WriteLine("*** Hold down the BOOT/FLASH button in ESP32 board ***");
@@ -588,6 +636,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             if (_port.IsOpen)
             {
+                // Force-download-boot lives in the always-on domain and survives a reset, so a chip
+                // that was taken into download mode - by the request above, by the IDF USB console
+                // or by anything else - comes back into the ROM instead of running the application
+                // unless the bit is cleared here (arduino-esp32 #6762).
+                ClearForceDownloadBoot();
+
                 if (_runtimeConfig?.ChipType == "esp32s31" && _runtimeConfig.UsesUsbOtg)
                 {
                     WatchdogResetEsp32S31();
@@ -610,39 +664,20 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                     return;
                 }
 
-                if (_runtimeConfig?.ChipType == "esp32s3")
+                if (_runtimeConfig?.ChipType == "esp32s3" && _runtimeConfig.UsesUsbOtg)
                 {
-                    // Clear force-download-boot so the chip doesn't get stuck in download
-                    // mode after reset (arduino-esp32 #6762). Upstream does this on every
-                    // S3 reset path (UART, USB-Serial/JTAG and USB-OTG) before any reset,
-                    // so it must run regardless of the transport. Best-effort.
-                    try
+                    if (CanWatchdogReset(Esp32S3GpioStrapReg, Esp32S3RtcCntlOption1Reg))
                     {
-                        WriteRegister(Esp32S3RtcCntlOption1Reg, 0, Esp32RtcCntlForceDownloadBootMask);
-                    }
-                    catch (Exception)
-                    {
-                        // Ignore transient failures (e.g. during monitoring) — matches upstream.
-                    }
-
-                    if (_runtimeConfig.UsesUsbOtg)
-                    {
-                        if (CanWatchdogReset(Esp32S3GpioStrapReg, Esp32S3RtcCntlOption1Reg))
-                        {
-                            PerformWatchdogReset(
-                                Esp32S3RtcWdtWprotectReg,
-                                Esp32S3RtcWdtConfig0Reg,
-                                Esp32S3RtcWdtConfig1Reg);
-                            return;
-                        }
-
-                        // USB-OTG boards need the longer reset timing.
-                        Esp32ResetSequence.HardReset(_port, true);
+                        PerformWatchdogReset(
+                            Esp32S3RtcWdtWprotectReg,
+                            Esp32S3RtcWdtConfig0Reg,
+                            Esp32S3RtcWdtConfig1Reg);
                         return;
                     }
 
-                    // Non-USB-OTG S3 (UART or USB-Serial/JTAG): fall through to the
-                    // default reset below after clearing the force-download bit.
+                    // USB-OTG boards need the longer reset timing.
+                    Esp32ResetSequence.HardReset(_port, true);
+                    return;
                 }
 
                 if (_runtimeConfig?.ChipType == "esp32e22" && _runtimeConfig.UsesUsbOtg)
@@ -850,6 +885,29 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         }
 
         /// <summary>
+        /// Clear FORCE_DOWNLOAD_BOOT on the chips that have it. Best-effort: a chip that doesn't
+        /// answer is about to be reset anyway.
+        /// </summary>
+        private void ClearForceDownloadBoot()
+        {
+            string chipType = _runtimeConfig?.ChipType;
+
+            if (chipType is null || !s_forceDownloadBootRegisters.TryGetValue(chipType, out (uint Register, uint Mask) bit))
+            {
+                return;
+            }
+
+            try
+            {
+                WriteRegister(bit.Register, 0, bit.Mask);
+            }
+            catch (Exception)
+            {
+                // ignore transient failures (e.g. while monitoring) — matches upstream
+            }
+        }
+
+        /// <summary>
         /// Determine whether an RTC watchdog reset is safe, mirroring esptool: only when the
         /// chip is being held in download mode via the strapping pin (GPIO0 low, i.e. the SPI
         /// boot strap bit is clear) while the force-download-boot bit is cleared. In that state
@@ -1032,6 +1090,51 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             _port.RtsEnable = false;
             _port.DiscardInBuffer();
             _port.DiscardOutBuffer();
+        }
+
+        /// <summary>
+        /// Release the port so the firmware can be asked for the ROM download mode, then take it back.
+        /// </summary>
+        /// <returns>Whether the request was sent.</returns>
+        private bool TryDownloadModeRequest()
+        {
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.WriteLine("Asking the device to reboot into the ROM download mode...");
+            }
+
+            SafeClosePort();
+
+            bool requested;
+
+            try
+            {
+                requested = RequestDownloadModeFromFirmware();
+            }
+            catch (Exception ex)
+            {
+                if (Verbosity >= VerbosityLevel.Diagnostic)
+                {
+                    OutputWriter.WriteLine($"[Connect] Download mode request failed: {ex.Message}");
+                }
+
+                requested = false;
+            }
+
+            if (requested)
+            {
+                // boards with native USB enumerate again on their way into the ROM
+                Thread.Sleep(DownloadModeSettleMs);
+            }
+
+            OpenPortWithRetries();
+
+            _port.DtrEnable = false;
+            _port.RtsEnable = false;
+            _port.DiscardInBuffer();
+            _port.DiscardOutBuffer();
+
+            return requested;
         }
 
         private void ExecuteResetWithRecovery(
