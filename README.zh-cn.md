@@ -70,6 +70,8 @@ export PATH=$PATH:~/.dotnet/tools
 
 更新 nanoff 同样需要 .NET 10 SDK。如果更新报告找不到 `DotnetToolSettings.xml`，请使用上面的命令确认已安装 .NET 10 SDK，必要时先安装它。
 
+如果已经安装了 .NET 10 SDK 但错误仍然出现，请检查当前文件夹或其任意父文件夹中是否存在 `global.json` 文件。`dotnet` 会对所有命令（包括 `dotnet tool install`/`update -g`）应用 `global.json` 中指定的 SDK 版本，如果该文件固定了较旧的 SDK，就会导致同样的误导性错误。请删除或更新该 `global.json`，或者在不受其影响的文件夹（例如用户主目录）中运行安装/更新命令。
+
 要更新.NET **nanoFramework** 固件刷写工具，请使用.NET Core CLI命令:  
 
 ```shell

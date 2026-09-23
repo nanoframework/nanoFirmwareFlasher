@@ -38,6 +38,8 @@ dotnet --info
 
 If no .NET 10 SDK is listed, install it from the [.NET 10 download page](https://dotnet.microsoft.com/download/dotnet/10.0), then retry the command. An older SDK can report that `DotnetToolSettings.xml` is missing when it cannot consume the `net10.0` tool package; this does not mean that the package was published without that file.
 
+If the .NET 10 SDK is installed and the error still occurs, check for a `global.json` file in the current folder or any of its parent folders. `dotnet` honors `global.json` SDK pinning for every command, including `dotnet tool install`/`update -g`, so a `global.json` pinning an older SDK will cause the same misleading error. Either remove/update that `global.json` or run the install/update command from a folder that isn't affected by it (for example your user profile folder).
+
 Perform a one-time install of the .NET **nanoFramework** Firmware Flasher tool using the following .NET Core CLI command:
 
 ```console
