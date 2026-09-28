@@ -507,9 +507,9 @@ namespace nanoFirmwareFlasher.Tests
         #region Flash Registers â€” L4/G0/G4/WB/WL/L5/U5/C0 group
 
         [TestMethod]
-        [DataRow("L4", 4096U)]
+        [DataRow("L4", 0U)]
         [DataRow("G0", 2048U)]
-        [DataRow("G4", 4096U)]
+        [DataRow("G4", 0U)]
         [DataRow("WB", 4096U)]
         [DataRow("WL", 4096U)]
         [DataRow("L5", 4096U)]
@@ -533,12 +533,58 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void GetPageSize_L4DualBank_UsesTwoKilobytePages()
+        [DataRow((ushort)0x415, 1024U, 0U, 2048U, true, 0x08080000U)]
+        [DataRow((ushort)0x415, 512U, 0U, 2048U, false, 0U)]
+        [DataRow((ushort)0x415, 512U, 1U << 21, 2048U, true, 0x08040000U)]
+        [DataRow((ushort)0x461, 256U, 0U, 2048U, false, 0U)]
+        [DataRow((ushort)0x435, 256U, uint.MaxValue, 2048U, false, 0U)]
+        [DataRow((ushort)0x462, 512U, uint.MaxValue, 2048U, false, 0U)]
+        [DataRow((ushort)0x464, 128U, uint.MaxValue, 2048U, false, 0U)]
+        [DataRow((ushort)0x468, 128U, uint.MaxValue, 2048U, false, 0U)]
+        [DataRow((ushort)0x469, 512U, 0U, 4096U, false, 0U)]
+        [DataRow((ushort)0x469, 512U, 1U << 22, 2048U, true, 0x08040000U)]
+        [DataRow((ushort)0x469, 256U, 1U << 22, 2048U, true, 0x08040000U)]
+        [DataRow((ushort)0x479, 512U, uint.MaxValue, 2048U, false, 0U)]
+        [DataRow((ushort)0x470, 2048U, 0U, 8192U, false, 0U)]
+        [DataRow((ushort)0x470, 2048U, 1U << 22, 4096U, true, 0x08100000U)]
+        [DataRow((ushort)0x470, 1024U, 1U << 21, 4096U, true, 0x08080000U)]
+        [DataRow((ushort)0x471, 1024U, 1U << 22, 4096U, true, 0x08080000U)]
+        [DataRow((ushort)0x471, 512U, 1U << 21, 4096U, true, 0x08040000U)]
+        public void ResolveFlashGeometry_UsesDeviceSpecificRules(
+            ushort devId,
+            uint flashSizeKb,
+            uint optr,
+            uint expectedPageSize,
+            bool expectedDualBank,
+            uint expectedBank2StartAddress)
         {
-            var family = (Stm32FlashProgrammer.Stm32Family)GetFamilyValue("L4");
+            Stm32FlashProgrammer.FlashGeometry geometry =
+                Stm32FlashProgrammer.ResolveFlashGeometry(devId, flashSizeKb, optr);
 
-            Assert.AreEqual(2048U, Stm32FlashProgrammer.GetPageSize(family, true));
-            Assert.AreEqual(4096U, Stm32FlashProgrammer.GetPageSize(family, false));
+            Assert.AreEqual(expectedPageSize, geometry.PageSize);
+            Assert.AreEqual(expectedDualBank, geometry.IsDualBank);
+            Assert.AreEqual(expectedBank2StartAddress, geometry.Bank2StartAddress);
+        }
+
+        [TestMethod]
+        public void GetPageEraseControl_Bank2_UsesRelativePageAndBker()
+        {
+            Stm32FlashProgrammer.FlashGeometry geometry =
+                Stm32FlashProgrammer.ResolveFlashGeometry(0x415, 1024, 0);
+
+            uint control = Stm32FlashProgrammer.GetPageEraseControl(0x08080800, geometry);
+
+            Assert.AreEqual((1U << 1) | (1U << 3) | (1U << 11) | (1U << 16), control);
+        }
+
+        [TestMethod]
+        public void GetPageEraseControl_TrimmedG4Gap_Throws()
+        {
+            Stm32FlashProgrammer.FlashGeometry geometry =
+                Stm32FlashProgrammer.ResolveFlashGeometry(0x469, 256, 1U << 22);
+
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => Stm32FlashProgrammer.GetPageEraseControl(0x08020000, geometry));
         }
 
         #endregion
