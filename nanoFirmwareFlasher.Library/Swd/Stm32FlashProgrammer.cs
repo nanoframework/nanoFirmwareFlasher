@@ -73,6 +73,25 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             internal uint PageSize;
         }
 
+        internal readonly struct FlashGeometry
+        {
+            internal FlashGeometry(uint pageSize, bool isDualBank, uint bank1PageCount, uint bank2StartAddress)
+            {
+                PageSize = pageSize;
+                IsDualBank = isDualBank;
+                Bank1PageCount = bank1PageCount;
+                Bank2StartAddress = bank2StartAddress;
+            }
+
+            internal uint PageSize { get; }
+
+            internal bool IsDualBank { get; }
+
+            internal uint Bank1PageCount { get; }
+
+            internal uint Bank2StartAddress { get; }
+        }
+
         // DBGMCU IDCODE register addresses by core type
         private const uint DbgmcuIdcode_M3M4 = 0xE0042000;  // Cortex-M3/M4/M7
         private const uint DbgmcuIdcode_M0 = 0x40015800;    // Cortex-M0/M0+
@@ -90,6 +109,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         private readonly ArmMemAp _mem;
         private FlashRegisters _regs;
+        private FlashGeometry _flashGeometry;
         private Stm32Family _family = Stm32Family.Unknown;
 
         internal Stm32FlashProgrammer(ArmMemAp mem)
@@ -152,9 +172,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
             _regs = GetFlashRegisters(_family);
 
-            // Dual-bank families only erase bank 1 with MER1; a full mass erase must also set
-            // the bank-2 mass-erase bit (MER2). Determine it from the actual device config.
-            _regs.Mer2Bit = GetSecondBankMassEraseBit(_family);
+            if (_family == Stm32Family.L4 || _family == Stm32Family.G4)
+            {
+                uint flashSizeKb = _mem.ReadWord(FlashSizeRegister) & 0xFFFF;
+                uint optr = _mem.ReadWord(_regs.FlashBase + 0x20);
+                _flashGeometry = ResolveFlashGeometry(devId, flashSizeKb, optr);
+                _regs.PageSize = _flashGeometry.PageSize;
+                _regs.Mer2Bit = GetSecondBankMassEraseBit(_family, _flashGeometry.IsDualBank);
+            }
 
             return _family;
         }
@@ -164,48 +189,129 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// devices, or 0 for single-bank devices. Reading only MER1 leaves the second bank
         /// (e.g. 0x08080000+ on a 1 MB STM32L4) intact.
         /// </summary>
-        private uint GetSecondBankMassEraseBit(Stm32Family family)
+        private static uint GetSecondBankMassEraseBit(Stm32Family family, bool isDualBank)
         {
             switch (family)
             {
                 case Stm32Family.L4:
                 case Stm32Family.G4:
                     // On L4/G4, FLASH_CR MER2 is bit 15.
-                    return IsDualBank(family) ? (1U << 15) : 0U;
+                    return isDualBank ? (1U << 15) : 0U;
 
                 default:
                     return 0U;
             }
         }
 
-        /// <summary>
-        /// Determines whether the connected device is configured as dual-bank flash.
-        /// </summary>
-        private bool IsDualBank(Stm32Family family)
+        internal static FlashGeometry ResolveFlashGeometry(ushort devId, uint flashSizeKb, uint optr)
         {
-            ushort devId = (ushort)(ChipIdcode & 0xFFF);
+            const uint flashBase = 0x08000000;
+            const uint optionBit21 = 1U << 21;
+            const uint optionBit22 = 1U << 22;
 
-            // L4+ (0x470 = STM32L4R/S, 0x471 = STM32L4P5/Q5) and all G4 devices select
-            // dual-bank mode via FLASH_OPTR bit 22 (DBANK), regardless of flash size -
-            // it is not automatic, so the option byte must always be checked.
-            if (family == Stm32Family.G4 || devId == 0x470 || devId == 0x471)
+            uint maxFlashSizeKb;
+
+            switch (devId)
             {
-                uint optrDbank = _mem.ReadWord(_regs.FlashBase + 0x20); // FLASH_OPTR
-                return (optrDbank & (1U << 22)) != 0;
+                case 0x415:
+                case 0x461:
+                    maxFlashSizeKb = 1024;
+                    break;
+
+                case 0x435:
+                    maxFlashSizeKb = 256;
+                    break;
+
+                case 0x462:
+                case 0x469:
+                case 0x479:
+                    maxFlashSizeKb = 512;
+                    break;
+
+                case 0x464:
+                case 0x468:
+                    maxFlashSizeKb = 128;
+                    break;
+
+                case 0x470:
+                    maxFlashSizeKb = 2048;
+                    break;
+
+                case 0x471:
+                    maxFlashSizeKb = 1024;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(devId), $"Unsupported STM32L4/G4 device ID 0x{devId:X3}.");
             }
 
-            // Classic L4 parts only support dual-bank when they have 1 MB of flash,
-            // selected via FLASH_OPTR bit 21 (DB1M). Smaller parts have no dual-bank
-            // option at all (bit reserved), so they are always single-bank.
-            uint flashSizeKb = _mem.ReadWord(FlashSizeRegister) & 0xFFFF;
-
-            if (flashSizeKb == 0 || flashSizeKb == 0xFFFF || flashSizeKb < 1024)
+            if (flashSizeKb == 0 || flashSizeKb == 0xFFFF || flashSizeKb > maxFlashSizeKb)
             {
-                return false;
+                flashSizeKb = maxFlashSizeKb;
             }
 
-            uint optr = _mem.ReadWord(_regs.FlashBase + 0x20); // FLASH_OPTR
-            return (optr & (1U << 21)) != 0;
+            uint pageSize = 2048;
+            bool isDualBank = false;
+            uint gapPages = 0;
+
+            switch (devId)
+            {
+                case 0x415:
+                case 0x461:
+                    isDualBank = flashSizeKb == maxFlashSizeKb || (optr & optionBit21) != 0;
+                    break;
+
+                case 0x469:
+                    isDualBank = (optr & optionBit22) != 0;
+                    pageSize = isDualBank ? 2048U : 4096U;
+
+                    if (isDualBank)
+                    {
+                        gapPages = (maxFlashSizeKb - flashSizeKb) * 1024 / (2 * pageSize);
+                    }
+
+                    break;
+
+                case 0x470:
+                case 0x471:
+                    uint bankOption = flashSizeKb == maxFlashSizeKb ? optionBit22 : optionBit21;
+                    isDualBank = (optr & bankOption) != 0;
+                    pageSize = isDualBank ? 4096U : 8192U;
+                    break;
+            }
+
+            uint pageCount = flashSizeKb * 1024 / pageSize;
+            uint bank1PageCount = isDualBank ? pageCount / 2 : pageCount;
+            uint bank2StartAddress = isDualBank
+                ? flashBase + (bank1PageCount + gapPages) * pageSize
+                : 0;
+
+            return new FlashGeometry(pageSize, isDualBank, bank1PageCount, bank2StartAddress);
+        }
+
+        internal static uint GetPageEraseControl(uint pageAddress, FlashGeometry geometry)
+        {
+            const uint flashBase = 0x08000000;
+            const uint perBit = 1U << 1;
+            const uint bkerBit = 1U << 11;
+            const uint startBit = 1U << 16;
+
+            uint bankBase = flashBase;
+            uint bankBit = 0;
+
+            if (geometry.IsDualBank && pageAddress >= geometry.Bank2StartAddress)
+            {
+                bankBase = geometry.Bank2StartAddress;
+                bankBit = bkerBit;
+            }
+            else if (geometry.IsDualBank &&
+                     pageAddress >= flashBase + geometry.Bank1PageCount * geometry.PageSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pageAddress), "The address is in the gap between flash banks.");
+            }
+
+            uint pageNumber = (pageAddress - bankBase) / geometry.PageSize;
+            return perBit | (pageNumber << 3) | bankBit | startBit;
         }
 
         /// <summary>
@@ -502,8 +608,18 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                     _family == Stm32Family.WL || _family == Stm32Family.U5)
                 {
                     // L4-style: set PER bit, page number in PNB field [10:3], then STRT
-                    uint pageNumber = (pageAddress - 0x08000000) / pageSize;
-                    uint cr = _regs.SerBit | (pageNumber << 3) | _regs.StrtBit;
+                    uint cr;
+
+                    if (_family == Stm32Family.L4 || _family == Stm32Family.G4)
+                    {
+                        cr = GetPageEraseControl(pageAddress, _flashGeometry);
+                    }
+                    else
+                    {
+                        uint pageNumber = (pageAddress - 0x08000000) / pageSize;
+                        cr = _regs.SerBit | (pageNumber << 3) | _regs.StrtBit;
+                    }
+
                     _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
                 }
                 else
@@ -567,16 +683,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         private void ProgramDoubleWord(uint address, byte[] data, int dataOffset, int length)
         {
+            if ((address & 7) != 0)
+            {
+                throw new SwdProtocolException(
+                    $"Flash address 0x{address:X8} is not aligned to an 8-byte programming boundary.");
+            }
+
             // Set PG bit
             uint cr = _mem.ReadWord(_regs.FlashBase + _regs.CrOffset);
             cr |= _regs.PgBit;
             _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
 
-            // These families program a 64-bit double-word at a time: the flash controller
-            // starts programming once both 32-bit words are written, stalling the bus in
-            // between. A block write (multiple of 8 bytes) is therefore paced correctly by
-            // hardware; poll BSY once per block. This replaces the previous double-word per
-            // USB round-trip loop, which was far too slow for large images.
             int alignedLength = length & ~7; // whole 64-bit double-words
             int pos = 0;
 
@@ -888,7 +1005,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                         BsyBit = 1U << 16,     // BSY
                         EopBit = 1U << 0,      // EOP
                         SectorShift = 0,
-                        PageSize = (family == Stm32Family.G0 || family == Stm32Family.C0) ? 2048U : 4096U,
+                        PageSize = (family == Stm32Family.L4 || family == Stm32Family.G4) ? 0U
+                            : (family == Stm32Family.G0 || family == Stm32Family.C0) ? 2048U
+                            : 4096U,
                     };
 
                 case Stm32Family.H5:
