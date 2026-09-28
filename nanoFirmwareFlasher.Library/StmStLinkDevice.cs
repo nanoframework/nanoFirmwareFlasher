@@ -208,7 +208,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E5003;
             }
 
-            if (DoMassErase)
+            bool flashWasMassErased = DoMassErase;
+
+            if (flashWasMassErased)
             {
                 ExitCodes eraseResult = MassErase();
 
@@ -257,7 +259,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         _lastProgressPercent = -1;
-                        _flash.EraseAndProgram(block.Address, block.Data, 0, block.Data.Length);
+                        if (flashWasMassErased)
+                        {
+                            _flash.Program(block.Address, block.Data, 0, block.Data.Length);
+                        }
+                        else
+                        {
+                            _flash.EraseAndProgram(block.Address, block.Data, 0, block.Data.Length);
+                        }
 
                         if (Verify)
                         {

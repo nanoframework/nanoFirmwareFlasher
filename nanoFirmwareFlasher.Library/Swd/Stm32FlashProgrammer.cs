@@ -154,7 +154,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
             // Dual-bank families only erase bank 1 with MER1; a full mass erase must also set
             // the bank-2 mass-erase bit (MER2). Determine it from the actual device config.
-            _regs.Mer2Bit = GetSecondBankMassEraseBit(_family);
+            bool isDualBank = (_family == Stm32Family.L4 || _family == Stm32Family.G4)
+                && IsDualBank(_family);
+
+            _regs.PageSize = GetPageSize(_family, isDualBank);
+            _regs.Mer2Bit = GetSecondBankMassEraseBit(_family, isDualBank);
 
             return _family;
         }
@@ -164,18 +168,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
         /// devices, or 0 for single-bank devices. Reading only MER1 leaves the second bank
         /// (e.g. 0x08080000+ on a 1 MB STM32L4) intact.
         /// </summary>
-        private uint GetSecondBankMassEraseBit(Stm32Family family)
+        private static uint GetSecondBankMassEraseBit(Stm32Family family, bool isDualBank)
         {
             switch (family)
             {
                 case Stm32Family.L4:
                 case Stm32Family.G4:
                     // On L4/G4, FLASH_CR MER2 is bit 15.
-                    return IsDualBank(family) ? (1U << 15) : 0U;
+                    return isDualBank ? (1U << 15) : 0U;
 
                 default:
                     return 0U;
             }
+        }
+
+        internal static uint GetPageSize(Stm32Family family, bool isDualBank)
+        {
+            if (family == Stm32Family.L4 && isDualBank)
+            {
+                return 2048;
+            }
+
+            return GetFlashRegisters(family).PageSize;
         }
 
         /// <summary>
@@ -567,26 +581,36 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
 
         private void ProgramDoubleWord(uint address, byte[] data, int dataOffset, int length)
         {
+            if ((address & 7) != 0)
+            {
+                throw new SwdProtocolException(
+                    $"Flash address 0x{address:X8} is not aligned to an 8-byte programming boundary.");
+            }
+
             // Set PG bit
             uint cr = _mem.ReadWord(_regs.FlashBase + _regs.CrOffset);
             cr |= _regs.PgBit;
             _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
 
-            // These families program a 64-bit double-word at a time: the flash controller
-            // starts programming once both 32-bit words are written, stalling the bus in
-            // between. A block write (multiple of 8 bytes) is therefore paced correctly by
-            // hardware; poll BSY once per block. This replaces the previous double-word per
-            // USB round-trip loop, which was far too slow for large images.
             int alignedLength = length & ~7; // whole 64-bit double-words
             int pos = 0;
+            int nextProgress = ProgramBlockBytes;
 
             while (pos < alignedLength)
             {
-                int chunk = Math.Min(ProgramBlockBytes, alignedLength - pos);
-                _mem.WriteBytes(address + (uint)pos, data, dataOffset + pos, chunk);
+                uint word0 = ReadUInt32(data, dataOffset + pos);
+                uint word1 = ReadUInt32(data, dataOffset + pos + 4);
+
+                _mem.WriteWord(address + (uint)pos, word0);
+                _mem.WriteWord(address + (uint)pos + 4, word1);
                 WaitForFlashReady(5000);
-                pos += chunk;
-                ReportProgress("Writing", pos, length);
+                pos += 8;
+
+                if (pos >= nextProgress || pos == alignedLength)
+                {
+                    ReportProgress("Writing", pos, length);
+                    nextProgress += ProgramBlockBytes;
+                }
             }
 
             // Program a trailing partial double-word (if any), padding with 0xFF.
@@ -619,6 +643,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             cr = _mem.ReadWord(_regs.FlashBase + _regs.CrOffset);
             cr &= ~_regs.PgBit;
             _mem.WriteWord(_regs.FlashBase + _regs.CrOffset, cr);
+        }
+
+        private static uint ReadUInt32(byte[] data, int offset)
+        {
+            return (uint)(data[offset]
+                | (data[offset + 1] << 8)
+                | (data[offset + 2] << 16)
+                | (data[offset + 3] << 24));
         }
 
         private void ProgramH7(uint address, byte[] data, int dataOffset, int length)

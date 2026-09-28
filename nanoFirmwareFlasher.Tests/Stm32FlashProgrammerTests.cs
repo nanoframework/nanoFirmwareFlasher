@@ -532,6 +532,15 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(expectedPageSize, GetUintRegField(regs, "PageSize"));
         }
 
+        [TestMethod]
+        public void GetPageSize_L4DualBank_UsesTwoKilobytePages()
+        {
+            var family = (Stm32FlashProgrammer.Stm32Family)GetFamilyValue("L4");
+
+            Assert.AreEqual(2048U, Stm32FlashProgrammer.GetPageSize(family, true));
+            Assert.AreEqual(4096U, Stm32FlashProgrammer.GetPageSize(family, false));
+        }
+
         #endregion
 
         #region Flash Registers â€” H5 group
