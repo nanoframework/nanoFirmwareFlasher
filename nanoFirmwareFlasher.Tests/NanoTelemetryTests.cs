@@ -121,7 +121,7 @@ namespace nanoFirmwareFlasher.Tests
         #region Library events
 
         [TestMethod]
-        public void TrackException_EmitsScrubbedExceptionEvent()
+        public void TrackException_EmitsExceptionEventWithoutMessages()
         {
             var loggerFactory = new CapturingLoggerFactory();
             NanoTelemetry.SetTestLoggerFactory(loggerFactory);
@@ -149,10 +149,14 @@ namespace nanoFirmwareFlasher.Tests
                 Assert.AreEqual(NanoTelemetry.ExceptionThrownEventName, attributes[NanoTelemetry.CustomEventNameAttribute]);
                 Assert.AreEqual("testStage", attributes["stage"]);
                 Assert.AreEqual(typeof(InvalidOperationException).FullName, attributes["exception.type"]);
-                Assert.AreEqual($"Can't read '{Path.Combine("~", "app.bin")}'", attributes["exception.message"]);
                 Assert.AreEqual(typeof(IOException).FullName, attributes["exception.inner_type"]);
+
+                // messages are free-form text that can't be reliably scrubbed: never sent
+                Assert.IsFalse(attributes.ContainsKey("exception.message"));
+                Assert.IsFalse(attributes.ContainsKey("exception.inner_message"));
+                Assert.IsFalse(attributes.Values.Any(v => v.ToString()!.Contains("app.bin") || v.ToString()!.Contains(userProfile)));
                 Assert.AreEqual("esp32", attributes["platform"]);
-                StringAssert.Contains((string)attributes["exception.stacktrace"], nameof(TrackException_EmitsScrubbedExceptionEvent));
+                StringAssert.Contains((string)attributes["exception.stacktrace"], nameof(TrackException_EmitsExceptionEventWithoutMessages));
             }
             finally
             {

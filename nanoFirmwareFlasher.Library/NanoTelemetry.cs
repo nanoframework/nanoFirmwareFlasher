@@ -45,7 +45,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal const string FirmwarePackageDownloadedEventName = "FirmwarePackageDownloaded";
         internal const string ExceptionThrownEventName = "ExceptionThrown";
 
-        private const int MaxMessageLength = 1024;
         private const int MaxStackTraceLength = 8000;
 
         private static readonly AsyncLocal<ILoggerFactory> s_testLoggerFactory = new();
@@ -90,8 +89,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
-        /// Records an exception. Only the exception type, a scrubbed message and a scrubbed stack trace are sent
-        /// (user profile paths, user name and machine name are removed).
+        /// Records an exception. Only the exception type, innermost exception type, HRESULT and a scrubbed stack trace
+        /// are sent (user profile paths, user name and machine name are removed). Exception messages are never sent,
+        /// as free-form text can't be reliably scrubbed of personal data.
         /// </summary>
         /// <param name="exception">The exception.</param>
         /// <param name="stage">Short, fixed identifier of where the exception was caught (e.g. <c>firmwareDownload</c>).</param>
@@ -109,7 +109,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     new("stage", stage),
                     new("exception.type", exception.GetType().FullName),
-                    new("exception.message", Truncate(TelemetryScrubber.Scrub(exception.Message), MaxMessageLength)),
                     new("exception.stacktrace", Truncate(TelemetryScrubber.Scrub(exception.StackTrace), MaxStackTraceLength)),
                     new("exception.hresult", exception.HResult.ToString("X8", CultureInfo.InvariantCulture)),
                 };
@@ -125,7 +124,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
 
                     attributes.Add(new("exception.inner_type", inner.GetType().FullName));
-                    attributes.Add(new("exception.inner_message", Truncate(TelemetryScrubber.Scrub(inner.Message), MaxMessageLength)));
                 }
 
                 if (properties is not null)
