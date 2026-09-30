@@ -583,7 +583,7 @@ namespace nanoFirmwareFlasher.Tests
             Stm32FlashProgrammer.FlashGeometry geometry =
                 Stm32FlashProgrammer.ResolveFlashGeometry(0x469, 256, 1U << 22);
 
-            Assert.Throws<ArgumentOutOfRangeException>(
+            Assert.ThrowsException<ArgumentOutOfRangeException>(
                 () => Stm32FlashProgrammer.GetPageEraseControl(0x08020000, geometry));
         }
 

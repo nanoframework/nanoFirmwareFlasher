@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -61,11 +62,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
-            NanoTelemetryClient.ConnectionString = appConfigurationRoot?["iConnectionString"];
+            TelemetrySetup.Initialize(
+                appConfigurationRoot?["iConnectionString"],
+                _informationalVersionAttribute.InformationalVersion);
+
+            // one activity per invocation, records the command, options used and outcome
+            using Activity commandActivity = CommandTelemetry.Start();
 
             // check for empty argument collection
             if (!args.Any())
             {
+                CommandTelemetry.RecordNoArguments(commandActivity);
+
                 // no argument provided, show help text and usage examples
                 var helpText = new HelpText(
                     new HeadingInfo(_headerInfo),
@@ -93,14 +101,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.WriteLine();
 #endif
 
-                return (int)ExitCodes.OK;
+                return CompleteRun(commandActivity, ExitCodes.OK);
             }
 
             // verbs + words syntax is the only supported syntax from here on
             // (e.g. "flash target ESP_WROVER_KIT masserase"); the legacy flat
             // "--flag value" syntax was removed as part of the breaking change
             // to nanoff's major version bump.
-            await RunVerbAsync(args);
+            try
+            {
+                await RunVerbAsync(args, commandActivity);
+            }
+            catch (Exception ex)
+            {
+                // unexpected exception: report it instead of crashing
+                NanoTelemetry.TrackException(ex, "unhandled");
+
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = ex.Message;
+                _verbosityLevel = VerbosityLevel.Normal;
+            }
 
             if (_verbosityLevel > VerbosityLevel.Quiet)
             {
@@ -110,7 +130,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // force clean-up
             _nanoDeviceOperations?.Dispose();
 
-            return (int)_exitCode;
+            return CompleteRun(commandActivity, _exitCode);
+        }
+
+        /// <summary>
+        /// Records the outcome of the command, flushes the telemetry and returns the exit code.
+        /// </summary>
+        private static int CompleteRun(Activity commandActivity, ExitCodes exitCode)
+        {
+            CommandTelemetry.Complete(commandActivity, exitCode);
+
+            // stop the activity now so that it's exported before the telemetry pipeline shuts down
+            commandActivity?.Stop();
+
+            TelemetrySetup.Shutdown(TimeSpan.FromSeconds(2));
+
+            return (int)exitCode;
         }
 
         private static void CheckVersion()
@@ -260,7 +295,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// arguments, parses them against the per-verb option classes, and dispatches
         /// to the matching <c>Run*Async</c> method.
         /// </summary>
-        private static async Task RunVerbAsync(string[] args)
+        private static async Task RunVerbAsync(string[] args, Activity commandActivity)
         {
             string[] normalizedArgs = VerbTokenizer.Normalize(args);
 
@@ -269,6 +304,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (verbParserResult is Parsed<object> parsed)
             {
+                CommandTelemetry.RecordParsed(commandActivity, parsed.Value, normalizedArgs);
+
                 switch (parsed.Value)
                 {
                     case FlashOptions flashOptions:
@@ -302,6 +339,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             else if (verbParserResult is NotParsed<object> notParsed)
             {
+                CommandTelemetry.RecordNotParsed(commandActivity, args, normalizedArgs, notParsed.Errors);
+
                 if (notParsed.Errors.Any(e => e.Tag == ErrorType.VersionRequestedError))
                 {
                     OutputWriter.WriteLine(_headerInfo);
@@ -472,6 +511,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.WriteLine(_copyrightInfo);
             OutputWriter.WriteLine();
 
+            TelemetrySetup.ShowFirstRunNoticeIfNeeded(_verbosityLevel, _informationalVersionAttribute.InformationalVersion);
 
 #if !VS_CODE_EXTENSION_BUILD
             if (!o.SuppressNanoFFVersionCheck)
@@ -795,6 +835,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             #endregion
+
+            CommandTelemetry.SetPlatform(o.Platform);
 
             // deploy requires image
             if (o.Deploy && string.IsNullOrEmpty(o.DeploymentImage))
