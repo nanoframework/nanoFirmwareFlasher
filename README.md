@@ -609,6 +609,22 @@ SKY_EEVB_Debug @ COM7
 ------------------------------------------
 ```
 
+### Devices in MCUboot serial recovery
+
+`--listdevices` also finds devices sitting in MCUboot serial recovery mode (recovery button held at reset, or no valid image). These don't answer the Wire Protocol, so every COM port is first probed with a short SMP (mcumgr) request; ports that answer are then left out of the Wire Protocol scan. Responsive devices are listed in a separate section with the image versions reported by the bootloader. Use `--serialport` to probe a single port.
+
+```text
+-- Devices in MCUboot serial recovery (SMP) --
+COM9
+  SMP buffer:  not reported
+  Image 0 slot 0: 1.8.1.124  active confirmed bootable
+  Image 1 slot 0: 1.0.0.0  active confirmed bootable
+
+------------------------------------------
+```
+
+With `-v d` the image hashes are shown too.
+
 ## Finding the device COM port on Windows
 
 You need to know the COM Port attached to your device. Search for **Computer Management**, select **Device Manager** then expand **Ports (COM & LPT)**, you will find the COM port of the connected device.

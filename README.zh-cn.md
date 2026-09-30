@@ -356,9 +356,11 @@ nanoff --listtargets --platform rpi_pico
 pip install imgtool
 ```
 
-`imgtool` 必须在 PATH 中可用，或者可以通过 `python -m imgtool` 调用。
+`imgtool` 必须在 PATH 中可用，或者可以通过 `python -m imgtool` 调用。nanoff 会自动搜索这两种方式。
 
 ### 密钥管理
+
+签名镜像之前需要一个 ECDSA P-256 签名密钥对。公钥必须编译进 MCUboot bootloader；私钥在主机上安全保存。
 
 #### 生成签名密钥
 
@@ -382,9 +384,11 @@ nanoff --getpub root-pub-key.c --sign-key my-signing-key.pem
 nanoff --mcuboot --update --target ESP32_GENERIC --serialport COM31 --sign-key my-signing-key.pem
 ```
 
+nanoff 会下载 MCUboot 固件包、对 nanoCLR 镜像签名，并一步完成全部烧录。
+
 ### 通过 SMP 进行现场固件更新
 
-设备运行 MCUboot 后，后续固件更新使用 SMP 串行传输。
+设备运行 MCUboot 后，后续固件更新使用 SMP 串行传输。设备必须处于 MCUboot 恢复模式（bootloader 已启用串行 SMP）。
 
 nanoFramework MCUboot 目标设备使用**双镜像布局**：
 
@@ -403,14 +407,26 @@ nanoff --mcuboot --update --target ESP32_GENERIC --serialport COM31 --sign-key m
 
 #### 上传预签名 CLR 镜像
 
+如果已有签名的 CLR 镜像，可省略 `--sign-key`：
+
 ```console
 nanoff --mcuboot --serialport COM31 --clrfile "C:\fw\nanoCLR-signed.bin"
 ```
 
 #### 上传部署镜像
 
+上传已签名的托管部署镜像（MCUboot Image 1）：
+
 ```console
 nanoff --mcuboot --serialport COM31 --image "C:\fw\deployment-signed.bin"
+```
+
+#### 上传到次槽（仅用于开发）
+
+> ⚠️ **仅用于开发/预发布。** 默认情况下 `--clrfile` 和 `--image` 写入**主槽**，常规更新应使用主槽。添加 `--secondary-slot` 会将镜像写入**次槽**。这是为预先暂存或检查槽内容提供的开发便利功能——它本身**不会**激活镜像。在基于交换（swap）的目标上，由运行中的固件（通过 MCUboot 运行时接口）负责安排交换，因此由烧录工具放入次槽的镜像在固件启用之前不会被启动。
+
+```console
+nanoff --mcuboot --serialport COM31 --clrfile "C:\fw\nanoCLR-signed.bin" --secondary-slot
 ```
 
 #### 镜像激活与确认
@@ -423,6 +439,28 @@ nanoff --mcuboot --serialport COM31 --image "C:\fw\deployment-signed.bin"
 nanoff --mcuboot --update --target ORGPAL_PALTHREE --serialport COM3 --sign-key my-signing-key.pem
 ```
 
+### 签名选项
+
+提供 `--sign-key` 时，nanoff 使用以下参数调用 `imgtool sign`。当您的 MCUboot 分区布局与标准 nanoFramework 配置不同时，请覆盖默认值：
+
+| 选项 | 默认值 | 描述 |
+| --- | --- | --- |
+| `--mcuboot-slot-size` | `0x100000`（1 MB） | 镜像槽大小（字节）。必须与 MCUboot 分区表中所签名镜像的槽大小一致。 |
+| `--mcuboot-header-size` | `0x200`（512 B） | MCUboot 镜像头大小。必须与 MCUboot 构建配置一致。 |
+| `--mcuboot-write-align` | `4` | Flash 写入对齐（字节）。大多数 MCU flash 通常为 4。 |
+
+使用自定义槽大小签名 CLR 镜像的示例：
+
+```console
+nanoff --mcuboot --serialport COM31 --clrfile nanoCLR.bin --sign-key key.pem --mcuboot-slot-size 0xE8000
+```
+
+签名部署镜像的示例：
+
+```console
+nanoff --mcuboot --serialport COM31 --image deployment.bin --sign-key key.pem --mcuboot-slot-size 0x100000
+```
+
 ### 槽管理
 
 #### 列出两个槽中的镜像
@@ -430,6 +468,26 @@ nanoff --mcuboot --update --target ORGPAL_PALTHREE --serialport COM3 --sign-key 
 ```console
 nanoff --mcuboot --list-images --serialport COM31
 ```
+
+输出示例：
+
+```text
+Image 0 Slot 0  version=1.2.3.4  hash=abcd1234...  [active, confirmed, bootable]
+Image 0 Slot 1  version=1.3.0.0  hash=ef567890...  [pending, bootable]
+```
+
+### 串行端口
+
+所有 MCUboot SMP 操作都使用 `--serialport` 作为 SMP 传输端口。SMP 波特率固定为 **115200**——MCUboot 串行 SMP 的标准默认值。注意这与 ESP32 烧录波特率（默认 1,500,000）不同。
+
+### 更新路径决策表
+
+| 设备状态 | 是否指定 `--mcuboot` | 使用的更新路径 |
+| --- | --- | --- |
+| ESP32，未安装 MCUboot | 是 | 通过串行 bootloader 首次烧录 |
+| ESP32，运行 MCUboot | 是 | 通过 mcumgr 协议进行 SMP 串行传输 |
+| STM32 | 是 | 通过 mcumgr 协议进行 SMP 串行传输 |
+| 任意目标 | 否 | 传统烧录协议（DFU、JTAG、串行） |
 
 ### MCUboot / SMP 选项参考
 
@@ -511,6 +569,53 @@ nanoff --nanodevice --devicedetails --serialport COM9
 ```shell
 nanoff -v q
 ```
+
+## 列出已连接的 nano 设备
+
+获取已连接的 nano 设备列表。如需更多详细信息，请将 `verbose` 选项设置为高于 normal 的级别。
+
+```console
+nanoff --listdevices [ -v d ]
+```
+
+输出示例：
+
+```text
+-- Connected .NET nanoFramework devices --
+SKY_EEVB_Debug @ COM7
+
+------------------------------------------
+```
+
+带详细信息的输出示例：
+
+```text
+-- Connected .NET nanoFramework devices --
+SKY_EEVB_Debug @ COM7
+  Target:      SKY_EEVB_Debug
+  Platform:    GGECKO_S1
+  Date:        May 31 2023
+  Type:        MinSizeRel build with Azure RTOS v6.2.0
+  CLR Version: 1.8.1.124
+
+------------------------------------------
+```
+
+### 处于 MCUboot 串行恢复模式的设备
+
+`--listdevices` 还会查找处于 MCUboot 串行恢复模式的设备（复位时按住恢复按钮，或没有有效镜像）。这些设备不响应 Wire Protocol，因此会先用一个简短的 SMP（mcumgr）请求探测每个 COM 端口；有响应的端口随后会从 Wire Protocol 扫描中排除。有响应的设备会在单独的部分中列出，并显示 bootloader 报告的镜像版本。使用 `--serialport` 可以只探测一个端口。
+
+```text
+-- Devices in MCUboot serial recovery (SMP) --
+COM9
+  SMP buffer:  not reported
+  Image 0 slot 0: 1.8.1.124  active confirmed bootable
+  Image 1 slot 0: 1.0.0.0  active confirmed bootable
+
+------------------------------------------
+```
+
+使用 `-v d` 时还会显示镜像哈希值。
 
 ## 设备列表
 
