@@ -26,10 +26,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// Class with operations to perform with .NET nanoFramework devices.
         /// </summary>
         public NanoDeviceOperations()
+            : this(null)
+        {
+        }
+
+        /// <summary>
+        /// Class with operations to perform with .NET nanoFramework devices, ignoring some serial ports.
+        /// </summary>
+        /// <param name="portExclusionList">Serial ports to ignore when searching for devices, e.g. ports
+        /// already known to be in use by a device that doesn't speak the Wire Protocol.</param>
+        public NanoDeviceOperations(IEnumerable<string> portExclusionList)
         {
             // create serial port instance
             // WITHOUT starting device watchers
-            _serialDebuggerPort = PortBase.CreateInstanceForSerial(false);
+            // (3000 ms boot time is the debug library's default)
+            _serialDebuggerPort = PortBase.CreateInstanceForSerial(
+                false,
+                portExclusionList?.ToList(),
+                3000);
         }
 
         /// <summary>

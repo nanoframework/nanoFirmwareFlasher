@@ -526,6 +526,29 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void OsParamsResponse_BufSizeAndCount_IsSupported()
+        {
+            byte[] payload = EncodeParametersResponse(bufSize: 512, bufCount: 1);
+
+            McumgrParameters parameters = McumgrClient.DecodeParameters(payload);
+
+            Assert.IsTrue(parameters.Supported, "a parameters reply without an error code means the command is supported");
+        }
+
+        [TestMethod]
+        public void OsParamsResponse_RcNotSupported_IsNotSupported()
+        {
+            // MCUboot serial recovery built without MCUBOOT_BOOT_MGMT_MCUMGR_PARAMS replies { "rc": 8 }
+            byte[] payload = EncodeSingleIntMap("rc", (int)SmpReturnCode.NotSupported);
+
+            McumgrParameters parameters = McumgrClient.DecodeParameters(payload);
+
+            Assert.IsFalse(parameters.Supported, "rc=ENOTSUP must flag the command as unsupported");
+            Assert.AreEqual(0, parameters.BufSize);
+            Assert.AreEqual(0, parameters.BufCount);
+        }
+
+        [TestMethod]
         public void CalculateChunkSize_TypicalBuffer_FitsWithinDeviceBuffer()
         {
             // For a 512-byte buffer the chunk plus all SMP/CBOR/framing overhead must fit.

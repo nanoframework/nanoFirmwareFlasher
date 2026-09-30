@@ -36,7 +36,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         private const int ChunkAlignment = 4;
 
         private readonly SerialPort _port;
-        private readonly int _timeoutMs;
+        private int _timeoutMs;
         private int _chunkSize;
         private byte _seq;
         private bool _disposed;
@@ -56,6 +56,27 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// buffer size when <see cref="GetParametersAsync"/> succeeds.
         /// </summary>
         public int ChunkSize => _chunkSize;
+
+        /// <summary>
+        /// Response timeout, in milliseconds, applied to subsequent commands. Can be changed while the
+        /// port is open, e.g. to use a short timeout for a probe followed by a longer one for a slow command.
+        /// </summary>
+        public int TimeoutMs
+        {
+            get => _timeoutMs;
+
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), "Timeout must be greater than zero.");
+                }
+
+                _timeoutMs = value;
+                _port.ReadTimeout = value;
+                _port.WriteTimeout = value;
+            }
+        }
 
         /// <summary>
         /// Creates a new <see cref="McumgrClient"/> for the given serial port.
@@ -168,8 +189,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// when the device responded without a usable value (the chunk size is then left unchanged).
         /// </returns>
         /// <remarks>
-        /// MCUboot serial recovery does not implement this command, so callers should treat a
-        /// <see cref="McumgrTimeoutException"/> as "unsupported" and keep the default chunk size.
+        /// MCUboot serial recovery only implements this command when built with
+        /// <c>MCUBOOT_BOOT_MGMT_MCUMGR_PARAMS</c>; otherwise it replies promptly with rc=ENOTSUP and
+        /// <see cref="McumgrParameters.Supported"/> is <see langword="false"/>. Either way a reply proves an
+        /// SMP responder is present, which makes this command suitable as a discovery probe.
         /// </remarks>
         public Task<McumgrParameters> GetParametersAsync(CancellationToken ct = default)
         {
@@ -906,7 +929,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
         internal static McumgrParameters DecodeParameters(byte[] payload)
         {
-            var parameters = new McumgrParameters();
+            var parameters = new McumgrParameters
+            {
+                // an error reply means the command isn't implemented
+                Supported = DecodeRc(payload) == SmpReturnCode.Ok,
+            };
 
             if (payload == null || payload.Length == 0)
             {

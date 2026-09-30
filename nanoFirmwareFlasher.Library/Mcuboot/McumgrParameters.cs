@@ -19,5 +19,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
         /// <summary>Number of MCUmgr transport buffers the device has available.</summary>
         public int BufCount { get; set; }
+
+        /// <summary>
+        /// <see langword="true"/> when the device implements the command (replied without an error code).
+        /// <see langword="false"/> when it replied with an error such as rc=ENOTSUP, which is what MCUboot
+        /// serial recovery does when built without <c>MCUBOOT_BOOT_MGMT_MCUMGR_PARAMS</c>.
+        /// </summary>
+        public bool Supported { get; set; }
     }
 }

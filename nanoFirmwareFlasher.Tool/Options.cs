@@ -392,7 +392,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "listdevices",
             Required = false,
             Default = false,
-            HelpText = "List the .NET nanoFramework devices connected to the machine.")]
+            HelpText = "List the .NET nanoFramework devices connected to the machine, including devices in MCUboot serial recovery. --serialport limits the MCUboot probe to that port.")]
         public bool ListDevices { get; set; }
 
         [Option(

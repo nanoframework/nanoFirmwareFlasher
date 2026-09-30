@@ -426,7 +426,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.ListDevices)
             {
-                _nanoDeviceOperations = new NanoDeviceOperations();
+                // Look for devices in MCUboot serial recovery first: the SMP probe is quick, and the ports
+                // that answer are then excluded from the Wire Protocol scan. Doing it the other way around
+                // races with the debug library, which keeps probing candidate ports at several baud rates
+                // after reporting enumeration complete.
+                List<McubootDiscoveredDevice> mcubootDevices = await ListMcubootDevicesAsync(o.SerialPort);
+
+                _nanoDeviceOperations = new NanoDeviceOperations(mcubootDevices.Select(d => d.PortName));
 
                 try
                 {
@@ -434,12 +440,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         _verbosityLevel > VerbosityLevel.Normal,
                         _verbosityLevel);
 
-                    if (!connectedDevices.Any())
+                    if (!connectedDevices.Any()
+                        && !mcubootDevices.Any())
                     {
                         OutputWriter.ForegroundColor = ConsoleColor.Yellow;
                         OutputWriter.WriteLine("No devices found");
                     }
-                    else
+                    else if (connectedDevices.Any())
                     {
                         OutputWriter.WriteLine("-- Connected .NET nanoFramework devices --");
 
@@ -482,6 +489,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                         OutputWriter.WriteLine("------------------------------------------");
                     }
+
+                    DisplayMcubootDevices(mcubootDevices);
 
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
@@ -990,6 +999,119 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             #endregion
+        }
+
+        /// <summary>
+        /// Probes serial ports for devices in MCUboot serial recovery (SMP). Failures are reported
+        /// but never propagated, so they can't spoil the Wire Protocol device listing.
+        /// </summary>
+        /// <param name="serialPort">When set, only this port is probed.</param>
+        private static async Task<List<McubootDiscoveredDevice>> ListMcubootDevicesAsync(string serialPort)
+        {
+            try
+            {
+                IEnumerable<string> candidates = string.IsNullOrEmpty(serialPort)
+                    ? SerialPort.GetPortNames()
+                    : new[] { serialPort };
+
+                return await McubootDeviceDiscovery.ProbeSerialPortsAsync(
+                    candidates,
+                    readImageList: _verbosityLevel >= VerbosityLevel.Normal,
+                    verbosity: _verbosityLevel);
+            }
+            catch (Exception ex)
+            {
+                if (_verbosityLevel >= VerbosityLevel.Detailed)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine($"Failed to probe serial ports for MCUboot devices: {ex.Message}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+
+                return new List<McubootDiscoveredDevice>();
+            }
+        }
+
+        private static void DisplayMcubootDevices(List<McubootDiscoveredDevice> devices)
+        {
+            if (!devices.Any())
+            {
+                return;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+            OutputWriter.WriteLine("-- Devices in MCUboot serial recovery (SMP) --");
+
+            foreach (McubootDiscoveredDevice device in devices)
+            {
+                OutputWriter.WriteLine(device.PortName);
+
+                if (_verbosityLevel >= VerbosityLevel.Normal)
+                {
+                    if (device.Parameters.Supported
+                        && device.Parameters.BufSize > 0)
+                    {
+                        OutputWriter.WriteLine($"  SMP buffer:  {device.Parameters.BufSize} bytes x {device.Parameters.BufCount}");
+                    }
+                    else
+                    {
+                        OutputWriter.WriteLine("  SMP buffer:  not reported");
+                    }
+
+                    if (device.Images is null)
+                    {
+                        OutputWriter.WriteLine($"  Images:      unavailable ({device.ImageListError ?? "not read"})");
+                    }
+                    else if (device.Images.Count == 0)
+                    {
+                        OutputWriter.WriteLine("  Images:      none");
+                    }
+                    else
+                    {
+                        foreach (McumgrImageInfo image in device.Images)
+                        {
+                            var flags = new List<string>();
+
+                            if (image.Active)
+                            {
+                                flags.Add("active");
+                            }
+
+                            if (image.Confirmed)
+                            {
+                                flags.Add("confirmed");
+                            }
+
+                            if (image.Pending)
+                            {
+                                flags.Add("pending");
+                            }
+
+                            if (image.Permanent)
+                            {
+                                flags.Add("permanent");
+                            }
+
+                            if (image.Bootable)
+                            {
+                                flags.Add("bootable");
+                            }
+
+                            OutputWriter.WriteLine($"  Image {image.Image} slot {image.Slot}: {image.Version ?? "?"}  {string.Join(" ", flags)}".TrimEnd());
+
+                            if (_verbosityLevel >= VerbosityLevel.Detailed
+                                && image.Hash is { Length: > 0 })
+                            {
+                                OutputWriter.WriteLine($"    Hash: {BitConverter.ToString(image.Hash).Replace("-", "")}");
+                            }
+                        }
+                    }
+
+                    OutputWriter.WriteLine("");
+                }
+            }
+
+            OutputWriter.WriteLine("------------------------------------------");
         }
 
         private static void DisplayNoOperationMessage()

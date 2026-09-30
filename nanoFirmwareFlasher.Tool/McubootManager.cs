@@ -96,8 +96,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         /// <summary>
         /// Best-effort query of the device's MCUmgr parameters so uploads use a chunk size the
-        /// device can actually accept. MCUboot serial recovery does not implement this command;
-        /// in that case the timeout is swallowed and the conservative default chunk size is kept.
+        /// device can actually accept. MCUboot serial recovery built without
+        /// MCUBOOT_BOOT_MGMT_MCUMGR_PARAMS replies with rc=ENOTSUP (no buffer size is reported);
+        /// in that case, or on timeout, the conservative default chunk size is kept.
         /// </summary>
         private async Task NegotiateTransportParametersAsync(McumgrClient client)
         {
@@ -113,7 +114,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             catch (McumgrTimeoutException)
             {
-                // command unsupported (e.g. MCUboot serial recovery); keep the default chunk size
+                // no reply to the command; keep the default chunk size
             }
             catch (McumgrProtocolException)
             {
