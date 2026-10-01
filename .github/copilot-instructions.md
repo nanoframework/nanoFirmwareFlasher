@@ -81,7 +81,13 @@ All operations return an `ExitCodes` enum value. Return `ExitCodes.OK` (0) on su
 `FirmwarePackage.LocationPathBase` is settable (for tests) via its internal setter.
 
 ### Telemetry
-`NanoTelemetryClient` wraps Application Insights. The connection string is loaded from `appsettings.json` in the Tool project.
+Telemetry follows the .NET OpenTelemetry guidance and is documented for users in the README's Telemetry section (keep it in sync when changing what is collected).
+
+- **Library** (`NanoTelemetry`): backend-free, emits custom events through `ILogger` (category `nanoFramework.Tools.FirmwareFlasher`) only when the host sets `NanoTelemetry.LoggerFactory`. Use `NanoTelemetry.TrackException(ex, "<fixedStage>")` at catch sites worth knowing about. Never reference exporter/OpenTelemetry types from the library.
+- **Tool** (`TelemetrySetup`, `CommandTelemetry`): builds the OpenTelemetry pipeline with the Azure Monitor exporter (connection string from `appsettings.json`, key `iConnectionString`, placeholder `TELEMETRY_CONNECTION_STRING` replaced in CI before build). One `Activity` per command records the verb, keyword names, allow-listed keyword values, platform and exit code.
+- **Privacy rules**: never send exception messages, file paths, serial ports, device IDs or other free-form values. Keyword values are only recorded for the allow-list in `CommandTelemetry`. New attributes must not contain personal data.
+- **Opt-out**: `NANOFRAMEWORK_TELEMETRY_OPTOUT=1` or `DO_NOT_TRACK=1`. Tests opt out in `MSTest.cs` (`AssemblyInitialize`); use `NanoTelemetry.SetTestLoggerFactory` or an `ActivityListener` to assert telemetry in tests.
+- Starter queries for the collected data live in `docs/telemetry-queries.kql`.
 
 ### Namespace
 All classes use the namespace `nanoFramework.Tools.FirmwareFlasher`.

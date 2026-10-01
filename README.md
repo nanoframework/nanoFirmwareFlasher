@@ -983,9 +983,37 @@ The exit codes can be checked in [this source file](https://github.com/nanoframe
 
 ## Telemetry
 
-This tool is using anonymous telemetry to help us improve the usage. You can opt out by setting up an environment variable `NANOFRAMEWORK_TELEMETRY_OPTOUT` to 1.
+`nanoff` collects anonymous usage telemetry. It helps us understand which commands, options and firmware packages are actually used, and which errors occur, so that we can focus on what matters. A short notice is shown the first time `nanoff` runs (once per major version).
 
-The telemetry information is mainly related to the command line arguments, the firmware versions installed and any issue that can occurs during the code execution.
+### Opting out
+
+Set either of these environment variables to `1` (or `true`):
+
+- `NANOFRAMEWORK_TELEMETRY_OPTOUT`
+- `DO_NOT_TRACK`
+
+When opted out, no telemetry is collected or sent.
+
+### What is collected
+
+| Data | Details |
+|---|---|
+| Command | The verb (e.g. `flash`, `list`), the **names** of the keywords used, the effective platform, the exit code and the duration. Keyword **values** are only recorded for `platform`, `target`, `fwversion`, `verbosity`, `baud`, `flashmode`, `flashfreq`, `partitiontablesize` and `vcpbaud`. For commands that can't be parsed, the names of unknown keywords. |
+| Firmware downloads | Package (target) name and version. |
+| Errors | Exception type, innermost exception type, HRESULT and stack trace (with user profile paths, user name and machine name removed), plus where in `nanoff` the error occurred. |
+| Environment | `nanoff` version, OS family and architecture, .NET runtime, whether running in a CI system, and an anonymous install ID: a random GUID stored in `~/.nanoFramework/telemetry.id`. |
+
+### What is never collected
+
+- Values of any other keyword: file paths, image file names, serial ports, device/probe IDs, flash addresses, deployment files.
+- Exception messages.
+- Device serial numbers, MAC addresses, user names or machine names.
+
+Telemetry is sent to Azure Monitor (Application Insights) using OpenTelemetry. By default, Application Insights derives an approximate location (country/city) from the IP address and doesn't store the IP address itself. `nanoff` doesn't send the IP address as part of its telemetry data. Telemetry that can't be sent is kept in `~/.nanoFramework/telemetry` and retried on a later run.
+
+### Library
+
+The `nanoFramework.Tools.FirmwareFlasher` library doesn't send any telemetry. It emits its events (firmware downloads and errors) through `ILogger`, with the category `nanoFramework.Tools.FirmwareFlasher`, only when the host application sets `NanoTelemetry.LoggerFactory`. The former `NanoTelemetryClient` class has been removed.
 
 ## Feedback and documentation
 
