@@ -51,9 +51,9 @@
       },
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.5.23, )",
-        "resolved": "2.5.23",
-        "contentHash": "1cpo8iPeBySWgl5Qxuuot/kSIDyyW/tlu/T35hynZS6y+m/nQsizTo5i109gtxSNzlFX1EK0UBnJQXQVQO+QAw==",
+        "requested": "[2.5.28, )",
+        "resolved": "2.5.28",
+        "contentHash": "K5lXEMGYqi2h5QOgiQ0Y8jAHvKRsUWVkOA/gBuosAo0EKqxfoyaQYrko+7tC0B5BqzAZ76kMxMgi3gSFXCjYdQ==",
         "dependencies": {
           "Polly": "7.2.4",
           "System.IO.Ports": "8.0.0"
@@ -609,9 +609,9 @@
       },
       "nanoFramework.Tools.Debugger.Net": {
         "type": "Direct",
-        "requested": "[2.5.23, )",
-        "resolved": "2.5.23",
-        "contentHash": "1cpo8iPeBySWgl5Qxuuot/kSIDyyW/tlu/T35hynZS6y+m/nQsizTo5i109gtxSNzlFX1EK0UBnJQXQVQO+QAw==",
+        "requested": "[2.5.28, )",
+        "resolved": "2.5.28",
+        "contentHash": "K5lXEMGYqi2h5QOgiQ0Y8jAHvKRsUWVkOA/gBuosAo0EKqxfoyaQYrko+7tC0B5BqzAZ76kMxMgi3gSFXCjYdQ==",
         "dependencies": {
           "Polly": "7.2.4",
           "System.IO.Ports": "8.0.0"
