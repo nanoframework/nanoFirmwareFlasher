@@ -536,6 +536,41 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void DeviceInfoResponse_FromMcubootSerialRecovery_Decoded()
+        {
+            // mirrors nf-interpreter MCUboot/common/mcuboot_serial_extensions.c
+            var w = new CborWriter();
+            w.WriteStartMap(3);
+            w.WriteTextString("target");
+            w.WriteTextString("ORGPAL_PALTHREE");
+            w.WriteTextString("mcuboot_ver");
+            w.WriteTextString("2.5.0-rc1");
+            w.WriteTextString("nanomcuboot_ver");
+            w.WriteTextString("1.0.0.0");
+            w.WriteEndMap();
+
+            McumgrDeviceInfo info = McumgrClient.DecodeDeviceInfo(w.Encode());
+
+            Assert.AreEqual("ORGPAL_PALTHREE", info.TargetName);
+            Assert.AreEqual("2.5.0-rc1", info.McubootVersion);
+            Assert.AreEqual("1.0.0.0", info.NanoMcubootVersion);
+            Assert.IsNull(info.ClrVersion, "the bootloader doesn't report a CLR version");
+        }
+
+        [TestMethod]
+        public void DeviceInfoResponse_RcNotSupported_LeavesDefaults()
+        {
+            // older bootloaders reply { "rc": 8 } to the nanoFramework group
+            byte[] payload = EncodeSingleIntMap("rc", (int)SmpReturnCode.NotSupported);
+
+            McumgrDeviceInfo info = McumgrClient.DecodeDeviceInfo(payload);
+
+            Assert.IsNull(info.TargetName);
+            Assert.IsNull(info.McubootVersion);
+            Assert.IsNull(info.NanoMcubootVersion);
+        }
+
+        [TestMethod]
         public void OsParamsResponse_RcNotSupported_IsNotSupported()
         {
             // MCUboot serial recovery built without MCUBOOT_BOOT_MGMT_MCUMGR_PARAMS replies { "rc": 8 }

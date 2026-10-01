@@ -572,7 +572,7 @@ nanoff -v q
 
 ## 列出已连接的 nano 设备
 
-获取已连接的 nano 设备列表。如需更多详细信息，请将 `verbose` 选项设置为高于 normal 的级别。
+获取已连接的 nano 设备列表，并显示每个设备正在运行的 nanoCLR（或 nanoBooter）版本。如需更多详细信息，请将 `verbose` 选项设置为高于 normal 的级别。
 
 ```console
 nanoff --listdevices [ -v d ]
@@ -581,38 +581,36 @@ nanoff --listdevices [ -v d ]
 输出示例：
 
 ```text
--- Connected .NET nanoFramework devices --
+-- nanoCLR / nanoBooter --
 SKY_EEVB_Debug @ COM7
+  nanoCLR:     1.8.1.124
 
-------------------------------------------
 ```
 
 带详细信息的输出示例：
 
 ```text
--- Connected .NET nanoFramework devices --
+-- nanoCLR / nanoBooter --
 SKY_EEVB_Debug @ COM7
-  Target:      SKY_EEVB_Debug
+  nanoCLR:     1.8.1.124
   Platform:    GGECKO_S1
   Date:        May 31 2023
   Type:        MinSizeRel build with Azure RTOS v6.2.0
-  CLR Version: 1.8.1.124
 
-------------------------------------------
 ```
 
 ### 处于 MCUboot 串行恢复模式的设备
 
-`--listdevices` 还会查找处于 MCUboot 串行恢复模式的设备（复位时按住恢复按钮，或没有有效镜像）。这些设备不响应 Wire Protocol，因此会先用一个简短的 SMP（mcumgr）请求探测每个 COM 端口；有响应的端口随后会从 Wire Protocol 扫描中排除。有响应的设备会在单独的部分中列出，并显示 bootloader 报告的镜像版本。使用 `--serialport` 可以只探测一个端口。
+`--listdevices` 还会查找处于 MCUboot 串行恢复模式的设备（复位时按住恢复按钮，或没有有效镜像）。这些设备不响应 Wire Protocol，因此会先用一个简短的 SMP（mcumgr）请求探测每个 COM 端口；有响应的端口随后会从 Wire Protocol 扫描中排除。有响应的设备会在单独的部分中列出，并显示 bootloader 报告的目标名称、MCUboot 和 nanoMCUboot 版本以及镜像版本（较旧的 bootloader 只报告镜像）。使用 `--serialport` 可以只探测一个端口。
 
 ```text
--- Devices in MCUboot serial recovery (SMP) --
-COM9
-  SMP buffer:  not reported
+-- MCUboot serial recovery --
+ORGPAL_PALTHREE @ COM9
+  MCUboot:     2.5.0-rc1
+  nanoMCUboot: 1.0.2.2
   Image 0 slot 0: 1.8.1.124  active confirmed bootable
   Image 1 slot 0: 1.0.0.0  active confirmed bootable
 
-------------------------------------------
 ```
 
 使用 `-v d` 时还会显示镜像哈希值。

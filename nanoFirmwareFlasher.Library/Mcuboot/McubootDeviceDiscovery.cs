@@ -39,7 +39,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// <param name="baudRate">Baud rate used for the SMP transport.</param>
         /// <param name="probeTimeoutMs">Timeout for the discovery probe.</param>
         /// <param name="detailsTimeoutMs">Timeout for the image list read.</param>
-        /// <param name="readImageList">When <see langword="true"/>, the image list is read from each responsive device.</param>
+        /// <param name="readDetails">When <see langword="true"/>, the image list and the device info are read from each responsive device.</param>
         /// <param name="verbosity">Verbosity passed to the underlying <see cref="McumgrClient"/>.</param>
         /// <param name="ct">Cancellation token.</param>
         /// <returns>The responsive devices, ordered by port name.</returns>
@@ -48,7 +48,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             int baudRate = DefaultBaudRate,
             int probeTimeoutMs = DefaultProbeTimeoutMs,
             int detailsTimeoutMs = DefaultDetailsTimeoutMs,
-            bool readImageList = true,
+            bool readDetails = true,
             VerbosityLevel verbosity = VerbosityLevel.Normal,
             CancellationToken ct = default)
         {
@@ -61,7 +61,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 .Where(p => !string.IsNullOrWhiteSpace(p))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(p => Task.Run(
-                    () => ProbePort(p, baudRate, probeTimeoutMs, detailsTimeoutMs, readImageList, verbosity, ct),
+                    () => ProbePort(p, baudRate, probeTimeoutMs, detailsTimeoutMs, readDetails, verbosity, ct),
                     ct))
                 .ToArray();
 
@@ -78,7 +78,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             int baudRate,
             int probeTimeoutMs,
             int detailsTimeoutMs,
-            bool readImageList,
+            bool readDetails,
             VerbosityLevel verbosity,
             CancellationToken ct)
         {
@@ -100,7 +100,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                     Parameters = parameters,
                 };
 
-                if (readImageList)
+                if (readDetails)
                 {
                     try
                     {
@@ -110,6 +110,24 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                     catch (Exception ex) when (ex is McumgrTimeoutException or McumgrProtocolException or IOException or InvalidOperationException)
                     {
                         device.ImageListError = ex.Message;
+                    }
+                }
+
+                if (readDetails)
+                {
+                    try
+                    {
+                        // older bootloaders reply rc=ENOTSUP, which decodes to an empty info
+                        McumgrDeviceInfo info = client.GetDeviceInfoAsync(ct).GetAwaiter().GetResult();
+
+                        if (!string.IsNullOrEmpty(info.TargetName))
+                        {
+                            device.DeviceInfo = info;
+                        }
+                    }
+                    catch (Exception ex) when (ex is McumgrTimeoutException or McumgrProtocolException or IOException or InvalidOperationException)
+                    {
+                        // device info is optional
                     }
                 }
 

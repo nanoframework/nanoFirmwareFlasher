@@ -580,7 +580,7 @@ nanoff -v q
 
 ## List connected nano devices
 
-To get a list of connected nano devices. If more details are required add `verbose` option with setting above normal.
+To get a list of connected nano devices, with the nanoCLR (or nanoBooter) version each one is running. If more details are required add `verbose` option with setting above normal.
 
 ```console
 nanoff --listdevices [ -v d ]
@@ -589,38 +589,36 @@ nanoff --listdevices [ -v d ]
 Output example:
 
 ```text
--- Connected .NET nanoFramework devices --
+-- nanoCLR / nanoBooter --
 SKY_EEVB_Debug @ COM7
+  nanoCLR:     1.8.1.124
 
-------------------------------------------
 ```
 
 Output example with verbose details:
 
 ```text
--- Connected .NET nanoFramework devices --
+-- nanoCLR / nanoBooter --
 SKY_EEVB_Debug @ COM7
-  Target:      SKY_EEVB_Debug
+  nanoCLR:     1.8.1.124
   Platform:    GGECKO_S1
   Date:        May 31 2023
   Type:        MinSizeRel build with Azure RTOS v6.2.0
-  CLR Version: 1.8.1.124
 
-------------------------------------------
 ```
 
 ### Devices in MCUboot serial recovery
 
-`--listdevices` also finds devices sitting in MCUboot serial recovery mode (recovery button held at reset, or no valid image). These don't answer the Wire Protocol, so every COM port is first probed with a short SMP (mcumgr) request; ports that answer are then left out of the Wire Protocol scan. Responsive devices are listed in a separate section with the image versions reported by the bootloader. Use `--serialport` to probe a single port.
+`--listdevices` also finds devices sitting in MCUboot serial recovery mode (recovery button held at reset, or no valid image). These don't answer the Wire Protocol, so every COM port is first probed with a short SMP (mcumgr) request; ports that answer are then left out of the Wire Protocol scan. Responsive devices are listed in a separate section with the target name, the MCUboot and nanoMCUboot versions and the image versions reported by the bootloader (older bootloaders only report the images). Use `--serialport` to probe a single port.
 
 ```text
--- Devices in MCUboot serial recovery (SMP) --
-COM9
-  SMP buffer:  not reported
+-- MCUboot serial recovery --
+ORGPAL_PALTHREE @ COM9
+  MCUboot:     2.5.0-rc1
+  nanoMCUboot: 1.0.2.2
   Image 0 slot 0: 1.8.1.124  active confirmed bootable
   Image 1 slot 0: 1.0.0.0  active confirmed bootable
 
-------------------------------------------
 ```
 
 With `-v d` the image hashes are shown too.

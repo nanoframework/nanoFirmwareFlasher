@@ -130,9 +130,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // get device details
                 foreach (NanoDeviceBase device in devicesSnapshot)
                 {
+                    // request capabilities, otherwise the device info (CLR version, build date, etc.) comes back empty
                     _ = device.DebugEngine.Connect(
                         false,
-                        false);
+                        true);
 
                     // check that we are in CLR
                     if (device.DebugEngine.IsConnectedTonanoCLR)

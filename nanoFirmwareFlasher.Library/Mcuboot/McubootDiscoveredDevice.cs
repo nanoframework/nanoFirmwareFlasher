@@ -24,5 +24,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
         /// <summary>Reason the image list could not be read, if it was requested and failed.</summary>
         public string ImageListError { get; set; }
+
+        /// <summary>
+        /// Device identity reported by the bootloader (nanoFramework group device-info command), or
+        /// <see langword="null"/> when not requested or the bootloader doesn't implement it.
+        /// </summary>
+        public McumgrDeviceInfo DeviceInfo { get; set; }
     }
 }

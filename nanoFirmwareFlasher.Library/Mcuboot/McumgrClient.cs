@@ -1153,7 +1153,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             return status;
         }
 
-        private static McumgrDeviceInfo DecodeDeviceInfo(byte[] payload)
+        internal static McumgrDeviceInfo DecodeDeviceInfo(byte[] payload)
         {
             var info = new McumgrDeviceInfo();
 
@@ -1191,6 +1191,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
                         case "deploy":
                             info.DeploymentAvailable = r.ReadBoolean();
+                            break;
+
+                        case "mcuboot_ver":
+                            info.McubootVersion = r.ReadTextString();
+                            break;
+
+                        case "nanomcuboot_ver":
+                            info.NanoMcubootVersion = r.ReadTextString();
                             break;
 
                         default:

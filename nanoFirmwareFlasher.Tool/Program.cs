@@ -426,18 +426,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.ListDevices)
             {
-                // Look for devices in MCUboot serial recovery first: the SMP probe is quick, and the ports
-                // that answer are then excluded from the Wire Protocol scan. Doing it the other way around
-                // races with the debug library, which keeps probing candidate ports at several baud rates
-                // after reporting enumeration complete.
+                // Look for devices in MCUboot serial recovery first
+                // SMP probe is quick, and the ports that answer are then excluded from the Wire Protocol scan.
                 List<McubootDiscoveredDevice> mcubootDevices = await ListMcubootDevicesAsync(o.SerialPort);
 
                 _nanoDeviceOperations = new NanoDeviceOperations(mcubootDevices.Select(d => d.PortName));
 
                 try
                 {
+                    // details are needed from Normal verbosity up, to show the nanoCLR/nanoBooter version
                     var connectedDevices = _nanoDeviceOperations.ListDevices(
-                        _verbosityLevel > VerbosityLevel.Normal,
+                        _verbosityLevel >= VerbosityLevel.Normal,
                         _verbosityLevel);
 
                     if (!connectedDevices.Any()
@@ -448,7 +447,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     else if (connectedDevices.Any())
                     {
-                        OutputWriter.WriteLine("-- Connected .NET nanoFramework devices --");
+                        OutputWriter.WriteLine("-- nanoCLR / nanoBooter --");
 
                         foreach (var nanoDevice in connectedDevices)
                         {
@@ -456,17 +455,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                             if (_verbosityLevel >= VerbosityLevel.Normal)
                             {
+                                // the target name is already in the description, no need to repeat it
                                 // check that we are in CLR
                                 if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
                                 {
                                     // we have to have a valid device info
                                     if (nanoDevice.DeviceInfo.Valid)
                                     {
-                                        OutputWriter.WriteLine($"  Target:      {nanoDevice.DeviceInfo.TargetName?.ToString()}");
-                                        OutputWriter.WriteLine($"  Platform:    {nanoDevice.DeviceInfo.Platform?.ToString()}");
-                                        OutputWriter.WriteLine($"  Date:        {nanoDevice.DebugEngine.Capabilities.SoftwareVersion.BuildDate ?? "unknown"}");
-                                        OutputWriter.WriteLine($"  Type:        {nanoDevice.DebugEngine.Capabilities.SolutionReleaseInfo.VendorInfo ?? "unknown"}");
-                                        OutputWriter.WriteLine($"  CLR Version: {nanoDevice.DeviceInfo.SolutionBuildVersion}");
+                                        OutputWriter.WriteLine($"  nanoCLR:     {nanoDevice.DeviceInfo.SolutionBuildVersion}");
+
+                                        if (_verbosityLevel >= VerbosityLevel.Detailed)
+                                        {
+                                            OutputWriter.WriteLine($"  Platform:    {nanoDevice.DeviceInfo.Platform?.ToString()}");
+                                            OutputWriter.WriteLine($"  Date:        {nanoDevice.DebugEngine.Capabilities.SoftwareVersion.BuildDate ?? "unknown"}");
+                                            OutputWriter.WriteLine($"  Type:        {nanoDevice.DebugEngine.Capabilities.SolutionReleaseInfo.VendorInfo ?? "unknown"}");
+                                        }
                                     }
                                 }
                                 else
@@ -475,11 +478,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                     // we have to have a valid device info
                                     if (nanoDevice.DebugEngine.TargetInfo != null)
                                     {
-                                        OutputWriter.WriteLine($"  Target:         {nanoDevice.DebugEngine.TargetInfo.TargetName}");
-                                        OutputWriter.WriteLine($"  Platform:       {nanoDevice.DebugEngine.TargetInfo.PlatformName}");
-                                        OutputWriter.WriteLine($"  Type:           {nanoDevice.DebugEngine.TargetInfo.PlatformInfo}");
-                                        OutputWriter.WriteLine($"  CLR Version:    {nanoDevice.DebugEngine.TargetInfo.CLRVersion}");
-                                        OutputWriter.WriteLine($"  Booter Version: {nanoDevice.DebugEngine.TargetInfo.CLRVersion}");
+                                        OutputWriter.WriteLine($"  nanoBooter:  {nanoDevice.DebugEngine.TargetInfo.BooterVersion}");
+
+                                        // nanoBooter reports 0.0.0.0 when it doesn't know the CLR version
+                                        Version clrVersion = nanoDevice.DebugEngine.TargetInfo.CLRVersion;
+
+                                        if (clrVersion is not null
+                                            && clrVersion != new Version(0, 0, 0, 0))
+                                        {
+                                            OutputWriter.WriteLine($"  nanoCLR:     {clrVersion}");
+                                        }
+
+                                        if (_verbosityLevel >= VerbosityLevel.Detailed)
+                                        {
+                                            OutputWriter.WriteLine($"  Platform:    {nanoDevice.DebugEngine.TargetInfo.PlatformName}");
+                                            OutputWriter.WriteLine($"  Type:        {nanoDevice.DebugEngine.TargetInfo.PlatformInfo}");
+                                        }
                                     }
                                 }
 
@@ -487,7 +501,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             }
                         }
 
-                        OutputWriter.WriteLine("------------------------------------------");
+                        // separate from the MCUboot list (at Normal and above each device already ends with an empty line)
+                        if (mcubootDevices.Any()
+                            && _verbosityLevel < VerbosityLevel.Normal)
+                        {
+                            OutputWriter.WriteLine("");
+                        }
                     }
 
                     DisplayMcubootDevices(mcubootDevices);
@@ -1016,7 +1035,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 return await McubootDeviceDiscovery.ProbeSerialPortsAsync(
                     candidates,
-                    readImageList: _verbosityLevel >= VerbosityLevel.Normal,
+                    readDetails: _verbosityLevel >= VerbosityLevel.Normal,
                     verbosity: _verbosityLevel);
             }
             catch (Exception ex)
@@ -1040,22 +1059,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             OutputWriter.ForegroundColor = ConsoleColor.White;
-            OutputWriter.WriteLine("-- Devices in MCUboot serial recovery (SMP) --");
+            OutputWriter.WriteLine("-- MCUboot serial recovery --");
 
             foreach (McubootDiscoveredDevice device in devices)
             {
-                OutputWriter.WriteLine(device.PortName);
+                OutputWriter.WriteLine(device.DeviceInfo is null
+                    ? device.PortName
+                    : $"{device.DeviceInfo.TargetName} @ {device.PortName}");
 
                 if (_verbosityLevel >= VerbosityLevel.Normal)
                 {
-                    if (device.Parameters.Supported
-                        && device.Parameters.BufSize > 0)
+                    if (device.DeviceInfo is not null)
                     {
-                        OutputWriter.WriteLine($"  SMP buffer:  {device.Parameters.BufSize} bytes x {device.Parameters.BufCount}");
-                    }
-                    else
-                    {
-                        OutputWriter.WriteLine("  SMP buffer:  not reported");
+                        OutputWriter.WriteLine($"  MCUboot:     {device.DeviceInfo.McubootVersion ?? "unknown"}");
+                        OutputWriter.WriteLine($"  nanoMCUboot: {device.DeviceInfo.NanoMcubootVersion ?? "unknown"}");
                     }
 
                     if (device.Images is null)
@@ -1110,8 +1127,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     OutputWriter.WriteLine("");
                 }
             }
-
-            OutputWriter.WriteLine("------------------------------------------");
         }
 
         private static void DisplayNoOperationMessage()
