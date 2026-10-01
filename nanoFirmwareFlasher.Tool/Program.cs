@@ -479,6 +479,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
             catch (Exception ex)
             {
+                NanoTelemetry.TrackException(ex, manager.GetType().Name);
+
                 var mapping = Array.Find(exceptionMappings, m => m.ExceptionType == ex.GetType());
 
                 _exitCode = mapping.ExceptionType != null ? mapping.ExitCode : defaultExitCode;
@@ -686,6 +688,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 catch (Exception ex)
                 {
+                    NanoTelemetry.TrackException(ex, "listDevices");
+
                     _exitCode = ExitCodes.E2001;
                     _extraMessage = ex.Message;
                 }
@@ -985,6 +989,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     catch (Exception ex)
                     {
+                        NanoTelemetry.TrackException(ex, "fileDeployment");
+
                         // exception with 
                         _exitCode = ExitCodes.E2003;
                         _extraMessage = ex.Message;
@@ -1008,6 +1014,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     catch (Exception ex)
                     {
+                        NanoTelemetry.TrackException(ex, "networkDeployment");
+
                         // exception with 
                         _exitCode = ExitCodes.E2003;
                         _extraMessage = ex.Message;

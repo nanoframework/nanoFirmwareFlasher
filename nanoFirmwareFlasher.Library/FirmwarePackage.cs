@@ -760,9 +760,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // set exposed property
                 version = fwVersion;
             }
-            catch
+            catch (Exception ex)
             {
                 // exception with download, assuming it's something with network connection or Cloudsmith API
+                NanoTelemetry.TrackException(ex, "firmwareLookup");
             }
 
             return new DownloadUrlResult(downloadUrl, version, ExitCodes.OK);

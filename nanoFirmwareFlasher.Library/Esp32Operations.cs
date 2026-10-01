@@ -604,8 +604,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // write to flash
                         operationResult = espTool.WriteFlash(firmware.FlashPartitions);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        NanoTelemetry.TrackException(ex, "esp32WriteFlash");
+
                         // couldn't complete the write, report it as a defined failure instead
                         // of letting the exception fault this method's task
                         operationResult = ExitCodes.E4003;

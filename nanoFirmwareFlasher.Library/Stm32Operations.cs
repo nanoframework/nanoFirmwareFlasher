@@ -312,8 +312,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     return ExitCodes.E1005;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    NanoTelemetry.TrackException(ex, "stm32NativeDfu");
+
                     return ExitCodes.E5031;
                 }
             }
@@ -389,6 +391,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 catch (Exception ex)
                 {
+                    NanoTelemetry.TrackException(ex, "stm32NativeSwd");
+
                     OutputWriter.ForegroundColor = ConsoleColor.Red;
                     OutputWriter.WriteLine($"Unexpected SWD probe error: {ex.Message}");
                     OutputWriter.ForegroundColor = ConsoleColor.White;
@@ -467,6 +471,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 catch (Exception ex)
                 {
+                    NanoTelemetry.TrackException(ex, "stm32NativeStLink");
+
                     OutputWriter.ForegroundColor = ConsoleColor.Red;
                     OutputWriter.WriteLine($"Unexpected ST-LINK error: {ex.Message}");
                     OutputWriter.ForegroundColor = ConsoleColor.White;
