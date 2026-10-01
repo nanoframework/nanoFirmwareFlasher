@@ -1009,7 +1009,7 @@ When opted out, no telemetry is collected or sent.
 - Exception messages.
 - Device serial numbers, MAC addresses, user names or machine names.
 
-Telemetry is sent to Azure Monitor (Application Insights) using OpenTelemetry. Application Insights derives an approximate location (country/city) from the IP address and doesn't store the IP address. Telemetry that can't be sent is kept in `~/.nanoFramework/telemetry` and retried on a later run.
+Telemetry is sent to Azure Monitor (Application Insights) using OpenTelemetry. By default, Application Insights derives an approximate location (country/city) from the IP address and doesn't store the IP address itself. `nanoff` doesn't send the IP address as part of its telemetry data. Telemetry that can't be sent is kept in `~/.nanoFramework/telemetry` and retried on a later run.
 
 ### Library
 
