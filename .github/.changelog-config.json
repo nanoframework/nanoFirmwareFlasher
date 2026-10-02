@@ -1,0 +1,45 @@
+{
+    "categories": [
+        {
+            "title": "## New Features and enhancements",
+            "labels": [
+                "Type: enhancement"
+            ],
+            "exhaustive": true
+        },
+        {
+            "title": "## Bug Fixes",
+            "labels": [
+                "Type: bug"
+            ],
+            "exhaustive": true
+        },
+        {
+            "title": "## Documentation",
+            "labels": [
+                "Type: documentation"
+            ],
+            "exhaustive": true
+        },
+        {
+            "title": "## ⚠️ Breaking Changes",
+            "labels": [
+                "Breaking-Change"
+            ],
+            "exhaustive": true
+        },
+        {
+            "title": "## Updated dependencies",
+            "labels": [
+                "Type: dependencies"
+            ],
+            "exhaustive": true
+        }
+    ],
+    "sort": "ASC",
+    "template": "${{CHANGELOG}}\n\n**Full Changelog:** ${{RELEASE_DIFF}}\n\nThis release publishes the following NuGet packages:\n\n* :wrench: .NET tool: [nanoff](https://www.nuget.org/packages/nanoff/) (install with `dotnet tool install -g nanoff`)\n* :package: Library: [nanoFramework.Tools.FirmwareFlasher](https://www.nuget.org/packages/nanoFramework.Tools.FirmwareFlasher/)",
+    "pr_template": "* ${{TITLE}} by @${{AUTHOR}} in #${{NUMBER}}",
+    "empty_template": "- no changes",
+    "max_tags_to_fetch": 200,
+    "max_pull_requests": 200
+}
