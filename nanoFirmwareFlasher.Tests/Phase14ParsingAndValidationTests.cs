@@ -38,32 +38,28 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseVerbosity_InvalidInput_ThrowsArgumentException()
         {
-            VerbOptionsBase.ParseVerbosity("invalid");
+            Assert.Throws<ArgumentException>(() => VerbOptionsBase.ParseVerbosity("invalid"));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseVerbosity_Empty_ThrowsArgumentException()
         {
-            VerbOptionsBase.ParseVerbosity("");
+            Assert.Throws<ArgumentException>(() => VerbOptionsBase.ParseVerbosity(""));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseVerbosity_CaseSensitive_UpperQ_ThrowsArgumentException()
         {
             // The parser is case-sensitive, matching Program.cs behavior
-            VerbOptionsBase.ParseVerbosity("Q");
+            Assert.Throws<ArgumentException>(() => VerbOptionsBase.ParseVerbosity("Q"));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseVerbosity_Null_ThrowsArgumentException()
         {
-            VerbOptionsBase.ParseVerbosity(null);
+            Assert.Throws<ArgumentException>(() => VerbOptionsBase.ParseVerbosity(null));
         }
 
         #endregion

@@ -583,7 +583,7 @@ namespace nanoFirmwareFlasher.Tests
             Stm32FlashProgrammer.FlashGeometry geometry =
                 Stm32FlashProgrammer.ResolveFlashGeometry(0x469, 256, 1U << 22);
 
-            Assert.ThrowsException<ArgumentOutOfRangeException>(
+            Assert.Throws<ArgumentOutOfRangeException>(
                 () => Stm32FlashProgrammer.GetPageEraseControl(0x08020000, geometry));
         }
 
@@ -614,10 +614,9 @@ namespace nanoFirmwareFlasher.Tests
         #region Flash Registers â€” Unknown throws
 
         [TestMethod]
-        [ExpectedException(typeof(TargetInvocationException))]
         public void GetFlashRegisters_Unknown_Throws()
         {
-            GetFlashRegisters(GetFamilyValue("Unknown"));
+            Assert.Throws<TargetInvocationException>(() => GetFlashRegisters(GetFamilyValue("Unknown")));
         }
 
         #endregion

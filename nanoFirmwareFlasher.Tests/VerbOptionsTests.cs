@@ -137,11 +137,10 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
         public void GetVerbosityLevel_InvalidValue_Throws()
         {
             var options = new CacheOptions { Verbosity = "invalid" };
-            options.GetVerbosityLevel();
+            Assert.Throws<System.ArgumentException>(() => options.GetVerbosityLevel());
         }
 
         [TestMethod]

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace nanoFirmwareFlasher.Tests
                 Platform = SupportedPlatform.esp32
             };
 
-            Assert.ThrowsException<System.NotSupportedException>(() =>
+            Assert.Throws<System.NotSupportedException>(() =>
                 new PicoManager(options, VerbosityLevel.Quiet));
         }
 
@@ -36,7 +36,7 @@ namespace nanoFirmwareFlasher.Tests
         {
             using var output = new OutputWriterHelper();
 
-            Assert.ThrowsException<System.ArgumentNullException>(() =>
+            Assert.Throws<System.ArgumentNullException>(() =>
                 new PicoManager(null, VerbosityLevel.Quiet));
         }
 
@@ -80,7 +80,7 @@ namespace nanoFirmwareFlasher.Tests
 
             var manager = new PicoManager(options, VerbosityLevel.Quiet);
 
-            await Assert.ThrowsExceptionAsync<NoOperationPerformedException>(
+            await Assert.ThrowsAsync<NoOperationPerformedException>(
                 () => manager.ProcessAsync());
         }
 
