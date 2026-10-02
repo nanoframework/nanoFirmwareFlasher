@@ -100,9 +100,9 @@ All classes use the namespace `nanoFramework.Tools.FirmwareFlasher`.
 dotnet build nanoFirmwareFlasher.sln
 ```
 
-- The library targets **net8.0** and **net472**.
-- The tool targets **net8.0** (or **net472** when built with `VSCodeExtensionBuild=True`, for the VS Code extension bundle).
-- Tests target **net8.0**.
+- The library targets **net10.0** and **net472**.
+- The tool targets **net10.0** (or **net472** when built with `VSCodeExtensionBuild=True`, for the VS Code extension bundle).
+- Tests target **net10.0**.
 - Run the CLI from source with `dotnet run --project nanoFirmwareFlasher.Tool -- list ports`.
 - NuGet dependencies are declared with explicit versions in each `.csproj` (no lock files). NuGet resolves the lowest applicable version, so restores are deterministic. Don't use floating versions (`*`). Don't use exact-range syntax (`[x.y.z]`) in the Library: it flows into the published package's dependencies and forces consumers onto those exact versions.
 
