@@ -194,7 +194,7 @@ jobs:
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )    
     inputs:
-      key: 'nuget | "$(Agent.OS)" | **/packages.lock.json, !bin/**'
+      key: 'nuget | "$(Agent.OS)" | **/*.csproj, !Samples/**, !**/bin/**, !**/obj/**'
       restoreKeys: |
           nuget | "$(Agent.OS)"
           nuget
@@ -209,7 +209,6 @@ jobs:
       )
     inputs:
       command: restore
-      restoreArguments: '--locked-mode'
       verbosityRestore: minimal
       projects: nanoFirmwareFlasher.sln
       feedsToUse: config
