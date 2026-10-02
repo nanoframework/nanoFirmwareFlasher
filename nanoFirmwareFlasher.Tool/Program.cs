@@ -19,6 +19,7 @@ using CommandLine.Text;
 using Microsoft.Extensions.Configuration;
 using nanoFramework.Tools.FirmwareFlasher.Extensions;
 using nanoFramework.Tools.FirmwareFlasher.FileDeployment;
+using nanoFramework.Tools.FirmwareFlasher.Mcuboot;
 using nanoFramework.Tools.FirmwareFlasher.NetworkDeployment;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -153,7 +154,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             try
             {
                 Version latestVersion;
-                Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0]);
+                // keep the preview number as the 4th component: "3.0.0-preview.46" -> 3.0.0.46
+                Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0].Replace("-preview.", "."));
 
                 using (var client = new HttpClient())
                 {
@@ -171,7 +173,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     JsonNode responseContent = JsonSerializer.Deserialize<JsonNode>(response.Content.ReadAsStringAsync().Result, options);
                     string tagName = responseContent["tag_name"].ToString();
 
-                    latestVersion = Version.Parse(tagName.Substring(1));
+                    latestVersion = Version.Parse(tagName.Substring(1).Split('+')[0].Replace("-preview.", "."));
                 }
 
                 if (latestVersion > currentVersion)
@@ -217,6 +219,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 "nanoff flash target ST_STM32F769I_DISCOVERY jtag",
                 "nanoff flash platform esp32 serialport COM31 masserase",
                 "nanoff flash serialport COM9 image C:\\nf-interpreter\\build\\nanoclr.bin",
+                "nanoff flash serialport COM31 image nanoCLR.bin mcuboot signkey my-signing-key.pem",
             },
             [typeof(DeployOptions)] = new[]
             {
@@ -224,6 +227,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 "nanoff deploy target ST_STM32F769I_DISCOVERY image app.bin address 0x08040000",
                 "nanoff deploy file C:\\path\\deploy.json",
                 "nanoff deploy network C:\\path\\deploy.json",
+                "nanoff deploy serialport COM31 image deployment-signed.bin mcuboot",
             },
             [typeof(ListOptions)] = new[]
             {
@@ -231,6 +235,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 "nanoff list devices",
                 "nanoff list targets platform esp32",
                 "nanoff list dfu",
+                "nanoff list images mcuboot serialport COM31",
             },
             [typeof(DetailsOptions)] = new[]
             {
@@ -251,6 +256,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 "nanoff cache clear",
                 "nanoff cache download platform esp32 archivepath c:\\firmware",
+            },
+            [typeof(KeysOptions)] = new[]
+            {
+                "nanoff keys generate my-signing-key.pem",
+                "nanoff keys getpub root-pub-key.c signkey my-signing-key.pem",
             },
         };
 
@@ -300,7 +310,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string[] normalizedArgs = VerbTokenizer.Normalize(args);
 
             var verbParserResult = new Parser(config => config.HelpWriter = null)
-                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions>(normalizedArgs);
+                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions, KeysOptions>(normalizedArgs);
 
             if (verbParserResult is Parsed<object> parsed)
             {
@@ -334,6 +344,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     case CacheOptions cacheOptions:
                         await RunCacheAsync(cacheOptions);
+                        break;
+
+                    case KeysOptions keysOptions:
+                        await RunKeysAsync(keysOptions);
                         break;
                 }
             }
@@ -456,6 +470,66 @@ namespace nanoFramework.Tools.FirmwareFlasher
             else if (o.Xds)
             {
                 _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// The <c>keys</c> verb is handled directly rather than through the legacy dispatch:
+        /// it only works on local files and never talks to a device.
+        /// </summary>
+        private static Task RunKeysAsync(KeysOptions o)
+        {
+            try
+            {
+                _verbosityLevel = o.GetVerbosityLevel();
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
+                return Task.CompletedTask;
+            }
+
+            string validationError = KeysOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return Task.CompletedTask;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+            OutputWriter.WriteLine(_headerInfo);
+            OutputWriter.WriteLine(_copyrightInfo);
+            OutputWriter.WriteLine();
+
+            try
+            {
+                if (!string.IsNullOrEmpty(o.Generate))
+                {
+                    var imageManager = new McubootImageManager(o.Generate, slotSize: 0) { Verbosity = _verbosityLevel };
+                    _exitCode = imageManager.GenerateSigningKey(o.Generate);
+                }
+                else
+                {
+                    var imageManager = new McubootImageManager(o.SignKey, slotSize: 0) { Verbosity = _verbosityLevel };
+                    _exitCode = imageManager.ExtractPublicKey(o.SignKey, o.GetPub);
+                }
+            }
+            catch (ImgtoolNotFoundException)
+            {
+                // the exit code description already carries the installation hint
+                _exitCode = ExitCodes.E10001;
+            }
+            catch (Exception ex)
+            {
+                NanoTelemetry.TrackException(ex, "keys");
+
+                _exitCode = ExitCodes.E10004;
+                _extraMessage = ex.Message;
             }
 
             return Task.CompletedTask;
@@ -627,22 +701,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.ListDevices)
             {
-                _nanoDeviceOperations = new NanoDeviceOperations();
+                // Look for devices in MCUboot serial recovery first
+                // SMP probe is quick, and the ports that answer are then excluded from the Wire Protocol scan.
+                List<McubootDiscoveredDevice> mcubootDevices = await ListMcubootDevicesAsync(o.SerialPort);
+
+                _nanoDeviceOperations = new NanoDeviceOperations(mcubootDevices.Select(d => d.PortName));
 
                 try
                 {
+                    // details are needed from Normal verbosity up, to show the nanoCLR/nanoBooter version
                     var connectedDevices = _nanoDeviceOperations.ListDevices(
-                        _verbosityLevel > VerbosityLevel.Normal,
+                        _verbosityLevel >= VerbosityLevel.Normal,
                         _verbosityLevel);
 
-                    if (!connectedDevices.Any())
+                    if (!connectedDevices.Any()
+                        && !mcubootDevices.Any())
                     {
                         OutputWriter.ForegroundColor = ConsoleColor.Yellow;
                         OutputWriter.WriteLine("No devices found");
                     }
-                    else
+                    else if (connectedDevices.Any())
                     {
-                        OutputWriter.WriteLine("-- Connected .NET nanoFramework devices --");
+                        OutputWriter.WriteLine("-- nanoCLR / nanoBooter --");
 
                         foreach (var nanoDevice in connectedDevices)
                         {
@@ -650,17 +730,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                             if (_verbosityLevel >= VerbosityLevel.Normal)
                             {
+                                // the target name is already in the description, no need to repeat it
                                 // check that we are in CLR
                                 if (nanoDevice.DebugEngine.IsConnectedTonanoCLR)
                                 {
                                     // we have to have a valid device info
                                     if (nanoDevice.DeviceInfo.Valid)
                                     {
-                                        OutputWriter.WriteLine($"  Target:      {nanoDevice.DeviceInfo.TargetName?.ToString()}");
-                                        OutputWriter.WriteLine($"  Platform:    {nanoDevice.DeviceInfo.Platform?.ToString()}");
-                                        OutputWriter.WriteLine($"  Date:        {nanoDevice.DebugEngine.Capabilities.SoftwareVersion.BuildDate ?? "unknown"}");
-                                        OutputWriter.WriteLine($"  Type:        {nanoDevice.DebugEngine.Capabilities.SolutionReleaseInfo.VendorInfo ?? "unknown"}");
-                                        OutputWriter.WriteLine($"  CLR Version: {nanoDevice.DeviceInfo.SolutionBuildVersion}");
+                                        OutputWriter.WriteLine($"  nanoCLR:     {nanoDevice.DeviceInfo.SolutionBuildVersion}");
+
+                                        if (_verbosityLevel >= VerbosityLevel.Detailed)
+                                        {
+                                            OutputWriter.WriteLine($"  Platform:    {nanoDevice.DeviceInfo.Platform?.ToString()}");
+                                            OutputWriter.WriteLine($"  Date:        {nanoDevice.DebugEngine.Capabilities.SoftwareVersion.BuildDate ?? "unknown"}");
+                                            OutputWriter.WriteLine($"  Type:        {nanoDevice.DebugEngine.Capabilities.SolutionReleaseInfo.VendorInfo ?? "unknown"}");
+                                        }
                                     }
                                 }
                                 else
@@ -669,11 +753,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
                                     // we have to have a valid device info
                                     if (nanoDevice.DebugEngine.TargetInfo != null)
                                     {
-                                        OutputWriter.WriteLine($"  Target:         {nanoDevice.DebugEngine.TargetInfo.TargetName}");
-                                        OutputWriter.WriteLine($"  Platform:       {nanoDevice.DebugEngine.TargetInfo.PlatformName}");
-                                        OutputWriter.WriteLine($"  Type:           {nanoDevice.DebugEngine.TargetInfo.PlatformInfo}");
-                                        OutputWriter.WriteLine($"  CLR Version:    {nanoDevice.DebugEngine.TargetInfo.CLRVersion}");
-                                        OutputWriter.WriteLine($"  Booter Version: {nanoDevice.DebugEngine.TargetInfo.CLRVersion}");
+                                        OutputWriter.WriteLine($"  nanoBooter:  {nanoDevice.DebugEngine.TargetInfo.BooterVersion}");
+
+                                        // nanoBooter reports 0.0.0.0 when it doesn't know the CLR version
+                                        Version clrVersion = nanoDevice.DebugEngine.TargetInfo.CLRVersion;
+
+                                        if (clrVersion is not null
+                                            && clrVersion != new Version(0, 0, 0, 0))
+                                        {
+                                            OutputWriter.WriteLine($"  nanoCLR:     {clrVersion}");
+                                        }
+
+                                        if (_verbosityLevel >= VerbosityLevel.Detailed)
+                                        {
+                                            OutputWriter.WriteLine($"  Platform:    {nanoDevice.DebugEngine.TargetInfo.PlatformName}");
+                                            OutputWriter.WriteLine($"  Type:        {nanoDevice.DebugEngine.TargetInfo.PlatformInfo}");
+                                        }
                                     }
                                 }
 
@@ -681,8 +776,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             }
                         }
 
-                        OutputWriter.WriteLine("------------------------------------------");
+                        // separate from the MCUboot list (at Normal and above each device already ends with an empty line)
+                        if (mcubootDevices.Any()
+                            && _verbosityLevel < VerbosityLevel.Normal)
+                        {
+                            OutputWriter.WriteLine("");
+                        }
                     }
+
+                    DisplayMcubootDevices(mcubootDevices);
 
                     OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
@@ -790,6 +892,29 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         // in case a wacky target is entered by the user, the package name will be checked against Cloudsmith repo
                     }
                 }
+            }
+
+            #endregion
+
+            #region MCUboot / SMP
+
+            // Everything MCUboot goes straight through SMP, except a firmware update of an ESP32 target:
+            // that one goes through the ESP32 manager, which provisions MCUboot on first use.
+            // This has to be handled before the platform guessing below, which would take a plain
+            // serial port as an ESP32 device and connect to it through its ROM bootloader.
+            if (o.McubootTarget
+                && !(o.Update && o.Platform == SupportedPlatform.esp32))
+            {
+                await RunManagerAsync(
+                    new McubootManager(o, _verbosityLevel),
+                    ExitCodes.E10005,
+                    (typeof(ImgtoolNotFoundException), ExitCodes.E10001, false),
+                    (typeof(McubootImageException), ExitCodes.E10002, true),
+                    (typeof(McumgrProtocolException), ExitCodes.E10010, true),
+                    (typeof(McumgrTimeoutException), ExitCodes.E10007, true));
+
+                // done here, this command has no further processing
+                return;
             }
 
             #endregion
@@ -1024,6 +1149,115 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             #endregion
+        }
+
+        /// <summary>
+        /// Probes serial ports for devices in MCUboot serial recovery (SMP). Failures are reported
+        /// but never propagated, so they can't spoil the Wire Protocol device listing.
+        /// </summary>
+        /// <param name="serialPort">When set, only this port is probed.</param>
+        private static async Task<List<McubootDiscoveredDevice>> ListMcubootDevicesAsync(string serialPort)
+        {
+            try
+            {
+                IEnumerable<string> candidates = string.IsNullOrEmpty(serialPort)
+                    ? SerialPort.GetPortNames()
+                    : new[] { serialPort };
+
+                return await McubootDeviceDiscovery.ProbeSerialPortsAsync(
+                    candidates,
+                    readDetails: _verbosityLevel >= VerbosityLevel.Normal,
+                    verbosity: _verbosityLevel);
+            }
+            catch (Exception ex)
+            {
+                if (_verbosityLevel >= VerbosityLevel.Detailed)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine($"Failed to probe serial ports for MCUboot devices: {ex.Message}");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                }
+
+                return new List<McubootDiscoveredDevice>();
+            }
+        }
+
+        private static void DisplayMcubootDevices(List<McubootDiscoveredDevice> devices)
+        {
+            if (!devices.Any())
+            {
+                return;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+            OutputWriter.WriteLine("-- MCUboot serial recovery --");
+
+            foreach (McubootDiscoveredDevice device in devices)
+            {
+                OutputWriter.WriteLine(device.DeviceInfo is null
+                    ? device.PortName
+                    : $"{device.DeviceInfo.TargetName} @ {device.PortName}");
+
+                if (_verbosityLevel >= VerbosityLevel.Normal)
+                {
+                    if (device.DeviceInfo is not null)
+                    {
+                        OutputWriter.WriteLine($"  MCUboot:     {device.DeviceInfo.McubootVersion ?? "unknown"}");
+                        OutputWriter.WriteLine($"  nanoMCUboot: {device.DeviceInfo.NanoMcubootVersion ?? "unknown"}");
+                    }
+
+                    if (device.Images is null)
+                    {
+                        OutputWriter.WriteLine($"  Images:      unavailable ({device.ImageListError ?? "not read"})");
+                    }
+                    else if (device.Images.Count == 0)
+                    {
+                        OutputWriter.WriteLine("  Images:      none");
+                    }
+                    else
+                    {
+                        foreach (McumgrImageInfo image in device.Images)
+                        {
+                            var flags = new List<string>();
+
+                            if (image.Active)
+                            {
+                                flags.Add("active");
+                            }
+
+                            if (image.Confirmed)
+                            {
+                                flags.Add("confirmed");
+                            }
+
+                            if (image.Pending)
+                            {
+                                flags.Add("pending");
+                            }
+
+                            if (image.Permanent)
+                            {
+                                flags.Add("permanent");
+                            }
+
+                            if (image.Bootable)
+                            {
+                                flags.Add("bootable");
+                            }
+
+                            OutputWriter.WriteLine($"  Image {image.Image} slot {image.Slot}: {image.Version ?? "?"}  {string.Join(" ", flags)}".TrimEnd());
+
+                            if (_verbosityLevel >= VerbosityLevel.Detailed
+                                && image.Hash is { Length: > 0 })
+                            {
+                                OutputWriter.WriteLine($"    Hash: {BitConverter.ToString(image.Hash).Replace("-", "")}");
+                            }
+                        }
+                    }
+
+                    OutputWriter.WriteLine("");
+                }
+            }
         }
 
         private static void DisplayNoOperationMessage()

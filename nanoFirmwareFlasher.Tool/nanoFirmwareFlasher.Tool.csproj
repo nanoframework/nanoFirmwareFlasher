@@ -46,9 +46,9 @@
 	<ItemGroup>
 		<PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.9.0" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
-		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.23" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.10.91" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
+		<PackageReference Include="nanoFramework.Tools.Debugger.Net" Version="2.5.28" />
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.10.94" PrivateAssets="All" />
 		<PackageReference Include="OpenTelemetry" Version="1.19.1" />
 	</ItemGroup>
 

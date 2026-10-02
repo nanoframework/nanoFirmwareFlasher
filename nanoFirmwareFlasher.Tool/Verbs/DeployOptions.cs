@@ -61,12 +61,78 @@ namespace nanoFramework.Tools.FirmwareFlasher
             HelpText = "JSON file containing network deployment settings.")]
         public string NetworkDeployment { get; set; }
 
+        [Option(
+            "mcuboot",
+            Required = false,
+            Default = false,
+            HelpText = "Target device is running MCUboot: the deployment image is uploaded to MCUboot Image 1 via the SMP serial transport. Requires serialport and image.")]
+        public bool Mcuboot { get; set; }
+
+        [Option(
+            "signkey",
+            Required = false,
+            Default = null,
+            HelpText = "Path to the PEM key used to sign the image with imgtool before uploading it (MCUboot only).")]
+        public string SignKey { get; set; }
+
+        [Option(
+            "slotsize",
+            Required = false,
+            Default = null,
+            HelpText = "MCUboot image slot size in bytes, used when signing (default 0x100000).")]
+        public string SlotSize { get; set; }
+
+        [Option(
+            "headersize",
+            Required = false,
+            Default = null,
+            HelpText = "MCUboot image header size in bytes, used when signing (default 0x200).")]
+        public string HeaderSize { get; set; }
+
+        [Option(
+            "writealign",
+            Required = false,
+            Default = null,
+            HelpText = "Flash write alignment in bytes, used when signing (default 4).")]
+        public string WriteAlign { get; set; }
+
+        [Option(
+            "secondaryslot",
+            Required = false,
+            Default = false,
+            HelpText = "Upload the image to the MCUboot secondary slot instead of the primary one, and mark it to be swapped in on next reset (MCUboot only).")]
+        public bool SecondarySlot { get; set; }
+
         /// <summary>
         /// Validates early constraints for the <c>deploy</c> verb.
         /// </summary>
         /// <returns><see langword="null"/> if valid, or an error message describing the constraint violation.</returns>
         public static string Validate(DeployOptions o)
         {
+            string mcubootError = ValidateMcubootUpload(o.Mcuboot, o.SerialPort, o.SignKey, o.SlotSize, o.HeaderSize, o.WriteAlign, o.SecondarySlot);
+
+            if (mcubootError != null)
+            {
+                return mcubootError;
+            }
+
+            if (o.Mcuboot)
+            {
+                if (!string.IsNullOrEmpty(o.FileDeployment)
+                    || !string.IsNullOrEmpty(o.NetworkDeployment)
+                    || (o.Address != null && o.Address.Count > 0))
+                {
+                    return "mcuboot can't be combined with file, network or address.";
+                }
+
+                if (string.IsNullOrEmpty(o.DeploymentImage))
+                {
+                    return "mcuboot requires image to specify the deployment image to upload.";
+                }
+
+                return null;
+            }
+
             return ValidateMutuallyExclusive(
                 "deploy",
                 requireOne: true,

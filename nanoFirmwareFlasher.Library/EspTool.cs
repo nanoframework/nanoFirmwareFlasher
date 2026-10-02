@@ -292,12 +292,21 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <summary>
         /// Tries reading ESP32 device details.
         /// </summary>
+        /// <param name="targetName">Target name.</param>
+        /// <param name="requireFlashSize">Fail if the flash size can't be determined.</param>
+        /// <param name="forcePsRamCheck">Force the PSRAM detection.</param>
+        /// <param name="hardResetAfterCommand">If true the chip will execute a hard reset via DTR signal.</param>
+        /// <param name="checkMcuboot">
+        /// Check whether the device has been provisioned with MCUboot, filling <see cref="Esp32DeviceInfo.HasMcuboot"/>.
+        /// When it has, the chip is reset and the serial port released, so MCUboot can be reached through SMP.
+        /// </param>
         /// <returns>The filled info structure with all the information about the connected ESP32 device or null if an error occurred.</returns>
         public Esp32DeviceInfo GetDeviceDetails(
             string targetName,
             bool requireFlashSize = true,
             bool forcePsRamCheck = false,
-            bool hardResetAfterCommand = false)
+            bool hardResetAfterCommand = false,
+            bool checkMcuboot = false)
         {
             if (Verbosity >= VerbosityLevel.Normal)
             {
@@ -395,8 +404,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     psramIsAvailable = FindPSRamAvailable(out psRamSize, forcePsRamCheck);
                 }
 
-                // Hard reset after command if requested (and we don't need the connection for anything else)
-                if (hardResetAfterCommand && _client != null)
+                bool? hasMcuboot = checkMcuboot ? DetectMcuboot() : null;
+
+                // Hard reset after command if requested (and we don't need the connection for anything else).
+                // A device running MCUboot is updated through SMP, so it is reset into MCUboot and the port released.
+                if ((hardResetAfterCommand || hasMcuboot == true) && _client != null)
                 {
                     _client.HardReset();
                     Disconnect();
@@ -422,7 +434,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     deviceId,
                     _flashSize,
                     psramIsAvailable,
-                    psRamSize);
+                    psRamSize)
+                {
+                    HasMcuboot = hasMcuboot
+                };
             }
             catch (Exception ex) when (ex is not EspToolExecutionException)
             {
@@ -439,6 +454,35 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
 
                 throw new EspToolExecutionException(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Checks for an MCUboot image header at the start of the primary slot (the CLR partition),
+        /// which is where a device provisioned with MCUboot holds its signed nanoCLR image.
+        /// </summary>
+        /// <returns>
+        /// Whether the device has been provisioned with MCUboot, or <see langword="null"/> if the flash couldn't be read.
+        /// </returns>
+        private bool? DetectMcuboot()
+        {
+            // MCUboot image header magic, little-endian
+            const uint McubootMagic = 0x96f3b83d;
+
+            try
+            {
+                byte[] header = _flashController.ReadFlash(Esp32Firmware.CLRAddress, 4);
+
+                return header.Length >= 4 && BitConverter.ToUInt32(header, 0) == McubootMagic;
+            }
+            catch (Exception ex)
+            {
+                if (Verbosity >= VerbosityLevel.Detailed)
+                {
+                    OutputWriter.WriteLine($"Couldn't check the device for MCUboot: {ex.Message}");
+                }
+
+                return null;
             }
         }
 

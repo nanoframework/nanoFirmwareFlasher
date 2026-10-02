@@ -90,6 +90,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 legacy.JtagDeviceId = o.DeviceId;
             }
 
+            if (o.Mcuboot)
+            {
+                // the image is the CLR image to upload to MCUboot Image 0 via SMP, never a raw
+                // file to flash at an address (which would steer the platform detection to STM32)
+                legacy.HexFile = Array.Empty<string>();
+                legacy.BinFile = Array.Empty<string>();
+                legacy.NanoDevice = false;
+
+                MapMcubootUpload(legacy, o.SignKey, o.SlotSize, o.HeaderSize, o.WriteAlign, o.SecondarySlot);
+            }
+
             return legacy;
         }
 
@@ -110,12 +121,36 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 FlashAddress = o.Address ?? Array.Empty<string>(),
             };
 
+            if (o.Mcuboot)
+            {
+                // the image goes to MCUboot Image 1 via SMP: none of the wire protocol deploy paths apply
+                MapMcubootUpload(legacy, o.SignKey, o.SlotSize, o.HeaderSize, o.WriteAlign, o.SecondarySlot);
+
+                return legacy;
+            }
+
             legacy.Deploy = !string.IsNullOrEmpty(o.DeploymentImage);
 
             bool noTargetInfo = string.IsNullOrEmpty(o.TargetName) && o.Platform is null;
             legacy.NanoDevice = noTargetInfo && legacy.Deploy && !string.IsNullOrEmpty(o.SerialPort);
 
             return legacy;
+        }
+
+        private static void MapMcubootUpload(Options legacy, string signKey, string slotSize, string headerSize, string writeAlign, bool secondarySlot)
+        {
+            legacy.McubootTarget = true;
+            legacy.SigningKeyPath = signKey;
+            legacy.SecondarySlot = secondarySlot;
+
+            // values were already validated by the verb's Validate
+            VerbOptionsBase.TryParseMcubootSize(slotSize, out int? parsedSlotSize);
+            VerbOptionsBase.TryParseMcubootSize(headerSize, out int? parsedHeaderSize);
+            VerbOptionsBase.TryParseMcubootSize(writeAlign, out int? parsedWriteAlign);
+
+            legacy.McubootSlotSize = parsedSlotSize;
+            legacy.McubootHeaderSize = parsedHeaderSize;
+            legacy.McubootWriteAlignment = parsedWriteAlign;
         }
 
         public static Options ToLegacyOptions(this ListOptions o)
@@ -138,6 +173,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 ListNativeStLinkDevices = o.Jtag,
                 ListJLinkDevices = o.JLink,
                 ListNativeSwdDevices = o.NativeSwd,
+                ListMcuImages = o.Images,
+                McubootTarget = o.Images && o.Mcuboot,
+                SerialPort = o.SerialPort,
             };
 
             // the legacy platform auto-detection only looks at the *external tool* list
