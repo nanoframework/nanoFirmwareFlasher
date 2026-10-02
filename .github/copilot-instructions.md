@@ -104,7 +104,7 @@ dotnet build nanoFirmwareFlasher.sln
 - The tool targets **net8.0** (or **net472** when built with `VSCodeExtensionBuild=True`, for the VS Code extension bundle).
 - Tests target **net8.0**.
 - Run the CLI from source with `dotnet run --project nanoFirmwareFlasher.Tool -- list ports`.
-- NuGet packages use locked restore (`packages.lock.json`). Lock mode is enforced in CI (`TF_BUILD` or `ContinuousIntegrationBuild` env vars). When adding/updating NuGet dependencies locally, run `dotnet restore` to update the lock file.
+- NuGet dependencies are declared with explicit versions in each `.csproj` (no lock files). NuGet resolves the lowest applicable version, so restores are deterministic. Don't use floating versions (`*`). Don't use exact-range syntax (`[x.y.z]`) in the Library: it flows into the published package's dependencies and forces consumers onto those exact versions.
 
 ---
 
@@ -184,4 +184,3 @@ Uses **Nerdbank.GitVersioning** (`version.json`). The version is automatically d
 - **STM32 native transports** require the probe's debug interface to be bound to a WinUSB-class driver (WinUSB/libusbK/libusb-win32) on Windows, because the transport uses raw USB via LibUsbDotNet. Bind the `ST-Link Debug` interface to WinUSB with Zadig. ST's proprietary STSW-LINK009 driver is **not** compatible with the native transport (reinstall it only to restore STM32CubeProgrammer/STM32CubeIDE for that probe). For a `STM32 BOOTLOADER` device in DFU mode, also bind it to WinUSB with Zadig. No external STM32 CLI tool is used anymore.
 - **ESP32-S2**: It is not possible to safely auto-detect the best image; users must always specify `--target`.
 - **FeatherS2, TinyS2, some S3 modules**: Must be placed in download mode manually (hold BOOT, click RESET, release BOOT) before flashing.
-- When running `dotnet restore` in locked mode fails, it usually means a package was added/updated without regenerating the lock file. Run `dotnet restore --force-evaluate` to regenerate it.
