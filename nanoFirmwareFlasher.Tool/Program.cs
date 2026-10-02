@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -62,18 +63,19 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
-            NanoTelemetryClient.ConnectionString = appConfigurationRoot?["iConnectionString"];
+            TelemetrySetup.Initialize(
+                appConfigurationRoot?["iConnectionString"],
+                _informationalVersionAttribute.InformationalVersion);
+
+            // one activity per invocation, records the command, options used and outcome
+            using Activity commandActivity = CommandTelemetry.Start();
 
             // check for empty argument collection
             if (!args.Any())
             {
+                CommandTelemetry.RecordNoArguments(commandActivity);
+
                 // no argument provided, show help text and usage examples
-
-                // because of short-comings in CommandLine parsing 
-                // need to customize the output to provide a consistent output
-                var parser = new Parser(config => config.HelpWriter = null);
-                var result = parser.ParseArguments<Options>(new string[] { "", "" });
-
                 var helpText = new HelpText(
                     new HeadingInfo(_headerInfo),
                     _copyrightInfo)
@@ -86,7 +88,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         .AddPreOptionsLine("Follows some examples on how to use nanoff. For more detailed explanations please check:")
                         .AddPreOptionsLine("https://github.com/nanoframework/nanoFirmwareFlasher#usage")
                         .AddPreOptionsLine("")
-                        .AddPreOptionsLine(HelpText.RenderUsageText(result))
+                        .AddPreOptionsLine("  nanoff flash target ESP_WROVER_KIT")
+                        .AddPreOptionsLine("  nanoff flash platform esp32 serialport COM7")
+                        .AddPreOptionsLine("  nanoff list targets platform stm32")
+                        .AddPreOptionsLine("  nanoff details platform rpi_pico serialport COM11")
                         .AddPreOptionsLine("");
 
                 OutputWriter.WriteLine(helpText.ToString());
@@ -97,14 +102,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.WriteLine();
 #endif
 
-                return (int)ExitCodes.OK;
+                return CompleteRun(commandActivity, ExitCodes.OK);
             }
 
-            var parsedArguments = Parser.Default.ParseArguments<Options>(args);
+            // verbs + words syntax is the only supported syntax from here on
+            // (e.g. "flash target ESP_WROVER_KIT masserase"); the legacy flat
+            // "--flag value" syntax was removed as part of the breaking change
+            // to nanoff's major version bump.
+            try
+            {
+                await RunVerbAsync(args, commandActivity);
+            }
+            catch (Exception ex)
+            {
+                // unexpected exception: report it instead of crashing
+                NanoTelemetry.TrackException(ex, "unhandled");
 
-            await parsedArguments
-                .WithParsedAsync(RunOptionsAndReturnExitCodeAsync)
-                .WithNotParsedAsync(HandleErrorsAsync);
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = ex.Message;
+                _verbosityLevel = VerbosityLevel.Normal;
+            }
 
             if (_verbosityLevel > VerbosityLevel.Quiet)
             {
@@ -114,7 +131,22 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // force clean-up
             _nanoDeviceOperations?.Dispose();
 
-            return (int)_exitCode;
+            return CompleteRun(commandActivity, _exitCode);
+        }
+
+        /// <summary>
+        /// Records the outcome of the command, flushes the telemetry and returns the exit code.
+        /// </summary>
+        private static int CompleteRun(Activity commandActivity, ExitCodes exitCode)
+        {
+            CommandTelemetry.Complete(commandActivity, exitCode);
+
+            // stop the activity now so that it's exported before the telemetry pipeline shuts down
+            commandActivity?.Stop();
+
+            TelemetrySetup.Shutdown(TimeSpan.FromSeconds(2));
+
+            return (int)exitCode;
         }
 
         private static void CheckVersion()
@@ -166,7 +198,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static Task HandleErrorsAsync(IEnumerable<Error> errors)
         {
-            if (errors.All(e => e.Tag == ErrorType.HelpRequestedError || e.Tag == ErrorType.VersionRequestedError))
+            if (errors.All(e => e.Tag == ErrorType.HelpRequestedError || e.Tag == ErrorType.HelpVerbRequestedError || e.Tag == ErrorType.VersionRequestedError))
             {
                 return Task.CompletedTask;
             }
@@ -174,49 +206,374 @@ namespace nanoFramework.Tools.FirmwareFlasher
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Example command lines shown in each verb's help screen (<c>nanoff &lt;verb&gt; help</c>
+        /// / <c>nanoff &lt;verb&gt; --help</c>), keyed by that verb's option class.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<Type, string[]> s_verbExamples = new Dictionary<Type, string[]>
+        {
+            [typeof(FlashOptions)] = new[]
+            {
+                "nanoff flash target ESP_WROVER_KIT serialport COM31",
+                "nanoff flash target ST_STM32F769I_DISCOVERY jtag",
+                "nanoff flash platform esp32 serialport COM31 masserase",
+                "nanoff flash serialport COM9 image C:\\nf-interpreter\\build\\nanoclr.bin",
+                "nanoff flash serialport COM31 image nanoCLR.bin mcuboot signkey my-signing-key.pem",
+            },
+            [typeof(DeployOptions)] = new[]
+            {
+                "nanoff deploy target ESP32_PSRAM_REV0 serialport COM31 image app.bin",
+                "nanoff deploy target ST_STM32F769I_DISCOVERY image app.bin address 0x08040000",
+                "nanoff deploy file C:\\path\\deploy.json",
+                "nanoff deploy network C:\\path\\deploy.json",
+                "nanoff deploy serialport COM31 image deployment-signed.bin mcuboot",
+            },
+            [typeof(ListOptions)] = new[]
+            {
+                "nanoff list ports",
+                "nanoff list devices",
+                "nanoff list targets platform esp32",
+                "nanoff list dfu",
+                "nanoff list images mcuboot serialport COM31",
+            },
+            [typeof(DetailsOptions)] = new[]
+            {
+                "nanoff details platform esp32 serialport COM31",
+                "nanoff details serialport COM9",
+            },
+            [typeof(IdentifyOptions)] = new[]
+            {
+                "nanoff identify platform esp32 serialport COM31",
+            },
+            [typeof(DriversOptions)] = new[]
+            {
+                "nanoff drivers dfu",
+                "nanoff drivers jtag",
+                "nanoff drivers xds",
+            },
+            [typeof(CacheOptions)] = new[]
+            {
+                "nanoff cache clear",
+                "nanoff cache download platform esp32 archivepath c:\\firmware",
+            },
+            [typeof(KeysOptions)] = new[]
+            {
+                "nanoff keys generate my-signing-key.pem",
+                "nanoff keys getpub root-pub-key.c signkey my-signing-key.pem",
+            },
+        };
+
+        /// <summary>
+        /// Builds and prints help for the verb parser, adding an "Examples:" section for the
+        /// specific verb being asked about (<c>nanoff &lt;verb&gt; help</c>/<c>--help</c>), or
+        /// the list of verbs when no specific verb was requested (<c>nanoff help</c>/<c>--help</c>).
+        /// </summary>
+        /// <param name="result">The verb parser result (Parsed or NotParsed).</param>
+        /// <param name="args">The original (pre-normalization) arguments, used to detect which verb, if any, was requested.</param>
+        private static void DisplayVerbHelp(ParserResult<object> result, string[] args)
+        {
+            Type requestedVerbType = args.Length > 0 && VerbTokenizer.KnownVerbs.TryGetValue(args[0], out Type verbType)
+                ? verbType
+                : null;
+
+            var helpText = HelpText.AutoBuild(
+                result,
+                h =>
+                {
+                    if (requestedVerbType != null
+                        && s_verbExamples.TryGetValue(requestedVerbType, out string[] examples))
+                    {
+                        h.AddPreOptionsLine("");
+                        h.AddPreOptionsLine("Examples:");
+                        foreach (string example in examples)
+                        {
+                            h.AddPreOptionsLine($"  {example}");
+                        }
+                    }
+
+                    return h;
+                },
+                e => e,
+                verbsIndex: true);
+
+            OutputWriter.WriteLine(helpText.ToString());
+        }
+
+        /// <summary>
+        /// Entry point for the new verbs + words syntax: normalizes the bare-word
+        /// arguments, parses them against the per-verb option classes, and dispatches
+        /// to the matching <c>Run*Async</c> method.
+        /// </summary>
+        private static async Task RunVerbAsync(string[] args, Activity commandActivity)
+        {
+            string[] normalizedArgs = VerbTokenizer.Normalize(args);
+
+            var verbParserResult = new Parser(config => config.HelpWriter = null)
+                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions, KeysOptions>(normalizedArgs);
+
+            if (verbParserResult is Parsed<object> parsed)
+            {
+                CommandTelemetry.RecordParsed(commandActivity, parsed.Value, normalizedArgs);
+
+                switch (parsed.Value)
+                {
+                    case FlashOptions flashOptions:
+                        await RunFlashAsync(flashOptions);
+                        break;
+
+                    case DeployOptions deployOptions:
+                        await RunDeployAsync(deployOptions);
+                        break;
+
+                    case ListOptions listOptions:
+                        await RunListAsync(listOptions);
+                        break;
+
+                    case DetailsOptions detailsOptions:
+                        await RunDetailsAsync(detailsOptions);
+                        break;
+
+                    case IdentifyOptions identifyOptions:
+                        await RunIdentifyAsync(identifyOptions);
+                        break;
+
+                    case DriversOptions driversOptions:
+                        await RunDriversAsync(driversOptions);
+                        break;
+
+                    case CacheOptions cacheOptions:
+                        await RunCacheAsync(cacheOptions);
+                        break;
+
+                    case KeysOptions keysOptions:
+                        await RunKeysAsync(keysOptions);
+                        break;
+                }
+            }
+            else if (verbParserResult is NotParsed<object> notParsed)
+            {
+                CommandTelemetry.RecordNotParsed(commandActivity, args, normalizedArgs, notParsed.Errors);
+
+                if (notParsed.Errors.Any(e => e.Tag == ErrorType.VersionRequestedError))
+                {
+                    OutputWriter.WriteLine(_headerInfo);
+                }
+                else if (notParsed.Errors.Any(e => e.Tag == ErrorType.HelpRequestedError || e.Tag == ErrorType.HelpVerbRequestedError))
+                {
+                    DisplayVerbHelp(verbParserResult, args);
+                }
+                else
+                {
+                    // the parser's HelpWriter is disabled, so parsing errors (e.g. an
+                    // unknown option) aren't rendered automatically; do it explicitly
+                    DisplayVerbHelp(verbParserResult, args);
+
+                    // make sure Main() actually reports the resulting exit code
+                    _verbosityLevel = VerbosityLevel.Normal;
+                }
+
+                await HandleErrorsAsync(notParsed.Errors);
+            }
+        }
+
+        /// <summary>
+        /// Common shape for every verb: set verbosity, run its <c>Validate</c> if it has one
+        /// and bail out with E9000 on a validation error, otherwise map to <see cref="Options"/> and dispatch.
+        /// </summary>
+        private static async Task RunVerbOptionsAsync<T>(T o, Func<T, Options> toLegacyOptions, Func<T, string> validate = null) where T : VerbOptionsBase
+        {
+            try
+            {
+                _verbosityLevel = o.GetVerbosityLevel();
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
+                return;
+            }
+
+            string validationError = validate?.Invoke(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return;
+            }
+
+            await RunOptionsAndReturnExitCodeAsync(toLegacyOptions(o));
+        }
+
+        private static Task RunFlashAsync(FlashOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), FlashOptions.Validate);
+
+        private static Task RunDeployAsync(DeployOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), DeployOptions.Validate);
+
+        private static Task RunListAsync(ListOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), ListOptions.Validate);
+
+        private static Task RunDetailsAsync(DetailsOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions());
+
+        private static Task RunIdentifyAsync(IdentifyOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions());
+
+        private static Task RunCacheAsync(CacheOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), CacheOptions.Validate);
+
+        /// <summary>
+        /// The <c>drivers</c> verb is handled directly rather than through the legacy
+        /// dispatch: <c>drivers dfu</c>/<c>drivers jtag</c> now print install instructions
+        /// instead of running an installer (see proposal doc); only <c>drivers xds</c>
+        /// still runs the existing installer.
+        /// </summary>
+        private static Task RunDriversAsync(DriversOptions o)
+        {
+            try
+            {
+                _verbosityLevel = o.GetVerbosityLevel();
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
+                return Task.CompletedTask;
+            }
+
+            string validationError = DriversOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return Task.CompletedTask;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+            OutputWriter.WriteLine(_headerInfo);
+            OutputWriter.WriteLine(_copyrightInfo);
+            OutputWriter.WriteLine();
+
+            if (o.Dfu)
+            {
+                OutputWriter.WriteLine("To flash STM32 devices via USB DFU, install the WinUSB driver for the device's");
+                OutputWriter.WriteLine("DFU bootloader interface: put the device in DFU mode and use Zadig (zadig.akeo.ie)");
+                OutputWriter.WriteLine("to install the WinUSB driver for the 'STM32 BOOTLOADER' USB device.");
+                OutputWriter.WriteLine("No driver installation is required on Linux or macOS.");
+                _exitCode = ExitCodes.OK;
+            }
+            else if (o.Jtag)
+            {
+                OutputWriter.WriteLine("To flash STM32 devices via JTAG/SWD, install the ST-LINK USB driver: download the");
+                OutputWriter.WriteLine("'STSW-LINK009' ST-LINK driver package from STMicroelectronics' website, or install");
+                OutputWriter.WriteLine("it via the STM32CubeProgrammer installer.");
+                OutputWriter.WriteLine("No driver installation is required on Linux or macOS.");
+                _exitCode = ExitCodes.OK;
+            }
+            else if (o.Xds)
+            {
+                _exitCode = CC13x26x2Operations.InstallXds110Drivers(_verbosityLevel);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// The <c>keys</c> verb is handled directly rather than through the legacy dispatch:
+        /// it only works on local files and never talks to a device.
+        /// </summary>
+        private static Task RunKeysAsync(KeysOptions o)
+        {
+            try
+            {
+                _verbosityLevel = o.GetVerbosityLevel();
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
+                return Task.CompletedTask;
+            }
+
+            string validationError = KeysOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return Task.CompletedTask;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+            OutputWriter.WriteLine(_headerInfo);
+            OutputWriter.WriteLine(_copyrightInfo);
+            OutputWriter.WriteLine();
+
+            try
+            {
+                if (!string.IsNullOrEmpty(o.Generate))
+                {
+                    var imageManager = new McubootImageManager(o.Generate, slotSize: 0) { Verbosity = _verbosityLevel };
+                    _exitCode = imageManager.GenerateSigningKey(o.Generate);
+                }
+                else
+                {
+                    var imageManager = new McubootImageManager(o.SignKey, slotSize: 0) { Verbosity = _verbosityLevel };
+                    _exitCode = imageManager.ExtractPublicKey(o.SignKey, o.GetPub);
+                }
+            }
+            catch (Exception ex)
+            {
+                NanoTelemetry.TrackException(ex, "keys");
+
+                _exitCode = ExitCodes.E10004;
+                _extraMessage = ex.Message;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Runs a platform manager's <see cref="IManager.ProcessAsync"/>, mapping specific
+        /// exception types to their exit code (and optionally their message), with
+        /// <paramref name="defaultExitCode"/>/message used for anything else unmapped.
+        /// <see cref="NoOperationPerformedException"/> is always handled the same way.
+        /// </summary>
+        private static async Task RunManagerAsync(IManager manager, ExitCodes defaultExitCode, params (Type ExceptionType, ExitCodes ExitCode, bool IncludeMessage)[] exceptionMappings)
+        {
+            try
+            {
+                _exitCode = await manager.ProcessAsync();
+            }
+            catch (NoOperationPerformedException)
+            {
+                DisplayNoOperationMessage();
+            }
+            catch (Exception ex)
+            {
+                NanoTelemetry.TrackException(ex, manager.GetType().Name);
+
+                var mapping = Array.Find(exceptionMappings, m => m.ExceptionType == ex.GetType());
+
+                _exitCode = mapping.ExceptionType != null ? mapping.ExitCode : defaultExitCode;
+
+                if (mapping.ExceptionType == null || mapping.IncludeMessage)
+                {
+                    _extraMessage = ex.Message;
+                }
+            }
+        }
+
         static async Task RunOptionsAndReturnExitCodeAsync(Options o)
         {
             bool operationPerformed = false;
 
-            #region parse verbosity option
-
-            switch (o.Verbosity)
+            try
             {
-                // quiet
-                case "q":
-                case "quiet":
-                    _verbosityLevel = VerbosityLevel.Quiet;
-                    break;
-
-                // minimal
-                case "m":
-                case "minimal":
-                    _verbosityLevel = VerbosityLevel.Minimal;
-                    break;
-
-                // normal
-                case "n":
-                case "normal":
-                    _verbosityLevel = VerbosityLevel.Normal;
-                    break;
-
-                // detailed
-                case "d":
-                case "detailed":
-                    _verbosityLevel = VerbosityLevel.Detailed;
-                    break;
-
-                // diagnostic
-                case "diag":
-                case "diagnostic":
-                    _verbosityLevel = VerbosityLevel.Diagnostic;
-                    break;
-
-                default:
-                    throw new ArgumentException("Invalid option for Verbosity");
+                _verbosityLevel = VerbOptionsBase.ParseVerbosity(o.Verbosity);
             }
-
-            #endregion
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
+                return;
+            }
 
             OutputWriter.ForegroundColor = ConsoleColor.White;
 
@@ -224,6 +581,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.WriteLine(_copyrightInfo);
             OutputWriter.WriteLine();
 
+            TelemetrySetup.ShowFirstRunNoticeIfNeeded(_verbosityLevel, _informationalVersionAttribute.InformationalVersion);
 
 #if !VS_CODE_EXTENSION_BUILD
             if (!o.SuppressNanoFFVersionCheck)
@@ -262,54 +620,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return;
             }
 
-            // MCUboot key generation (early exit - no device needed)
-            if (!string.IsNullOrEmpty(o.KeygenOutputPath))
-            {
-                if (string.IsNullOrEmpty(o.SigningKeyPath))
-                {
-                    _exitCode = ExitCodes.E9000;
-                    _extraMessage = "--sign-key must specify the output path when using --keygen.";
-                    return;
-                }
-
-                try
-                {
-                    var imgMgr = new McubootImageManager(o.KeygenOutputPath, slotSize: 0);
-                    _exitCode = imgMgr.GenerateSigningKey(o.KeygenOutputPath);
-                }
-                catch (Exception ex)
-                {
-                    _exitCode = ExitCodes.E10004;
-                    _extraMessage = ex.Message;
-                }
-
-                return;
-            }
-
-            // MCUboot public key extraction (early exit - no device needed)
-            if (!string.IsNullOrEmpty(o.GetPubOutputPath))
-            {
-                if (string.IsNullOrEmpty(o.SigningKeyPath))
-                {
-                    _exitCode = ExitCodes.E9000;
-                    _extraMessage = "--sign-key is required when using --getpub.";
-                    return;
-                }
-
-                try
-                {
-                    var imgMgr = new McubootImageManager(o.SigningKeyPath, slotSize: 0);
-                    _exitCode = imgMgr.ExtractPublicKey(o.SigningKeyPath, o.GetPubOutputPath);
-                }
-                catch (Exception ex)
-                {
-                    _exitCode = ExitCodes.E10004;
-                    _extraMessage = ex.Message;
-                }
-
-                return;
-            }
-
             if (o.ListComPorts)
             {
                 var ports = SerialPort.GetPortNames();
@@ -334,47 +644,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return;
             }
 
-            #region MCUboot options
-
-            if(o.McubootTarget)
-            {
-                var manager = new McubootManager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (McubootImageException ex)
-                {
-                    _exitCode = ExitCodes.E10002;
-                    _extraMessage = ex.Message;
-                }
-                catch (McumgrProtocolException ex)
-                {
-                    _exitCode = ExitCodes.E10010;
-                    _extraMessage = ex.Message;
-                }
-                catch (McumgrTimeoutException ex)
-                {
-                    _exitCode = ExitCodes.E10007;
-                    _extraMessage = ex.Message;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    _exitCode = ExitCodes.E10005;
-                    _extraMessage = ex.Message;
-                }
-
-                // done here, this command has no further processing
-                return;
-            }
-
-            #endregion
-
             #region list targets
 
             // First check if we are asked for the list of available targets
@@ -386,7 +655,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (string.IsNullOrEmpty(o.FwArchivePath))
                     {
                         _exitCode = ExitCodes.E9000;
-                        _extraMessage = "--archivepath is required when --fromarchive is specified.";
+                        _extraMessage = "fromarchive requires archivepath to specify the firmware archive location.";
                         return;
                     }
 
@@ -515,6 +784,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 catch (Exception ex)
                 {
+                    NanoTelemetry.TrackException(ex, "listDevices");
+
                     _exitCode = ExitCodes.E2001;
                     _extraMessage = ex.Message;
                 }
@@ -543,24 +814,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else
                 {
-                    try
-                    {
-                        _exitCode = await manager.ProcessAsync();
-                    }
-                    catch (CantConnectToNanoDeviceException ex)
-                    {
-                        _exitCode = ExitCodes.E2001;
-                        _extraMessage = ex.Message;
-                    }
-                    catch (NoOperationPerformedException)
-                    {
-                        DisplayNoOperationMessage();
-                    }
-                    catch (Exception ex)
-                    {
-                        _exitCode = ExitCodes.E2002;
-                        _extraMessage = ex.Message;
-                    }
+                    await RunManagerAsync(
+                        manager,
+                        ExitCodes.E2002,
+                        (typeof(CantConnectToNanoDeviceException), ExitCodes.E2001, true));
                 }
 
                 return;
@@ -633,6 +890,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
+            #region MCUboot / SMP
+
+            // Everything MCUboot goes straight through SMP, except a firmware update of an ESP32 target:
+            // that one goes through the ESP32 manager, which provisions MCUboot on first use.
+            // This has to be handled before the platform guessing below, which would take a plain
+            // serial port as an ESP32 device and connect to it through its ROM bootloader.
+            if (o.McubootTarget
+                && !(o.Update && o.Platform == SupportedPlatform.esp32))
+            {
+                await RunManagerAsync(
+                    new McubootManager(o, _verbosityLevel),
+                    ExitCodes.E10005,
+                    (typeof(McubootImageException), ExitCodes.E10002, true),
+                    (typeof(McumgrProtocolException), ExitCodes.E10010, true),
+                    (typeof(McumgrTimeoutException), ExitCodes.E10007, true));
+
+                // done here, this command has no further processing
+                return;
+            }
+
+            #endregion
+
             #region platform specific options
 
             // if an option was specified and has an obvious platform, try to be smart and set the platform accordingly (in case it wasn't specified)
@@ -640,9 +919,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // JTAG related
                 if (
-                    o.ListJtagDevices ||
-                    o.ListNativeStLinkDevices ||
-                    o.ListNativeSwdDevices ||
                     !string.IsNullOrEmpty(o.JtagDeviceId) ||
                     o.HexFile.Any() ||
                     o.BinFile.Any())
@@ -650,11 +926,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     o.Platform = SupportedPlatform.stm32;
                 }
                 // DFU related
-                else if (
-                    o.ListDevicesInDfuMode ||
-                    o.ListNativeDfuDevices ||
-                    o.DfuUpdate ||
-                    !string.IsNullOrEmpty(o.DfuDeviceId))
+                else if (!string.IsNullOrEmpty(o.DfuDeviceId))
                 {
                     o.Platform = SupportedPlatform.stm32;
                 }
@@ -667,11 +939,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 else if (o.TIInstallXdsDrivers)
                 {
                     o.Platform = SupportedPlatform.ti_simplelink;
-                }
-                else if (
-                    o.InstallJtagDrivers)
-                {
-                    o.Platform = SupportedPlatform.stm32;
                 }
                 // ESP32 related
                 else if (
@@ -691,26 +958,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             #endregion
 
-            #region validate interface options
+            CommandTelemetry.SetPlatform(o.Platform);
 
-            string interfaceError = Options.ValidateInterfaceOptions(o);
-
-            if (interfaceError != null)
-            {
-                _exitCode = ExitCodes.E9000;
-                _extraMessage = interfaceError;
-                return;
-            }
-
-            // --deploy requires --image
+            // deploy requires image
             if (o.Deploy && string.IsNullOrEmpty(o.DeploymentImage))
             {
                 _exitCode = ExitCodes.E9000;
-                _extraMessage = "--deploy requires --image to specify the deployment image path.";
+                _extraMessage = "deploy requires image to specify the deployment image path.";
                 return;
             }
-
-            #endregion
 
             #region firmware archive update if no device is required
             if (o.UpdateFwArchive)
@@ -719,20 +975,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (o.FromFwArchive)
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = "Incompatible option --fromarchive combined with --updatearchive.";
+                    _extraMessage = "Incompatible option fromarchive combined with download.";
                     return;
                 }
                 if (string.IsNullOrEmpty(o.FwArchivePath))
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--archivepath is required when --updatearchive is specified.";
+                    _extraMessage = "download requires archivepath to specify the firmware archive location.";
                     return;
                 }
 
                 if (o.Platform is null && string.IsNullOrEmpty(o.TargetName))
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--platform or --target is required when --updatearchive is specified.";
+                    _extraMessage = "download requires platform or target to specify what firmware to download.";
                     return;
                 }
 
@@ -752,14 +1008,14 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 if (o.FromFwArchive)
                 {
                     _exitCode = ExitCodes.E9000;
-                    _extraMessage = $"--archivepath is required when --fromarchive is specified.";
+                    _extraMessage = "fromarchive requires archivepath to specify the firmware archive location.";
                     return;
                 }
             }
             else if (!o.FromFwArchive)
             {
                 _exitCode = ExitCodes.E9000;
-                _extraMessage = $"--fromarchive is required when --archivepath is specified.";
+                _extraMessage = "archivepath requires fromarchive to be specified.";
                 return;
             }
             #endregion
@@ -768,37 +1024,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.esp32)
             {
-                var manager = new Esp32Manager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (EspToolExecutionException ex)
-                {
-                    _exitCode = ExitCodes.E4000;
-                    _extraMessage = ex.Message;
-                }
-                catch (ReadEsp32FlashException ex)
-                {
-                    _exitCode = ExitCodes.E4004;
-                    _extraMessage = ex.Message;
-                }
-                catch (WriteEsp32FlashException ex)
-                {
-                    _exitCode = ExitCodes.E4003;
-                    _extraMessage = ex.Message;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    // exception with 
-                    _exitCode = ExitCodes.E4000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(
+                    new Esp32Manager(o, _verbosityLevel),
+                    ExitCodes.E4000,
+                    (typeof(EspToolExecutionException), ExitCodes.E4000, true),
+                    (typeof(ReadEsp32FlashException), ExitCodes.E4004, true),
+                    (typeof(WriteEsp32FlashException), ExitCodes.E4003, true));
 
                 operationPerformed = true;
             }
@@ -809,32 +1040,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.stm32)
             {
-                var manager = new Stm32Manager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (CantConnectToDfuDeviceException)
-                {
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E1005;
-                }
-                catch (CantConnectToJtagDeviceException)
-                {
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E5002;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    // exception with 
-                    _exitCode = ExitCodes.E5000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(
+                    new Stm32Manager(o, _verbosityLevel),
+                    ExitCodes.E5000,
+                    (typeof(CantConnectToDfuDeviceException), ExitCodes.E1005, false),
+                    (typeof(CantConnectToJtagDeviceException), ExitCodes.E5002, false));
 
                 operationPerformed = true;
             }
@@ -845,22 +1055,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.ti_simplelink)
             {
-                var manager = new TIManager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    // exception with 
-                    _exitCode = ExitCodes.E5000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(new TIManager(o, _verbosityLevel), ExitCodes.E5000);
 
                 operationPerformed = true;
             }
@@ -871,32 +1066,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.efm32)
             {
-                var manager = new SilabsManager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (CantConnectToJLinkDeviceException)
-                {
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E8001;
-                }
-                catch (SilinkExecutionException)
-                {
-                    // done here, this command has no further processing
-                    _exitCode = ExitCodes.E8002;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    // exception with 
-                    _exitCode = ExitCodes.E8000;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(
+                    new SilabsManager(o, _verbosityLevel),
+                    ExitCodes.E8000,
+                    (typeof(CantConnectToJLinkDeviceException), ExitCodes.E8001, false),
+                    (typeof(SilinkExecutionException), ExitCodes.E8002, false));
 
                 operationPerformed = true;
             }
@@ -907,61 +1081,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (o.Platform == SupportedPlatform.rpi_pico)
             {
-                var manager = new PicoManager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    _exitCode = ExitCodes.E3000;
-                    _extraMessage = ex.Message;
-                }
-
-                operationPerformed = true;
-            }
-
-            #endregion
-
-            #region Standalone MCUboot / SMP options (no explicit platform)
-
-            if (!operationPerformed && (o.McubootTarget || o.ListMcuImages))
-            {
-                var manager = new McubootManager(o, _verbosityLevel);
-
-                try
-                {
-                    _exitCode = await manager.ProcessAsync();
-                }
-                catch (McubootImageException ex)
-                {
-                    _exitCode = ExitCodes.E10002;
-                    _extraMessage = ex.Message;
-                }
-                catch (McumgrProtocolException ex)
-                {
-                    _exitCode = ExitCodes.E10010;
-                    _extraMessage = ex.Message;
-                }
-                catch (McumgrTimeoutException ex)
-                {
-                    _exitCode = ExitCodes.E10007;
-                    _extraMessage = ex.Message;
-                }
-                catch (NoOperationPerformedException)
-                {
-                    DisplayNoOperationMessage();
-                }
-                catch (Exception ex)
-                {
-                    _exitCode = ExitCodes.E10005;
-                    _extraMessage = ex.Message;
-                }
+                await RunManagerAsync(new PicoManager(o, _verbosityLevel), ExitCodes.E3000);
 
                 operationPerformed = true;
             }
@@ -987,6 +1107,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     catch (Exception ex)
                     {
+                        NanoTelemetry.TrackException(ex, "fileDeployment");
+
                         // exception with 
                         _exitCode = ExitCodes.E2003;
                         _extraMessage = ex.Message;
@@ -1010,6 +1132,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     }
                     catch (Exception ex)
                     {
+                        NanoTelemetry.TrackException(ex, "networkDeployment");
+
                         // exception with 
                         _exitCode = ExitCodes.E2003;
                         _extraMessage = ex.Message;
@@ -1131,20 +1255,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
         private static void DisplayNoOperationMessage()
         {
-            // because of short-comings in CommandLine parsing 
-            // need to customize the output to provide a consistent output
-            var parser = new Parser(config => config.HelpWriter = null);
-            var result = parser.ParseArguments<Options>(new string[] { "", "" });
-
             var helpText = new HelpText(
                 new HeadingInfo(_headerInfo),
                 _copyrightInfo)
                     .AddPreOptionsLine("")
                     .AddPreOptionsLine("No operation was performed with the options supplied.")
                     .AddPreOptionsLine("")
-                    .AddPreOptionsLine(HelpText.RenderUsageText(result))
-                    .AddPreOptionsLine("")
-                    .AddOptions(result);
+                    .AddPreOptionsLine("Use 'nanoff help' or 'nanoff <verb> --help' (e.g. 'nanoff flash --help') for usage information.");
 
             OutputWriter.WriteLine(helpText.ToString());
         }

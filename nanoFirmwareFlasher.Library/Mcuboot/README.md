@@ -76,7 +76,7 @@ If `WriteEvent` is added in the future, the commands below will work:
 dotnet tool install -g dotnet-trace
 
 # Collect while running nanoff
-dotnet-trace collect --providers "nanoFramework-McumgrClient:0x1:5" -- nanoff --mcuboot --serialport COM3
+dotnet-trace collect --providers "nanoFramework-McumgrClient:0x1:5" -- nanoff list images mcuboot serialport COM3
 
 # Or attach to a running process (replace <PID>)
 dotnet-trace collect --process-id <PID> --providers "nanoFramework-McumgrClient:0x1:5"

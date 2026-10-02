@@ -7,12 +7,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights.DataContracts;
 using nanoFramework.Tools.Debugger;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -516,35 +514,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     stepSuccessful = true;
 
-                    // send telemetry data on successful download
-                    if (NanoTelemetryClient.TelemetryClient is not null)
-                    {
-                        AssemblyInformationalVersionAttribute nanoffVersion = null;
-
-                        try
-                        {
-                            nanoffVersion = Attribute.GetCustomAttribute(
-                                     Assembly.GetEntryAssembly()!,
-                                     typeof(AssemblyInformationalVersionAttribute))
-                                 as AssemblyInformationalVersionAttribute;
-                        }
-                        catch
-                        {
-                            // OK to fail here, just telemetry
-                        }
-
-                        var packageTelemetry = new EventTelemetry("PackageDownloaded");
-                        packageTelemetry.Properties.Add("TargetName", _targetName);
-                        packageTelemetry.Properties.Add("Version", Version);
-                        packageTelemetry.Properties.Add("nanoffVersion", nanoffVersion == null ? "unknown" : nanoffVersion.InformationalVersion);
-
-                        NanoTelemetryClient.TelemetryClient.TrackEvent(packageTelemetry);
-                        NanoTelemetryClient.TelemetryClient.Flush();
-                    }
+                    NanoTelemetry.FirmwarePackageDownloaded(_targetName, Version);
                 }
-                catch
+                catch (Exception ex)
                 {
                     // exception with download, assuming it's something with network connection or Cloudsmith API
+                    NanoTelemetry.TrackException(ex, "firmwareDownload");
                 }
             }
 
@@ -785,9 +760,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // set exposed property
                 version = fwVersion;
             }
-            catch
+            catch (Exception ex)
             {
                 // exception with download, assuming it's something with network connection or Cloudsmith API
+                NanoTelemetry.TrackException(ex, "firmwareLookup");
             }
 
             return new DownloadUrlResult(downloadUrl, version, ExitCodes.OK);

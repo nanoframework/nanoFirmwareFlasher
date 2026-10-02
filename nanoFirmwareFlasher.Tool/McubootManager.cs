@@ -14,7 +14,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 {
     /// <summary>
     /// Manages MCUboot firmware update operations using the SMP serial transport (mcumgr protocol).
-    /// Handles standalone queries (list/erase) and the full upload lifecycle:
+    /// Handles the image list query and the full upload lifecycle:
     /// sign (if key provided) → upload → reset.
     /// </summary>
     public class McubootManager : IManager
@@ -183,7 +183,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!imageIsClr && !imageIsDeploy)
             {
                 OutputWriter.ForegroundColor = ConsoleColor.Red;
-                OutputWriter.WriteLine("No image specified. Use --clrfile to upload a CLR image (MCUboot Image 0) or --image to upload a deployment image (MCUboot Image 1).");
+                OutputWriter.WriteLine("No image specified. Use 'flash ... image <file> mcuboot' to upload a CLR image (MCUboot Image 0) or 'deploy ... image <file> mcuboot' to upload a deployment image (MCUboot Image 1).");
                 OutputWriter.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.E10003;
             }
@@ -191,7 +191,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (imageIsClr && imageIsDeploy)
             {
                 OutputWriter.ForegroundColor = ConsoleColor.Red;
-                OutputWriter.WriteLine("Specify either --clrfile (CLR, Image 0) or --image (deployment, Image 1), not both. Run nanoff twice for separate CLR and deployment updates.");
+                OutputWriter.WriteLine("Specify either a CLR image (Image 0) or a deployment image (Image 1), not both. Use 'flash' and 'deploy' separately for CLR and deployment updates.");
                 OutputWriter.ForegroundColor = ConsoleColor.White;
                 return ExitCodes.E9000;
             }

@@ -625,20 +625,64 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.WriteLine($"Reading config partition (0x{address:X}, {size} bytes) to {backupFilename}...");
             }
 
-            _flashController.ReadFlashToFile(
-                backupFilename,
-                (uint)address,
-                size,
-                (bytesRead, totalBytes) =>
-                {
-                    if (Verbosity >= VerbosityLevel.Normal)
+            // read into a staging file next to the destination first, so a failed or
+            // partial read never touches (or discards) whatever backup already exists
+            // at backupFilename; only replace it once the staged read has fully succeeded
+            string backupDirectory = Path.GetDirectoryName(Path.GetFullPath(backupFilename));
+            string tempFilename = Path.Combine(string.IsNullOrEmpty(backupDirectory) ? "." : backupDirectory, Path.GetRandomFileName());
+
+            try
+            {
+                _flashController.ReadFlashToFile(
+                    tempFilename,
+                    (uint)address,
+                    size,
+                    (bytesRead, totalBytes) =>
                     {
-                        int percent = (int)((long)bytesRead * 100 / totalBytes);
-                        int tw = GetTerminalWidth();
-                        string msg = $"\rBacking up config partition... {percent}%";
-                        OutputWriter.Write(msg.PadRight(tw + 1));
+                        if (Verbosity >= VerbosityLevel.Normal)
+                        {
+                            int percent = (int)((long)bytesRead * 100 / totalBytes);
+                            int tw = GetTerminalWidth();
+                            string msg = $"\rBacking up config partition... {percent}%";
+                            OutputWriter.Write(msg.PadRight(tw + 1));
+                        }
+                    });
+
+                // read succeeded: atomically replace whatever is (or isn't) at the requested path
+#if NET5_0_OR_GREATER
+                File.Move(tempFilename, backupFilename, true);
+#else
+                if (File.Exists(backupFilename))
+                {
+                    // File.Replace is atomic: the existing backup is only ever
+                    // touched once the staged file is confirmed in place
+                    File.Replace(tempFilename, backupFilename, null);
+                }
+                else
+                {
+                    File.Move(tempFilename, backupFilename);
+                }
+#endif
+            }
+            catch
+            {
+                // the read (or the replace) failed: leave any existing backup untouched
+                return ExitCodes.E9016;
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(tempFilename))
+                    {
+                        File.Delete(tempFilename);
                     }
-                });
+                }
+                catch
+                {
+                    // don't care
+                }
+            }
 
             if (Verbosity >= VerbosityLevel.Detailed)
             {

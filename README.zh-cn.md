@@ -344,9 +344,9 @@ nanoff --listtargets --platform rpi_pico
 
 ## MCUboot 使用示例
 
-[MCUboot](https://docs.mcuboot.com/) 是一个开源安全 bootloader，提供带有镜像签名、回滚保护和双镜像槽（主槽 + 次槽）的固件更新功能。当 .NET nanoFramework 目标设备运行 MCUboot 时，固件更新通过 **SMP（简单管理协议）** 串行传输进行，而不是使用平台专用的烧录协议。
+[MCUboot](https://docs.mcuboot.com/) 是一个开源安全 bootloader，提供带有镜像签名、回滚保护和双镜像槽（主槽 + 次槽）的固件更新功能。当 .NET nanoFramework 目标设备运行 MCUboot 时，镜像通过 **SMP（简单管理协议）** 串行传输上传，而不是使用平台专用的烧录协议。
 
-`--mcuboot` 标志将 nanoff 切换到 MCUboot 模式。
+在 `flash`、`deploy` 和 `list images` 命令中添加 `mcuboot` 关键字即切换到 MCUboot 模式，且必须指定 `serialport`。
 
 ### imgtool 要求
 
@@ -358,59 +358,47 @@ pip install imgtool
 
 `imgtool` 必须在 PATH 中可用，或者可以通过 `python -m imgtool` 调用。nanoff 会自动搜索这两种方式。
 
-### 密钥管理
+### 密钥管理（`keys`）
 
 签名镜像之前需要一个 ECDSA P-256 签名密钥对。公钥必须编译进 MCUboot bootloader；私钥在主机上安全保存。
 
 #### 生成签名密钥
 
 ```console
-nanoff --keygen my-signing-key.pem
+nanoff keys generate my-signing-key.pem
 ```
 
 #### 将公钥提取为 C 源文件
 
 ```console
-nanoff --getpub root-pub-key.c --sign-key my-signing-key.pem
+nanoff keys getpub root-pub-key.c signkey my-signing-key.pem
 ```
 
 将生成的 `root-pub-key.c` 包含在您的 MCUboot bootloader 构建中。
 
-### 首次烧录
+### ESP32 首次烧录
 
-首次为 ESP32 设备烧录 MCUboot 时，bootloader、分区表和已签名的 nanoCLR 镜像通过标准 ESP32 串行 bootloader 烧录。指定 `--mcuboot` 时自动完成：
+首次为 ESP32 设备烧录 MCUboot 时，会下载 MCUboot 固件包（bootloader、分区表和 nanoCLR 镜像），并通过标准 ESP32 串行 bootloader 烧录。当使用 `target` 并指定 `mcuboot`，且设备尚未运行 MCUboot 时自动完成；如果设备已运行 MCUboot，则改为通过 SMP 上传 `image` 指定的 CLR 镜像。
 
 ```console
-nanoff --mcuboot --update --target ESP32_GENERIC --serialport COM31 --sign-key my-signing-key.pem
+nanoff flash target ESP32_GENERIC serialport COM31 mcuboot
 ```
 
-nanoff 会下载 MCUboot 固件包、对 nanoCLR 镜像签名，并一步完成全部烧录。
+### 通过 SMP 进行现场更新
 
-### 通过 SMP 进行现场固件更新
+设备运行 MCUboot 后，后续更新使用 SMP 串行传输。设备必须处于 MCUboot 串行恢复模式（bootloader 已启用串行 SMP）。
 
-设备运行 MCUboot 后，后续固件更新使用 SMP 串行传输。设备必须处于 MCUboot 恢复模式（bootloader 已启用串行 SMP）。
+nanoFramework MCUboot 目标设备使用**双镜像布局**，由命令（verb）决定上传到哪个镜像：
 
-nanoFramework MCUboot 目标设备使用**双镜像布局**：
-
-| MCUboot 镜像 | 内容 | 上传选项 |
+| MCUboot 镜像 | 内容 | 命令 |
 | --- | --- | --- |
-| **Image 0** | nanoCLR 二进制 | `--clrfile <路径>` |
-| **Image 1** | 托管部署程序集 | `--image <路径>` |
-
-两个镜像可独立更新。指定 `--clrfile` 更新 CLR 镜像，或指定 `--image` 更新部署程序集——不能在同一命令中同时使用。
-
-#### 通过 SMP 更新 ESP32 目标的 CLR 镜像
-
-```console
-nanoff --mcuboot --update --target ESP32_GENERIC --serialport COM31 --sign-key my-signing-key.pem
-```
+| **Image 0** | nanoCLR 二进制 | `nanoff flash ... image <路径> mcuboot` |
+| **Image 1** | 托管部署程序集 | `nanoff deploy ... image <路径> mcuboot` |
 
 #### 上传预签名 CLR 镜像
 
-如果已有签名的 CLR 镜像，可省略 `--sign-key`：
-
 ```console
-nanoff --mcuboot --serialport COM31 --clrfile "C:\fw\nanoCLR-signed.bin"
+nanoff flash serialport COM31 image "C:\fw\nanoCLR-signed.bin" mcuboot
 ```
 
 #### 上传部署镜像
@@ -418,47 +406,41 @@ nanoff --mcuboot --serialport COM31 --clrfile "C:\fw\nanoCLR-signed.bin"
 上传已签名的托管部署镜像（MCUboot Image 1）：
 
 ```console
-nanoff --mcuboot --serialport COM31 --image "C:\fw\deployment-signed.bin"
+nanoff deploy serialport COM31 image "C:\fw\deployment-signed.bin" mcuboot
 ```
 
 #### 上传到次槽（仅用于开发）
 
-> ⚠️ **仅用于开发/预发布。** 默认情况下 `--clrfile` 和 `--image` 写入**主槽**，常规更新应使用主槽。添加 `--secondary-slot` 会将镜像写入**次槽**。这是为预先暂存或检查槽内容提供的开发便利功能——它本身**不会**激活镜像。在基于交换（swap）的目标上，由运行中的固件（通过 MCUboot 运行时接口）负责安排交换，因此由烧录工具放入次槽的镜像在固件启用之前不会被启动。
+> ⚠️ **仅用于开发/预发布。** 默认情况下镜像写入**主槽**，常规更新应使用主槽。添加 `secondaryslot` 会将镜像写入**次槽**并标记为待定（test），MCUboot 会在下次重启时将其换入。镜像必须已签名。`nanoff` 不会确认此次交换：确认由运行中的固件负责，否则 MCUboot 会回退到之前的镜像。
 
 ```console
-nanoff --mcuboot --serialport COM31 --clrfile "C:\fw\nanoCLR-signed.bin" --secondary-slot
+nanoff flash serialport COM31 image "C:\fw\nanoCLR-signed.bin" mcuboot secondaryslot
 ```
 
 #### 镜像激活与确认
 
-镜像直接写入**主槽**，设备在下次重启时启动该镜像——烧录工具不会发出 test/confirm 步骤。新镜像是否永久生效（以及如何处理回滚）由运行中的固件通过 MCUboot 运行时接口管理，而非 `nanoff`。
-
-#### 通过 SMP 更新 STM32 目标
-
-```console
-nanoff --mcuboot --update --target ORGPAL_PALTHREE --serialport COM3 --sign-key my-signing-key.pem
-```
+镜像写入**主槽**，设备在下次重启时启动该镜像——`nanoff` 不会发出 test/confirm 步骤。新镜像是否永久生效（以及如何处理回滚）由运行中的固件通过 MCUboot 运行时接口管理。
 
 ### 签名选项
 
-提供 `--sign-key` 时，nanoff 使用以下参数调用 `imgtool sign`。当您的 MCUboot 分区布局与标准 nanoFramework 配置不同时，请覆盖默认值：
+提供 `signkey` 时，nanoff 在上传前使用 `imgtool sign` 对镜像签名。当您的 MCUboot 分区布局与标准 nanoFramework 配置不同时，请覆盖默认值。数值可以是十进制或十六进制（`0x` 前缀），且仅在指定 `signkey` 时有效：
 
-| 选项 | 默认值 | 描述 |
+| 关键字 | 默认值 | 描述 |
 | --- | --- | --- |
-| `--mcuboot-slot-size` | `0x100000`（1 MB） | 镜像槽大小（字节）。必须与 MCUboot 分区表中所签名镜像的槽大小一致。 |
-| `--mcuboot-header-size` | `0x200`（512 B） | MCUboot 镜像头大小。必须与 MCUboot 构建配置一致。 |
-| `--mcuboot-write-align` | `4` | Flash 写入对齐（字节）。大多数 MCU flash 通常为 4。 |
+| `slotsize` | `0x100000`（1 MB） | 镜像槽大小（字节）。必须与 MCUboot 分区表中所签名镜像的槽大小一致。 |
+| `headersize` | `0x200`（512 B） | MCUboot 镜像头大小。必须与 MCUboot 构建配置一致。 |
+| `writealign` | `4` | Flash 写入对齐（字节）。大多数 MCU flash 通常为 4。 |
 
 使用自定义槽大小签名 CLR 镜像的示例：
 
 ```console
-nanoff --mcuboot --serialport COM31 --clrfile nanoCLR.bin --sign-key key.pem --mcuboot-slot-size 0xE8000
+nanoff flash serialport COM31 image nanoCLR.bin mcuboot signkey key.pem slotsize 0xE8000
 ```
 
 签名部署镜像的示例：
 
 ```console
-nanoff --mcuboot --serialport COM31 --image deployment.bin --sign-key key.pem --mcuboot-slot-size 0x100000
+nanoff deploy serialport COM31 image deployment.bin mcuboot signkey key.pem slotsize 0x100000
 ```
 
 ### 槽管理
@@ -466,7 +448,7 @@ nanoff --mcuboot --serialport COM31 --image deployment.bin --sign-key key.pem --
 #### 列出两个槽中的镜像
 
 ```console
-nanoff --mcuboot --list-images --serialport COM31
+nanoff list images mcuboot serialport COM31
 ```
 
 输出示例：
@@ -478,32 +460,30 @@ Image 0 Slot 1  version=1.3.0.0  hash=ef567890...  [pending, bootable]
 
 ### 串行端口
 
-所有 MCUboot SMP 操作都使用 `--serialport` 作为 SMP 传输端口。SMP 波特率固定为 **115200**——MCUboot 串行 SMP 的标准默认值。注意这与 ESP32 烧录波特率（默认 1,500,000）不同。
+所有 MCUboot SMP 操作都使用 `serialport` 作为 SMP 传输端口。SMP 波特率固定为 **115200**——MCUboot 串行 SMP 的标准默认值。注意这与 ESP32 烧录波特率（默认 1,500,000）不同。
 
 ### 更新路径决策表
 
-| 设备状态 | 是否指定 `--mcuboot` | 使用的更新路径 |
+| 设备 | 命令 | 使用的更新路径 |
 | --- | --- | --- |
-| ESP32，未安装 MCUboot | 是 | 通过串行 bootloader 首次烧录 |
-| ESP32，运行 MCUboot | 是 | 通过 mcumgr 协议进行 SMP 串行传输 |
-| STM32 | 是 | 通过 mcumgr 协议进行 SMP 串行传输 |
-| 任意目标 | 否 | 传统烧录协议（DFU、JTAG、串行） |
+| ESP32，未安装 MCUboot | `flash target ... mcuboot` | 通过 ESP32 串行 bootloader 首次烧录 |
+| ESP32，运行 MCUboot | `flash ... image <路径> mcuboot` | SMP 串行传输 |
+| 其他运行 MCUboot 的目标 | `flash ... image <路径> mcuboot` | SMP 串行传输 |
 
-### MCUboot / SMP 选项参考
+### MCUboot / SMP 关键字参考
 
-| 选项 | 默认值 | 描述 |
+| 关键字 | 命令 | 描述 |
 | --- | --- | --- |
-| `--mcuboot` | false | 目标设备运行 MCUboot，通过 SMP 传输更新固件。 |
-| `--clrfile <路径>` | — | CLR 镜像路径。使用 `--mcuboot` 时，通过 SMP 作为 MCUboot Image 0（CLR 槽）上传。 |
-| `--image <路径>` | — | 部署程序集镜像路径。使用 `--mcuboot` 时，通过 SMP 作为 MCUboot Image 1（部署槽）上传。 |
-| `--sign-key <路径>` | — | PEM 签名密钥路径。上传前使用 `imgtool` 签名镜像。 |
-| `--secondary-slot` | false | 仅用于开发。将镜像上传到副槽而非主槽。 |
-| `--mcuboot-slot-size <字节>` | `0x100000` | 镜像槽大小（字节）。需与所签名镜像的槽大小匹配。 |
-| `--mcuboot-header-size <字节>` | `0x200` | MCUboot 镜像头大小（字节）。 |
-| `--mcuboot-write-align <字节>` | `4` | Flash 写入对齐（字节）。 |
-| `--keygen <路径>` | — | 生成新的 ECDSA P-256 签名密钥并写入路径。生成后退出。 |
-| `--getpub <路径>` | — | 从 `--sign-key` 提取公钥为 C 源文件。需要 `--sign-key`。提取后退出。 |
-| `--list-images` | false | 通过 SMP 列出 MCUboot 主槽和次槽中的镜像。需要 `--serialport`。 |
+| `mcuboot` | `flash`、`deploy`、`list` | 目标设备运行 MCUboot，通过 SMP 传输上传镜像。需要 `serialport`。 |
+| `image <路径>` | `flash` / `deploy` | `flash`：作为 MCUboot Image 0（CLR）上传；`deploy`：作为 MCUboot Image 1（部署程序集）上传。 |
+| `signkey <路径>` | `flash`、`deploy`、`keys` | PEM 签名密钥路径。上传前使用 `imgtool` 签名镜像；`keys getpub` 时为要提取公钥的密钥。 |
+| `secondaryslot` | `flash`、`deploy` | 仅用于开发。将镜像上传到次槽而非主槽。 |
+| `slotsize <字节>` | `flash`、`deploy` | 镜像槽大小（默认 `0x100000`）。 |
+| `headersize <字节>` | `flash`、`deploy` | MCUboot 镜像头大小（默认 `0x200`）。 |
+| `writealign <字节>` | `flash`、`deploy` | Flash 写入对齐（默认 `4`）。 |
+| `images` | `list` | 通过 SMP 列出 MCUboot 主槽和次槽中的镜像。需要 `mcuboot` 和 `serialport`。 |
+| `generate <路径>` | `keys` | 生成新的 ECDSA P-256 签名密钥并写入路径。 |
+| `getpub <路径>` | `keys` | 从 `signkey` 提取公钥为 C 源文件。 |
 
 ## 普通连接使用示例
 

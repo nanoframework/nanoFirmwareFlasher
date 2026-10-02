@@ -1,0 +1,132 @@
+// Starter queries for nanoff telemetry (Application Insights > Logs).
+//
+// Data model (see README "Telemetry" for what is and isn't collected):
+//   requests      one row per nanoff invocation
+//                 name = "nanoff <verb>", resultCode = exit code name (e.g. OK, E9000), success, duration,
+//                 user_Id = anonymous install ID, application_Version = nanoff version
+//                 customDimensions: nf.verb, nf.options (comma separated keyword names), nf.opt.<keyword>,
+//                 nf.platform, nf.exit_code, nf.help_verb, nf.attempted_verb, nf.unknown_verb,
+//                 nf.unknown_options, nf.parse_errors, os.family, os.arch, dotnet.runtime, nf.is_ci
+//   customEvents  name = "FirmwarePackageDownloaded": customDimensions.package, customDimensions.version
+//                 name = "ExceptionThrown": customDimensions.stage, exception.type, exception.inner_type,
+//                 exception.hresult, exception.stacktrace
+//   All rows of one invocation share the same operation_Id.
+
+// ---------------------------------------------------------------------------------------------
+// Usage
+// ---------------------------------------------------------------------------------------------
+
+// Runs per verb, per week
+requests
+| where timestamp > ago(90d)
+| extend verb = tostring(customDimensions["nf.verb"])
+| summarize runs = count() by verb, week = startofweek(timestamp)
+| render columnchart
+
+// Keyword usage ranking per verb (share of that verb's runs using each keyword)
+let commands = requests
+    | where timestamp > ago(30d)
+    | extend verb = tostring(customDimensions["nf.verb"])
+    | where verb !in ("parseError", "help", "version", "none");
+commands
+| summarize verbRuns = count() by verb
+| join kind=inner (
+    commands
+    | mv-expand keyword = split(tostring(customDimensions["nf.options"]), ",") to typeof(string)
+    | where isnotempty(keyword)
+    | summarize keywordRuns = count() by verb, keyword
+) on verb
+| project verb, keyword, keywordRuns, sharePercent = round(100.0 * keywordRuns / verbRuns, 1)
+| order by verb asc, keywordRuns desc
+
+// Least used keywords overall (candidates for review). Keywords that never show up won't be listed:
+// compare against the option classes in nanoFirmwareFlasher.Tool/Verbs.
+requests
+| where timestamp > ago(90d)
+| mv-expand keyword = split(tostring(customDimensions["nf.options"]), ",") to typeof(string)
+| where isnotempty(keyword)
+| summarize runs = count(), users = dcount(user_Id) by keyword
+| order by runs asc
+
+// Platforms and targets used with flash/deploy (target as typed, or auto-detected when absent)
+requests
+| where timestamp > ago(30d)
+| extend verb = tostring(customDimensions["nf.verb"])
+| where verb in ("flash", "deploy")
+| extend platform = tostring(customDimensions["nf.platform"]), target = tostring(customDimensions["nf.opt.target"])
+| summarize runs = count(), users = dcount(user_Id) by verb, platform, target = iff(isempty(target), "(auto/none)", target)
+| order by runs desc
+
+// nanoff version adoption (distinct installs per version, per week)
+requests
+| where timestamp > ago(90d)
+| summarize installs = dcount(user_Id) by application_Version, week = startofweek(timestamp)
+| render areachart
+
+// Environment: OS, runtime (.NET Framework = VS Code extension bundle) and CI share
+requests
+| where timestamp > ago(30d)
+| summarize runs = count(), installs = dcount(user_Id)
+    by os = tostring(customDimensions["os.family"]),
+       runtime = tostring(customDimensions["dotnet.runtime"]),
+       ci = tostring(customDimensions["nf.is_ci"])
+| order by runs desc
+
+// ---------------------------------------------------------------------------------------------
+// Firmware
+// ---------------------------------------------------------------------------------------------
+
+// Top firmware packages and versions downloaded
+customEvents
+| where timestamp > ago(30d) and name == "FirmwarePackageDownloaded"
+| summarize downloads = count(), installs = dcount(user_Id)
+    by package = tostring(customDimensions["package"]), version = tostring(customDimensions["version"])
+| order by downloads desc
+
+// Downloads per package, per week
+customEvents
+| where timestamp > ago(90d) and name == "FirmwarePackageDownloaded"
+| summarize downloads = count() by package = tostring(customDimensions["package"]), week = startofweek(timestamp)
+| render timechart
+
+// ---------------------------------------------------------------------------------------------
+// Failures
+// ---------------------------------------------------------------------------------------------
+
+// Failure rate by verb and platform
+requests
+| where timestamp > ago(30d)
+| extend verb = tostring(customDimensions["nf.verb"]), platform = tostring(customDimensions["nf.platform"])
+| summarize runs = count(), failures = countif(success == false) by verb, platform
+| extend failurePercent = round(100.0 * failures / runs, 1)
+| order by failures desc
+
+// Most frequent exit codes (excluding OK)
+requests
+| where timestamp > ago(30d) and resultCode != "OK"
+| summarize runs = count(), installs = dcount(user_Id) by resultCode, verb = tostring(customDimensions["nf.verb"]), platform = tostring(customDimensions["nf.platform"])
+| order by runs desc
+
+// Top exceptions, with the command they happened in
+customEvents
+| where timestamp > ago(30d) and name == "ExceptionThrown"
+| extend stage = tostring(customDimensions["stage"]),
+         exceptionType = tostring(customDimensions["exception.type"]),
+         innerType = tostring(customDimensions["exception.inner_type"])
+| join kind=leftouter (
+    requests
+    | where timestamp > ago(30d)
+    | project operation_Id, verb = tostring(customDimensions["nf.verb"]), platform = tostring(customDimensions["nf.platform"]), resultCode
+) on operation_Id
+| summarize occurrences = count(), installs = dcount(user_Id), lastSeen = max(timestamp)
+    by stage, exceptionType, innerType, verb, platform, resultCode
+| order by occurrences desc
+
+// Commands that couldn't be parsed: unknown keywords (e.g. removed legacy "--flag" syntax) and verbs
+requests
+| where timestamp > ago(30d) and tostring(customDimensions["nf.verb"]) == "parseError"
+| extend attemptedVerb = tostring(customDimensions["nf.attempted_verb"]),
+         unknownVerb = tostring(customDimensions["nf.unknown_verb"])
+| mv-expand unknownOption = split(tostring(customDimensions["nf.unknown_options"]), ",") to typeof(string)
+| summarize runs = count(), installs = dcount(user_Id) by attemptedVerb, unknownVerb, unknownOption
+| order by runs desc

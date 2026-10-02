@@ -123,8 +123,6 @@ namespace nanoFirmwareFlasher.Tests
         {
             // NativeStLink must be different from all other interface values
             Assert.AreNotEqual(Interface.None, Interface.NativeStLink);
-            Assert.AreNotEqual(Interface.Jtag, Interface.NativeStLink);
-            Assert.AreNotEqual(Interface.Dfu, Interface.NativeStLink);
             Assert.AreNotEqual(Interface.NativeDfu, Interface.NativeStLink);
             Assert.AreNotEqual(Interface.NativeSwd, Interface.NativeStLink);
         }
@@ -627,7 +625,9 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Interface_HasAllExpectedValues()
         {
-            // Verify all 6 interface values exist
+            // Jtag/Dfu are kept as meta-values (non-breaking API): they resolve to a native
+            // transport internally (ST-LINK/CMSIS-DAP for Jtag, native USB DFU for Dfu) with
+            // no external CLI tool involved anymore.
             var values = Enum.GetValues(typeof(Interface));
             Assert.AreEqual(6, values.Length, "Interface enum should have exactly 6 values");
 

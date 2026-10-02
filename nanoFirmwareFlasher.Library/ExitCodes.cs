@@ -170,6 +170,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Failed to open specified COM port.")]
         E4005 = 4005,
 
+        /// <summary>
+        /// Can't find or parse the configuration partition entry in the partition table.
+        /// </summary>
+        [Display(Name = "Can't find or parse the configuration partition entry in the partition table.")]
+        E4006 = 4006,
+
         //////////////////////////
         // ST Programmer Errors //
         //////////////////////////
@@ -555,5 +561,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         [Display(Name = "Can't find the target in the firmware archive.")]
         E9015 = 9015,
+
+        /// <summary>
+        /// Error backing up the configuration partition.
+        /// </summary>
+        [Display(Name = "Error backing up the configuration partition.")]
+        E9016 = 9016,
     }
 }

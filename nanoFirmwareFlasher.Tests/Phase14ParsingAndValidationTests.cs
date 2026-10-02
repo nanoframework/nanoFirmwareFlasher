@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -16,7 +16,7 @@ namespace nanoFirmwareFlasher.Tests
     public class Phase14ParsingAndValidationTests
     {
         // ======================================================================
-        // Options.ParseVerbosity
+        // VerbOptionsBase.ParseVerbosity (was Options.ParseVerbosity)
         // ======================================================================
 
         #region ParseVerbosity
@@ -34,32 +34,32 @@ namespace nanoFirmwareFlasher.Tests
         [DataRow("diagnostic", VerbosityLevel.Diagnostic)]
         public void ParseVerbosity_ValidInputs_ReturnsExpectedLevel(string input, VerbosityLevel expected)
         {
-            Assert.AreEqual(expected, Options.ParseVerbosity(input));
+            Assert.AreEqual(expected, VerbOptionsBase.ParseVerbosity(input));
         }
 
         [TestMethod]
         public void ParseVerbosity_InvalidInput_ThrowsArgumentException()
         {
-            Assert.Throws<ArgumentException>(() => Options.ParseVerbosity("invalid"));
+            Assert.Throws<ArgumentException>(() => VerbOptionsBase.ParseVerbosity("invalid"));
         }
 
         [TestMethod]
         public void ParseVerbosity_Empty_ThrowsArgumentException()
         {
-            Assert.Throws<ArgumentException>(() => Options.ParseVerbosity(""));
+            Assert.Throws<ArgumentException>(() => VerbOptionsBase.ParseVerbosity(""));
         }
 
         [TestMethod]
         public void ParseVerbosity_CaseSensitive_UpperQ_ThrowsArgumentException()
         {
             // The parser is case-sensitive, matching Program.cs behavior
-            Assert.Throws<ArgumentException>(() => Options.ParseVerbosity("Q"));
+            Assert.Throws<ArgumentException>(() => VerbOptionsBase.ParseVerbosity("Q"));
         }
 
         [TestMethod]
         public void ParseVerbosity_Null_ThrowsArgumentException()
         {
-            Assert.Throws<ArgumentException>(() => Options.ParseVerbosity(null));
+            Assert.Throws<ArgumentException>(() => VerbOptionsBase.ParseVerbosity(null));
         }
 
         #endregion
@@ -129,97 +129,6 @@ namespace nanoFirmwareFlasher.Tests
         public void InferFromTargetName_Empty_ReturnsNull()
         {
             Assert.IsNull(SupportedPlatformExtensions.InferFromTargetName(""));
-        }
-
-        #endregion
-
-        // ======================================================================
-        // Options.ValidateInterfaceOptions (already partially tested, new edge cases)
-        // ======================================================================
-
-        #region ValidateInterfaceOptions_Additional
-
-        [TestMethod]
-        public void ValidateInterfaceOptions_AllNativeOptions_ReturnsError()
-        {
-            var o = new Options
-            {
-                NativeDfuUpdate = true,
-                NativeSwdUpdate = true,
-                NativeStLinkUpdate = true
-            };
-
-            string error = Options.ValidateInterfaceOptions(o);
-            Assert.IsNotNull(error);
-            StringAssert.Contains(error, "--nativedfu");
-            StringAssert.Contains(error, "--nativeswd");
-            StringAssert.Contains(error, "--nativestlink");
-        }
-
-        #endregion
-
-        // ======================================================================
-        // Options.ValidateEarlyConstraints
-        // ======================================================================
-
-        #region ValidateEarlyConstraints
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_NoIssues_ReturnsNull()
-        {
-            var o = new Options();
-            Assert.IsNull(Options.ValidateEarlyConstraints(o));
-        }
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_DeployWithoutImage_ReturnsE9000()
-        {
-            var o = new Options { Deploy = true };
-            var result = Options.ValidateEarlyConstraints(o);
-            Assert.IsNotNull(result);
-            Assert.AreEqual(ExitCodes.E9000, result.Value.Code);
-            StringAssert.Contains(result.Value.Message, "--deploy");
-            StringAssert.Contains(result.Value.Message, "--image");
-        }
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_DeployWithImage_ReturnsNull()
-        {
-            var o = new Options { Deploy = true, DeploymentImage = "app.bin" };
-            Assert.IsNull(Options.ValidateEarlyConstraints(o));
-        }
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_BinFileWithoutAddress_ReturnsE9000()
-        {
-            var o = new Options { BinFile = new[] { "firmware.bin" } };
-            var result = Options.ValidateEarlyConstraints(o);
-            Assert.IsNotNull(result);
-            Assert.AreEqual(ExitCodes.E9000, result.Value.Code);
-            StringAssert.Contains(result.Value.Message, "--binfile");
-            StringAssert.Contains(result.Value.Message, "--address");
-        }
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_BinFileWithAddress_ReturnsNull()
-        {
-            var o = new Options
-            {
-                BinFile = new[] { "firmware.bin" },
-                FlashAddress = new[] { "0x08000000" }
-            };
-            Assert.IsNull(Options.ValidateEarlyConstraints(o));
-        }
-
-        [TestMethod]
-        public void ValidateEarlyConstraints_UpdateArchiveWithFromArchive_ReturnsE9000()
-        {
-            var o = new Options { UpdateFwArchive = true, FromFwArchive = true };
-            var result = Options.ValidateEarlyConstraints(o);
-            Assert.IsNotNull(result);
-            Assert.AreEqual(ExitCodes.E9000, result.Value.Code);
-            StringAssert.Contains(result.Value.Message, "--fromarchive");
-            StringAssert.Contains(result.Value.Message, "--updatearchive");
         }
 
         #endregion
@@ -350,32 +259,27 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Integration_InferPlatformFromTarget_ThenValidateConstraints()
         {
-            // Simulates: nanoff --target ST_NUCLEO144_F746ZG --update --jtag
-            var o = new Options
+            // Simulates: nanoff flash target ST_NUCLEO144_F746ZG jtag
+            var o = new FlashOptions
             {
                 TargetName = "ST_NUCLEO144_F746ZG",
-                Update = true,
-                JtagUpdate = true
+                Jtag = true
             };
 
             // Step 1: infer platform
             var platform = SupportedPlatformExtensions.InferFromTargetName(o.TargetName);
             Assert.AreEqual(SupportedPlatform.stm32, platform);
 
-            // Step 2: validate interface (only one selected)
-            string ifError = Options.ValidateInterfaceOptions(o);
-            Assert.IsNull(ifError);
-
-            // Step 3: validate early constraints
-            var earlyError = Options.ValidateEarlyConstraints(o);
-            Assert.IsNull(earlyError);
+            // Step 2: validate the flash verb's early constraints
+            string error = FlashOptions.Validate(o);
+            Assert.IsNull(error);
         }
 
         [TestMethod]
         public void Integration_ParseVerbosity_ThenInferAndValidate()
         {
-            // Simulates: nanoff -v d --target SL_STK3701A --update
-            var level = Options.ParseVerbosity("d");
+            // Simulates: nanoff flash verbosity d target SL_STK3701A
+            var level = VerbOptionsBase.ParseVerbosity("d");
             Assert.AreEqual(VerbosityLevel.Detailed, level);
 
             var platform = SupportedPlatformExtensions.InferFromTargetName("SL_STK3701A");
