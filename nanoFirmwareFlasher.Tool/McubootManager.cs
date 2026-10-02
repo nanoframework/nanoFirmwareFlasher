@@ -244,14 +244,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E10003;
             }
 
+            // An image landing in a secondary slot has to be marked pending afterwards, which takes its hash.
+            // Check for it before uploading, so an unsigned image isn't left behind in the slot.
+            byte[] imageHash = null;
+
+            if (_options.SecondarySlot
+                && !McubootImageManager.TryGetImageHash(imageBytes, out imageHash))
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine(
+                    "Could not read the SHA-256 hash from the image, so it cannot be marked for swap. "
+                    + "Only signed MCUboot images can be placed in a secondary slot.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E10022;
+            }
+
             return await RunWithClientAsync(client => UploadImageToClientAsync(
                 client,
                 imageBytes,
+                imageHash,
                 imageIndex,
                 imageLabel.ToString()));
         }
 
-        private async Task<ExitCodes> UploadImageToClientAsync(McumgrClient client, byte[] imageBytes, int imageIndex, string imageLabel)
+        // imageHash: to mark the image pending after the upload; null unless uploading to the secondary slot
+        private async Task<ExitCodes> UploadImageToClientAsync(McumgrClient client, byte[] imageBytes, byte[] imageHash, int imageIndex, string imageLabel)
         {
             string uploadingPrefix = $"Uploading {imageLabel}...";
             bool normal = _verbosity >= VerbosityLevel.Normal;
@@ -326,7 +344,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // Need to mark it explicitly.
             if (_options.SecondarySlot)
             {
-                ExitCodes stateResult = await MarkImageForSwapAsync(client, imageBytes);
+                ExitCodes stateResult = await MarkImageForSwapAsync(client, imageHash);
 
                 if (stateResult != ExitCodes.OK)
                 {
@@ -364,21 +382,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// next reset. Without this the image sits in the slot with no trailer marker and MCUboot
         /// reports swap type "none".
         /// </summary>
-        private async Task<ExitCodes> MarkImageForSwapAsync(McumgrClient client, byte[] imageBytes)
+        /// <param name="client">The SMP client.</param>
+        /// <param name="hash">SHA-256 hash of the uploaded image, read from its TLV area.</param>
+        private async Task<ExitCodes> MarkImageForSwapAsync(McumgrClient client, byte[] hash)
         {
             bool normal = _verbosity >= VerbosityLevel.Normal;
             const string prefix = "Marking image as pending...";
-
-            if (!McubootImageManager.TryGetImageHash(imageBytes, out byte[] hash))
-            {
-                OutputWriter.ForegroundColor = ConsoleColor.Red;
-                OutputWriter.WriteLine(
-                    "Could not read the SHA-256 hash from the image, so it cannot be marked for swap. "
-                    + "Only signed MCUboot images can be placed in a secondary slot.");
-                OutputWriter.ForegroundColor = ConsoleColor.White;
-
-                return ExitCodes.E10022;
-            }
 
             if (normal)
             {

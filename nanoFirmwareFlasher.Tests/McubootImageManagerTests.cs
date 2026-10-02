@@ -223,6 +223,20 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void ValidateImage_SizeSumOverflowsUInt_IsValidFalse()
+        {
+            // hdr_size + img_size wraps around to 0x1FF as a uint, which would fit any slot
+            string path = WriteImageFile(magic: ValidMagic, hdrSize: 0x200, imgSize: uint.MaxValue,
+                                         major: 1, minor: 0, revision: 0, buildNum: 0);
+            try
+            {
+                McubootImageInfo info = CreateManager(SlotSize).ValidateImage(path);
+                Assert.IsFalse(info.IsValid, "an image size overflowing hdr_size + img_size must produce IsValid=false");
+            }
+            finally { File.Delete(path); }
+        }
+
+        [TestMethod]
         public void ValidateImage_ImageExactlyFitsSlot_IsValidTrue()
         {
             // hdr_size=0x200, img_size = slot - hdr_size → total exactly equals slot_size

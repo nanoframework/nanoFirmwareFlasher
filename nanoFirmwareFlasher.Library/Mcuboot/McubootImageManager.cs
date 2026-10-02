@@ -170,7 +170,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 uint buildNum    = BitConverter.ToUInt32(header, 24);
                 info.Version = $"{major}.{minor}.{revision}.{buildNum}";
 
-                info.IsValid = info.HeaderSize + info.ImageSize <= (uint)_slotSize;
+                info.IsValid = (ulong)info.HeaderSize + info.ImageSize <= (ulong)_slotSize;
             }
             catch
             {
@@ -411,7 +411,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
             if (_imgtoolPath is null)
             {
-                throw new McubootImageException(
+                throw new ImgtoolNotFoundException(
                     "imgtool not found. Install via 'pip install imgtool' or place imgtool.exe in <nanoff-dir>/tools/imgtool/.");
             }
         }
@@ -449,11 +449,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 };
 
                 proc.Start();
-                string stdout = proc.StandardOutput.ReadToEnd();
-                string stderr = proc.StandardError.ReadToEnd();
+
+                // drain both streams at the same time
+                var stdoutTask = proc.StandardOutput.ReadToEndAsync();
+                var stderrTask = proc.StandardError.ReadToEndAsync();
                 proc.WaitForExit(60000);
 
-                return (proc.ExitCode, stdout, stderr);
+                return (proc.ExitCode, stdoutTask.GetAwaiter().GetResult(), stderrTask.GetAwaiter().GetResult());
             }
             catch (Exception ex)
             {
@@ -477,8 +479,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 };
 
                 proc.Start();
-                stdout = proc.StandardOutput.ReadToEnd();
+
+                var stdoutTask = proc.StandardOutput.ReadToEndAsync();
+                var stderrTask = proc.StandardError.ReadToEndAsync();
                 proc.WaitForExit(5000);
+
+                stdout = stdoutTask.GetAwaiter().GetResult();
+                stderrTask.GetAwaiter().GetResult();
 
                 return proc.ExitCode == 0;
             }

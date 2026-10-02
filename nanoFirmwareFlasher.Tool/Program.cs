@@ -154,7 +154,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
             try
             {
                 Version latestVersion;
-                Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0].Replace("-preview.", ""));
+                // keep the preview number as the 4th component: "3.0.0-preview.46" -> 3.0.0.46
+                Version currentVersion = Version.Parse(_informationalVersionAttribute.InformationalVersion.Split('+')[0].Replace("-preview.", "."));
 
                 using (var client = new HttpClient())
                 {
@@ -172,7 +173,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     JsonNode responseContent = JsonSerializer.Deserialize<JsonNode>(response.Content.ReadAsStringAsync().Result, options);
                     string tagName = responseContent["tag_name"].ToString();
 
-                    latestVersion = Version.Parse(tagName.Substring(1).Split('+')[0].Replace("-preview.", ""));
+                    latestVersion = Version.Parse(tagName.Substring(1).Split('+')[0].Replace("-preview.", "."));
                 }
 
                 if (latestVersion > currentVersion)
@@ -517,6 +518,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     var imageManager = new McubootImageManager(o.SignKey, slotSize: 0) { Verbosity = _verbosityLevel };
                     _exitCode = imageManager.ExtractPublicKey(o.SignKey, o.GetPub);
                 }
+            }
+            catch (ImgtoolNotFoundException)
+            {
+                // the exit code description already carries the installation hint
+                _exitCode = ExitCodes.E10001;
             }
             catch (Exception ex)
             {
@@ -902,6 +908,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 await RunManagerAsync(
                     new McubootManager(o, _verbosityLevel),
                     ExitCodes.E10005,
+                    (typeof(ImgtoolNotFoundException), ExitCodes.E10001, false),
                     (typeof(McubootImageException), ExitCodes.E10002, true),
                     (typeof(McumgrProtocolException), ExitCodes.E10010, true),
                     (typeof(McumgrTimeoutException), ExitCodes.E10007, true));

@@ -68,12 +68,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public int PsRamSize { get; }
 
         /// <summary>
-        /// True if the device is running under MCUboot and can be updated via SMP.
+        /// Whether the device has been provisioned with MCUboot and can be updated via SMP.
         /// </summary>
         /// <remarks>
-        /// Initially always false. Will be populated via Wire Protocol ping detection once that detection is implemented.
+        /// <see langword="null"/> when this wasn't checked, or couldn't be determined (see the <c>checkMcuboot</c>
+        /// parameter of <see cref="EspTool.GetDeviceDetails"/>). Callers must not treat an unknown state as "not provisioned".
         /// </remarks>
-        public bool HasMcuboot { get; internal set; }
+        public bool? HasMcuboot { get; internal set; }
 
         /// <summary>
         /// Constructor.

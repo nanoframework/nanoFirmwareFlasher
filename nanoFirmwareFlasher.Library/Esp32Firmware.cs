@@ -37,7 +37,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal bool IsMcubootPackage { get; private set; }
         internal string McubootBootloaderPath { get; private set; }
         internal string SignedNanoClrPath { get; private set; }
-        internal string UnsignedNanoClrPath { get; private set; }
         internal string PartitionTablePath { get; private set; }
         internal int McubootBootloaderAddress { get; private set; }
         internal int McubootPrimarySlotAddress { get; private set; }
@@ -118,17 +117,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 				    { 0x8000, Path.Combine(LocationPath, $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
                 };
 
-                // detect MCUboot package variant
+                // detect MCUboot package variant: MCUboot replaces the bootloader and the
+                // package's nanoCLR.bin is the signed image, so all of them must be there
                 var mcubootBin = Path.Combine(LocationPath, "mcuboot.bin");
-                var signedClr = Path.Combine(LocationPath, "nanoCLR-signed.bin");
+                var signedClr = FlashPartitions[CLRAddress];
+                var partitionTable = FlashPartitions[0x8000];
 
-                if (File.Exists(mcubootBin) && File.Exists(signedClr))
+                if (File.Exists(mcubootBin)
+                    && File.Exists(signedClr)
+                    && File.Exists(partitionTable))
                 {
                     IsMcubootPackage = true;
                     McubootBootloaderPath = mcubootBin;
                     SignedNanoClrPath = signedClr;
-                    UnsignedNanoClrPath = Path.Combine(LocationPath, "nanoCLR.bin");
-                    PartitionTablePath = FlashPartitions[0x8000];
+                    PartitionTablePath = partitionTable;
                     McubootBootloaderAddress = BootLoaderAddress;
                     McubootPrimarySlotAddress = CLRAddress;
                 }

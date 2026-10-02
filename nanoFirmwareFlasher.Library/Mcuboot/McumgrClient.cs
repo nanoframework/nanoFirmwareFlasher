@@ -673,7 +673,14 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                     McumgrEventSource.Log.SmpRxFrame(
                         rxFrame.Header.Op, rxFrame.Header.Group, rxFrame.Header.CommandId,
                         rxFrame.Header.Seq, rxFrame.Header.PayloadLength, rxFrame.Payload, elapsed);
-                    return rxFrame;
+
+                    if (rxFrame.Header.Seq == _lastTxSeq)
+                    {
+                        return rxFrame;
+                    }
+
+                    // late reply to an earlier command: drop it and keep waiting for the reply to the current one
+                    buffer.Clear();
                 }
 
                 Thread.Sleep(20);

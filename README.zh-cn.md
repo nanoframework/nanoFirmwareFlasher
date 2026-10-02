@@ -552,10 +552,14 @@ nanoff -v q
 
 ## 列出已连接的 nano 设备
 
-获取已连接的 nano 设备列表，并显示每个设备正在运行的 nanoCLR（或 nanoBooter）版本。如需更多详细信息，请将 `verbose` 选项设置为高于 normal 的级别。
+获取已连接的 nano 设备列表，并显示每个设备正在运行的 nanoCLR（或 nanoBooter）版本。如需更多详细信息，请将 `verbosity` 关键字设置为高于 normal 的级别。
 
 ```console
-nanoff --listdevices [ -v d ]
+nanoff list devices
+```
+
+```console
+nanoff list devices verbosity d
 ```
 
 输出示例：
@@ -581,7 +585,11 @@ SKY_EEVB_Debug @ COM7
 
 ### 处于 MCUboot 串行恢复模式的设备
 
-`--listdevices` 还会查找处于 MCUboot 串行恢复模式的设备（复位时按住恢复按钮，或没有有效镜像）。这些设备不响应 Wire Protocol，因此会先用一个简短的 SMP（mcumgr）请求探测每个 COM 端口；有响应的端口随后会从 Wire Protocol 扫描中排除。有响应的设备会在单独的部分中列出，并显示 bootloader 报告的目标名称、MCUboot 和 nanoMCUboot 版本以及镜像版本（较旧的 bootloader 只报告镜像）。使用 `--serialport` 可以只探测一个端口。
+`list devices` 还会查找处于 MCUboot 串行恢复模式的设备（复位时按住恢复按钮，或没有有效镜像）。这些设备不响应 Wire Protocol，因此会先用一个简短的 SMP（mcumgr）请求探测每个 COM 端口；有响应的端口随后会从 Wire Protocol 扫描中排除。有响应的设备会在单独的部分中列出，并显示 bootloader 报告的目标名称、MCUboot 和 nanoMCUboot 版本以及镜像版本（较旧的 bootloader 只报告镜像）。添加 `serialport` 可以只探测一个端口。
+
+```console
+nanoff list devices serialport COM9
+```
 
 ```text
 -- MCUboot serial recovery --
@@ -593,7 +601,7 @@ ORGPAL_PALTHREE @ COM9
 
 ```
 
-使用 `-v d` 时还会显示镜像哈希值。
+使用 `verbosity d` 时还会显示镜像哈希值。
 
 ## 设备列表
 
