@@ -196,12 +196,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 }
 
                 info.HeaderSize = BitConverter.ToUInt16(header, 8);
-                info.ImageSize  = BitConverter.ToUInt32(header, 12);
+                info.ImageSize = BitConverter.ToUInt32(header, 12);
 
-                byte major       = header[20];
-                byte minor       = header[21];
-                ushort revision  = BitConverter.ToUInt16(header, 22);
-                uint buildNum    = BitConverter.ToUInt32(header, 24);
+                byte major = header[20];
+                byte minor = header[21];
+                ushort revision = BitConverter.ToUInt16(header, 22);
+                uint buildNum = BitConverter.ToUInt32(header, 24);
                 info.Version = $"{major}.{minor}.{revision}.{buildNum}";
 
                 info.IsValid = (ulong)info.HeaderSize + info.ImageSize <= (ulong)_slotSize;
