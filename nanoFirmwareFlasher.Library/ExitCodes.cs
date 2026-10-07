@@ -344,6 +344,130 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Path of BIN file contains spaces or diacritic characters.")]
         E8003 = 8003,
 
+        ////////////////////////////
+        // MCUboot / mcumgr Errors //
+        ////////////////////////////
+
+        /// <summary>
+        /// imgtool not found on PATH or bundled location.
+        /// </summary>
+        [Display(Name = "imgtool not found. Install it with 'pip install imgtool' or place it in the tools/imgtool folder.")]
+        E10001 = 10001,
+
+        /// <summary>
+        /// Image signing failed.
+        /// </summary>
+        [Display(Name = "MCUboot image signing failed.")]
+        E10002 = 10002,
+
+        /// <summary>
+        /// Invalid MCUboot image header.
+        /// </summary>
+        [Display(Name = "Invalid MCUboot image header. Make sure the image was signed with imgtool.")]
+        E10003 = 10003,
+
+        /// <summary>
+        /// imgtool key generation failed.
+        /// </summary>
+        [Display(Name = "imgtool key generation failed.")]
+        E10004 = 10004,
+
+        /// <summary>
+        /// SMP serial connection failed.
+        /// </summary>
+        [Display(Name = "SMP serial connection failed. Check the serial port and baud rate.")]
+        E10005 = 10005,
+
+        /// <summary>
+        /// SMP frame CRC16 mismatch.
+        /// </summary>
+        [Display(Name = "SMP frame CRC mismatch. The received frame is corrupt.")]
+        E10006 = 10006,
+
+        /// <summary>
+        /// SMP response timeout.
+        /// </summary>
+        [Display(Name = "SMP response timeout. The device did not respond in time.")]
+        E10007 = 10007,
+
+        /// <summary>
+        /// SMP echo test failed.
+        /// </summary>
+        [Display(Name = "SMP echo test failed. Check the SMP server is running on the device.")]
+        E10008 = 10008,
+
+        /// <summary>
+        /// SMP image list command failed.
+        /// </summary>
+        [Display(Name = "SMP image list failed.")]
+        E10009 = 10009,
+
+        /// <summary>
+        /// SMP image upload failed.
+        /// </summary>
+        [Display(Name = "SMP image upload failed.")]
+        E10010 = 10010,
+
+        /// <summary>
+        /// SMP error: insufficient memory on device.
+        /// </summary>
+        [Display(Name = "SMP error: insufficient memory on device.")]
+        E10011 = 10011,
+
+        /// <summary>
+        /// SMP error: invalid argument.
+        /// </summary>
+        [Display(Name = "SMP error: invalid argument.")]
+        E10012 = 10012,
+
+        /// <summary>
+        /// SMP error: no such entry.
+        /// </summary>
+        [Display(Name = "SMP error: no such entry.")]
+        E10013 = 10013,
+
+        /// <summary>
+        /// SMP error: operation not supported.
+        /// </summary>
+        [Display(Name = "SMP error: operation not supported by device.")]
+        E10014 = 10014,
+
+        /// <summary>
+        /// SMP image erase failed.
+        /// </summary>
+        [Display(Name = "SMP image erase failed.")]
+        E10017 = 10017,
+
+        /// <summary>
+        /// SMP reset command failed.
+        /// </summary>
+        [Display(Name = "SMP reset failed.")]
+        E10018 = 10018,
+
+        /// <summary>
+        /// SMP deployment upload failed.
+        /// </summary>
+        [Display(Name = "SMP deployment upload failed.")]
+        E10019 = 10019,
+
+        /// <summary>
+        /// Image too large for MCUboot slot.
+        /// </summary>
+        [Display(Name = "Image too large for MCUboot slot. Increase slot size or reduce image size.")]
+        E10020 = 10020,
+
+        /// <summary>
+        /// SMP set image state failed.
+        /// </summary>
+        [Display(Name = "SMP set image state failed. The uploaded image was not marked for swap.")]
+        E10021 = 10021,
+
+        /// <summary>
+        /// Could not read the SHA-256 image hash from the signed image.
+        /// </summary>
+        [Display(Name = "Could not read the SHA-256 hash from the image. Is it a signed MCUboot image?")]
+        E10022 = 10022,
+
         ////////////////////////////////
         // Application general Errors //
         ////////////////////////////////

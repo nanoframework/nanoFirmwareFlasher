@@ -34,6 +34,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         internal int DeploymentPartitionAddress => 0x1B0000;
 
+        internal bool IsMcubootPackage { get; private set; }
+        internal string McubootBootloaderPath { get; private set; }
+        internal string SignedNanoClrPath { get; private set; }
+        internal string PartitionTablePath { get; private set; }
+        internal int McubootBootloaderAddress { get; private set; }
+        internal int McubootPrimarySlotAddress { get; private set; }
+
         public Esp32Firmware(
             string targetName,
             string fwVersion,
@@ -109,6 +116,24 @@ namespace nanoFramework.Tools.FirmwareFlasher
 				    // partition table goes to 0x8000; there are partition tables for 4MB, 8MB and 16MB flash sizes (and 2MB for ESP32)
 				    { 0x8000, Path.Combine(LocationPath, $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
                 };
+
+                // detect MCUboot package variant: MCUboot replaces the bootloader and the
+                // package's nanoCLR.bin is the signed image, so all of them must be there
+                var mcubootBin = Path.Combine(LocationPath, "mcuboot.bin");
+                var signedClr = FlashPartitions[CLRAddress];
+                var partitionTable = FlashPartitions[0x8000];
+
+                if (File.Exists(mcubootBin)
+                    && File.Exists(signedClr)
+                    && File.Exists(partitionTable))
+                {
+                    IsMcubootPackage = true;
+                    McubootBootloaderPath = mcubootBin;
+                    SignedNanoClrPath = signedClr;
+                    PartitionTablePath = partitionTable;
+                    McubootBootloaderAddress = BootLoaderAddress;
+                    McubootPrimarySlotAddress = CLRAddress;
+                }
             }
 
             return executionResult;

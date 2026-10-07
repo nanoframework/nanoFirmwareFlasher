@@ -68,6 +68,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public int PsRamSize { get; }
 
         /// <summary>
+        /// Whether the device has been provisioned with MCUboot and can be updated via SMP.
+        /// </summary>
+        /// <remarks>
+        /// <see langword="null"/> when this wasn't checked, or couldn't be determined (see the <c>checkMcuboot</c>
+        /// parameter of <see cref="EspTool.GetDeviceDetails"/>). Callers must not treat an unknown state as "not provisioned".
+        /// </remarks>
+        public bool? HasMcuboot { get; internal set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="chipType">The type of chip.</param>

@@ -90,7 +90,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     // if partition table size is specified, no need to get flash size
                     _options.Esp32PartitionTableSize == null,
                     _options.CheckPsRam,
-                    (_options.DeviceDetails || _options.IdentifyFirmware) && !backupFlash
+                    (_options.DeviceDetails || _options.IdentifyFirmware) && !backupFlash,
+                    _options.McubootTarget
                     );
             }
             else
@@ -159,6 +160,56 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 // device details already output
                 return ExitCodes.OK;
+            }
+
+            // MCUboot update path
+            if (_options.McubootTarget)
+            {
+                if (esp32Device.HasMcuboot == true)
+                {
+                    // Device already running MCUboot: use mcumgr upload path
+                    var mcubootManager = new McubootManager(_options, _verbosityLevel);
+                    return await mcubootManager.ProcessAsync();
+                }
+
+                if (esp32Device.HasMcuboot is null)
+                {
+                    // never provision a device that may already be running MCUboot
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine("Couldn't determine whether the device is running MCUboot. Not flashing the MCUboot package.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E4004;
+                }
+
+                // First-time provisioning: flash MCUboot package via esptool
+                if (string.IsNullOrEmpty(_options.TargetName))
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine("The device isn't running MCUboot yet. Provisioning it requires the target name, to download the MCUboot firmware package.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E9000;
+                }
+
+                if (!string.IsNullOrEmpty(_options.ClrFile))
+                {
+                    // the package carries its own signed nanoCLR, the image would go unused
+                    OutputWriter.ForegroundColor = ConsoleColor.Red;
+                    OutputWriter.WriteLine("The device isn't running MCUboot yet, so the image can't be uploaded. Provision it first, without image.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                    return ExitCodes.E9000;
+                }
+
+                return await Esp32Operations.FlashMcubootInitialPackageAsync(
+                    espTool,
+                    esp32Device,
+                    _options.TargetName,
+                    _options.FwVersion,
+                    _options.Preview,
+                    _options.FromFwArchive ? _options.FwArchivePath : null,
+                    _verbosityLevel);
             }
 
             bool updateAndDeploy = false;

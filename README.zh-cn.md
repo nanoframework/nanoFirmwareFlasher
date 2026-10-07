@@ -89,6 +89,7 @@ nanoff --help
 - [TI CC13x2](#ti-cc13x2-使用示例)
 - [Silabs Giant Gecko](#silabs-giant-gecko-使用示例)
 - [Raspberry Pi Pico](#raspberry-pi-pico-使用示例)
+- [MCUboot / SMP 固件更新](#mcuboot-使用示例)
 - [普通连接使用示例](#普通连接使用示例)
 - [常用选项](#常用选项)
 
@@ -341,6 +342,152 @@ nanoff --platform rpi_pico --devicedetails
 nanoff --listtargets --platform rpi_pico
 ```
 
+## MCUboot 使用示例
+
+[MCUboot](https://docs.mcuboot.com/) 是一个开源安全 bootloader，提供带有镜像签名、回滚保护和双镜像槽（主槽 + 次槽）的固件更新功能。当 .NET nanoFramework 目标设备运行 MCUboot 时，镜像通过 **SMP（简单管理协议）** 串行传输上传，而不是使用平台专用的烧录协议。
+
+在 `flash`、`deploy` 和 `list images` 命令中添加 `mcuboot` 关键字即切换到 MCUboot 模式，且必须指定 `serialport`。
+
+### imgtool 要求
+
+签名镜像需要 `imgtool`（MCUboot Python 包的一部分）。通过 pip 安装：
+
+```console
+pip install imgtool
+```
+
+`imgtool` 必须在 PATH 中可用，或者可以通过 `python -m imgtool` 调用。nanoff 会自动搜索这两种方式。
+
+> [!NOTE]
+> `imgtool` 作为外部进程（Python）运行，且仅在使用 `signkey` 和 `keys` 命令时运行：上传已签名的镜像不会运行任何外部程序。Windows Defender、Smart App Control 或 AppLocker 等安全软件可能会阻止它。如遇此情况，请允许 `imgtool`/`python` 运行，或预先（例如在构建机器上）签名镜像，然后在不使用 `signkey` 的情况下上传。
+
+### 密钥管理（`keys`）
+
+签名镜像之前需要一个 ECDSA P-256 签名密钥对。公钥必须编译进 MCUboot bootloader；私钥在主机上安全保存。
+
+#### 生成签名密钥
+
+```console
+nanoff keys generate my-signing-key.pem
+```
+
+#### 将公钥提取为 C 源文件
+
+```console
+nanoff keys getpub root-pub-key.c signkey my-signing-key.pem
+```
+
+将生成的 `root-pub-key.c` 包含在您的 MCUboot bootloader 构建中。
+
+### ESP32 首次烧录
+
+首次为 ESP32 设备烧录 MCUboot 时，会下载 MCUboot 固件包（bootloader、分区表和 nanoCLR 镜像），并通过标准 ESP32 串行 bootloader 烧录。当使用 `target` 并指定 `mcuboot`，且设备尚未运行 MCUboot 时自动完成；如果设备已运行 MCUboot，则改为通过 SMP 上传 `image` 指定的 CLR 镜像。
+
+```console
+nanoff flash target ESP32_GENERIC serialport COM31 mcuboot
+```
+
+### 通过 SMP 进行现场更新
+
+设备运行 MCUboot 后，后续更新使用 SMP 串行传输。设备必须处于 MCUboot 串行恢复模式（bootloader 已启用串行 SMP）。
+
+nanoFramework MCUboot 目标设备使用**双镜像布局**，由命令（verb）决定上传到哪个镜像：
+
+| MCUboot 镜像 | 内容 | 命令 |
+| --- | --- | --- |
+| **Image 0** | nanoCLR 二进制 | `nanoff flash ... image <路径> mcuboot` |
+| **Image 1** | 托管部署程序集 | `nanoff deploy ... image <路径> mcuboot` |
+
+#### 上传预签名 CLR 镜像
+
+```console
+nanoff flash serialport COM31 image "C:\fw\nanoCLR-signed.bin" mcuboot
+```
+
+#### 上传部署镜像
+
+上传已签名的托管部署镜像（MCUboot Image 1）：
+
+```console
+nanoff deploy serialport COM31 image "C:\fw\deployment-signed.bin" mcuboot
+```
+
+#### 上传到次槽（仅用于开发）
+
+> ⚠️ **仅用于开发/预发布。** 默认情况下镜像写入**主槽**，常规更新应使用主槽。添加 `secondaryslot` 会将镜像写入**次槽**并标记为待定（test），MCUboot 会在下次重启时将其换入。镜像必须已签名。`nanoff` 不会确认此次交换：确认由运行中的固件负责，否则 MCUboot 会回退到之前的镜像。
+
+```console
+nanoff flash serialport COM31 image "C:\fw\nanoCLR-signed.bin" mcuboot secondaryslot
+```
+
+#### 镜像激活与确认
+
+镜像写入**主槽**，设备在下次重启时启动该镜像——`nanoff` 不会发出 test/confirm 步骤。新镜像是否永久生效（以及如何处理回滚）由运行中的固件通过 MCUboot 运行时接口管理。
+
+### 签名选项
+
+提供 `signkey` 时，nanoff 在上传前使用 `imgtool sign` 对镜像签名。当您的 MCUboot 分区布局与标准 nanoFramework 配置不同时，请覆盖默认值。数值可以是十进制或十六进制（`0x` 前缀），且仅在指定 `signkey` 时有效：
+
+| 关键字 | 默认值 | 描述 |
+| --- | --- | --- |
+| `slotsize` | `0x100000`（1 MB） | 镜像槽大小（字节）。必须与 MCUboot 分区表中所签名镜像的槽大小一致。 |
+| `headersize` | `0x200`（512 B） | MCUboot 镜像头大小。必须与 MCUboot 构建配置一致。 |
+| `writealign` | `4` | Flash 写入对齐（字节）。大多数 MCU flash 通常为 4。 |
+
+使用自定义槽大小签名 CLR 镜像的示例：
+
+```console
+nanoff flash serialport COM31 image nanoCLR.bin mcuboot signkey key.pem slotsize 0xE8000
+```
+
+签名部署镜像的示例：
+
+```console
+nanoff deploy serialport COM31 image deployment.bin mcuboot signkey key.pem slotsize 0x100000
+```
+
+### 槽管理
+
+#### 列出两个槽中的镜像
+
+```console
+nanoff list images mcuboot serialport COM31
+```
+
+输出示例：
+
+```text
+Image 0 Slot 0  version=1.2.3.4  hash=abcd1234...  [active, confirmed, bootable]
+Image 0 Slot 1  version=1.3.0.0  hash=ef567890...  [pending, bootable]
+```
+
+### 串行端口
+
+所有 MCUboot SMP 操作都使用 `serialport` 作为 SMP 传输端口。SMP 波特率固定为 **115200**——MCUboot 串行 SMP 的标准默认值。注意这与 ESP32 烧录波特率（默认 1,500,000）不同。
+
+### 更新路径决策表
+
+| 设备 | 命令 | 使用的更新路径 |
+| --- | --- | --- |
+| ESP32，未安装 MCUboot | `flash target ... mcuboot` | 通过 ESP32 串行 bootloader 首次烧录 |
+| ESP32，运行 MCUboot | `flash ... image <路径> mcuboot` | SMP 串行传输 |
+| 其他运行 MCUboot 的目标 | `flash ... image <路径> mcuboot` | SMP 串行传输 |
+
+### MCUboot / SMP 关键字参考
+
+| 关键字 | 命令 | 描述 |
+| --- | --- | --- |
+| `mcuboot` | `flash`、`deploy`、`list` | 目标设备运行 MCUboot，通过 SMP 传输上传镜像。需要 `serialport`。 |
+| `image <路径>` | `flash` / `deploy` | `flash`：作为 MCUboot Image 0（CLR）上传；`deploy`：作为 MCUboot Image 1（部署程序集）上传。 |
+| `signkey <路径>` | `flash`、`deploy`、`keys` | PEM 签名密钥路径。上传前使用 `imgtool` 签名镜像；`keys getpub` 时为要提取公钥的密钥。 |
+| `secondaryslot` | `flash`、`deploy` | 仅用于开发。将镜像上传到次槽而非主槽。 |
+| `slotsize <字节>` | `flash`、`deploy` | 镜像槽大小（默认 `0x100000`）。 |
+| `headersize <字节>` | `flash`、`deploy` | MCUboot 镜像头大小（默认 `0x200`）。 |
+| `writealign <字节>` | `flash`、`deploy` | Flash 写入对齐（默认 `4`）。 |
+| `images` | `list` | 通过 SMP 列出 MCUboot 主槽和次槽中的镜像。需要 `mcuboot` 和 `serialport`。 |
+| `generate <路径>` | `keys` | 生成新的 ECDSA P-256 签名密钥并写入路径。 |
+| `getpub <路径>` | `keys` | 从 `signkey` 提取公钥为 C 源文件。 |
+
 ## 普通连接使用示例
 
 可以使用与 Visual Studio 连接相同的连接来更新 nano 设备，这意味着不需要专门的连接（如 JTAG 或 JLink）。这仅在设备之前已刷写了工作 nanoFramework 固件的情况下才可能。
@@ -405,6 +552,59 @@ nanoff --nanodevice --devicedetails --serialport COM9
 ```shell
 nanoff -v q
 ```
+
+## 列出已连接的 nano 设备
+
+获取已连接的 nano 设备列表，并显示每个设备正在运行的 nanoCLR（或 nanoBooter）版本。如需更多详细信息，请将 `verbosity` 关键字设置为高于 normal 的级别。
+
+```console
+nanoff list devices
+```
+
+```console
+nanoff list devices verbosity d
+```
+
+输出示例：
+
+```text
+-- nanoCLR / nanoBooter --
+SKY_EEVB_Debug @ COM7
+  nanoCLR:     1.8.1.124
+
+```
+
+带详细信息的输出示例：
+
+```text
+-- nanoCLR / nanoBooter --
+SKY_EEVB_Debug @ COM7
+  nanoCLR:     1.8.1.124
+  Platform:    GGECKO_S1
+  Date:        May 31 2023
+  Type:        MinSizeRel build with Azure RTOS v6.2.0
+
+```
+
+### 处于 MCUboot 串行恢复模式的设备
+
+`list devices` 还会查找处于 MCUboot 串行恢复模式的设备（复位时按住恢复按钮，或没有有效镜像）。这些设备不响应 Wire Protocol，因此会先用一个简短的 SMP（mcumgr）请求探测每个 COM 端口；有响应的端口随后会从 Wire Protocol 扫描中排除。有响应的设备会在单独的部分中列出，并显示 bootloader 报告的目标名称、MCUboot 和 nanoMCUboot 版本以及镜像版本（较旧的 bootloader 只报告镜像）。添加 `serialport` 可以只探测一个端口。
+
+```console
+nanoff list devices serialport COM9
+```
+
+```text
+-- MCUboot serial recovery --
+ORGPAL_PALTHREE @ COM9
+  MCUboot:     2.5.0-rc1
+  nanoMCUboot: 1.0.2.2
+  Image 0 slot 0: 1.8.1.124  active confirmed bootable
+  Image 1 slot 0: 1.0.0.0  active confirmed bootable
+
+```
+
+使用 `verbosity d` 时还会显示镜像哈希值。
 
 ## 设备列表
 

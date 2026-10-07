@@ -23,7 +23,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "devices",
             Required = false,
             Default = false,
-            HelpText = "List the .NET nanoFramework devices connected to the machine.")]
+            HelpText = "List the .NET nanoFramework devices connected to the machine, including devices in MCUboot serial recovery.")]
         public bool Devices { get; set; }
 
         [Option(
@@ -62,6 +62,27 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool NativeSwd { get; set; }
 
         [Option(
+            "images",
+            Required = false,
+            Default = false,
+            HelpText = "List the images in the MCUboot primary and secondary slots via SMP. Requires mcuboot and serialport.")]
+        public bool Images { get; set; }
+
+        [Option(
+            "mcuboot",
+            Required = false,
+            Default = false,
+            HelpText = "Target device is running MCUboot. Required with images.")]
+        public bool Mcuboot { get; set; }
+
+        [Option(
+            "serialport",
+            Required = false,
+            Default = null,
+            HelpText = "Serial port where device is connected to. Required with images; with devices, limits the MCUboot probe to this port.")]
+        public string SerialPort { get; set; }
+
+        [Option(
             "platform",
             Required = false,
             Default = null,
@@ -98,12 +119,32 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string mutuallyExclusiveError = ValidateMutuallyExclusive(
                 "list",
                 requireOne: true,
-                "targets, devices, ports, dfu, jtag, jlink or nativeswd",
-                o.Targets, o.Devices, o.Ports, o.Dfu, o.Jtag, o.JLink, o.NativeSwd);
+                "targets, devices, ports, dfu, jtag, jlink, nativeswd or images",
+                o.Targets, o.Devices, o.Ports, o.Dfu, o.Jtag, o.JLink, o.NativeSwd, o.Images);
 
             if (mutuallyExclusiveError != null)
             {
                 return mutuallyExclusiveError;
+            }
+
+            if (o.Images && !o.Mcuboot)
+            {
+                return "images lists the MCUboot slots and requires mcuboot.";
+            }
+
+            if (o.Mcuboot && !o.Images)
+            {
+                return "mcuboot can only be used with images.";
+            }
+
+            if (o.Images && string.IsNullOrEmpty(o.SerialPort))
+            {
+                return "images requires serialport to specify the port for the SMP transport.";
+            }
+
+            if (!string.IsNullOrEmpty(o.SerialPort) && !o.Images && !o.Devices)
+            {
+                return "serialport can only be used with devices or images.";
             }
 
             if (o.FromFwArchive && !o.Targets)

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using CommandLine;
 
@@ -102,6 +103,83 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Validates the MCUboot keywords shared by the <c>flash</c> and <c>deploy</c> verbs.
+        /// </summary>
+        /// <returns><see langword="null"/> if valid, or an error message describing the constraint violation.</returns>
+        internal static string ValidateMcubootUpload(
+            bool mcuboot,
+            string serialPort,
+            string signKey,
+            string slotSize,
+            string headerSize,
+            string writeAlign,
+            bool secondarySlot)
+        {
+            bool anySigningParameter = !string.IsNullOrEmpty(slotSize)
+                || !string.IsNullOrEmpty(headerSize)
+                || !string.IsNullOrEmpty(writeAlign);
+
+            if (!mcuboot)
+            {
+                if (!string.IsNullOrEmpty(signKey) || anySigningParameter || secondarySlot)
+                {
+                    return "signkey, slotsize, headersize, writealign and secondaryslot can only be used with mcuboot.";
+                }
+
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(serialPort))
+            {
+                return "mcuboot requires serialport to specify the port for the SMP transport.";
+            }
+
+            if (anySigningParameter && string.IsNullOrEmpty(signKey))
+            {
+                return "slotsize, headersize and writealign only apply when signing the image with signkey.";
+            }
+
+            foreach ((string name, string value) in new[] { ("slotsize", slotSize), ("headersize", headerSize), ("writealign", writeAlign) })
+            {
+                if (!TryParseMcubootSize(value, out _))
+                {
+                    return $"{name} must be a positive number, in decimal or hexadecimal (e.g. 0x100000) format.";
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Parses an MCUboot size/alignment value given in decimal or <c>0x</c> prefixed hexadecimal format.
+        /// </summary>
+        /// <param name="value">The value to parse. <see langword="null"/> or empty means "not specified".</param>
+        /// <param name="result">The parsed value, or <see langword="null"/> when not specified.</param>
+        /// <returns><see langword="false"/> if the value is specified but isn't a valid positive number.</returns>
+        internal static bool TryParseMcubootSize(string value, out int? result)
+        {
+            result = null;
+
+            if (string.IsNullOrEmpty(value))
+            {
+                return true;
+            }
+
+            int parsed;
+            bool success = value.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                ? int.TryParse(value.Substring(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out parsed)
+                : int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out parsed);
+
+            if (!success || parsed <= 0)
+            {
+                return false;
+            }
+
+            result = parsed;
+            return true;
         }
     }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -839,6 +840,77 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return operationResult;
+        }
+
+        /// <summary>
+        /// Flashes the MCUboot initial package (bootloader + partition table + signed nanoCLR) to an ESP32
+        /// device that does not yet have MCUboot installed.
+        /// </summary>
+        /// <param name="espTool"><see cref="EspTool"/> to use for flashing.</param>
+        /// <param name="esp32Device"><see cref="Esp32DeviceInfo"/> of the connected device.</param>
+        /// <param name="targetName">Firmware target name.</param>
+        /// <param name="fwVersion">Firmware version to download; null for latest.</param>
+        /// <param name="preview">Use preview channel if true.</param>
+        /// <param name="archiveDirectoryPath">Optional local archive path; null to download from Cloudsmith.</param>
+        /// <param name="verbosity">Verbosity level for progress messages.</param>
+        /// <returns>The <see cref="ExitCodes"/> with the operation result.</returns>
+        public static async System.Threading.Tasks.Task<ExitCodes> FlashMcubootInitialPackageAsync(
+            EspTool espTool,
+            Esp32DeviceInfo esp32Device,
+            string targetName,
+            string fwVersion,
+            bool preview,
+            string archiveDirectoryPath,
+            VerbosityLevel verbosity)
+        {
+            var firmware = new Esp32Firmware(targetName, fwVersion, preview, null)
+            {
+                Verbosity = verbosity
+            };
+
+            ExitCodes exitCode = await firmware.DownloadAndExtractAsync(esp32Device, archiveDirectoryPath);
+
+            if (exitCode != ExitCodes.OK)
+            {
+                return exitCode;
+            }
+
+            if (!firmware.IsMcubootPackage)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Red;
+                OutputWriter.WriteLine("Downloaded package is not an MCUboot firmware package.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return ExitCodes.E10003;
+            }
+
+            var partitions = new Dictionary<int, string>
+            {
+                [firmware.McubootBootloaderAddress]  = firmware.McubootBootloaderPath,
+                [0x8000]                             = firmware.PartitionTablePath,
+                [firmware.McubootPrimarySlotAddress] = firmware.SignedNanoClrPath,
+            };
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write("Flashing MCUboot initial package...");
+            }
+
+            exitCode = espTool.WriteFlash(partitions);
+
+            if (exitCode == ExitCodes.OK)
+            {
+                if (verbosity >= VerbosityLevel.Normal)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Green;
+                    OutputWriter.WriteLine("OK");
+                }
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+
+            return exitCode;
         }
     }
 }

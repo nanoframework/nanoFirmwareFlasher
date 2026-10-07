@@ -113,16 +113,18 @@ List of verbs:
 | [`identify`](#identify) | Show which firmware target `nanoff` would use for a device, without flashing or deploying anything. |
 | [`drivers`](#drivers) | Show/install drivers required by a given flashing interface. |
 | [`cache`](#cache) | Clear the local firmware cache, or download firmware into a local firmware archive. |
+| [`keys`](#keys) | Generate an MCUboot signing key, or export its public key. |
 
 Jump to a verb's examples, grouped by device type:
 
-- `flash`: [ESP32](#flash--esp32) | [STM32](#flash--stm32) | [TI CC13x2](#flash--ti-cc13x2) | [Silabs Giant Gecko](#flash--silabs-giant-gecko) | [Raspberry Pi Pico](#flash--raspberry-pi-pico) | [Generic nanoDevice](#flash--generic-nanodevice-plain-connection)
-- `deploy`: [ESP32](#deploy--esp32) | [STM32](#deploy--stm32) | [Silabs Giant Gecko](#deploy--silabs-giant-gecko) | [Raspberry Pi Pico](#deploy--raspberry-pi-pico) | [Generic nanoDevice](#deploy--generic-nanodevice-plain-connection) | [File deployment](#deploy--file-deployment) | [Network deployment](#deploy--network-deployment)
+- `flash`: [ESP32](#flash--esp32) | [STM32](#flash--stm32) | [TI CC13x2](#flash--ti-cc13x2) | [Silabs Giant Gecko](#flash--silabs-giant-gecko) | [Raspberry Pi Pico](#flash--raspberry-pi-pico) | [Generic nanoDevice](#flash--generic-nanodevice-plain-connection) | [MCUboot (SMP)](#flash--mcuboot-smp)
+- `deploy`: [ESP32](#deploy--esp32) | [STM32](#deploy--stm32) | [Silabs Giant Gecko](#deploy--silabs-giant-gecko) | [Raspberry Pi Pico](#deploy--raspberry-pi-pico) | [Generic nanoDevice](#deploy--generic-nanodevice-plain-connection) | [MCUboot (SMP)](#deploy--mcuboot-smp) | [File deployment](#deploy--file-deployment) | [Network deployment](#deploy--network-deployment)
 - [`list`](#list)
 - `details`: [ESP32](#details--esp32) | [Raspberry Pi Pico](#details--raspberry-pi-pico) | [Generic nanoDevice](#details--generic-nanodevice)
 - [`identify`](#identify)
 - `drivers`: [STM32 DFU](#drivers--stm32-dfu) | [STM32 JTAG](#drivers--stm32-jtag) | [TI XDS110](#drivers--ti-xds110)
 - `cache`: [clear](#cache--clear) | [download](#cache--download)
+- `keys`: [generate](#keys--generate) | [getpub](#keys--getpub)
 - [Common keywords](#common-keywords)
 
 You will also need to know the COM port used by your device for most operations. Find [how to do this here](#finding-the-device-com-port-on-windows), or use `nanoff list ports` — see [Finding the device COM port using nanoff](#finding-the-device-com-port-using-nanoff).
@@ -375,6 +377,78 @@ On Linux/macOS:
 nanoff flash serialport /dev/ttyACM0 image ~/nf-interpreter/build/nanoclr.bin
 ```
 
+### `flash` — MCUboot (SMP)
+
+[MCUboot](https://docs.mcuboot.com/) is an open-source secure bootloader that provides firmware update capabilities with image signing, rollback protection, and two image slots (primary + secondary). When a .NET nanoFramework target is running MCUboot, images are uploaded through the **SMP (Simple Management Protocol)** serial transport instead of the platform-specific flash protocol. Adding the `mcuboot` keyword switches `flash`, `deploy` and `list images` to MCUboot mode. `serialport` is always required.
+
+nanoFramework MCUboot targets use a **two-image layout**, and the verb picks the image:
+
+| MCUboot image | Content | Command |
+| --- | --- | --- |
+| **Image 0** | nanoCLR binary | `nanoff flash ... image <file> mcuboot` |
+| **Image 1** | Managed deployment assemblies | `nanoff deploy ... image <file> mcuboot` (see [`deploy` — MCUboot (SMP)](#deploy--mcuboot-smp)) |
+
+The device must be in MCUboot serial recovery (bootloader serial SMP enabled). The SMP baud rate is fixed at **115200 baud** — the standard MCUboot serial SMP default, which is different from the ESP32 flash baud rate (default 1,500,000). Use [`nanoff list devices`](#list-connected-nanoframework-devices) to find devices in MCUboot serial recovery.
+
+#### Upload a pre-signed CLR image
+
+```console
+nanoff flash serialport COM31 image "C:\fw\nanoCLR-signed.bin" mcuboot
+```
+
+The image is written to the **primary** slot and the device boots it on the next reset — no test/confirm step is issued by `nanoff`. Whether the new image becomes permanent (and how rollback is handled) is managed by the running firmware through the MCUboot runtime interface.
+
+#### Sign and upload a CLR image
+
+When `signkey` is given, `nanoff` signs the image with `imgtool` before uploading it (see [`keys`](#keys) to create a signing key):
+
+```console
+nanoff flash serialport COM31 image nanoCLR.bin mcuboot signkey my-signing-key.pem
+```
+
+Signing requires `imgtool`, which is part of the MCUboot Python package. It must be available on your PATH or invocable as `python -m imgtool`; `nanoff` searches both automatically:
+
+```console
+pip install imgtool
+```
+
+> [!NOTE]
+> `imgtool` runs as an external process (Python), and only for `signkey` and the [`keys`](#keys) verb: uploading an image that is already signed doesn't run anything external. Security software such as Windows Defender, Smart App Control or AppLocker can block it. If that happens, allow `imgtool`/`python` to run, or sign the image beforehand (e.g. on a build machine) and upload it without `signkey`.
+
+Override the signing defaults when your MCUboot partition layout differs from the standard nanoFramework configuration. Values can be decimal or hexadecimal (`0x` prefix), and only apply together with `signkey`:
+
+| Keyword | Default | Description |
+| --- | --- | --- |
+| `slotsize` | `0x100000` (1 MB) | Image slot size in bytes. Must match the slot size in the MCUboot partition table for the image being signed. |
+| `headersize` | `0x200` (512 B) | MCUboot image header size. Must match the MCUboot build configuration. |
+| `writealign` | `4` | Flash write alignment in bytes. Typically 4 for most MCU flash. |
+
+```console
+nanoff flash serialport COM31 image nanoCLR.bin mcuboot signkey my-signing-key.pem slotsize 0xE8000
+```
+
+#### Upload to the secondary slot (development only)
+
+> ⚠️ **Development/staging use only.** By default the image is written to the **primary** slot, which is what regular updates should use. Adding `secondaryslot` writes it to the **secondary** slot instead and marks it as pending (test), so MCUboot swaps it in on the next reset. The image must be signed. The swap is never confirmed by `nanoff`: confirming it is up to the running firmware, otherwise MCUboot reverts to the previous image.
+
+```console
+nanoff flash serialport COM31 image "C:\fw\nanoCLR-signed.bin" mcuboot secondaryslot
+```
+
+#### First-time provisioning of an ESP32
+
+The first time you provision an ESP32 device with MCUboot, the MCUboot firmware package (bootloader, partition table and nanoCLR image) is downloaded and flashed via the standard ESP32 serial bootloader. This happens automatically when a `target` is given with `mcuboot` and the device does not yet have MCUboot running. If MCUboot is already running, the CLR image given with `image` is uploaded via SMP instead.
+
+```console
+nanoff flash target ESP32_GENERIC serialport COM31 mcuboot
+```
+
+| Device | Command | Update path used |
+| --- | --- | --- |
+| ESP32, no MCUboot | `flash target ... mcuboot` | First-time provisioning via the ESP32 serial bootloader |
+| ESP32, MCUboot running | `flash ... image <file> mcuboot` | SMP serial transport |
+| Any other target running MCUboot | `flash ... image <file> mcuboot` | SMP serial transport |
+
 ## `deploy`
 
 Deploy an application image, or a file/network deployment package, to a device that is already running nanoFramework. Exactly one of `image`, `file` or `network` must be given.
@@ -434,6 +508,20 @@ This example uses the binary format file that is generated by Visual Studio when
 
 ```console
 nanoff deploy serialport COM9 image "c:\dev\my awesome app\bin\debug\my_awesome_app.bin"
+```
+
+### `deploy` — MCUboot (SMP)
+
+On a target running MCUboot, the deployment image is uploaded via SMP to **MCUboot Image 1** (see [`flash` — MCUboot (SMP)](#flash--mcuboot-smp) for the image layout and requirements). `serialport` and `image` are required; `address`, `file` and `network` don't apply.
+
+```console
+nanoff deploy serialport COM31 image "C:\fw\deployment-signed.bin" mcuboot
+```
+
+The same signing keywords as `flash` are available (`signkey`, `slotsize`, `headersize`, `writealign`), as well as `secondaryslot`:
+
+```console
+nanoff deploy serialport COM31 image deployment.bin mcuboot signkey my-signing-key.pem slotsize 0x100000
 ```
 
 ### `deploy` — File deployment
@@ -720,7 +808,7 @@ You can either **base64** encode your certificates (`DeviceCertificates` and `CA
 
 ## `list`
 
-List targets, connected nanoFramework devices, COM ports, or connected programming interfaces. Exactly one of `targets`, `devices`, `ports`, `dfu`, `jtag`, `jlink` or `nativeswd` must be given.
+List targets, connected nanoFramework devices, COM ports, connected programming interfaces, or the images in the MCUboot slots. Exactly one of `targets`, `devices`, `ports`, `dfu`, `jtag`, `jlink`, `nativeswd` or `images` must be given.
 
 ### List available COM ports
 
@@ -734,7 +822,7 @@ On Windows this lists names like `COM12`; on Linux it lists device paths like `/
 
 ### List connected nanoFramework devices
 
-To get a list of connected nano devices. If more details are required add the `verbosity` keyword set above normal.
+To get a list of connected nano devices, with the nanoCLR (or nanoBooter) version each one is running. If more details are required add the `verbosity` keyword set above normal.
 
 ```console
 nanoff list devices
@@ -747,24 +835,57 @@ nanoff list devices verbosity d
 Output example:
 
 ```text
--- Connected .NET nanoFramework devices --
+-- nanoCLR / nanoBooter --
 SKY_EEVB_Debug @ COM7
+  nanoCLR:     1.8.1.124
 
-------------------------------------------
 ```
 
 Output example with detailed verbosity:
 
 ```text
--- Connected .NET nanoFramework devices --
+-- nanoCLR / nanoBooter --
 SKY_EEVB_Debug @ COM7
-  Target:      SKY_EEVB_Debug
+  nanoCLR:     1.8.1.124
   Platform:    GGECKO_S1
   Date:        May 31 2023
   Type:        MinSizeRel build with Azure RTOS v6.2.0
-  CLR Version: 1.8.1.124
 
-------------------------------------------
+```
+
+#### Devices in MCUboot serial recovery
+
+`list devices` also finds devices sitting in MCUboot serial recovery mode (recovery button held at reset, or no valid image). These don't answer the Wire Protocol, so every COM port is first probed with a short SMP (mcumgr) request; ports that answer are then left out of the Wire Protocol scan. Responsive devices are listed in a separate section with the target name, the MCUboot and nanoMCUboot versions and the image versions reported by the bootloader (older bootloaders only report the images). Add `serialport` to probe a single port.
+
+```console
+nanoff list devices serialport COM9
+```
+
+```text
+-- MCUboot serial recovery --
+ORGPAL_PALTHREE @ COM9
+  MCUboot:     2.5.0-rc1
+  nanoMCUboot: 1.0.2.2
+  Image 0 slot 0: 1.8.1.124  active confirmed bootable
+  Image 1 slot 0: 1.0.0.0  active confirmed bootable
+
+```
+
+With `verbosity d` the image hashes are shown too.
+
+### List the images in the MCUboot slots
+
+To list the images in the MCUboot primary and secondary slots of a device running MCUboot, via SMP. `mcuboot` and `serialport` are required.
+
+```console
+nanoff list images mcuboot serialport COM31
+```
+
+Output example:
+
+```text
+Image 0 Slot 0  version=1.2.3.4  hash=abcd1234...  [active, confirmed, bootable]
+Image 0 Slot 1  version=1.3.0.0  hash=ef567890...  [pending, bootable]
 ```
 
 ### List available targets
@@ -902,6 +1023,28 @@ To flash firmware from the archive, use the same command line arguments as usual
 ```console
 nanoff flash serialport COM9 fromarchive archivepath c:\...\firmware
 ```
+
+## `keys`
+
+Manage the ECDSA P-256 key pair used to sign MCUboot images (see [`flash` — MCUboot (SMP)](#flash--mcuboot-smp)). The public key must be compiled into the MCUboot bootloader; the private key is kept secure on the host. Requires `imgtool` (`pip install imgtool`). Exactly one of `generate` or `getpub` must be given.
+
+### `keys` — generate
+
+Generate a new signing key:
+
+```console
+nanoff keys generate my-signing-key.pem
+```
+
+### `keys` — getpub
+
+Extract the public key from a signing key as a C source file:
+
+```console
+nanoff keys getpub root-pub-key.c signkey my-signing-key.pem
+```
+
+Include the generated `root-pub-key.c` in your MCUboot bootloader build.
 
 ## Common keywords
 

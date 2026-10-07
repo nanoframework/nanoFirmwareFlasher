@@ -143,6 +143,37 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public bool SuppressNanoFFVersionCheck { get; set; }
 
         public bool Uf2Deploy { get; set; }
+
+        #region MCUboot / SMP
+
+        /// <summary>
+        /// Target device is running MCUboot: images are uploaded through the SMP serial transport.
+        /// <see cref="ClrFile"/> goes to MCUboot Image 0, <see cref="DeploymentImage"/> to MCUboot Image 1.
+        /// </summary>
+        public bool McubootTarget { get; set; }
+
+        /// <summary>
+        /// Path to the PEM key used to sign the image with imgtool before uploading.
+        /// </summary>
+        public string SigningKeyPath { get; set; }
+
+        public int? McubootSlotSize { get; set; }
+
+        public int? McubootHeaderSize { get; set; }
+
+        public int? McubootWriteAlignment { get; set; }
+
+        /// <summary>
+        /// Upload the image to the secondary slot instead of the primary one.
+        /// </summary>
+        public bool SecondarySlot { get; set; }
+
+        /// <summary>
+        /// List the images in the MCUboot slots through SMP.
+        /// </summary>
+        public bool ListMcuImages { get; set; }
+
+        #endregion
     }
 }
 
