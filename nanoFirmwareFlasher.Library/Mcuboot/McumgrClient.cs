@@ -35,6 +35,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// <summary>Flash-write alignment applied to the data byte-string in each chunk.</summary>
         private const int ChunkAlignment = 4;
 
+        /// <summary>Time given to boot_serial to reply to a reset command and reboot.</summary>
+        private const int ResetSettleTimeMs = 250;
+
         private readonly SerialPort _port;
         private int _timeoutMs;
         private int _chunkSize;
@@ -122,17 +125,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 // make sure the buffer is empty
                 _port.DiscardInBuffer();
 
-                // send a harmless priming sequence to flush any stray bytes on the device side
-                try
-                {
-                    byte[] priming = Encoding.ASCII.GetBytes("\r\n\r\n");
-                    _port.Write(priming, 0, priming.Length);
-                    Thread.Sleep(150);
-                }
-                catch (TimeoutException)
-                {
-                    // Best-effort priming: proceed even if the write itself timed out.
-                }
+                // send a harmless "ping" to flush the device
+                byte[] priming = Encoding.ASCII.GetBytes("\r\n\r\n");
+                _port.Write(priming, 0, priming.Length);
+                Thread.Sleep(150);
             }
         }
 
@@ -154,7 +150,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// <param name="text">Text to send; the device echoes it back in the "r" field.</param>
         /// <param name="ct">Cancellation token.</param>
         /// <returns>The string echoed back by the device, or <see langword="null"/> if the response contained no "r" field.</returns>
-        public Task<string> EchoAsync(string text, CancellationToken ct = default)
+        public Task<string> EchoAsync(
+            string text,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -168,11 +166,18 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             }
         }
 
-        private string EchoCore(string text, CancellationToken ct)
+        private string EchoCore(
+            string text,
+            CancellationToken ct)
         {
             byte[] payload = EncodeMap1("d", text);
 
-            SendCommand(SmpOpCode.Write, SmpGroup.Os, (byte)OsCommandId.Echo, payload, ct);
+            SendCommand(
+                SmpOpCode.Write,
+                SmpGroup.Os,
+                (byte)OsCommandId.Echo,
+                payload,
+                ct);
             byte[] rsp = ReceiveFrame(ct).Payload;
 
             return DecodeStringField(rsp, "r");
@@ -212,7 +217,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         {
             byte[] payload = EncodeEmptyMap();
 
-            SendCommand(SmpOpCode.Read, SmpGroup.Os, (byte)OsCommandId.McumgrParameters, payload, ct);
+            SendCommand(
+                SmpOpCode.Read,
+                SmpGroup.Os,
+                (byte)OsCommandId.McumgrParameters,
+                payload,
+                ct);
             byte[] rsp = ReceiveFrame(ct).Payload;
 
             McumgrParameters parameters = DecodeParameters(rsp);
@@ -267,16 +277,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         {
             byte[] payload = EncodeEmptyMap();
 
-            SendCommand(SmpOpCode.Write, SmpGroup.Os, (byte)OsCommandId.Reset, payload, ct);
+            SendCommand(
+                SmpOpCode.Write,
+                SmpGroup.Os,
+                (byte)OsCommandId.Reset,
+                payload,
+                ct);
 
-            // best-effort receive; device may reset before sending a response
-            try
+            // reply carries nothing useful and the device may reboot before sending it, so don't wait
+            Thread.Sleep(ResetSettleTimeMs);
+
+            if (_port.IsOpen)
             {
-                ReceiveFrame(ct);
-            }
-            catch (McumgrTimeoutException)
-            {
-                // ignore timeout since device may have rebooted before responding
+                _port.DiscardInBuffer();
             }
         }
 
@@ -305,7 +318,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         {
             byte[] payload = EncodeEmptyMap();
 
-            SendCommand(SmpOpCode.Read, SmpGroup.Image, (byte)ImageCommandId.State, payload, ct);
+            SendCommand(
+                SmpOpCode.Read,
+                SmpGroup.Image,
+                (byte)ImageCommandId.State,
+                payload,
+                ct);
             byte[] rsp = ReceiveFrame(ct).Payload;
 
             return DecodeImageList(rsp);
@@ -318,7 +336,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// <param name="slot">Target slot (0 = primary, 1 = secondary/upgrade).</param>
         /// <param name="progress">Optional progress reporter.</param>
         /// <param name="ct">Cancellation token.</param>
-        public Task UploadImageAsync(byte[] data, int slot, IProgress<McumgrUploadProgress> progress, CancellationToken ct)
+        public Task UploadImageAsync(
+            byte[] data,
+            int slot,
+            IProgress<McumgrUploadProgress> progress,
+            CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -363,8 +385,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 // loader (bs_upload) does not decode it, and a 32-byte hash eats into the
                 // single-line budget, risking a multi-line frame that the device's
                 // all-at-once serial read cannot decode.
-                payload = EncodeUploadChunk(chunk, offset, data.Length, slot, isFirst, sha: null);
-                SendCommand(SmpOpCode.Write, SmpGroup.Image, (byte)ImageCommandId.Upload, payload, ct);
+                payload = EncodeUploadChunk(
+                    chunk,
+                    offset,
+                    data.Length,
+                    slot,
+                    isFirst,
+                    sha: null);
+                SendCommand(
+                    SmpOpCode.Write,
+                    SmpGroup.Image,
+                    (byte)ImageCommandId.Upload,
+                    payload,
+                    ct);
                 rsp = ReceiveFrame(ct).Payload;
 
                 SmpReturnCode rc = DecodeRc(rsp);
@@ -423,13 +456,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// </para>
         /// </param>
         /// <param name="ct">Cancellation token.</param>
-        public Task SetImageStateAsync(byte[] hash, bool confirm, CancellationToken ct = default)
+        public Task SetImageStateAsync(
+            byte[] hash,
+            bool confirm,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
 
             try
             {
-                SetImageStateCore(hash, confirm, ct);
+                SetImageStateCore(
+                    hash,
+                    confirm,
+                    ct);
 
                 return Task.CompletedTask;
             }
@@ -439,11 +478,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             }
         }
 
-        private void SetImageStateCore(byte[] hash, bool confirm, CancellationToken ct)
+        private void SetImageStateCore(
+            byte[] hash,
+            bool confirm,
+            CancellationToken ct)
         {
             byte[] payload = EncodeImageState(hash, confirm);
 
-            SendCommand(SmpOpCode.Write, SmpGroup.Image, (byte)ImageCommandId.State, payload, ct);
+            SendCommand(
+                SmpOpCode.Write,
+                SmpGroup.Image,
+                (byte)ImageCommandId.State,
+                payload,
+                ct);
             byte[] rsp = ReceiveFrame(ct).Payload;
 
             SmpReturnCode rc = DecodeRc(rsp);
@@ -470,13 +517,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// <summary>
         /// Uploads managed assembly data to the nanoFramework deployment partition.
         /// </summary>
-        public Task DeploymentUploadAsync(byte[] data, IProgress<McumgrUploadProgress> progress, CancellationToken ct)
+        public Task DeploymentUploadAsync(
+            byte[] data,
+            IProgress<McumgrUploadProgress> progress,
+            CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
             try
             {
-                DeploymentUploadCore(data, progress, ct);
+                DeploymentUploadCore(
+                    data,
+                    progress,
+                    ct);
 
                 return Task.CompletedTask;
             }
@@ -486,7 +539,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             }
         }
 
-        private void DeploymentUploadCore(byte[] data, IProgress<McumgrUploadProgress> progress, CancellationToken ct)
+        private void DeploymentUploadCore(
+            byte[] data,
+            IProgress<McumgrUploadProgress> progress,
+            CancellationToken ct)
         {
             int offset = 0;
 
@@ -494,12 +550,24 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             {
                 ct.ThrowIfCancellationRequested();
 
-                int chunkLen = Math.Min(_chunkSize, data.Length - offset);
+                int chunkLen = Math.Min(
+                    _chunkSize,
+                    data.Length - offset);
                 byte[] chunk = new byte[chunkLen];
                 Buffer.BlockCopy(data, offset, chunk, 0, chunkLen);
 
-                byte[] payload = EncodeUploadChunk(chunk, offset, data.Length, slot: 0, isFirst: offset == 0);
-                SendCommand(SmpOpCode.Write, SmpGroup.NanoFramework, (byte)NfCommandId.DeploymentUpload, payload, ct);
+                byte[] payload = EncodeUploadChunk(
+                    chunk,
+                    offset,
+                    data.Length,
+                    slot: 0,
+                    isFirst: offset == 0);
+                SendCommand(
+                    SmpOpCode.Write,
+                    SmpGroup.NanoFramework,
+                    (byte)NfCommandId.DeploymentUpload,
+                    payload,
+                    ct);
                 byte[] rsp = ReceiveFrame(ct).Payload;
 
                 SmpReturnCode rc = DecodeRc(rsp);
@@ -509,7 +577,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                     throw new McumgrProtocolException($"Deployment upload rejected at offset {offset}: rc={rc}", (int)rc);
                 }
 
-                bool hasOff = TryDecodeIntField(rsp, "off", out int nextOff);
+                bool hasOff = TryDecodeIntField(
+                    rsp,
+                    "off",
+                    out int nextOff);
 
                 if (hasOff && nextOff == 0 && offset > 0)
                 {
@@ -554,7 +625,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         {
             byte[] payload = EncodeEmptyMap();
 
-            SendCommand(SmpOpCode.Read, SmpGroup.NanoFramework, (byte)NfCommandId.DeploymentStatus, payload, ct);
+            SendCommand(
+                SmpOpCode.Read,
+                SmpGroup.NanoFramework,
+                (byte)NfCommandId.DeploymentStatus,
+                payload,
+                ct);
             byte[] rsp = ReceiveFrame(ct).Payload;
 
             return DecodeDeploymentStatus(rsp);
@@ -583,7 +659,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         {
             byte[] payload = EncodeEmptyMap();
 
-            SendCommand(SmpOpCode.Write, SmpGroup.NanoFramework, (byte)NfCommandId.DeploymentErase, payload, ct);
+            SendCommand(
+                SmpOpCode.Write,
+                SmpGroup.NanoFramework,
+                (byte)NfCommandId.DeploymentErase,
+                payload,
+                ct);
             byte[] rsp = ReceiveFrame(ct).Payload;
 
             SmpReturnCode rc = DecodeRc(rsp);
@@ -615,7 +696,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         {
             byte[] payload = EncodeEmptyMap();
 
-            SendCommand(SmpOpCode.Read, SmpGroup.NanoFramework, (byte)NfCommandId.DeviceInfo, payload, ct);
+            SendCommand(
+                SmpOpCode.Read,
+                SmpGroup.NanoFramework,
+                (byte)NfCommandId.DeviceInfo,
+                payload,
+                ct);
             byte[] rsp = ReceiveFrame(ct).Payload;
 
             return DecodeDeviceInfo(rsp);
@@ -625,7 +711,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
         #region Transport
 
-        private void SendCommand(SmpOpCode op, SmpGroup group, byte id, byte[] payload, CancellationToken ct)
+        private void SendCommand(
+            SmpOpCode op,
+            SmpGroup group,
+            byte id,
+            byte[] payload,
+            CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -642,7 +733,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             _lastTxCommandId = id;
             _lastTxSeq = seq;
 
-            McumgrEventSource.Log.SmpTxFrame(op, group, id, seq, payload.Length, txFrame);
+            McumgrEventSource.Log.SmpTxFrame(
+                op,
+                group,
+                id,
+                seq,
+                payload.Length,
+                txFrame);
 
             _port.DiscardInBuffer();
 
@@ -667,12 +764,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                     buffer.Add((byte)_port.ReadByte());
                 }
 
-                if (McumgrSmpFrame.TryDecode(buffer.ToArray(), out McumgrSmpFrame rxFrame))
+                if (McumgrSmpFrame.TryDecode(
+                    buffer.ToArray(),
+                    out McumgrSmpFrame rxFrame))
                 {
                     TimeSpan elapsed = DateTime.UtcNow - _lastTxTimestamp;
                     McumgrEventSource.Log.SmpRxFrame(
-                        rxFrame.Header.Op, rxFrame.Header.Group, rxFrame.Header.CommandId,
-                        rxFrame.Header.Seq, rxFrame.Header.PayloadLength, rxFrame.Payload, elapsed);
+                        rxFrame.Header.Op,
+                        rxFrame.Header.Group,
+                        rxFrame.Header.CommandId,
+                        rxFrame.Header.Seq,
+                        rxFrame.Header.PayloadLength,
+                        rxFrame.Payload,
+                        elapsed);
 
                     if (rxFrame.Header.Seq == _lastTxSeq)
                     {
@@ -687,7 +791,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             }
 
             byte[] rawBytes = buffer.ToArray();
-            McumgrEventSource.Log.SmpRxTimeout(_lastTxGroup, _lastTxCommandId, _lastTxSeq, DateTime.UtcNow - _lastTxTimestamp, rawBytes);
+            McumgrEventSource.Log.SmpRxTimeout(
+                _lastTxGroup,
+                _lastTxCommandId,
+                _lastTxSeq,
+                DateTime.UtcNow - _lastTxTimestamp,
+                rawBytes);
             throw new McumgrTimeoutException("No response from device within the configured timeout.");
         }
 
@@ -704,7 +813,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             return w.Encode();
         }
 
-        internal static byte[] EncodeMap1(string key, string value)
+        internal static byte[] EncodeMap1(
+            string key,
+            string value)
         {
             var w = new CborWriter();
             w.WriteStartMap(1);
@@ -715,7 +826,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             return w.Encode();
         }
 
-        internal static byte[] EncodeImageState(byte[] hash, bool confirm)
+        internal static byte[] EncodeImageState(
+            byte[] hash,
+            bool confirm)
         {
             var w = new CborWriter();
             bool includeHash = hash != null && hash.Length > 0;
@@ -738,7 +851,13 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             return w.Encode();
         }
 
-        internal static byte[] EncodeUploadChunk(byte[] chunk, int offset, int totalLen, int slot, bool isFirst, byte[] sha = null)
+        internal static byte[] EncodeUploadChunk(
+            byte[] chunk,
+            int offset,
+            int totalLen,
+            int slot,
+            bool isFirst,
+            byte[] sha = null)
         {
             var w = new CborWriter();
             bool includeSha = isFirst && sha != null && sha.Length > 0;
@@ -835,7 +954,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             return SmpReturnCode.Ok;
         }
 
-        internal static int DecodeIntField(byte[] payload, string fieldName)
+        internal static int DecodeIntField(
+            byte[] payload,
+            string fieldName)
         {
             if (payload == null || payload.Length == 0)
             {
@@ -844,7 +965,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
             try
             {
-                var r = new CborReader(payload, CborConformanceMode.Lax);
+                var r = new CborReader(
+                    payload,
+                    CborConformanceMode.Lax);
                 r.ReadStartMap();
 
                 while (r.PeekState() != CborReaderState.EndMap)
@@ -867,7 +990,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             return 0;
         }
 
-        internal static bool TryDecodeIntField(byte[] payload, string fieldName, out int value)
+        internal static bool TryDecodeIntField(
+            byte[] payload,
+            string fieldName,
+            out int value)
         {
             value = 0;
 
@@ -878,7 +1004,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
             try
             {
-                var r = new CborReader(payload, CborConformanceMode.Lax);
+                var r = new CborReader(
+                    payload,
+                    CborConformanceMode.Lax);
                 r.ReadStartMap();
 
                 while (r.PeekState() != CborReaderState.EndMap)
@@ -902,7 +1030,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             return false;
         }
 
-        internal static string DecodeStringField(byte[] payload, string fieldName)
+        internal static string DecodeStringField(
+            byte[] payload,
+            string fieldName)
         {
             if (payload == null || payload.Length == 0)
             {
@@ -911,7 +1041,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
             try
             {
-                var r = new CborReader(payload, CborConformanceMode.Lax);
+                var r = new CborReader(
+                    payload,
+                    CborConformanceMode.Lax);
                 r.ReadStartMap();
 
                 while (r.PeekState() != CborReaderState.EndMap)
@@ -991,7 +1123,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
             try
             {
-                var r = new CborReader(payload, CborConformanceMode.Lax);
+                var r = new CborReader(
+                    payload,
+                    CborConformanceMode.Lax);
                 r.ReadStartMap();
 
                 while (r.PeekState() != CborReaderState.EndMap)
@@ -1086,7 +1220,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
             try
             {
-                var r = new CborReader(payload, CborConformanceMode.Lax);
+                var r = new CborReader(
+                    payload,
+                    CborConformanceMode.Lax);
                 r.ReadStartMap();
 
                 while (r.PeekState() != CborReaderState.EndMap)
@@ -1171,7 +1307,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
             try
             {
-                var r = new CborReader(payload, CborConformanceMode.Lax);
+                var r = new CborReader(
+                    payload,
+                    CborConformanceMode.Lax);
                 r.ReadStartMap();
 
                 while (r.PeekState() != CborReaderState.EndMap)

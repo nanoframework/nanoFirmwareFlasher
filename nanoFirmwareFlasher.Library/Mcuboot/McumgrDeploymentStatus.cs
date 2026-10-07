@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
@@ -8,7 +10,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
     /// <summary>
     /// Status of the nanoFramework deployment partition as reported by the SMP custom group.
     /// </summary>
-    public class McumgrDeploymentStatus
+    public record McumgrDeploymentStatus
     {
         /// <summary>Start address of the deployment region.</summary>
         public int RegionStart { get; set; }

@@ -358,6 +358,9 @@ pip install imgtool
 
 `imgtool` 必须在 PATH 中可用，或者可以通过 `python -m imgtool` 调用。nanoff 会自动搜索这两种方式。
 
+> [!NOTE]
+> `imgtool` 作为外部进程（Python）运行，且仅在使用 `signkey` 和 `keys` 命令时运行：上传已签名的镜像不会运行任何外部程序。Windows Defender、Smart App Control 或 AppLocker 等安全软件可能会阻止它。如遇此情况，请允许 `imgtool`/`python` 运行，或预先（例如在构建机器上）签名镜像，然后在不使用 `signkey` 的情况下上传。
+
 ### 密钥管理（`keys`）
 
 签名镜像之前需要一个 ECDSA P-256 签名密钥对。公钥必须编译进 MCUboot bootloader；私钥在主机上安全保存。

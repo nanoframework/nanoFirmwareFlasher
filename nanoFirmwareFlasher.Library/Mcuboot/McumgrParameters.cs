@@ -1,5 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable enable
 
 namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 {
@@ -8,7 +10,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
     /// Used to negotiate the upload chunk size so the client matches the device's buffers
     /// instead of assuming the maximum possible frame size.
     /// </summary>
-    public class McumgrParameters
+    public record McumgrParameters
     {
         /// <summary>
         /// Size, in bytes, of a single MCUmgr transport buffer (the maximum SMP frame the

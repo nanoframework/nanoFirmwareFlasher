@@ -1,12 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 {
     /// <summary>
     /// Describes a single MCUboot image slot as reported by the SMP image-state command.
     /// </summary>
-    public class McumgrImageInfo
+    public record McumgrImageInfo
     {
         /// <summary>Image index (multi-image devices; 0 for the primary MCU image).</summary>
         public int Image { get; set; }
@@ -15,10 +17,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         public int Slot { get; set; }
 
         /// <summary>Firmware version string.</summary>
-        public string Version { get; set; }
+        public string? Version { get; set; }
 
         /// <summary>SHA-256 hash of the image.</summary>
-        public byte[] Hash { get; set; }
+        public byte[]? Hash { get; set; }
 
         /// <summary>True if this image is currently executing.</summary>
         public bool Active { get; set; }

@@ -721,7 +721,7 @@ namespace nanoFirmwareFlasher.Tests
                 w.WriteStartMap(8);
                 w.WriteTextString("image");     w.WriteInt64(img.Image);
                 w.WriteTextString("slot");      w.WriteInt64(img.Slot);
-                w.WriteTextString("version");   w.WriteTextString(img.Version);
+                w.WriteTextString("version");   w.WriteTextString(img.Version ?? string.Empty);
                 w.WriteTextString("hash");      w.WriteByteString(img.Hash ?? Array.Empty<byte>());
                 w.WriteTextString("active");    w.WriteBoolean(img.Active);
                 w.WriteTextString("confirmed"); w.WriteBoolean(img.Confirmed);

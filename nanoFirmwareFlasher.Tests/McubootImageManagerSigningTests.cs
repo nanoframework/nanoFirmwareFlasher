@@ -237,5 +237,35 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(ExitCodes.E10004, result,
                 "Any non-zero imgtool exit code must map to E10004");
         }
+
+        // -----------------------------------------------------------------------
+        // QuoteArgument / BuildArguments — command line used on .NET Framework
+        // -----------------------------------------------------------------------
+
+        [TestMethod]
+        [DataRow("sign", "sign")]
+        [DataRow("0x100000", "0x100000")]
+        [DataRow(@"C:\fw\nanoCLR.bin", @"C:\fw\nanoCLR.bin")]
+        [DataRow(@"C:\my fw\nanoCLR.bin", "\"C:\\my fw\\nanoCLR.bin\"")]
+        [DataRow("", "\"\"")]
+        [DataRow("a\"b", "\"a\\\"b\"")]
+        [DataRow(@"C:\my dir\", "\"C:\\my dir\\\\\"")]
+        [DataRow(@"a\\""b", "\"a\\\\\\\\\\\"b\"")]
+        public void QuoteArgument_EscapesForWindowsCommandLine(string argument, string expected)
+        {
+            Assert.AreEqual(expected, McubootImageManager.QuoteArgument(argument));
+        }
+
+        [TestMethod]
+        public void BuildArguments_KeepsInjectedOptionsInsideTheirArgument()
+        {
+            // a path crafted to close its quotes and add an option must stay a single argument
+            string commandLine = McubootImageManager.BuildArguments(
+                new[] { "sign", "--key", "key.pem\" --pad 1 \"x", @"C:\out dir\" });
+
+            Assert.AreEqual(
+                "sign --key \"key.pem\\\" --pad 1 \\\"x\" \"C:\\out dir\\\\\"",
+                commandLine);
+        }
     }
 }

@@ -1,12 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 {
     /// <summary>
     /// Reports progress during an SMP image or deployment upload.
     /// </summary>
-    public class McumgrUploadProgress
+    public record McumgrUploadProgress
     {
         /// <summary>Bytes successfully sent so far.</summary>
         public int BytesSent { get; set; }

@@ -2,9 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 {
@@ -27,8 +33,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         // TLV area, which follows the payload at hdr_size + img_size:
         //   info header: magic (uint16 LE), total length including the header (uint16 LE)
         //   entries:     type (uint16 LE), length (uint16 LE), value
-        private const ushort TlvInfoMagic = 0x6907;          // unprotected TLV area
-        private const ushort TlvInfoMagicProtected = 0x6908; // protected TLV area
+        // unprotected TLV area
+        private const ushort TlvInfoMagic = 0x6907;
+        // protected TLV area
+        private const ushort TlvInfoMagicProtected = 0x6908;
         private const ushort TlvSha256 = 0x10;
         private const int TlvHeaderSize = 4;
         private const int Sha256Size = 32;
@@ -37,11 +45,30 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         private const string ImgtoolViaPython = "python";
         private const string ImgtoolViaPython3 = "python3";
 
+        // Signing a full slot takes about a second; the margin covers a cold Python start
+        // and the scan an anti-malware tool may run on first use.
+        private const int ImgtoolTimeoutMs = 60_000;
+
+        // "imgtool --version" probe, same reasoning: a first Python start under an AV scan can exceed 5 s.
+        private const int ImgtoolProbeTimeoutMs = 15_000;
+
+        // Win32 ERROR_ACCESS_DENIED: the executable exists but its execution was refused.
+        private const int AccessDeniedError = 5;
+
+        private const string BlockedProcessHint =
+            "imgtool runs as an external process (Python) to sign images and manage keys. "
+            + "Security software such as Windows Defender, Smart App Control or AppLocker can block it: "
+            + "allow imgtool/python to run, or sign the image beforehand and upload it without signkey.";
+
+        private static readonly char[] s_charsNeedingQuotes = { ' ', '\t', '\n', '\v', '"' };
+
         private readonly string _signingKeyPath;
         private readonly int _slotSize;
         private readonly int _headerSize;
         private readonly int _writeAlignment;
-        private string _imgtoolPath; // null until first needed; set lazily
+
+        // null until first needed; set lazily
+        private string _imgtoolPath;
 
         /// <summary>Verbosity level for output messages.</summary>
         public VerbosityLevel Verbosity { get; set; }
@@ -76,7 +103,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// <param name="inputBinPath">Path to the unsigned nanoCLR binary.</param>
         /// <param name="outputBinPath">Path for the signed output image.</param>
         /// <param name="version">Semantic version string (e.g., "1.12.0.45").</param>
-        public ExitCodes SignImage(string inputBinPath, string outputBinPath, string version)
+        public ExitCodes SignImage(
+            string inputBinPath,
+            string outputBinPath,
+            string version)
         {
             if (inputBinPath is null)
             {
@@ -93,21 +123,24 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 throw new ArgumentNullException(nameof(version));
             }
 
+            string keyPath = GetFullPath(_signingKeyPath, "signing key");
+            inputBinPath = GetFullPath(inputBinPath, "image");
+            outputBinPath = GetFullPath(outputBinPath, "signed image");
+
             RequireImgtool();
 
             string imgtoolVersion = FormatImgtoolVersion(version);
 
-            string args = $"sign"
-                + $" --key \"{_signingKeyPath}\""
-                + $" --align {_writeAlignment}"
-                + $" --version {imgtoolVersion}"
-                + $" --header-size {_headerSize}"
-                + $" --pad-header"
-                + $" --slot-size {_slotSize}"
-                + $" \"{inputBinPath}\""
-                + $" \"{outputBinPath}\"";
-
-            var (exitCode, _, stderr) = RunImgtool(args);
+            var (exitCode, _, stderr) = RunImgtool(
+                "sign",
+                "--key", keyPath,
+                "--align", _writeAlignment.ToString(CultureInfo.InvariantCulture),
+                "--version", imgtoolVersion,
+                "--header-size", _headerSize.ToString(CultureInfo.InvariantCulture),
+                "--pad-header",
+                "--slot-size", _slotSize.ToString(CultureInfo.InvariantCulture),
+                inputBinPath,
+                outputBinPath);
 
             if (exitCode != 0)
             {
@@ -158,7 +191,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
                 if (magic != McubootMagic)
                 {
-                    return info; // IsValid remains false
+                    // IsValid remains false
+                    return info;
                 }
 
                 info.HeaderSize = BitConverter.ToUInt16(header, 8);
@@ -191,7 +225,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// <param name="signedImageBytes">Complete signed image, header through TLV area.</param>
         /// <param name="hash">The 32-byte hash, or <see langword="null"/> if it was not found.</param>
         /// <returns><see langword="true"/> if a SHA-256 TLV was present.</returns>
-        public static bool TryGetImageHash(byte[] signedImageBytes, out byte[] hash)
+        public static bool TryGetImageHash(
+            byte[] signedImageBytes,
+            out byte[] hash)
         {
             hash = null;
 
@@ -275,10 +311,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 throw new ArgumentNullException(nameof(outputKeyPath));
             }
 
+            outputKeyPath = GetFullPath(outputKeyPath, "signing key");
+
             RequireImgtool();
 
-            string args = $"keygen --key \"{outputKeyPath}\" --type ecdsa-p256";
-            var (exitCode, _, stderr) = RunImgtool(args);
+            var (exitCode, _, stderr) = RunImgtool("keygen", "--key", outputKeyPath, "--type", "ecdsa-p256");
 
             if (exitCode != 0)
             {
@@ -304,7 +341,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// </summary>
         /// <param name="signingKeyPath">Path to the PEM signing key.</param>
         /// <param name="outputCSourcePath">Path for the generated C source file.</param>
-        public ExitCodes ExtractPublicKey(string signingKeyPath, string outputCSourcePath)
+        public ExitCodes ExtractPublicKey(
+            string signingKeyPath,
+            string outputCSourcePath)
         {
             if (signingKeyPath is null)
             {
@@ -316,10 +355,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 throw new ArgumentNullException(nameof(outputCSourcePath));
             }
 
+            signingKeyPath = GetFullPath(signingKeyPath, "signing key");
+            outputCSourcePath = GetFullPath(outputCSourcePath, "public key output");
+
             RequireImgtool();
 
-            string args = $"getpub --key \"{signingKeyPath}\" --lang c";
-            var (exitCode, stdout, stderr) = RunImgtool(args);
+            var (exitCode, stdout, stderr) = RunImgtool("getpub", "--key", signingKeyPath, "--lang", "c");
 
             if (exitCode != 0)
             {
@@ -375,21 +416,29 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         ///   a full path — bundled imgtool.exe
         ///   null       — not found
         /// </summary>
-        internal static string FindImgtool()
+        internal static string FindImgtool() => FindImgtool(out _);
+
+        /// <param name="blocked">
+        /// <see langword="true"/> when a candidate exists but couldn't run (execution refused, or it hung),
+        /// which usually means security software is blocking it.
+        /// </param>
+        internal static string FindImgtool(out bool blocked)
         {
+            blocked = false;
+
             // 1. Direct executable on PATH
-            if (TryRunProcess("imgtool", "--version", out _))
+            if (TryRunProcess("imgtool", new[] { "--version" }, ref blocked))
             {
                 return "imgtool";
             }
 
             // 2. Python module (python / python3)
-            if (TryRunProcess("python", "-m imgtool --version", out _))
+            if (TryRunProcess("python", new[] { "-m", "imgtool", "--version" }, ref blocked))
             {
                 return ImgtoolViaPython;
             }
 
-            if (TryRunProcess("python3", "-m imgtool --version", out _))
+            if (TryRunProcess("python3", new[] { "-m", "imgtool", "--version" }, ref blocked))
             {
                 return ImgtoolViaPython3;
             }
@@ -397,6 +446,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             // 3. Bundled alongside the assembly
             string exeDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? ".";
             string bundled = Path.Combine(exeDir, "tools", "imgtool", "imgtool.exe");
+
             if (File.Exists(bundled))
             {
                 return bundled;
@@ -407,7 +457,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
         private void RequireImgtool()
         {
-            _imgtoolPath ??= FindImgtool();
+            if (_imgtoolPath is null)
+            {
+                _imgtoolPath = FindImgtool(out bool blocked);
+
+                if (_imgtoolPath is null && blocked)
+                {
+                    WriteBlockedProcessWarning();
+                }
+            }
 
             if (_imgtoolPath is null)
             {
@@ -420,79 +478,206 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
         /// Runs imgtool with the given sub-command arguments.
         /// Handles both direct-executable and python-module invocation modes.
         /// </summary>
-        private (int exitCode, string stdout, string stderr) RunImgtool(string arguments)
+        /// <param name="arguments">The arguments, one token each: they are passed to imgtool as-is, never parsed by a shell.</param>
+        private (int exitCode, string stdout, string stderr) RunImgtool(params string[] arguments)
         {
-            string executable;
-            string fullArguments;
-
-            if (_imgtoolPath == ImgtoolViaPython || _imgtoolPath == ImgtoolViaPython3)
-            {
-                executable = _imgtoolPath;
-                fullArguments = $"-m imgtool {arguments}";
-            }
-            else
-            {
-                executable = _imgtoolPath;
-                fullArguments = arguments;
-            }
+            IEnumerable<string> fullArguments = _imgtoolPath == ImgtoolViaPython || _imgtoolPath == ImgtoolViaPython3
+                ? new[] { "-m", "imgtool" }.Concat(arguments)
+                : arguments;
 
             try
             {
-                using var proc = new Process();
+                ProcessResult result = RunProcess(_imgtoolPath, fullArguments, ImgtoolTimeoutMs);
 
-                proc.StartInfo = new ProcessStartInfo(executable, fullArguments)
+                if (result.TimedOut)
                 {
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
+                    WriteBlockedProcessWarning();
 
-                proc.Start();
+                    return (-1, result.Stdout, $"imgtool didn't complete within {ImgtoolTimeoutMs / 1000} seconds.");
+                }
 
-                // drain both streams at the same time
-                var stdoutTask = proc.StandardOutput.ReadToEndAsync();
-                var stderrTask = proc.StandardError.ReadToEndAsync();
-                proc.WaitForExit(60000);
-
-                return (proc.ExitCode, stdoutTask.GetAwaiter().GetResult(), stderrTask.GetAwaiter().GetResult());
+                return (result.ExitCode, result.Stdout, result.Stderr);
             }
             catch (Exception ex)
             {
+                if (IsAccessDenied(ex))
+                {
+                    WriteBlockedProcessWarning();
+                }
+
                 return (-1, string.Empty, ex.Message);
             }
         }
 
-        private static bool TryRunProcess(string executable, string arguments, out string stdout)
+        /// <summary>
+        /// Runs <paramref name="executable"/> without a shell and waits for it to exit, killing it on timeout.
+        /// </summary>
+        private static ProcessResult RunProcess(
+            string executable,
+            IEnumerable<string> arguments,
+            int timeoutMs)
         {
-            stdout = string.Empty;
+            var startInfo = new ProcessStartInfo(executable)
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+
+#if NET
+            foreach (string argument in arguments)
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+#else
+            startInfo.Arguments = BuildArguments(arguments);
+#endif
+
+            using var proc = new Process { StartInfo = startInfo };
+
+            proc.Start();
+
+            Task<string> stdoutTask = proc.StandardOutput.ReadToEndAsync();
+            Task<string> stderrTask = proc.StandardError.ReadToEndAsync();
+
+            if (!proc.WaitForExit(timeoutMs))
+            {
+                try
+                {
+#if NET
+                    proc.Kill(entireProcessTree: true);
+#else
+                    proc.Kill();
+#endif
+                }
+                catch (InvalidOperationException)
+                {
+                    // exited in the meantime
+                }
+
+                // the streams close once the process is gone
+                proc.WaitForExit();
+
+                return new ProcessResult(-1, stdoutTask.GetAwaiter().GetResult(), stderrTask.GetAwaiter().GetResult(), timedOut: true);
+            }
+
+            return new ProcessResult(proc.ExitCode, stdoutTask.GetAwaiter().GetResult(), stderrTask.GetAwaiter().GetResult(), timedOut: false);
+        }
+
+        private static bool TryRunProcess(
+            string executable,
+            string[] arguments,
+            ref bool blocked)
+        {
             try
             {
-                using var proc = new Process();
+                ProcessResult result = RunProcess(executable, arguments, ImgtoolProbeTimeoutMs);
 
-                proc.StartInfo = new ProcessStartInfo(executable, arguments)
-                {
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
+                blocked |= result.TimedOut;
 
-                proc.Start();
-
-                var stdoutTask = proc.StandardOutput.ReadToEndAsync();
-                var stderrTask = proc.StandardError.ReadToEndAsync();
-                proc.WaitForExit(5000);
-
-                stdout = stdoutTask.GetAwaiter().GetResult();
-                stderrTask.GetAwaiter().GetResult();
-
-                return proc.ExitCode == 0;
+                return !result.TimedOut && result.ExitCode == 0;
             }
-            catch
+            catch (Exception ex)
             {
+                // a missing executable just isn't a candidate; a refused one is worth reporting
+                blocked |= IsAccessDenied(ex);
+
                 return false;
             }
+        }
+
+        private static bool IsAccessDenied(Exception ex) => ex is Win32Exception { NativeErrorCode: AccessDeniedError };
+
+        private static void WriteBlockedProcessWarning()
+        {
+            OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+            OutputWriter.WriteLine(BlockedProcessHint);
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+        }
+
+        /// <summary>
+        /// Normalises a path given by the user, rejecting malformed ones before they reach the command line.
+        /// </summary>
+        private static string GetFullPath(
+            string path,
+            string description)
+        {
+            try
+            {
+                return Path.GetFullPath(path);
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                throw new McubootImageException($"Invalid {description} path: '{path}'.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Joins arguments into a command line that the Windows C runtime parses back into the same tokens
+        /// (same rules as <c>ProcessStartInfo.ArgumentList</c>, which isn't available on .NET Framework).
+        /// </summary>
+        internal static string BuildArguments(IEnumerable<string> arguments) => string.Join(" ", arguments.Select(QuoteArgument));
+
+        /// <summary>
+        /// Quotes an argument for the Windows command line: wraps it in quotes when needed, escapes embedded
+        /// quotes, and doubles the backslashes that precede a quote (including the closing one).
+        /// </summary>
+        internal static string QuoteArgument(string argument)
+        {
+            if (argument.Length > 0 && argument.IndexOfAny(s_charsNeedingQuotes) < 0)
+            {
+                return argument;
+            }
+
+            var quoted = new StringBuilder("\"");
+            int backslashes = 0;
+
+            foreach (char c in argument)
+            {
+                if (c == '\\')
+                {
+                    backslashes++;
+                    continue;
+                }
+
+                if (c == '"')
+                {
+                    quoted.Append('\\', (backslashes * 2) + 1);
+                }
+                else
+                {
+                    quoted.Append('\\', backslashes);
+                }
+
+                quoted.Append(c);
+                backslashes = 0;
+            }
+
+            // backslashes before the closing quote must be doubled
+            quoted.Append('\\', backslashes * 2);
+            quoted.Append('"');
+
+            return quoted.ToString();
+        }
+
+        private readonly struct ProcessResult
+        {
+            public ProcessResult(int exitCode, string stdout, string stderr, bool timedOut)
+            {
+                ExitCode = exitCode;
+                Stdout = stdout;
+                Stderr = stderr;
+                TimedOut = timedOut;
+            }
+
+            public int ExitCode { get; }
+
+            public string Stdout { get; }
+
+            public string Stderr { get; }
+
+            public bool TimedOut { get; }
         }
     }
 }

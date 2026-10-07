@@ -412,6 +412,9 @@ Signing requires `imgtool`, which is part of the MCUboot Python package. It must
 pip install imgtool
 ```
 
+> [!NOTE]
+> `imgtool` runs as an external process (Python), and only for `signkey` and the [`keys`](#keys) verb: uploading an image that is already signed doesn't run anything external. Security software such as Windows Defender, Smart App Control or AppLocker can block it. If that happens, allow `imgtool`/`python` to run, or sign the image beforehand (e.g. on a build machine) and upload it without `signkey`.
+
 Override the signing defaults when your MCUboot partition layout differs from the standard nanoFramework configuration. Values can be decimal or hexadecimal (`0x` prefix), and only apply together with `signkey`:
 
 | Keyword | Default | Description |

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -111,10 +111,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                     {
                         device.ImageListError = ex.Message;
                     }
-                }
 
-                if (readDetails)
-                {
                     try
                     {
                         // older bootloaders reply rc=ENOTSUP, which decodes to an empty info
