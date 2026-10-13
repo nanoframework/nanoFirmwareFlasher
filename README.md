@@ -114,6 +114,7 @@ List of verbs:
 | [`drivers`](#drivers) | Show/install drivers required by a given flashing interface. |
 | [`cache`](#cache) | Clear the local firmware cache, or download firmware into a local firmware archive. |
 | [`keys`](#keys) | Generate an MCUboot signing key, or export its public key. |
+| [`pack`](#pack) | Bundle a signed nanoCLR and deployment into one update file for SD card / USB import. |
 
 Jump to a verb's examples, grouped by device type:
 
@@ -125,6 +126,7 @@ Jump to a verb's examples, grouped by device type:
 - `drivers`: [STM32 DFU](#drivers--stm32-dfu) | [STM32 JTAG](#drivers--stm32-jtag) | [TI XDS110](#drivers--ti-xds110)
 - `cache`: [clear](#cache--clear) | [download](#cache--download)
 - `keys`: [generate](#keys--generate) | [getpub](#keys--getpub)
+- `pack`: [update](#pack--update)
 - [Common keywords](#common-keywords)
 
 You will also need to know the COM port used by your device for most operations. Find [how to do this here](#finding-the-device-com-port-on-windows), or use `nanoff list ports` — see [Finding the device COM port using nanoff](#finding-the-device-com-port-using-nanoff).
@@ -1045,6 +1047,29 @@ nanoff keys getpub root-pub-key.c signkey my-signing-key.pem
 ```
 
 Include the generated `root-pub-key.c` in your MCUboot bootloader build.
+
+## `pack`
+
+Build files out of signed MCUboot images.
+
+### `pack` — update
+
+Bundle a signed nanoCLR image and a signed deployment image into a single update file. Copy it to the root of an SD card or a USB mass storage device: on the next boot the MCUboot bootloader imports both images and swaps them in together. Both images are required.
+
+```console
+nanoff pack update clr nanoCLR-signed.bin deployment nanoDeployment-signed.bin
+```
+
+The bundle is named `nanoUpdate-<major>.<minor>.<revision>.<build>.bin` after the version of the nanoCLR image (e.g. `nanoUpdate-1.12.0.123.bin`) and written to the current directory. Use `output` to give a file name, or a directory to write it into under that default name. Any file name is accepted, as the name the bootloader looks for is configurable per target (the default pattern is `nanoUpdate-*.bin`). An existing file is replaced only with `overwrite`:
+
+```console
+nanoff pack update clr nanoCLR-signed.bin deployment nanoDeployment-signed.bin output e:\
+nanoff pack update clr nanoCLR-signed.bin deployment nanoDeployment-signed.bin output release\my-update.bin overwrite
+```
+
+Before writing the bundle `nanoff` checks that each file is a signed MCUboot image (header, sizes, TLV area) and that its SHA-256 matches its contents. The signature itself is not checked here: the bootloader does that before swapping an image in.
+
+The bundle is a small manifest (`NFUPDATE` marker, format version, offset and size of each image) followed by the two signed images, unchanged. The format is specified in [MCUboot/docs/update-bundle.md](https://github.com/nanoframework/nf-interpreter/blob/main/MCUboot/docs/update-bundle.md) in nf-interpreter.
 
 ## Common keywords
 

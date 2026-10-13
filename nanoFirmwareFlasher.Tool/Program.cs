@@ -262,6 +262,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 "nanoff keys generate my-signing-key.pem",
                 "nanoff keys getpub root-pub-key.c signkey my-signing-key.pem",
             },
+            [typeof(PackOptions)] = new[]
+            {
+                "nanoff pack update clr nanoCLR-signed.bin deployment nanoDeployment-signed.bin",
+                "nanoff pack update clr nanoCLR-signed.bin deployment nanoDeployment-signed.bin output e:\\",
+                "nanoff pack update clr nanoCLR-signed.bin deployment nanoDeployment-signed.bin output release\\my-update.bin overwrite",
+            },
         };
 
         /// <summary>
@@ -310,7 +316,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string[] normalizedArgs = VerbTokenizer.Normalize(args);
 
             var verbParserResult = new Parser(config => config.HelpWriter = null)
-                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions, KeysOptions>(normalizedArgs);
+                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions, KeysOptions, PackOptions>(normalizedArgs);
 
             if (verbParserResult is Parsed<object> parsed)
             {
@@ -348,6 +354,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     case KeysOptions keysOptions:
                         await RunKeysAsync(keysOptions);
+                        break;
+
+                    case PackOptions packOptions:
+                        await RunPackAsync(packOptions);
                         break;
                 }
             }
@@ -529,6 +539,60 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 NanoTelemetry.TrackException(ex, "keys");
 
                 _exitCode = ExitCodes.E10004;
+                _extraMessage = ex.Message;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private static Task RunPackAsync(PackOptions o)
+        {
+            try
+            {
+                _verbosityLevel = o.GetVerbosityLevel();
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
+                return Task.CompletedTask;
+            }
+
+            string validationError = PackOptions.Validate(o);
+
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return Task.CompletedTask;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+            OutputWriter.WriteLine(_headerInfo);
+            OutputWriter.WriteLine(_copyrightInfo);
+            OutputWriter.WriteLine();
+
+            try
+            {
+                _exitCode = McubootUpdateBundle.Create(
+                    o.Clr,
+                    o.Deployment,
+                    o.Output,
+                    o.Overwrite,
+                    _verbosityLevel,
+                    out _,
+                    out string errorDetail);
+
+                if (_exitCode != ExitCodes.OK)
+                {
+                    _extraMessage = errorDetail;
+                }
+            }
+            catch (Exception ex)
+            {
+                NanoTelemetry.TrackException(ex, "pack");
+
+                _exitCode = ExitCodes.E10027;
                 _extraMessage = ex.Message;
             }
 

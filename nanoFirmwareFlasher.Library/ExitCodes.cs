@@ -468,6 +468,42 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Display(Name = "Could not read the SHA-256 hash from the image. Is it a signed MCUboot image?")]
         E10022 = 10022,
 
+        /// <summary>
+        /// Update bundle: image file not found.
+        /// </summary>
+        [Display(Name = "Update bundle: image file not found.")]
+        E10023 = 10023,
+
+        /// <summary>
+        /// Update bundle: not a valid signed MCUboot image.
+        /// </summary>
+        [Display(Name = "Update bundle: not a valid signed MCUboot image (bad header magic or inconsistent sizes).")]
+        E10024 = 10024,
+
+        /// <summary>
+        /// Update bundle: SHA-256 TLV missing or not matching the image.
+        /// </summary>
+        [Display(Name = "Update bundle: image SHA-256 TLV missing or not matching the image contents.")]
+        E10025 = 10025,
+
+        /// <summary>
+        /// Update bundle: output file already exists.
+        /// </summary>
+        [Display(Name = "Update bundle: output file already exists. Use overwrite to replace it.")]
+        E10026 = 10026,
+
+        /// <summary>
+        /// Update bundle: error writing the output file.
+        /// </summary>
+        [Display(Name = "Update bundle: error writing the output file.")]
+        E10027 = 10027,
+
+        /// <summary>
+        /// Update bundle: images too large for the bundle format.
+        /// </summary>
+        [Display(Name = "Update bundle: images too large for the 32-bit offsets of the bundle format.")]
+        E10028 = 10028,
+
         ////////////////////////////////
         // Application general Errors //
         ////////////////////////////////

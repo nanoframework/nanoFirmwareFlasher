@@ -32,6 +32,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             ["drivers"] = typeof(DriversOptions),
             ["cache"] = typeof(CacheOptions),
             ["keys"] = typeof(KeysOptions),
+            ["pack"] = typeof(PackOptions),
         };
 
         /// <summary>
