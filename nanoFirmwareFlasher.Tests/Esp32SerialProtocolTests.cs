@@ -12,6 +12,10 @@ using nanoFramework.Tools.Debugger;
 using nanoFramework.Tools.FirmwareFlasher;
 using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
 
+// Some asserts here pin constants to their specified values on purpose, as a guard against accidental edits:
+// both sides are compile-time constants, which is what MSTEST0025/MSTEST0032 flag.
+#pragma warning disable MSTEST0025, MSTEST0032
+
 namespace nanoFirmwareFlasher.Tests
 {
     [TestClass]
@@ -1582,7 +1586,7 @@ namespace nanoFirmwareFlasher.Tests
             Assert.AreEqual(16, raw[2] | (raw[3] << 8), "Raw packet data length must be 16.");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("esp32s2", false)] // Newer ROM bootloaders require the extended format
         [DataRow("esp32s3", false)]
         [DataRow("esp32", true)]    // The stub always uses the extended format, even on classic ESP32
@@ -1750,7 +1754,7 @@ namespace nanoFirmwareFlasher.Tests
             // Verify the checksum is computed from block data
             // Seed with 0xEF, XOR each byte
             uint manual = 0xEF ^ 0x01 ^ 0x02 ^ 0x03 ^ 0x04;
-            Assert.AreEqual(manual, expectedChecksum);
+            Assert.AreEqual(expectedChecksum, manual);
 
             // Adding a header to the payload should NOT affect the checksum
             // (because checksum is calculated from block only, before constructing payload)

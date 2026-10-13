@@ -420,7 +420,7 @@ namespace nanoFirmwareFlasher.Tests
         private static byte[] BuildSignedImage(
             int payloadSize,
             (ushort Type, byte[] Value)[] unprotectedTlvs,
-            (ushort Type, byte[] Value)[] protectedTlvs = null)
+            (ushort Type, byte[] Value)[]? protectedTlvs = null)
         {
             byte[] protectedArea = protectedTlvs is null
                 ? []

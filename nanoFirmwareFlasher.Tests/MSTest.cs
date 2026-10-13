@@ -18,5 +18,11 @@ namespace nanoFirmwareFlasher.Tests
             // tests must never send telemetry, even when a real connection string is present in appsettings.json
             Environment.SetEnvironmentVariable(NanoTelemetry.OptOutEnvironmentVariable, "1");
         }
+
+        [AssemblyCleanup]
+        public static void AssemblyCleanup()
+        {
+            Helpers.TestDirectoryHelper.Cleanup();
+        }
     }
 }
