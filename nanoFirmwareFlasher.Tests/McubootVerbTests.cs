@@ -25,7 +25,7 @@ namespace nanoFirmwareFlasher.Tests
         private static object Parse(params string[] args)
         {
             ParserResult<object> result = new Parser(config => config.HelpWriter = null)
-                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions, KeysOptions>(VerbTokenizer.Normalize(args));
+                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions, KeysOptions, PackOptions>(VerbTokenizer.Normalize(args));
 
             Assert.IsInstanceOfType(result, typeof(Parsed<object>), "command line should parse");
 
@@ -387,6 +387,82 @@ namespace nanoFirmwareFlasher.Tests
         // ======================================================================
         // keys
         // ======================================================================
+
+        #region pack
+
+        [TestMethod]
+        public void Normalize_PackIsAKnownVerb()
+        {
+            Assert.AreEqual(typeof(PackOptions), VerbTokenizer.KnownVerbs["pack"]);
+        }
+
+        [TestMethod]
+        public void Normalize_PackUpdate_FlagsAndValues()
+        {
+            string[] result = VerbTokenizer.Normalize(new[]
+            {
+                "pack", "update", "clr", "clr.bin", "deployment", "dep.bin", "output", "out.bin", "overwrite"
+            });
+
+            CollectionAssert.AreEqual(
+                new[] { "pack", "--update", "--clr", "clr.bin", "--deployment", "dep.bin", "--output", "out.bin", "--overwrite" },
+                result);
+        }
+
+        [TestMethod]
+        public void Pack_Update_Valid()
+        {
+            var o = (PackOptions)Parse("pack", "update", "clr", "clr.bin", "deployment", "dep.bin", "output", "out.bin", "overwrite");
+
+            Assert.IsTrue(o.Update);
+            Assert.AreEqual("clr.bin", o.Clr);
+            Assert.AreEqual("dep.bin", o.Deployment);
+            Assert.AreEqual("out.bin", o.Output);
+            Assert.IsTrue(o.Overwrite);
+            Assert.IsNull(PackOptions.Validate(o));
+        }
+
+        [TestMethod]
+        public void Pack_WithoutUpdate_Invalid()
+        {
+            var o = (PackOptions)Parse("pack", "clr", "clr.bin", "deployment", "dep.bin");
+
+            StringAssert.Contains(PackOptions.Validate(o), "requires update");
+        }
+
+        [TestMethod]
+        public void Pack_ClrOnly_Refused()
+        {
+            var o = (PackOptions)Parse("pack", "update", "clr", "clr.bin");
+
+            StringAssert.Contains(PackOptions.Validate(o), "requires both clr and deployment");
+        }
+
+        [TestMethod]
+        public void Pack_DeploymentOnly_Refused()
+        {
+            var o = (PackOptions)Parse("pack", "update", "deployment", "dep.bin");
+
+            StringAssert.Contains(PackOptions.Validate(o), "requires both clr and deployment");
+        }
+
+        [TestMethod]
+        public void Pack_NoImages_Refused()
+        {
+            var o = (PackOptions)Parse("pack", "update");
+
+            StringAssert.Contains(PackOptions.Validate(o), "requires both clr and deployment");
+        }
+
+        [TestMethod]
+        public void Pack_SameFileForBothImages_Invalid()
+        {
+            var o = (PackOptions)Parse("pack", "update", "clr", "image.bin", "deployment", "image.bin");
+
+            StringAssert.Contains(PackOptions.Validate(o), "must be different files");
+        }
+
+        #endregion
 
         #region keys
 

@@ -56,7 +56,7 @@ nanoFirmwareFlasher.sln
 The CLI uses a **verb + bare keyword** syntax (`nanoff flash target ESP32_PSRAM_REV0 serialport COM31`); the `--` prefix on keywords is optional. Each command performs one verb only (e.g. a firmware update and an app deploy are separate `flash` and `deploy` invocations). Parsing is a three-stage pipeline in `nanoFirmwareFlasher.Tool/`:
 
 1. `Verbs/VerbTokenizer.Normalize` rewrites bare-word args into `--keyword value` form using the option classes' attributes (`KnownVerbs` maps verb word → option type; `help`/`version` become `--help`/`--version`).
-2. CommandLineParser parses into one of the per-verb classes in `Verbs/` (`FlashOptions`, `DeployOptions`, `ListOptions`, `DetailsOptions`, `IdentifyOptions`, `DriversOptions`, `CacheOptions`, all deriving from `VerbOptionsBase`), each with an optional static `Validate`.
+2. CommandLineParser parses into one of the per-verb classes in `Verbs/` (`FlashOptions`, `DeployOptions`, `ListOptions`, `DetailsOptions`, `IdentifyOptions`, `DriversOptions`, `CacheOptions`, `KeysOptions`, `PackOptions`, all deriving from `VerbOptionsBase`), each with an optional static `Validate`.
 3. `Verbs/VerbOptionsMapper.ToLegacyOptions` flattens the verb object into the legacy `Options` bag, which `Program` dispatches to the per-platform `*Manager` classes and to `FileDeploymentManager` / `NetworkDeploymentManager`.
 
 Adding a CLI option therefore means touching the verb class, the mapper, and (if new) the legacy `Options` field read by the manager. `VerbTokenizerTests`, `VerbOptionsTests` and `VerbOptionsMapperTests` cover this pipeline. `README.md` documents every verb and keyword with examples and must be updated along with CLI changes.
