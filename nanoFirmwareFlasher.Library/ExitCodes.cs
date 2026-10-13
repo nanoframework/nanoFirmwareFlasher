@@ -469,9 +469,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         E10022 = 10022,
 
         /// <summary>
-        /// Update bundle: image file not found.
+        /// Update bundle: image file not found or can't be read.
         /// </summary>
-        [Display(Name = "Update bundle: image file not found.")]
+        [Display(Name = "Update bundle: image file not found or can't be read.")]
         E10023 = 10023,
 
         /// <summary>
@@ -499,9 +499,9 @@ namespace nanoFramework.Tools.FirmwareFlasher
         E10027 = 10027,
 
         /// <summary>
-        /// Update bundle: images too large for the bundle format.
+        /// Update bundle: images too large for a bundle.
         /// </summary>
-        [Display(Name = "Update bundle: images too large for the 32-bit offsets of the bundle format.")]
+        [Display(Name = "Update bundle: images too large for a bundle (2 GB at most).")]
         E10028 = 10028,
 
         ////////////////////////////////

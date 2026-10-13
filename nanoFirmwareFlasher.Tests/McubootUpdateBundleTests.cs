@@ -23,7 +23,6 @@ namespace nanoFirmwareFlasher.Tests
     {
         private const ushort HeaderSize = 0x200;
 
-        public TestContext TestContext { get; set; }
 
         /// <summary>
         /// Builds a signed MCUboot image: header, payload, optional protected TLV area and an
@@ -82,6 +81,28 @@ namespace nanoFirmwareFlasher.Tests
             return image.ToArray();
         }
 
+        private string? _directory;
+
+        /// <summary>
+        /// An empty directory for this test, deleted after it. The shared numbered test
+        /// directories are reused across runs, so files left there would leak into other tests.
+        /// </summary>
+        private string NewDirectory()
+        {
+            _directory = Path.Combine(Path.GetTempPath(), "nanoff-bundle-tests", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(_directory);
+            return _directory;
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            if (_directory != null && Directory.Exists(_directory))
+            {
+                Directory.Delete(_directory, recursive: true);
+            }
+        }
+
         private string WriteFile(string directory, string name, byte[] content)
         {
             string path = Path.Combine(directory, name);
@@ -101,7 +122,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Create_RoundTrip_ManifestAndImages()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             byte[] clr = MakeSignedImage(1, 12, 0, 123, 1000);
             byte[] dep = MakeSignedImage(1, 4, 0, 7, 300, withProtectedTlv: true);
             string clrPath = WriteFile(dir, "clr.bin", clr);
@@ -156,7 +177,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Create_DropsBytesAfterTheTlvArea()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             byte[] clr = MakeSignedImage(1, 0, 0, 1, 64);
             byte[] padded = clr.Concat(Enumerable.Repeat((byte)0xFF, 100)).ToArray();
             string clrPath = WriteFile(dir, "clr.bin", padded);
@@ -176,7 +197,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void DefaultName_TakenFromTheClrVersion()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 12, 0, 123, 64));
             string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(3, 4, 5, 6, 64));
 
@@ -199,7 +220,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Output_DirectoryWithSeparator_IsCreatedAndUsesDefaultName()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(2, 0, 0, 9, 64));
             string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string outDir = Path.Combine(dir, "out") + Path.DirectorySeparatorChar;
@@ -212,7 +233,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Output_AnyFileNameIsAccepted()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string output = Path.Combine(dir, "my-update.img");
@@ -229,7 +250,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Output_Exists_RefusedWithoutOverwrite()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string output = WriteFile(dir, "bundle.bin", new byte[] { 1, 2, 3 });
@@ -241,7 +262,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Output_Exists_ReplacedWithOverwrite()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string output = WriteFile(dir, "bundle.bin", new byte[] { 1, 2, 3 });
@@ -254,7 +275,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void Output_SameAsInput_Refused()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(1, 0, 0, 1, 64));
 
@@ -268,16 +289,45 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void MissingImage_E10023()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(1, 0, 0, 1, 64));
 
             Assert.AreEqual(ExitCodes.E10023, Create(Path.Combine(dir, "missing.bin"), depPath, dir, false, out _, out _));
         }
 
         [TestMethod]
+        public void UnreadableImage_E10023()
+        {
+            string dir = NewDirectory();
+            string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 0, 0, 1, 64));
+            string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(1, 0, 0, 1, 64));
+
+            if (!OperatingSystem.IsWindows())
+            {
+                Assert.Inconclusive("exclusive file locks are only enforced on Windows");
+            }
+
+            using (new FileStream(clrPath, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                Assert.AreEqual(ExitCodes.E10023, Create(clrPath, depPath, dir, false, out _, out string error));
+                StringAssert.Contains(error, clrPath);
+            }
+        }
+
+        [TestMethod]
+        public void IsSamePath_FollowsPlatformCaseSensitivity()
+        {
+            Assert.IsTrue(McubootUpdateBundle.IsSamePath("dir/image.bin", "dir/../dir/image.bin"));
+            Assert.AreEqual(
+                !OperatingSystem.IsLinux(),
+                McubootUpdateBundle.IsSamePath("image.bin", "IMAGE.bin"),
+                "case-insensitive on Windows and macOS, case-sensitive on Linux");
+        }
+
+        [TestMethod]
         public void BadMagic_E10024()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             byte[] clr = MakeSignedImage(1, 0, 0, 1, 64);
             clr[0] ^= 0xFF;
             string clrPath = WriteFile(dir, "clr.bin", clr);
@@ -289,7 +339,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void TruncatedImage_E10024()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             byte[] dep = MakeSignedImage(1, 0, 0, 1, 64);
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 0, 0, 1, 64));
             string depPath = WriteFile(dir, "dep.bin", dep.Take(dep.Length - 10).ToArray());
@@ -300,7 +350,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void NoHashTlv_E10025()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 0, 0, 1, 64, withHash: false));
             string depPath = WriteFile(dir, "dep.bin", MakeSignedImage(1, 0, 0, 1, 64));
 
@@ -310,7 +360,7 @@ namespace nanoFirmwareFlasher.Tests
         [TestMethod]
         public void CorruptPayload_E10025()
         {
-            string dir = TestDirectoryHelper.GetTestDirectory(TestContext);
+            string dir = NewDirectory();
             byte[] dep = MakeSignedImage(1, 0, 0, 1, 64);
             dep[HeaderSize + 10] ^= 0x01;
             string clrPath = WriteFile(dir, "clr.bin", MakeSignedImage(1, 0, 0, 1, 64));

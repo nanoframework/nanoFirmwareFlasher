@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -136,8 +137,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 return result;
             }
 
-            if ((long)clr.Bytes.Length + deployment.Bytes.Length + ManifestFixedSize + 2 * EntrySize + ImageAlignment > uint.MaxValue)
+            // the bundle is built in a single array: its size, alignment padding included, must fit one
+            long bundleSize = AlignUp(AlignUp((long)ManifestFixedSize + 2 * EntrySize) + clr.Bytes.Length) + deployment.Bytes.Length;
+
+            if (bundleSize > int.MaxValue)
             {
+                errorDetail = $"{clrPath} + {deploymentPath}: {bundleSize} bytes.";
                 return ExitCodes.E10028;
             }
 
@@ -145,7 +150,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 output,
                 DefaultFileName(clr.Version));
 
-            if (SamePath(target, clrPath) || SamePath(target, deploymentPath))
+            if (IsSamePath(target, clrPath) || IsSamePath(target, deploymentPath))
             {
                 errorDetail = "The output file can't be one of the input images.";
                 return ExitCodes.E9000;
@@ -350,7 +355,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
                 return ExitCodes.E10023;
             }
 
-            byte[] file = File.ReadAllBytes(path);
+            byte[] file;
+
+            try
+            {
+                file = File.ReadAllBytes(path);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                errorDetail = $"{path}: {ex.Message}";
+                return ExitCodes.E10023;
+            }
 
             if (file.Length < ImageHeaderSize || BitConverter.ToUInt32(file, 0) != McubootMagic)
             {
@@ -595,6 +610,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
 
         private static int AlignUp(int value) => (value + ImageAlignment - 1) & ~(ImageAlignment - 1);
 
+        private static long AlignUp(long value) => (value + ImageAlignment - 1) & ~(long)(ImageAlignment - 1);
+
         private static bool SliceEquals(
             byte[] data,
             BundleEntry entry,
@@ -635,8 +652,15 @@ namespace nanoFramework.Tools.FirmwareFlasher.Mcuboot
             return diff == 0;
         }
 
-        private static bool SamePath(string a, string b)
-            => string.Equals(Path.GetFullPath(a), Path.GetFullPath(b), StringComparison.OrdinalIgnoreCase);
+        /// <summary>
+        /// Whether two paths name the same file, comparing case as the platform's default file
+        /// system does: case-sensitive on Linux, case-insensitive on Windows and macOS.
+        /// </summary>
+        public static bool IsSamePath(string a, string b)
+            => string.Equals(
+                Path.GetFullPath(a),
+                Path.GetFullPath(b),
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
 
         private static string ToHex(byte[] bytes)
         {

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using CommandLine;
+using nanoFramework.Tools.FirmwareFlasher.Mcuboot;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -71,7 +72,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             try
             {
-                if (string.Equals(Path.GetFullPath(o.Clr), Path.GetFullPath(o.Deployment), StringComparison.OrdinalIgnoreCase))
+                if (McubootUpdateBundle.IsSamePath(o.Clr, o.Deployment))
                 {
                     return "clr and deployment must be different files.";
                 }
