@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -7,6 +7,10 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using nanoFramework.Tools.FirmwareFlasher;
 using nanoFramework.Tools.FirmwareFlasher.UsbDfu;
+
+// Some asserts here pin constants to their specified values on purpose, as a guard against accidental edits:
+// both sides are compile-time constants, which is what MSTEST0025/MSTEST0032 flag.
+#pragma warning disable MSTEST0025, MSTEST0032
 
 namespace nanoFirmwareFlasher.Tests
 {
@@ -80,7 +84,7 @@ namespace nanoFirmwareFlasher.Tests
 
         [DataRow("Win32Error:ControlTransfer\n258:The wait operation timed out.")]
         [DataRow("libusb error: LIBUSB_ERROR_TIMEOUT (operation timeout)")]
-        [DataTestMethod]
+        [TestMethod]
         public void IsControlTimeout_TimeoutVariants_AreDetected(string error)
         {
             Assert.IsTrue(LibUsbDotNetDevice.IsControlTimeout(error));
@@ -92,7 +96,7 @@ namespace nanoFirmwareFlasher.Tests
         [DataRow("Pipe error: endpoint stalled")]
         [DataRow("Win32Error:ControlTransfer\n1212:Some unrelated message.")]
         [DataRow("Win32Error:ControlTransfer\n2580:Some unrelated message.")]
-        [DataTestMethod]
+        [TestMethod]
         public void IsControlTimeout_NonTimeoutErrors_AreNotDetected(string error)
         {
             Assert.IsFalse(LibUsbDotNetDevice.IsControlTimeout(error));
@@ -167,7 +171,7 @@ namespace nanoFirmwareFlasher.Tests
         [DataRow("garbage without slashes")]
         [DataRow("@Internal Flash /notanaddress/04*016Kg")]
         [DataRow("")]
-        [DataTestMethod]
+        [TestMethod]
         public void ParseDfuSeLayout_InvalidInput_ProducesNoSectors(string layout)
         {
             var sectors = new List<(uint address, uint size)>();

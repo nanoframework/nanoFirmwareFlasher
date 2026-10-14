@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -32,7 +32,7 @@ namespace nanoFirmwareFlasher.Tests
         private const int ImageSizeBytes = 1024;
         private const string Version = "1.0.0.0";
 
-        private string _workDir;
+        private string _workDir = string.Empty;
 
         [TestInitialize]
         public void Setup()

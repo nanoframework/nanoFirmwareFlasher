@@ -1,9 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using nanoFramework.Tools.FirmwareFlasher;
+
+// Some asserts here pin constants to their specified values on purpose, as a guard against accidental edits:
+// both sides are compile-time constants, which is what MSTEST0025/MSTEST0032 flag.
+#pragma warning disable MSTEST0025, MSTEST0032
 
 namespace nanoFirmwareFlasher.Tests
 {

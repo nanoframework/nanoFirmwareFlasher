@@ -81,7 +81,7 @@ namespace nanoFirmwareFlasher.Tests
             byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
             byte[] cbor = McumgrClient.EncodeUploadChunk(data, offset: 0, totalLen: TestImageSize, slot: TestImageNum, isFirst: true);
 
-            byte[] decoded = ReadByteStringField(cbor, "data");
+            byte[]? decoded = ReadByteStringField(cbor, "data");
             CollectionAssert.AreEqual(data, decoded, "data field must contain the original chunk bytes");
         }
 
@@ -96,7 +96,7 @@ namespace nanoFirmwareFlasher.Tests
             byte[] data = new byte[64];
             byte[] cbor = McumgrClient.EncodeUploadChunk(data, offset: 0, totalLen: TestImageSize, slot: TestImageNum, isFirst: true, sha: imageHash);
 
-            byte[] shaField = ReadByteStringField(cbor, "sha");
+            byte[]? shaField = ReadByteStringField(cbor, "sha");
             Assert.IsNotNull(shaField, "first chunk with SHA must encode the 'sha' field");
             CollectionAssert.AreEqual(imageHash, shaField, "sha field must contain the image hash byte-for-byte");
         }
@@ -118,7 +118,7 @@ namespace nanoFirmwareFlasher.Tests
 
             byte[] cbor = McumgrClient.EncodeUploadChunk(chunk, offset: 0, totalLen: imageData.Length, slot: TestImageNum, isFirst: true, sha: sha);
 
-            byte[] shaField = ReadByteStringField(cbor, "sha");
+            byte[]? shaField = ReadByteStringField(cbor, "sha");
             Assert.IsNotNull(shaField, "'sha' field must be present");
             CollectionAssert.AreEqual(sha, shaField, "sha field must carry the SHA-256 of the full image");
         }
@@ -753,7 +753,7 @@ namespace nanoFirmwareFlasher.Tests
             throw new InvalidOperationException($"Field '{field}' not found in CBOR map.");
         }
 
-        private static byte[] ReadByteStringField(byte[] cbor, string field)
+        private static byte[]? ReadByteStringField(byte[] cbor, string field)
         {
             var r = new CborReader(cbor, CborConformanceMode.Lax);
             r.ReadStartMap();

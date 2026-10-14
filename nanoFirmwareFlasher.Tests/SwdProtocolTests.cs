@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -9,6 +9,10 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using nanoFramework.Tools.FirmwareFlasher;
 using nanoFramework.Tools.FirmwareFlasher.Swd;
+
+// Some asserts here pin constants to their specified values on purpose, as a guard against accidental edits:
+// both sides are compile-time constants, which is what MSTEST0025/MSTEST0032 flag.
+#pragma warning disable MSTEST0025, MSTEST0032
 
 namespace nanoFirmwareFlasher.Tests
 {
