@@ -57,15 +57,32 @@ namespace nanoFirmwareFlasher.Tests.Helpers
 
                 string parent = Path.GetDirectoryName(s_runRoot)!;
 
-                if (Directory.Exists(parent))
+                string[] dirs;
+
+                try
                 {
-                    foreach (string dir in Directory.GetDirectories(parent))
+                    dirs = Directory.Exists(parent) ? Directory.GetDirectories(parent) : Array.Empty<string>();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Could not list '{parent}': {ex.Message}");
+                    return;
+                }
+
+                foreach (string dir in dirs)
+                {
+                    try
                     {
                         // only touch old folders so concurrent test processes are not affected
                         if (Directory.GetLastWriteTimeUtc(dir) < DateTime.UtcNow.AddDays(-1))
                         {
                             TryDelete(dir);
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        // e.g. removed meanwhile by another test process
+                        Debug.WriteLine($"Could not check '{dir}': {ex.Message}");
                     }
                 }
             }
