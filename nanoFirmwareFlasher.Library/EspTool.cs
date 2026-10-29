@@ -610,6 +610,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
+        /// Read the partition table without resetting the device.
+        /// </summary>
+        internal byte[] ReadPartitionTable()
+        {
+            EnsureConnected();
+            EnsureFlashController();
+
+            return _flashController.ReadFlash(Esp32PartitionTable.Address, Esp32PartitionTable.Size);
+        }
+
+        /// <summary>
         /// Backup the config partition to a file.
         /// </summary>
         /// <param name="backupFilename">Backup file including full path.</param>

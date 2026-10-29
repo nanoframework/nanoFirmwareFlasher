@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -130,7 +131,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             bool noBackupConfig)
         {
             ExitCodes operationResult = ExitCodes.OK;
-            uint address = 0;
             bool updateCLRfile = !string.IsNullOrEmpty(clrFile);
 
             // perform sanity checks for the specified target against the connected device details
@@ -248,7 +248,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         revisionSuffix = "_BETA";
                     }
                     else
-                    { 
+                    {
                         // all the others (rev3, rev4, rev1.1 and above) will take default
                         revisionSuffix = "";
                     }
@@ -258,7 +258,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
                 else if (esp32Device.ChipType == "ESP32-C5")
                 {
-                    
+
                     // compose target name
                     targetName = $"ESP32_C5_THREAD";
                 }
@@ -315,7 +315,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     {
                         revisionSuffix = "_REV_LESS3";
                     }
-                    else if(esp32Device.ChipName.Contains("revision v3."))
+                    else if (esp32Device.ChipName.Contains("revision v3."))
                     {
                         // Latest revisions don't include the revision in the target name
                         revisionSuffix = "";
@@ -416,18 +416,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // check application file
                 if (File.Exists(applicationPath))
                 {
-                    // this operation includes a deployment image
-                    // try parsing the deployment address from parameter, if provided
-                    if (!string.IsNullOrEmpty(deploymentAddress))
-                    {
-                        // need to remove the leading 0x and to specify that hexadecimal values are allowed
-                        if (!uint.TryParse(deploymentAddress.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out address))
-                        {
-                            return ExitCodes.E9009;
-                        }
-                    }
-
                     string applicationBinary = new FileInfo(applicationPath).FullName;
+                    operationResult = GetDeploymentAddress(
+                        deploymentAddress,
+                        new FileInfo(applicationBinary).Length,
+                        () => firmware.FlashPartitions != null
+                            && firmware.FlashPartitions.TryGetValue(Esp32PartitionTable.Address, out string partitionTablePath)
+                                ? File.ReadAllBytes(partitionTablePath)
+                                : espTool.ReadPartitionTable(),
+                        out int address);
+
+                    if (operationResult != ExitCodes.OK)
+                    {
+                        return operationResult;
+                    }
 
                     // check for empty flash partitions
                     if (firmware.FlashPartitions is null)
@@ -437,7 +439,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
                     firmware.FlashPartitions.Add(
-                            address != 0 ? (int)address : firmware.DeploymentPartitionAddress,
+                            address,
                             applicationBinary
                     );
 
@@ -632,8 +634,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
             VerbosityLevel verbosity,
             PartitionTableSize? partitionTableSize)
         {
-            uint address = 0;
-
             // perform sanity checks for the specified target against the connected device details
             if (esp32Device.ChipType != "ESP32" &&
                 esp32Device.ChipType != "ESP32-C3" &&
@@ -670,18 +670,17 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // check application file
                 if (File.Exists(applicationPath))
                 {
-                    // this operation includes a deployment image
-                    // try parsing the deployment address from parameter, if provided
-                    if (!string.IsNullOrEmpty(deploymentAddress))
-                    {
-                        // need to remove the leading 0x and to specify that hexadecimal values are allowed
-                        if (!uint.TryParse(deploymentAddress.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier, System.Globalization.CultureInfo.InvariantCulture, out address))
-                        {
-                            return ExitCodes.E9009;
-                        }
-                    }
-
                     string applicationBinary = new FileInfo(applicationPath).FullName;
+                    ExitCodes addressResult = GetDeploymentAddress(
+                        deploymentAddress,
+                        new FileInfo(applicationBinary).Length,
+                        espTool.ReadPartitionTable,
+                        out int address);
+
+                    if (addressResult != ExitCodes.OK)
+                    {
+                        return addressResult;
+                    }
 
                     // check for empty flash partitions
                     if (firmware.FlashPartitions is null)
@@ -691,7 +690,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
                     firmware.FlashPartitions.Add(
-                            address != 0 ? (int)address : firmware.DeploymentPartitionAddress,
+                            address,
                             applicationBinary
                     );
                 }
@@ -742,6 +741,34 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return operationResult;
+        }
+
+        internal static ExitCodes GetDeploymentAddress(
+            string deploymentAddress,
+            long applicationSize,
+            Func<byte[]> readPartitionTable,
+            out int address)
+        {
+            address = 0;
+
+            if (!string.IsNullOrEmpty(deploymentAddress))
+            {
+                if (!deploymentAddress.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                    || !int.TryParse(deploymentAddress.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier,
+                        System.Globalization.CultureInfo.InvariantCulture, out address)
+                    || address < 0)
+                {
+                    return ExitCodes.E9009;
+                }
+
+                if (address != 0)
+                {
+                    return ExitCodes.OK;
+                }
+            }
+
+            address = Esp32PartitionTable.GetDeploymentAddress(readPartitionTable(), applicationSize);
+            return ExitCodes.OK;
         }
     }
 }
