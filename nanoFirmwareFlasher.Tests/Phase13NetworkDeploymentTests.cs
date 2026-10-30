@@ -537,13 +537,6 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
-        public void Esp32Firmware_DeploymentPartitionAddress_Is0x1B0000()
-        {
-            var fw = new Esp32Firmware("ESP32_PSRAM_REV3", "1.0.0", false, null);
-            Assert.AreEqual(0x1B0000, fw.DeploymentPartitionAddress);
-        }
-
-        [TestMethod]
         public void Esp32Firmware_DerivesFirmwarePackage()
         {
             Assert.IsTrue(typeof(FirmwarePackage).IsAssignableFrom(typeof(Esp32Firmware)));

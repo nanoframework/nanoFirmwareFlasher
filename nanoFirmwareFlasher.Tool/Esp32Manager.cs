@@ -228,7 +228,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     _options.IdentifyFirmware,
                     _options.FromFwArchive ? _options.FwArchivePath : null,
                     _options.DeploymentImage,
-                    null,
+                    _options.FlashAddress.FirstOrDefault(),
                     _options.ClrFile,
                     !_options.FitCheck,
                     _options.MassErase,
