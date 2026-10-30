@@ -261,6 +261,30 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void EndToEnd_TargetlessEsp32LocalImage_ParsesAndValidates()
+        {
+            var result = ParseNormalized("flash", "platform", "esp32", "serialport", "COM7", "image", "nanoCLR.bin");
+
+            Assert.AreEqual(ParserResultType.Parsed, result.Tag);
+            FlashOptions options = (FlashOptions)result.Value;
+            Assert.IsNull(FlashOptions.Validate(options));
+            Assert.IsNull(options.TargetName);
+            Assert.AreEqual(SupportedPlatform.esp32, options.ToLegacyOptions().Platform);
+        }
+
+        [TestMethod]
+        public void EndToEnd_TargetlessEsp32Deploy_ParsesAndValidates()
+        {
+            var result = ParseNormalized("deploy", "platform", "esp32", "serialport", "COM7", "image", "app.bin");
+
+            Assert.AreEqual(ParserResultType.Parsed, result.Tag);
+            DeployOptions options = (DeployOptions)result.Value;
+            Assert.IsNull(DeployOptions.Validate(options));
+            Assert.IsNull(options.TargetName);
+            Assert.IsFalse(options.ToLegacyOptions().NanoDevice);
+        }
+
+        [TestMethod]
         public void EndToEnd_FlashBackup_ParsesPathAsValue()
         {
             var result = ParseNormalized("flash", "target", "ESP_WROVER_KIT", "backup", "./backups/esp32.bin", "masserase");

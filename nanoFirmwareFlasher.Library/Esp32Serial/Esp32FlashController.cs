@@ -558,6 +558,78 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
         /// <summary>ESP image magic byte that identifies a valid bootloader image.</summary>
         private const byte EspImageMagic = 0xE9;
 
+        internal static void ValidateApplicationImage(byte[] image, string chipType)
+        {
+            if (image.Length < 24 || image[0] != EspImageMagic || image[1] == 0 || image[1] > 16 || image[23] > 1)
+            {
+                throw new EspToolExecutionException("Invalid ESP32 CLR image header.");
+            }
+
+            Esp32ChipConfig config = Esp32ChipConfigs.GetByType(chipType.Replace("-", "").ToLowerInvariant());
+            if (config == null)
+            {
+                throw new EspToolExecutionException($"Unsupported ESP32 chip type '{chipType}'.");
+            }
+
+            uint expectedChipId = config.ChipType == "esp32s2" ? 2 : config.ChipId;
+            int imageChipId = image[12] | (image[13] << 8);
+            if (imageChipId != expectedChipId)
+            {
+                throw new EspToolExecutionException($"The CLR image is not built for {chipType}.");
+            }
+
+            int position = 24;
+            byte checksum = 0xEF;
+            for (int segment = 0; segment < image[1]; segment++)
+            {
+                if (image.Length - position < 8)
+                {
+                    throw new EspToolExecutionException("Truncated ESP32 CLR image segment header.");
+                }
+
+                uint length = Esp32CommandPacket.ReadUInt32LE(image, position + 4);
+                position += 8;
+                if (length > image.Length - position)
+                {
+                    throw new EspToolExecutionException("Truncated ESP32 CLR image segment.");
+                }
+
+                int end = position + (int)length;
+                while (position < end)
+                {
+                    checksum ^= image[position++];
+                }
+            }
+
+            // ESP images place the XOR checksum at the end of the next 16-byte boundary.
+            int checksumOffset = position | 15;
+            if (checksumOffset >= image.Length || image[checksumOffset] != checksum)
+            {
+                throw new EspToolExecutionException("Invalid ESP32 CLR image checksum.");
+            }
+
+            if (image[23] == 1)
+            {
+                int digestOffset = checksumOffset + 1;
+                if (image.Length - digestOffset < 32)
+                {
+                    throw new EspToolExecutionException("Truncated ESP32 CLR image SHA-256 digest.");
+                }
+
+                using (SHA256 sha256 = SHA256.Create())
+                {
+                    byte[] digest = sha256.ComputeHash(image, 0, digestOffset);
+                    for (int i = 0; i < digest.Length; i++)
+                    {
+                        if (image[digestOffset + i] != digest[i])
+                        {
+                            throw new EspToolExecutionException("Invalid ESP32 CLR image SHA-256 digest.");
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Flash mode encoding for the bootloader image header byte 2.
         /// Maps mode name → byte value (matching esptool.py FLASH_MODES).

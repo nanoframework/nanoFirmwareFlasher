@@ -659,12 +659,43 @@ namespace nanoFramework.Tools.FirmwareFlasher
             if (!_client.IsStubRunning)
             {
                 throw new EspToolExecutionException(
-                    "Reading the ESP32 partition table requires a running stub loader. Specify --address with the deployment partition address.");
+                    "Reading the ESP32 partition table requires a running stub loader. For application deployment, specify --address with the deployment partition address. For a CLR update, flash a complete firmware package instead.");
             }
 
             EnsureFlashController();
 
             return _flashController.ReadFlash(Esp32PartitionTable.Address, Esp32PartitionTable.Size);
+        }
+
+        /// <summary>
+        /// Read a flash region without modifying it.
+        /// </summary>
+        internal void ReadFlashRegion(string filename, int address, int size)
+        {
+            EnsureConnected();
+            if (!_client.IsStubRunning)
+            {
+                throw new EspToolExecutionException("ESP32 flash backups require a running stub loader.");
+            }
+
+            if (address < 0 || size <= 0 || (long)address + size > _flashSize)
+            {
+                throw new EspToolExecutionException("The requested backup region exceeds the detected ESP32 flash.");
+            }
+
+            EnsureFlashController();
+            _flashController.ReadFlashToFile(filename, (uint)address, size,
+                (read, total) =>
+                {
+                    if (Verbosity >= VerbosityLevel.Normal)
+                    {
+                        OutputWriter.Write($"\rReading flash at 0x{address:X}... {(long)read * 100 / total}%");
+                    }
+                });
+            if (Verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.WriteLine("");
+            }
         }
 
         /// <summary>
@@ -793,10 +824,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         /// <param name="partsToWrite">Dictionary which keys are the start addresses and the values are the complete filenames (the bin files).</param>
         /// <param name="useStandardBaudrate">Use the standard baud rate (default is false).</param>
+        /// <param name="preserveImage">Do not patch bootloader headers when restoring an exact backup.</param>
         /// <returns>Exit code indicating success or failure.</returns>
         internal ExitCodes WriteFlash(
             Dictionary<int, string> partsToWrite,
-            bool useStandardBaudrate = false)
+            bool useStandardBaudrate = false,
+            bool preserveImage = false)
         {
             EnsureConnected(useStandardBaudrate);
             EnsureFlashController();
@@ -822,7 +855,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     string filePath = part.Value;
 
                     // Only attempt header patching on the bootloader partition
-                    if (_flashSize > 0
+                    if (!preserveImage && _flashSize > 0
                         && address == (uint)_chipDetector.Config.BootloaderAddress
                         && !string.IsNullOrEmpty(_flashMode))
                     {
