@@ -615,6 +615,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal byte[] ReadPartitionTable()
         {
             EnsureConnected();
+
+            if (!_client.IsStubRunning)
+            {
+                throw new EspToolExecutionException(
+                    "Reading the ESP32 partition table requires a running stub loader. Specify --address with the deployment partition address.");
+            }
+
             EnsureFlashController();
 
             return _flashController.ReadFlash(Esp32PartitionTable.Address, Esp32PartitionTable.Size);
