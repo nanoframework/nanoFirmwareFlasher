@@ -113,7 +113,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Option(
             "image",
             Required = false,
-            HelpText = "Local image file(s) to use instead of downloading from the online repository: a custom CLR binary (when used with target/platform or a bare serial port), or file(s) to flash directly to the device (STM32/Silabs). Raw binary by default; use hex if the file(s) are Intel HEX format.")]
+            HelpText = "Local image file(s): a CLR binary (ESP32 updates only the installed CLR partition, without downloading firmware), or file(s) to flash directly (STM32/Silabs). A bare serial port uses the nanoDevice wire protocol. Raw binary by default; use hex for Intel HEX files.")]
         public IList<string> Image { get; set; }
 
         [Option(
@@ -140,7 +140,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             "restore",
             Required = false,
             Default = null,
-            HelpText = "Also save a persistent copy of the configuration partition backup (ESP32 only) at this file path. The configuration partition is always automatically backed up before flashing and restored afterward regardless of this keyword; omit the path (or the keyword entirely) to keep the backup in a temporary file that's deleted once it's restored.")]
+            HelpText = "Also save a persistent copy of the configuration partition backup during an ESP32 firmware-package update. Not supported with a local CLR image, which leaves configuration untouched. Omit the path (or keyword) to use a temporary backup.")]
         public string ConfigBackupPath { get; set; }
 
         [Option(
@@ -259,10 +259,33 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ValidateMcuboot(o);
             }
 
+            bool isEsp32 = o.Platform == SupportedPlatform.esp32
+                || (o.Platform == null && !string.IsNullOrEmpty(o.TargetName)
+                    && (o.TargetName.StartsWith("ESP", System.StringComparison.Ordinal)
+                        || o.TargetName.StartsWith("M5", System.StringComparison.Ordinal)
+                        || o.TargetName.StartsWith("FEATHER", System.StringComparison.Ordinal)));
+
+            if (isEsp32 && o.Image != null && o.Image.Count > 0)
+            {
+                if (o.Image.Count != 1)
+                {
+                    return "ESP32 local CLR flashing accepts a single image.";
+                }
+
+                if (o.Hex || o.MassErase || o.Preview || !string.IsNullOrEmpty(o.FwVersion)
+                    || o.FromFwArchive || !string.IsNullOrEmpty(o.FwArchivePath)
+                    || o.Esp32PartitionTableSize.HasValue || !string.IsNullOrEmpty(o.ConfigBackupPath)
+                    || (o.FlashAddress != null && o.FlashAddress.Count > 0))
+                {
+                    return "ESP32 local CLR flashing can't be combined with hex, address, masserase, preview, fwversion, fromarchive, archivepath, partitiontablesize or restore. Omit image to flash a firmware package.";
+                }
+            }
+
             // image is only a raw-address flash when there's positive evidence of a direct
             // STM32/Silabs connection; otherwise it's a CLR override (target/platform-based
             // update, or a bare serial port for a generic nanoDevice), which needs no address.
             bool looksLikeClrOverride =
+                isEsp32 ||
                 !string.IsNullOrEmpty(o.TargetName) ||
                 (o.Platform == null && !o.Dfu && !o.Jtag && !o.NativeSwd && !string.IsNullOrEmpty(o.SerialPort));
 

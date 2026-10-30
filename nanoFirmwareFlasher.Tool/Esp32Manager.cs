@@ -217,6 +217,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // update operation requested?
             if (_options.Update || _options.IdentifyFirmware)
             {
+                if (!_options.IdentifyFirmware && !string.IsNullOrEmpty(_options.ClrFile))
+                {
+                    return Esp32Operations.UpdateClr(
+                        espTool,
+                        esp32Device,
+                        _options.ClrFile,
+                        _verbosityLevel);
+                }
+
                 // write flash
                 var exitCode = await Esp32Operations.UpdateFirmwareAsync(
                     espTool,
