@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -28,11 +29,6 @@ namespace nanoFramework.Tools.FirmwareFlasher
         internal Dictionary<int, string> FlashPartitions;
 
         internal PartitionTableSize? _partitionTableSize;
-
-        /// <summary>
-        /// Default address of the deployment partition.
-        /// </summary>
-        internal int DeploymentPartitionAddress => 0x1B0000;
 
         public Esp32Firmware(
             string targetName,
@@ -107,7 +103,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 				    { CLRAddress, Path.Combine(LocationPath, "nanoCLR.bin") },
 
 				    // partition table goes to 0x8000; there are partition tables for 4MB, 8MB and 16MB flash sizes (and 2MB for ESP32)
-				    { 0x8000, Path.Combine(LocationPath, $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
+				    { Esp32PartitionTable.Address, Path.Combine(LocationPath, $"partitions_{Esp32DeviceInfo.GetFlashSizeAsString(flashSize).ToLowerInvariant()}.bin") }
                 };
             }
 

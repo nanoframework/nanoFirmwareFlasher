@@ -1856,6 +1856,37 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void EspTool_ReadPartitionTable_WithoutRunningStub_ThrowsClearError(bool stubUploaded)
+        {
+            using EspTool tool = (EspTool)RuntimeHelpers.GetUninitializedObject(typeof(EspTool));
+            Esp32BootloaderClient client = new Esp32BootloaderClient("COM_TEST_DUMMY", verbosity: VerbosityLevel.Quiet)
+            {
+                IsStubRunning = false
+            };
+
+            typeof(EspTool)
+                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(tool, client);
+            typeof(EspTool)
+                .GetField("_isConnected", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(tool, true);
+            typeof(EspTool)
+                .GetField("_stubUploaded", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(tool, stubUploaded);
+
+            EspToolExecutionException exception = Assert.ThrowsExactly<EspToolExecutionException>(
+                () => tool.ReadPartitionTable());
+
+            StringAssert.Contains(exception.Message, "stub loader");
+            StringAssert.Contains(exception.Message, "--address");
+            Assert.IsNull(typeof(EspTool)
+                .GetField("_flashController", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(tool), "The guard should fail before initializing the flash controller or reading flash.");
+        }
+
+        [TestMethod]
         public void EspTool_EnsureFlashController_AppliesRuntimeConfigForUsbOtgTargets()
         {
             var tool = (EspTool)RuntimeHelpers.GetUninitializedObject(typeof(EspTool));

@@ -191,11 +191,15 @@ nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\
 
 ### Update the firmware of an ESP32 target along with a managed application
 
-To deploy an application on an ESP32 target connected to COM31, with your application, you have to specify the path to the managed application. Optionally you can provide an address which will override the default deployment address.
+Direct ESP32 deployment reads the device's partition table to locate the managed-code deployment partition. When updating firmware and deploying together, the partition table from the selected firmware package is used instead. Images larger than the deployment partition are rejected when the address is derived from a partition table. When you specify `--address`, nanoff does not validate the image size; ensure that the image fits the deployment partition. Wire-protocol deployment with `--nanodevice` is unchanged.
+
+Reading the device's partition table requires a running stub loader. If the stub is unavailable (for example, on ESP32-C2 ECO0), specify `--address` with the known deployment partition address.
+
+To deploy an application on an ESP32 target connected to COM31, with your application, you have to specify the path to the managed application. Optionally you can provide `--address` to override partition-table address detection. If no valid deployment partition can be found, deployment fails rather than using a fixed address.
 This example uses the binary format file that you can find when you are building an application. Note, as only application can run, when you are building a library, a bin file is not created automatically. Only for applications.
 
 ```console
-nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\esp32-backups\my_awesome_app.bin" --address 0x1B000
+nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\esp32-backups\my_awesome_app.bin"
 ```
 
 ### Skip backing up configuration partition
