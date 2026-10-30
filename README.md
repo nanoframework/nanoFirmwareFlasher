@@ -191,7 +191,7 @@ nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\
 
 ### Update the firmware of an ESP32 target along with a managed application
 
-Direct ESP32 deployment reads the device's partition table to locate the managed-code deployment partition. When updating firmware and deploying together, the partition table from the selected firmware package is used instead. Images larger than the deployment partition are rejected. Wire-protocol deployment with `--nanodevice` is unchanged.
+Direct ESP32 deployment reads the device's partition table to locate the managed-code deployment partition. When updating firmware and deploying together, the partition table from the selected firmware package is used instead. Images larger than the deployment partition are rejected when the address is derived from a partition table. When you specify `--address`, nanoff does not validate the image size; ensure that the image fits the deployment partition. Wire-protocol deployment with `--nanodevice` is unchanged.
 
 Reading the device's partition table requires a running stub loader. If the stub is unavailable (for example, on ESP32-C2 ECO0), specify `--address` with the known deployment partition address.
 
