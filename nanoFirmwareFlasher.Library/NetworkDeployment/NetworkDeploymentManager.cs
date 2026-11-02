@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -56,30 +57,26 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
             // check if device is still in initialized state
             if (!deviceIsInInitializeState)
             {
-                //var devConf = device.DebugEngine.GetDeviceConfiguration(new CancellationTokenSource(5000).Token);
-                var devConf = device.DebugEngine.GetDeviceConfiguration(default);
+                // the device does every change to its configuration storage
+                // firmware without that API can't be configured
+                var storageInfo = device.DebugEngine.GetConfigurationStorageInfo();
+
+                if (storageInfo == null)
+                {
+                    OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                    OutputWriter.WriteLine();
+                    OutputWriter.WriteLine($"The device firmware doesn't support updating the configuration. Update the firmware and try again.");
+                    OutputWriter.ForegroundColor = ConsoleColor.White;
+                    return ExitCodes.E2002;
+                }
+
+                var networkConfigurations = device.DebugEngine.GetAllNetworkConfigurations();
 
                 // Deploy the network configuration for woreless client
                 if (_configuration.WirelessClient != null)
                 {
-                    // Read the configuration for the wifi interface
-                    var wifiConfigurations = devConf.Wireless80211Configurations;
-                    if (wifiConfigurations == null || wifiConfigurations.Count == 0)
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Cannot find any wireless configuration.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-                        return ExitCodes.E2002;
-                    }
-
-                    // So far, there is only 1 wifi interface, pick the first one
-                    // Later, we can add more configurations if wanted
-                    var wifiConfiguration = wifiConfigurations[0];
-                    PopulateWirelessConfigurationProperties(wifiConfiguration, _configuration.WirelessClient);
-
                     // Find the wireless network configuration
-                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(devConf, NetworkInterfaceType.Wireless80211);
+                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(networkConfigurations, NetworkInterfaceType.Wireless80211);
 
                     if (networkConfigurationToSave == null)
                     {
@@ -90,6 +87,16 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                         return ExitCodes.E2002;
                     }
 
+                    // the network interface uses the wireless profile with the Id in SpecificConfigId
+                    var wifiConfigurations = device.DebugEngine.GetAllWireless80211Configurations();
+                    int wifiIndex = wifiConfigurations.FindIndex(c => c.Id == networkConfigurationToSave.SpecificConfigId);
+
+                    // there may be no profile yet, in that case one is added with that Id
+                    var wifiConfiguration = wifiIndex >= 0
+                        ? wifiConfigurations[wifiIndex]
+                        : new DeviceConfiguration.Wireless80211ConfigurationProperties() { Id = networkConfigurationToSave.SpecificConfigId ?? 0 };
+
+                    PopulateWirelessConfigurationProperties(wifiConfiguration, _configuration.WirelessClient);
                     PopulateNetworkProperties(networkConfigurationToSave, _configuration.WirelessClient);
 
                     try
@@ -109,72 +116,59 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     }
 
                     OutputWriter.Write($"Updating network configuration...");
-                    if (device.DebugEngine.UpdateDeviceConfiguration(networkConfigurationToSave, blockId) != Engine.UpdateDeviceResult.Sucess)
+                    if (!CheckOperationResult(
+                        device.DebugEngine.ReplaceConfigurationBlock(networkConfigurationToSave, blockId),
+                        "Error uploading network configuration"))
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Error uploading network configuration.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
                         return ExitCodes.E2002;
                     }
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine($"OK");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
 
                     OutputWriter.Write($"Updating wireless configuration...");
-                    if (device.DebugEngine.UpdateDeviceConfiguration(wifiConfiguration, 0) != Engine.UpdateDeviceResult.Sucess)
+                    if (!CheckOperationResult(
+                        wifiIndex >= 0
+                            ? device.DebugEngine.ReplaceConfigurationBlock(wifiConfiguration, (uint)wifiIndex, KeepStoredPassword(_configuration.WirelessClient))
+                            : device.DebugEngine.AddConfigurationBlock(wifiConfiguration),
+                        "Error uploading wireless configuration"))
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Error uploading wireless configuration.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
                         return ExitCodes.E2002;
                     }
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine($"OK");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 // Deploy Wireless Access Point configuration if any
                 if (_configuration.WirelessAccessPoint != null)
                 {
-                    // Read the configuration for the wifi AP interface
-                    var wifiApConfigurations = devConf.WirelessAPConfigurations;
-                    if (wifiApConfigurations.Count == 0)
+                    // Find the wireless AP one
+                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(networkConfigurations, NetworkInterfaceType.WirelessAP);
+
+                    if (networkConfigurationToSave == null)
                     {
                         OutputWriter.ForegroundColor = ConsoleColor.Yellow;
                         OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Cannot find any wireless AP configuration.");
+                        OutputWriter.WriteLine($"Cannot find any network configuration for wireless AP.");
                         OutputWriter.ForegroundColor = ConsoleColor.White;
                         return ExitCodes.E2002;
                     }
 
-                    var wifiApConfiguration = wifiApConfigurations[0];                                       
+                    // the network interface uses the wireless AP profile with the Id in SpecificConfigId
+                    var wifiApConfigurations = device.DebugEngine.GetAllWirelessAPConfigurations();
+                    int wifiApIndex = wifiApConfigurations.FindIndex(c => c.Id == networkConfigurationToSave.SpecificConfigId);
+
+                    // there may be no profile yet, in that case one is added with that Id
+                    var wifiApConfiguration = wifiApIndex >= 0
+                        ? wifiApConfigurations[wifiApIndex]
+                        : new DeviceConfiguration.WirelessAPConfigurationProperties() { Id = networkConfigurationToSave.SpecificConfigId ?? 0 };
+
                     PopulateWirelessConfigurationProperties(wifiApConfiguration, _configuration.WirelessAccessPoint);
 
                     // Those two ones are specific to the AP, default to None
                     wifiApConfiguration.WirelessAPOptions = GetWirelessAPOptions(_configuration.WirelessAccessPoint.AccessPointOptions ?? "None");
                     wifiApConfiguration.MaxConnections = _configuration.WirelessAccessPoint.MaxConnections;
 
-                    // Find the wireless AP one
-                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(devConf, NetworkInterfaceType.WirelessAP);
-
-                    if (networkConfigurationToSave == null)
-                    {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Cannot find any network configuration for wireless client.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
-                        return ExitCodes.E2002;
-                    }
-
                     networkConfigurationToSave.StartupAddressMode = AddressMode.Static;
                     networkConfigurationToSave.IPv4Address = IPAddress.Parse(_configuration.WirelessAccessPoint.IPv4Address);
                     networkConfigurationToSave.IPv4NetMask = IPAddress.Parse(_configuration.WirelessAccessPoint.IPv4NetMask);
                     // We will use the IP addess of the device itself if no gateway provided
-                    networkConfigurationToSave.IPv4GatewayAddress = IPAddress.Parse(string.IsNullOrEmpty(_configuration.WirelessAccessPoint.IPv4Gateway) ? _configuration.WirelessAccessPoint.IPv4Address : _configuration.WirelessClient.IPv4Gateway);
+                    networkConfigurationToSave.IPv4GatewayAddress = IPAddress.Parse(string.IsNullOrEmpty(_configuration.WirelessAccessPoint.IPv4Gateway) ? _configuration.WirelessAccessPoint.IPv4Address : _configuration.WirelessAccessPoint.IPv4Gateway);
 
                     networkConfigurationToSave.IPv4DNSAddress1 = string.IsNullOrEmpty(_configuration.WirelessAccessPoint.IPv4DNSAddress1) ? IPAddress.None : IPAddress.Parse(_configuration.WirelessAccessPoint.IPv4DNSAddress1);
                     networkConfigurationToSave.IPv4DNSAddress2 = string.IsNullOrEmpty(_configuration.WirelessAccessPoint.IPv4DNSAddress2) ? IPAddress.None : IPAddress.Parse(_configuration.WirelessAccessPoint.IPv4DNSAddress2);
@@ -196,38 +190,28 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     }
 
                     OutputWriter.Write($"Updating network AP configuration...");
-                    if (device.DebugEngine.UpdateDeviceConfiguration(networkConfigurationToSave, blockId) != Engine.UpdateDeviceResult.Sucess)
+                    if (!CheckOperationResult(
+                        device.DebugEngine.ReplaceConfigurationBlock(networkConfigurationToSave, blockId),
+                        "Error uploading network configuration"))
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Error uploading network configuration.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
                         return ExitCodes.E2002;
                     }
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine($"OK");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
 
                     OutputWriter.Write($"Updating wireless AP configuration...");
-                    if (device.DebugEngine.UpdateDeviceConfiguration(wifiApConfiguration, 0) != Engine.UpdateDeviceResult.Sucess)
+                    if (!CheckOperationResult(
+                        wifiApIndex >= 0
+                            ? device.DebugEngine.ReplaceConfigurationBlock(wifiApConfiguration, (uint)wifiApIndex, KeepStoredPassword(_configuration.WirelessAccessPoint))
+                            : device.DebugEngine.AddConfigurationBlock(wifiApConfiguration),
+                        "Error uploading wireless AP configuration"))
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Error uploading wireless configuration.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
                         return ExitCodes.E2002;
                     }
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine($"OK");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 if (_configuration.Ethernet != null)
                 {
                     // Find the wireless one
-                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(devConf, NetworkInterfaceType.Ethernet);
+                    (var networkConfigurationToSave, var blockId) = GetNetworkConfiguration(networkConfigurations, NetworkInterfaceType.Ethernet);
 
                     if (networkConfigurationToSave == null)
                     {
@@ -257,18 +241,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     }
 
                     OutputWriter.Write($"Updating network ethernet configuration...");
-                    if (device.DebugEngine.UpdateDeviceConfiguration(networkConfigurationToSave, blockId) != Engine.UpdateDeviceResult.Sucess)
+                    if (!CheckOperationResult(
+                        device.DebugEngine.ReplaceConfigurationBlock(networkConfigurationToSave, blockId),
+                        "Error uploading network ethernet configuration"))
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Error uploading network ethernet configuration.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
                         return ExitCodes.E2002;
                     }
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine($"OK");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 // Deploy certificates if any
@@ -304,32 +282,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     // Read the device certificates from the file
                     deviceCertificatesBytes = File.ReadAllBytes(_configuration.DeviceCertificatesPath);
                 }
-                
+
                 if (deviceCertificatesBytes != null)
                 {
-                    CheckNullPemTermination(deviceCertificatesBytes);
-                    // deploy the client certificates
-                    OutputWriter.Write($"Updating client certificates...");
-                    var clientCertificates = device.DebugEngine.GetAllX509DeviceCertificates();
-                    clientCertificates.Clear();
-                    clientCertificates.Add(new DeviceConfiguration.X509DeviceCertificatesProperties()
-                    {
-                        Certificate = deviceCertificatesBytes,
-                        CertificateSize = (uint)deviceCertificatesBytes.Length,
-                    });
+                    deviceCertificatesBytes = CheckNullPemTermination(deviceCertificatesBytes);
 
-                    if (device.DebugEngine.UpdateDeviceConfiguration(clientCertificates, 0) != Engine.UpdateDeviceResult.Sucess)
+                    // deploy the device certificate, replacing the one stored, if any
+                    OutputWriter.Write($"Updating device certificates...");
+                    if (!CheckOperationResult(
+                        device.DebugEngine.StoreDeviceCertificate(deviceCertificatesBytes),
+                        "Error uploading device certificates"))
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Error uploading device certificates.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
                         return ExitCodes.E2002;
                     }
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine($"OK");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
 
                 byte[] caCertificatesBytes = null;
@@ -344,32 +309,19 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     // Read the CA certificates from the file
                     caCertificatesBytes = File.ReadAllBytes(_configuration.CACertificatesPath);
                 }
-                
+
                 if (caCertificatesBytes != null)
                 {
-                    CheckNullPemTermination(caCertificatesBytes);
-                    // deploy the client certificates
-                    OutputWriter.Write($"Updating client certificates...");
-                    var caCertificates = device.DebugEngine.GetAllX509Certificates();
-                    caCertificates.Clear();
-                    caCertificates.Add(new DeviceConfiguration.X509CaRootBundleProperties()
-                    {
-                        Certificate = caCertificatesBytes,
-                        CertificateSize = (uint)caCertificatesBytes.Length,
-                    });
+                    caCertificatesBytes = CheckNullPemTermination(caCertificatesBytes);
 
-                    if (device.DebugEngine.UpdateDeviceConfiguration(caCertificates, 0) != Engine.UpdateDeviceResult.Sucess)
+                    // deploy the CA root certificates, replacing the ones stored, if any
+                    OutputWriter.Write($"Updating CA root certificates...");
+                    if (!CheckOperationResult(
+                        device.DebugEngine.StoreRootCaBundle(caCertificatesBytes),
+                        "Error uploading CA root certificates"))
                     {
-                        OutputWriter.ForegroundColor = ConsoleColor.Yellow;
-                        OutputWriter.WriteLine();
-                        OutputWriter.WriteLine($"Error uploading ca  certificates.");
-                        OutputWriter.ForegroundColor = ConsoleColor.White;
                         return ExitCodes.E2002;
                     }
-
-                    OutputWriter.ForegroundColor = ConsoleColor.Green;
-                    OutputWriter.WriteLine($"OK");
-                    OutputWriter.ForegroundColor = ConsoleColor.White;
                 }
             }
             else
@@ -379,6 +331,38 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
 
             return ExitCodes.OK;
         }
+
+        /// <summary>
+        /// Reports the outcome of a configuration operation.
+        /// </summary>
+        /// <param name="result">The result of the operation.</param>
+        /// <param name="errorMessage">The message to output if the operation failed.</param>
+        /// <returns><see langword="true"/> if the operation was successful.</returns>
+        private static bool CheckOperationResult(ConfigurationOperationResult result, string errorMessage)
+        {
+            if (!result.Success)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine($"{errorMessage}: {result.Error}.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return false;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.Green;
+            OutputWriter.WriteLine($"OK");
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if the password stored on the device has to be kept, as passwords can't be read back.
+        /// </summary>
+        /// <param name="wirelessConfiguration">The wireless configuration.</param>
+        /// <returns><see langword="true"/> if there is no password in the configuration.</returns>
+        private static bool KeepStoredPassword(WirelessConfiguration wirelessConfiguration) => string.IsNullOrEmpty(wirelessConfiguration.Password);
 
         /// <summary>
         /// Configures the authentication for the wireless client.
@@ -489,13 +473,11 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// <summary>
         /// Gets the network configuration.
         /// </summary>
-        /// <param name="devConf">The device configuration.</param>
+        /// <param name="networkConfigurations">The network configurations of the device.</param>
         /// <param name="networkInterfaceType">The network type to find.</param>
         /// <returns></returns>
-        private (DeviceConfiguration.NetworkConfigurationProperties networkConfigurationToSave, uint blockId) GetNetworkConfiguration(DeviceConfiguration devConf, NetworkInterfaceType networkInterfaceType)
+        private (DeviceConfiguration.NetworkConfigurationProperties networkConfigurationToSave, uint blockId) GetNetworkConfiguration(List<DeviceConfiguration.NetworkConfigurationProperties> networkConfigurations, NetworkInterfaceType networkInterfaceType)
         {
-            // Read the configuration for the network interfaces
-            var networkConfigurations = devConf.NetworkConfigurations;
             // Find the wireless one
             DeviceConfiguration.NetworkConfigurationProperties networkConfigurationToSave = null;
             uint blockId = 0;
@@ -552,7 +534,8 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
         /// Checks if the PEM certificate has a null termination and add it if needed.
         /// </summary>
         /// <param name="cert">The cert byte array.</param>
-        internal void CheckNullPemTermination(byte[] cert)
+        /// <returns>The certificate, with the null termination.</returns>
+        internal byte[] CheckNullPemTermination(byte[] cert)
         {
             // Check if it's a PEM certificate starting with -----BEGIN CERTIFICATE-----
             if(Encoding.ASCII.GetString(cert).Contains("-----BEGIN CERTIFICATE-----"))
@@ -564,7 +547,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     Array.Resize(ref cert, cert.Length + 1);
                     cert[cert.Length - 1] = 0;
                 }
-            }            
+            }
+
+            return cert;
         }
 
         /// <summary>
