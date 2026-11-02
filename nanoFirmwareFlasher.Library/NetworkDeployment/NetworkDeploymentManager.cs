@@ -91,10 +91,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     var wifiConfigurations = device.DebugEngine.GetAllWireless80211Configurations();
                     int wifiIndex = wifiConfigurations.FindIndex(c => c.Id == networkConfigurationToSave.SpecificConfigId);
 
-                    // there may be no profile yet, in that case one is added with that Id
+                    // there may be no profile yet (or the Id is null or dangling), in that case one is added and the device assigns its Id
                     var wifiConfiguration = wifiIndex >= 0
                         ? wifiConfigurations[wifiIndex]
-                        : new DeviceConfiguration.Wireless80211ConfigurationProperties() { Id = networkConfigurationToSave.SpecificConfigId ?? 0 };
+                        : new DeviceConfiguration.Wireless80211ConfigurationProperties() { Id = DeviceConfiguration.ConfigurationBlockIdAuto };
 
                     PopulateWirelessConfigurationProperties(wifiConfiguration, _configuration.WirelessClient);
                     PopulateNetworkProperties(networkConfigurationToSave, _configuration.WirelessClient);
@@ -115,20 +115,22 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                         return ExitCodes.E2002;
                     }
 
-                    OutputWriter.Write($"Updating network configuration...");
-                    if (!CheckOperationResult(
-                        device.DebugEngine.ReplaceConfigurationBlock(networkConfigurationToSave, blockId),
-                        "Error uploading network configuration"))
+                    // the profile goes first: when it's new, the Id assigned by the device has to be linked in the network block
+                    OutputWriter.Write($"Updating wireless configuration...");
+                    var wifiResult = wifiIndex >= 0
+                        ? device.DebugEngine.ReplaceConfigurationBlock(wifiConfiguration, (uint)wifiIndex, KeepStoredPassword(_configuration.WirelessClient))
+                        : device.DebugEngine.AddConfigurationBlock(wifiConfiguration);
+
+                    if (!CheckOperationResult(wifiResult, "Error uploading wireless configuration")
+                        || !LinkProfile(networkConfigurationToSave, wifiResult, wifiIndex >= 0 ? wifiConfiguration.Id : (uint?)null))
                     {
                         return ExitCodes.E2002;
                     }
 
-                    OutputWriter.Write($"Updating wireless configuration...");
+                    OutputWriter.Write($"Updating network configuration...");
                     if (!CheckOperationResult(
-                        wifiIndex >= 0
-                            ? device.DebugEngine.ReplaceConfigurationBlock(wifiConfiguration, (uint)wifiIndex, KeepStoredPassword(_configuration.WirelessClient))
-                            : device.DebugEngine.AddConfigurationBlock(wifiConfiguration),
-                        "Error uploading wireless configuration"))
+                        device.DebugEngine.ReplaceConfigurationBlock(networkConfigurationToSave, blockId),
+                        "Error uploading network configuration"))
                     {
                         return ExitCodes.E2002;
                     }
@@ -153,10 +155,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                     var wifiApConfigurations = device.DebugEngine.GetAllWirelessAPConfigurations();
                     int wifiApIndex = wifiApConfigurations.FindIndex(c => c.Id == networkConfigurationToSave.SpecificConfigId);
 
-                    // there may be no profile yet, in that case one is added with that Id
+                    // there may be no profile yet (or the Id is null or dangling), in that case one is added and the device assigns its Id
                     var wifiApConfiguration = wifiApIndex >= 0
                         ? wifiApConfigurations[wifiApIndex]
-                        : new DeviceConfiguration.WirelessAPConfigurationProperties() { Id = networkConfigurationToSave.SpecificConfigId ?? 0 };
+                        : new DeviceConfiguration.WirelessAPConfigurationProperties() { Id = DeviceConfiguration.ConfigurationBlockIdAuto };
 
                     PopulateWirelessConfigurationProperties(wifiApConfiguration, _configuration.WirelessAccessPoint);
 
@@ -189,20 +191,22 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
                         return ExitCodes.E2002;
                     }
 
-                    OutputWriter.Write($"Updating network AP configuration...");
-                    if (!CheckOperationResult(
-                        device.DebugEngine.ReplaceConfigurationBlock(networkConfigurationToSave, blockId),
-                        "Error uploading network configuration"))
+                    // the profile goes first: when it's new, the Id assigned by the device has to be linked in the network block
+                    OutputWriter.Write($"Updating wireless AP configuration...");
+                    var wifiApResult = wifiApIndex >= 0
+                        ? device.DebugEngine.ReplaceConfigurationBlock(wifiApConfiguration, (uint)wifiApIndex, KeepStoredPassword(_configuration.WirelessAccessPoint))
+                        : device.DebugEngine.AddConfigurationBlock(wifiApConfiguration);
+
+                    if (!CheckOperationResult(wifiApResult, "Error uploading wireless AP configuration")
+                        || !LinkProfile(networkConfigurationToSave, wifiApResult, wifiApIndex >= 0 ? wifiApConfiguration.Id : (uint?)null))
                     {
                         return ExitCodes.E2002;
                     }
 
-                    OutputWriter.Write($"Updating wireless AP configuration...");
+                    OutputWriter.Write($"Updating network AP configuration...");
                     if (!CheckOperationResult(
-                        wifiApIndex >= 0
-                            ? device.DebugEngine.ReplaceConfigurationBlock(wifiApConfiguration, (uint)wifiApIndex, KeepStoredPassword(_configuration.WirelessAccessPoint))
-                            : device.DebugEngine.AddConfigurationBlock(wifiApConfiguration),
-                        "Error uploading wireless AP configuration"))
+                        device.DebugEngine.ReplaceConfigurationBlock(networkConfigurationToSave, blockId),
+                        "Error uploading network configuration"))
                     {
                         return ExitCodes.E2002;
                     }
@@ -330,6 +334,34 @@ namespace nanoFramework.Tools.FirmwareFlasher.NetworkDeployment
             }
 
             return ExitCodes.OK;
+        }
+
+        /// <summary>
+        /// Links the network interface to the wireless profile that was just written.
+        /// </summary>
+        /// <param name="networkConfiguration">The network interface configuration to be saved.</param>
+        /// <param name="result">The result of the profile add or replace.</param>
+        /// <param name="existingId">The Id of the profile when it was replaced, <see langword="null"/> when it was added.</param>
+        /// <returns><see langword="true"/> if the network configuration references the profile.</returns>
+        private static bool LinkProfile(DeviceConfiguration.NetworkConfigurationProperties networkConfiguration, ConfigurationOperationResult result, uint? existingId)
+        {
+            // an Add returns the Id assigned by the device; a Replace keeps the Id it found
+            uint? id = existingId ?? result.Id;
+
+            // Ids above 0x0FFFFFFF are invalid (0xFFFFFFFF means none)
+            if (id == null || id > 0x0FFFFFFF)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine("The device didn't return a valid Id for the wireless profile.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+
+                return false;
+            }
+
+            networkConfiguration.SpecificConfigId = id;
+
+            return true;
         }
 
         /// <summary>
