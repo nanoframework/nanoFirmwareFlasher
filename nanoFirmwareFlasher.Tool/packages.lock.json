@@ -30,6 +30,12 @@
           "System.IO.Ports": "8.0.0"
         }
       },
+      "nanoFramework.Tools.MetadataProcessor.MsBuildTask": {
+        "type": "Direct",
+        "requested": "[4.0.0-preview.112, )",
+        "resolved": "4.0.0-preview.112",
+        "contentHash": "+uLr6q1X5NKDeLRldJ5i3AWo6Q9aI4TXXULyQdaVwfabDmVGLyylwZvmEKriopBCGI6J9uGk3YHybflfkxVVCA=="
+      },
       "Nerdbank.GitVersioning": {
         "type": "Direct",
         "requested": "[3.10.94, )",
@@ -451,7 +457,8 @@
           "Microsoft.Extensions.Configuration.Json": "[10.0.12, )",
           "System.ComponentModel.Annotations": "[5.0.0, )",
           "System.IO.Ports": "[10.0.12, )",
-          "nanoFramework.Tools.Debugger.Net": "[2.5.28, )"
+          "nanoFramework.Tools.Debugger.Net": "[2.5.28, )",
+          "nanoFramework.Tools.MetadataProcessor.MsBuildTask": "[4.0.0-preview.112, )"
         }
       }
     }
