@@ -59,6 +59,12 @@
           "System.IO.Ports": "8.0.0"
         }
       },
+      "nanoFramework.Tools.MetadataProcessor.MsBuildTask": {
+        "type": "Direct",
+        "requested": "[4.0.0-preview.114, )",
+        "resolved": "4.0.0-preview.114",
+        "contentHash": "d4sCTNnTC/qPGupohgjqLYAH512hAA/+9pLLKRXw3XkqW103tTWNWFcos/qyecScEsm8rQ5SAMSz9QEkvSN5Xg=="
+      },
       "Nerdbank.GitVersioning": {
         "type": "Direct",
         "requested": "[3.10.94, )",
@@ -616,6 +622,12 @@
           "Polly": "7.2.4",
           "System.IO.Ports": "8.0.0"
         }
+      },
+      "nanoFramework.Tools.MetadataProcessor.MsBuildTask": {
+        "type": "Direct",
+        "requested": "[4.0.0-preview.114, )",
+        "resolved": "4.0.0-preview.114",
+        "contentHash": "d4sCTNnTC/qPGupohgjqLYAH512hAA/+9pLLKRXw3XkqW103tTWNWFcos/qyecScEsm8rQ5SAMSz9QEkvSN5Xg=="
       },
       "Nerdbank.GitVersioning": {
         "type": "Direct",
