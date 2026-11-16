@@ -1,9 +1,10 @@
-//
+﻿//
 // Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace nanoFramework.Tools.FirmwareFlasher.Swd
@@ -359,6 +360,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             const uint VECTKEY = 0x05FA0000;
             const uint SYSRESETREQ = 1U << 2;
 
+            WriteMemoryWord(0xE000EDFC, ReadMemoryWord(0xE000EDFC) & ~1U);
             // Configure MEM-AP for 32-bit access, no auto-increment
             WriteAp(ApCsw, CswSize32 | CswAddrinc_Off | CswDbgSwEnable);
 
@@ -374,6 +376,53 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             // Re-initialize DP after reset
             WriteDp(DpAbort,
                 AbortOrunerrclr | AbortWderrclr | AbortStkerrclr | AbortStkcmpclr);
+            ResumeCore();
+        }
+
+        /// <summary>
+        /// Resets with core-reset vector catch armed, then confirms the core is halted.
+        /// </summary>
+        internal void ResetAndHalt(int timeoutMs = 2000)
+        {
+            const uint demcr = 0xE000EDFC;
+            const uint dhcsr = 0xE000EDF0;
+            HaltCore();
+            uint previous = ReadMemoryWord(demcr);
+            WriteMemoryWord(demcr, previous | 1);
+            bool failed = true;
+            try
+            {
+                ReadMemoryWord(dhcsr);
+                WriteMemoryWord(0xE000ED0C, 0x05FA0004);
+                Stopwatch timer = Stopwatch.StartNew();
+                bool sawReset = false;
+                do
+                {
+                    uint status = ReadMemoryWord(dhcsr);
+                    sawReset |= (status & (1U << 25)) != 0;
+                    if (sawReset && (status & (1U << 17)) != 0)
+                    {
+                        failed = false;
+                        return;
+                    }
+
+                    Thread.Sleep(1);
+                }
+                while (timer.ElapsedMilliseconds < timeoutMs);
+
+                throw new SwdProtocolException("Timed out waiting for reset-and-halt; refusing external-flash access.");
+            }
+            finally
+            {
+                try
+                {
+                    WriteMemoryWord(demcr, previous & ~1U);
+                }
+                catch (SwdProtocolException ex) when (failed)
+                {
+                    OutputWriter.WriteLine($"ERROR: Could not clear reset vector catch: {ex.Message}");
+                }
+            }
         }
 
         /// <summary>

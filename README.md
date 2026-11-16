@@ -220,6 +220,19 @@ To update the firmware of the ST_STM32F769I_DISCOVERY target to the latest avail
 nanoff --update --target ST_STM32F769I_DISCOVERY --jtag
 ```
 
+### Update MXCHIP_AZ3166 external Wi-Fi firmware
+
+When updating `MXCHIP_AZ3166`, nanoff also programs the module's external flash if the selected firmware ZIP contains `wifi_firmware.bin`. This requires SWD through ST-LINK or CMSIS-DAP:
+
+```console
+nanoff --update --target MXCHIP_AZ3166 --nativestlink
+nanoff --update --target MXCHIP_AZ3166 --nativeswd
+```
+
+The Wi-Fi image is validated before erasing, programmed at `0x90000000`, and always verified, regardless of `--verify`. Only the covered 4 KB sectors are erased. The header is written last, after payload verification; an already matching image is verified and skipped. This programmer supports the MXCHIP STM32F412 pin mapping and compatible MX25L1606E, MX25V1635F, EN25QH16 and W25X80 NOR devices; other chips are rejected before erase.
+
+With DFU, the internal firmware update still runs, but nanoff issues a prominent warning that external Wi-Fi firmware was **not programmed**. Use an SWD update to provision it. Packages without the Wi-Fi image and other targets retain their existing update behavior. A serial port such as COM31 is not the SWD connection and is not required for these commands.
+
 ### Deploy a managed application to a ST_STM32F769I_DISCOVERY target
 
 To deploy a managed application to a ST_STM32F769I_DISCOVERY target, which has the deployment region at 0x08080000 flash address and reset the MCU after flashing it.

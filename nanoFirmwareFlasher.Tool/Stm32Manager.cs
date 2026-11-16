@@ -85,11 +85,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
             if (device is StmStLinkDevice stLinkDevice)
             {
-                stLinkDevice.ResetMcu();
+                return stLinkDevice.ResetMcu();
             }
             else if (device is StmSwdDevice swdDevice)
             {
-                swdDevice.ResetMcu();
+                return swdDevice.ResetMcu();
             }
 
             return result;
@@ -668,7 +668,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     swdDevice.Verbosity = _verbosityLevel;
                     return swdDevice.MassErase();
                 }
-            
+
 
                 return Stm32Operations.MassErase(
                                 _options.JtagDeviceId,

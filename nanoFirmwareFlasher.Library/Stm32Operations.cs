@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using nanoFramework.Tools.FirmwareFlasher.Swd;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -245,6 +246,28 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 return ExitCodes.E9010;
             }
 
+            byte[] wifiImage = null;
+            if (firmware.WifiFirmwareFile != null)
+            {
+                if (updateInterface == Interface.NativeStLink || updateInterface == Interface.NativeSwd)
+                {
+                    try
+                    {
+                        wifiImage = File.ReadAllBytes(firmware.WifiFirmwareFile);
+                        Stm32WifiImage.Validate(Stm32WifiImage.Address, wifiImage);
+                    }
+                    catch (Exception ex) when (ex is IOException || ex is SwdProtocolException)
+                    {
+                        OutputWriter.WriteLine($"ERROR: Invalid external Wi-Fi firmware: {ex.Message}");
+                        return ExitCodes.E5006;
+                    }
+                }
+                else
+                {
+                    WarnWifiFirmwareSkipped();
+                }
+            }
+
             // update using DFU
             if (updateInterface == Interface.NativeDfu)
             {
@@ -361,10 +384,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     swdDevice.Verify = verify;
 
+                    if (wifiImage != null)
+                    {
+                        swdDevice.PrepareExternalFlash(wifiImage);
+                    }
+
                     // write HEX files to flash
                     if (filesToFlash.Any(f => f.EndsWith(".hex")))
                     {
                         operationResult = swdDevice.FlashHexFiles(filesToFlash);
+                    }
+
+                    if (operationResult == ExitCodes.OK && wifiImage != null)
+                    {
+                        operationResult = swdDevice.FlashBinFiles([firmware.WifiFirmwareFile], ["0x90000000"]);
                     }
 
                     if (operationResult == ExitCodes.OK && isApplicationBinFile)
@@ -375,7 +408,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (operationResult == ExitCodes.OK)
                     {
                         // reset MCU so it starts running the flashed firmware
-                        swdDevice.ResetMcu();
+                        operationResult = swdDevice.ResetMcu();
                     }
 
                     return operationResult;
@@ -439,10 +472,20 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                     stLinkDevice.Verify = verify;
 
+                    if (wifiImage != null)
+                    {
+                        stLinkDevice.PrepareExternalFlash(wifiImage);
+                    }
+
                     // write HEX files to flash
                     if (filesToFlash.Any(f => f.EndsWith(".hex")))
                     {
                         operationResult = stLinkDevice.FlashHexFiles(filesToFlash);
+                    }
+
+                    if (operationResult == ExitCodes.OK && wifiImage != null)
+                    {
+                        operationResult = stLinkDevice.FlashBinFiles([firmware.WifiFirmwareFile], ["0x90000000"]);
                     }
 
                     if (operationResult == ExitCodes.OK && isApplicationBinFile)
@@ -453,7 +496,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                     if (operationResult == ExitCodes.OK)
                     {
                         // reset MCU so it starts running the flashed firmware
-                        stLinkDevice.ResetMcu();
+                        operationResult = stLinkDevice.ResetMcu();
                     }
 
                     return operationResult;
@@ -477,6 +520,15 @@ namespace nanoFramework.Tools.FirmwareFlasher
             // A native transport is guaranteed at this point (validated above);
             // this is a defensive fallback so all code paths return a value.
             return ExitCodes.E9010;
+        }
+
+        internal static void WarnWifiFirmwareSkipped()
+        {
+            OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+            OutputWriter.WriteLine(
+                "WARNING: EXTERNAL WI-FI FIRMWARE WAS NOT PROGRAMMED. This interface updates internal flash only. " +
+                "Wi-Fi may not work until wifi_firmware.bin is provisioned over SWD using --nativestlink or --nativeswd.");
+            OutputWriter.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>

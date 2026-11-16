@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -23,6 +23,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private readonly SwdProtocol _swd;
         private readonly ArmMemAp _mem;
         private readonly Stm32FlashProgrammer _flash;
+        private Stm32ExternalFlashSession _external;
         private int _lastProgressPercent = -1;
         private bool _disposed;
 
@@ -331,7 +332,26 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
-            if (DoMassErase)
+            try
+            {
+                for (int i = 0; i < addresses.Count; i++)
+                {
+                    uint address = Convert.ToUInt32(addresses[i].Substring(2), 16);
+                    if (address >= Stm32WifiImage.Address)
+                    {
+                        byte[] image = File.ReadAllBytes(files[i]);
+                        Stm32WifiImage.Validate(address, image);
+                        PrepareExternalFlash(image);
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is SwdProtocolException || ex is IOException)
+            {
+                OutputWriter.WriteLine($"ERROR: External-flash preflight failed: {ex.Message}");
+                return ExitCodes.E5006;
+            }
+
+            if (DoMassErase && addresses.Any(a => Convert.ToUInt32(a.Substring(2), 16) < Stm32WifiImage.Address))
             {
                 ExitCodes eraseResult = MassErase();
 
@@ -375,6 +395,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 {
                     byte[] data = File.ReadAllBytes(binFilePath);
                     _lastProgressPercent = -1;
+                    if (flashAddress >= Stm32WifiImage.Address)
+                    {
+                        _external.Program(flashAddress, data);
+                        continue;
+                    }
+
                     _flash.EraseAndProgram(flashAddress, data, 0, data.Length);
 
                     if (Verify)
@@ -456,6 +482,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
             OutputWriter.ForegroundColor = ConsoleColor.White;
 
             return ExitCodes.OK;
+        }
+
+        internal void PrepareExternalFlash(byte[] image)
+        {
+            _external ??= new Stm32ExternalFlashSession(_swd, _mem, _flash.ChipIdcode, OnFlashProgress, Verbosity);
+            _external.Prepare(image);
         }
 
         /// <summary>
@@ -617,6 +649,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             {
                 if (disposing)
                 {
+                    _external?.Dispose();
                     _swd?.Dispose();
                     _dap?.Dispose();
                 }
