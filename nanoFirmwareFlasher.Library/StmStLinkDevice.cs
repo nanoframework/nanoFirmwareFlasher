@@ -354,6 +354,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 }
             }
 
+            byte[][] externalImages = new byte[files.Count][];
             try
             {
                 for (int i = 0; i < addresses.Count; i++)
@@ -364,6 +365,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         byte[] image = File.ReadAllBytes(files[i]);
                         Stm32WifiImage.Validate(address, image);
                         PrepareExternalFlash(image);
+                        externalImages[i] = image;
                     }
                 }
             }
@@ -415,7 +417,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 try
                 {
-                    byte[] data = File.ReadAllBytes(binFilePath);
+                    byte[] data = externalImages[i] ?? File.ReadAllBytes(binFilePath);
                     _lastProgressPercent = -1;
                     if (flashAddress >= Stm32WifiImage.Address)
                     {

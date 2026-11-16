@@ -36,8 +36,17 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             }
 
             _prepared = true;
-            _swd.ResetAndHalt();
-            _programmer.Initialize(_chipId);
+            try
+            {
+                _swd.ResetAndHalt();
+                _programmer.Initialize(_chipId);
+            }
+            catch (SwdProtocolException)
+            {
+                Dispose();
+                throw;
+            }
+
             if (_verbosity >= VerbosityLevel.Detailed)
             {
                 OutputWriter.WriteLine($"External Wi-Fi NOR JEDEC ID (LSB first): 0x{_programmer.JedecId:X6}");
@@ -66,6 +75,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
                 return;
             }
 
+            _prepared = false;
             try
             {
                 _programmer.Cleanup();
@@ -83,8 +93,6 @@ namespace nanoFramework.Tools.FirmwareFlasher.Swd
             {
                 OutputWriter.WriteLine($"ERROR: Reset after external-flash failure failed: {ex.Message}");
             }
-
-            _prepared = false;
         }
     }
 }

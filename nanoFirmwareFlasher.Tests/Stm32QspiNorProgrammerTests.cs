@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -260,6 +261,150 @@ namespace nanoFirmwareFlasher.Tests
             programmer.Cleanup();
         }
 
+        [TestMethod]
+        [DataRow(typeof(StmStLinkDevice))]
+        [DataRow(typeof(StmSwdDevice))]
+        public void FlashBinFiles_ProgramsRetainedExternalImageWhenFileChanges(Type deviceType)
+        {
+            string path = Path.GetTempFileName();
+            try
+            {
+                byte[] original = CreateImage(1);
+                byte[] replacement = CreateImage(2);
+                File.WriteAllBytes(path, original);
+                NorModel model = new NorModel { OnJedecRead = () => File.WriteAllBytes(path, replacement) };
+                using StLinkTransport transport = CreateTransport(new NativeUsb(model));
+                IStmFlashableDevice device = CreateDevice(deviceType, transport);
+                using IDisposable lifetime = (IDisposable)device;
+                using OutputWriterHelper output = new OutputWriterHelper();
+
+                Assert.AreEqual(ExitCodes.OK, device.FlashBinFiles(new[] { path }, new[] { "0x90000000" }));
+                CollectionAssert.AreEqual(replacement, File.ReadAllBytes(path));
+                CollectionAssert.AreEqual(original, model.Flash.Take(original.Length).ToArray());
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
+        [TestMethod]
+        [DataRow(typeof(StmStLinkDevice), false)]
+        [DataRow(typeof(StmStLinkDevice), true)]
+        [DataRow(typeof(StmSwdDevice), false)]
+        [DataRow(typeof(StmSwdDevice), true)]
+        public void FlashBinFiles_RetryAfterJedecRejectionReinitializesWithoutErasing(Type deviceType, bool cleanupFails)
+        {
+            string path = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllBytes(path, CreateImage(1));
+                NorModel model = new NorModel { Jedec = 0x123456, FailAbort = cleanupFails };
+                NativeUsb usb = new NativeUsb(model) { FailReset = cleanupFails };
+                using StLinkTransport transport = CreateTransport(usb);
+                IStmFlashableDevice device = CreateDevice(deviceType, transport);
+                using IDisposable lifetime = (IDisposable)device;
+                using OutputWriterHelper output = new OutputWriterHelper();
+
+                ExitCodes first = device.FlashBinFiles(new[] { path }, new[] { "0x90000000" });
+                ExitCodes retry = device.FlashBinFiles(new[] { path }, new[] { "0x90000000" });
+
+                Assert.AreEqual(0, model.EraseCommands);
+                Assert.AreEqual(0, model.Erased.Count);
+                Assert.AreEqual(0, model.Programmed.Count);
+                Assert.AreEqual(ExitCodes.E5006, first);
+                Assert.AreEqual(ExitCodes.E5006, retry);
+                Assert.AreEqual(2, model.JedecReads);
+                Assert.AreEqual(2, usb.ResetCommands);
+                Assert.AreEqual(0U, model.Registers[0xA0001000]);
+                StringAssert.Contains(output.Output, "preflight failed: Unsupported external NOR");
+                if (cleanupFails)
+                {
+                    StringAssert.Contains(output.Output, "External-flash cleanup failed");
+                    StringAssert.Contains(output.Output, "Reset after external-flash failure failed");
+                }
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
+        private static StLinkTransport CreateTransport(NativeUsb usb)
+        {
+            StLinkTransport transport = new StLinkTransport();
+            typeof(StLinkTransport).GetField("_usb", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(transport, usb);
+            return transport;
+        }
+
+        private static IStmFlashableDevice CreateDevice(Type type, StLinkTransport transport)
+        {
+            SwdProtocol swd = new SwdProtocol(transport);
+            ArmMemAp mem = new ArmMemAp(swd);
+            Stm32FlashProgrammer flash = new Stm32FlashProgrammer(mem);
+            flash.DetectFamily();
+            object device = RuntimeHelpers.GetUninitializedObject(type);
+            type.GetField("_swd", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(device, swd);
+            type.GetField("_mem", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(device, mem);
+            type.GetField("_flash", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(device, flash);
+            return (IStmFlashableDevice)device;
+        }
+
+        private sealed class NativeUsb : IStLinkUsb
+        {
+            private readonly NorModel _model;
+            private byte _command;
+            private uint _address;
+            private bool _data;
+            internal bool FailReset;
+            internal int ResetCommands;
+            internal NativeUsb(NorModel model) => _model = model;
+            public string ProductName => "Test";
+            public string SerialNumber => "Test";
+            public void Open(string devicePath) { }
+            public void ResetPipes() { }
+            public void ResetDevice() { }
+            public void Dispose() { }
+
+            public void WriteBulk(byte endpoint, byte[] data, int length)
+            {
+                if (_data)
+                {
+                    _data = false;
+                    _model.Write(_address, BitConverter.ToUInt32(data, 0));
+                    return;
+                }
+
+                _command = data[1];
+                if (_command == 7 || _command == 8)
+                {
+                    _address = BitConverter.ToUInt32(data, 2);
+                    _data = _command == 8;
+                }
+                else if (_command == 0x32)
+                {
+                    ResetCommands++;
+                }
+            }
+
+            public int ReadBulk(byte endpoint, byte[] buffer, int length)
+            {
+                if (_command == 7)
+                {
+                    for (int i = 0; i < length; i += 4)
+                    {
+                        Array.Copy(BitConverter.GetBytes(_model.Read(_address + (uint)i)), 0, buffer, i, 4);
+                    }
+                }
+                else
+                {
+                    buffer[0] = FailReset && (_command == 0x32 || _command == 0x3C) ? (byte)0 : (byte)0x80;
+                }
+
+                return length;
+            }
+        }
+
         private sealed class NorModel
         {
             internal readonly byte[] Flash = Enumerable.Repeat((byte)0xA5, 0x200000).ToArray();
@@ -275,6 +420,9 @@ namespace nanoFirmwareFlasher.Tests
             internal bool FailRead;
             internal bool FailAbort;
             internal bool CorruptHeader;
+            internal Action? OnJedecRead;
+            internal int JedecReads;
+            internal int EraseCommands;
             private uint _command;
             private int _address;
             private int _written;
@@ -282,8 +430,23 @@ namespace nanoFirmwareFlasher.Tests
 
             internal Stm32QspiNorProgrammer Create() => new Stm32QspiNorProgrammer(Read, Write, ReadBytes);
 
-            private uint Read(uint address)
+            internal uint Read(uint address)
             {
+                if (address == 0xE0042000)
+                {
+                    return 0x441;
+                }
+
+                if (address == 0xE000EDF0)
+                {
+                    return (1U << 17) | (1U << 25);
+                }
+
+                if (address >= 0x90000000 && address < 0x90200000)
+                {
+                    return BitConverter.ToUInt32(Flash, (int)(address - 0x90000000));
+                }
+
                 if (address == 0xA0001008)
                 {
                     return TransferError ? 1U : (ControllerBusy ? 32U : 6U) |
@@ -292,13 +455,19 @@ namespace nanoFirmwareFlasher.Tests
 
                 if (address == 0xA0001020)
                 {
+                    if ((_command & 255) == 0x9F)
+                    {
+                        JedecReads++;
+                        OnJedecRead?.Invoke();
+                    }
+
                     return (_command & 255) == 0x9F ? Jedec : (_wel ? 2U : 0);
                 }
 
                 return Registers.TryGetValue(address, out uint value) ? value : 0;
             }
 
-            private void Write(uint address, uint value)
+            internal void Write(uint address, uint value)
             {
                 if (FailAbort && address == 0xA0001000 && (value & 2) != 0)
                 {
@@ -312,6 +481,10 @@ namespace nanoFirmwareFlasher.Tests
                     if (value == 0x106)
                     {
                         _wel = !WriteProtected;
+                    }
+                    else if ((value & 255) == 0x20)
+                    {
+                        EraseCommands++;
                     }
                 }
                 else if (address == 0xA0001018)
