@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using nanoFramework.Tools.Debugger;
+using nanoFramework.Tools.FirmwareFlasher.Swd;
 
 namespace nanoFramework.Tools.FirmwareFlasher
 {
@@ -14,10 +15,13 @@ namespace nanoFramework.Tools.FirmwareFlasher
     /// </summary>
     internal class Stm32Firmware : FirmwarePackage
     {
+        private readonly string _wifiTargetName;
         [Obsolete("This property is discontinued and it will be removed in a future version.")]
         public bool HasDfuPackage => !string.IsNullOrEmpty(DfuPackage);
 
         public string DfuPackage { get; private set; }
+
+        internal string WifiFirmwareFile { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Stm32Firmware"/> class.
@@ -34,6 +38,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                  fwVersion,
                  preview)
         {
+            _wifiTargetName = targetName;
         }
 
         /// <summary>
@@ -42,13 +47,25 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// <param name="nanoDevice"><see cref="NanoDeviceBase"/> that will provide details when instantiating the <see cref="Stm32Firmware"/> object.</param>
         public Stm32Firmware(NanoDeviceBase nanoDevice) : base(nanoDevice)
         {
-
+            _wifiTargetName = nanoDevice.TargetName;
         }
 
-        internal new System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
+        internal override async System.Threading.Tasks.Task<ExitCodes> DownloadAndExtractAsync(string archiveDirectoryPath)
         {
-            // perform download and extract
-            return base.DownloadAndExtractAsync(archiveDirectoryPath);
+            WifiFirmwareFile = null;
+            ExitCodes result = await base.DownloadAndExtractAsync(archiveDirectoryPath);
+            if (result == ExitCodes.OK)
+            {
+                WifiFirmwareFile = FindWifiFirmware(_wifiTargetName, LocationPath);
+            }
+
+            return result;
+        }
+
+        internal static string FindWifiFirmware(string targetName, string directory)
+        {
+            string path = Path.Combine(directory, "wifi_firmware.bin");
+            return targetName == Stm32WifiImage.TargetName && File.Exists(path) ? path : null;
         }
     }
 }
