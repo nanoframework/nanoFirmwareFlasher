@@ -1084,6 +1084,35 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        [DataRow(200, 0x10000u, false)]
+        [DataRow(300, 0u, false)]
+        [DataRow(301, 0x10000u, true)]
+        [DataRow(302, 0u, true)]
+        [DataRow(302, 0x10000u, false)]
+        [DataRow(302, 0x80000000u, true)]
+        [DataRow(303, 0x10000u, true)]
+        [DataRow(400, 0x10000u, true)]
+        public void BootloaderClient_P4FlashPowerOn_RespectsRevisionAndRomPower(
+            int revision, uint downloadModeEfuse, bool expected)
+        {
+            Assert.AreEqual(expected,
+                Esp32BootloaderClient.RequiresEsp32P4FlashPowerOn(revision, downloadModeEfuse));
+        }
+
+        [TestMethod]
+        [DataRow(666u << 7, 100u, "26MHz")]
+        [DataRow(1024u << 7, 100u, "40MHz")]
+        [DataRow((1024u << 7) | 0x7Fu, 0xABCDEF64u, "40MHz")]
+        [DataRow(844u << 7, 100u, "26MHz")]
+        [DataRow(845u << 7, 100u, "40MHz")]
+        public void ChipDetector_DecodeEsp32RomCrystalFrequency_UsesCalibration(
+            uint rtcCalibration, uint efuseWord4, string expected)
+        {
+            Assert.AreEqual(expected,
+                Esp32ChipDetector.DecodeEsp32RomCrystalFrequency(rtcCalibration, efuseWord4));
+        }
+
+        [TestMethod]
         public void ChipDetector_ApplyRuntimeConfigOverrides_C2Eco0_DisablesStub()
         {
             var config = new Esp32ChipConfig("ESP32-C2", "esp32c2", 12, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0x4000, false);
@@ -2099,9 +2128,18 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        [DataRow("esp32")]
+        [DataRow("esp32s2")]
         [DataRow("esp32s3")]
         [DataRow("esp32c2")]
+        [DataRow("esp32c3")]
+        [DataRow("esp32c5")]
+        [DataRow("esp32c6")]
+        [DataRow("esp32c61")]
+        [DataRow("esp32h2")]
+        [DataRow("esp32h21")]
         [DataRow("esp32h4")]
+        [DataRow("esp32p4")]
         [DataRow("esp32s31")]
         public void StubImage_TryLoad_KnownChip_ReturnsNotNull(string chipType)
         {
@@ -2110,8 +2148,29 @@ namespace nanoFirmwareFlasher.Tests
             // A stub should exist for a known chip type
             var result = Esp32StubImage.TryLoad(knownConfig);
             Assert.IsNotNull(result, "Should return a stub for known chip types");
+            Assert.IsNotEmpty(result.Text);
+            Assert.IsTrue(result.Entry >= result.TextStart
+                && (ulong)result.Entry < (ulong)result.TextStart + (ulong)result.Text.Length,
+                "The entry point must be inside the uploaded text segment.");
         }
 
+        [TestMethod]
+        [DataRow(0u)]
+        [DataRow(1u)]
+        [DataRow(2u)]
+        public void StubImage_TryLoad_P4EarlyRevision_LoadsDedicatedImage(uint revision)
+        {
+            Esp32ChipConfig config = Esp32ChipConfigs.ESP32_P4.CreateRuntimeCopy();
+            Esp32ChipDetector.ApplyRuntimeConfigOverrides(config, revision);
+
+            Esp32StubImage earlyStub = Esp32StubImage.TryLoad(config);
+            Esp32StubImage currentStub = Esp32StubImage.TryLoad(Esp32ChipConfigs.ESP32_P4);
+
+            Assert.IsNotNull(earlyStub);
+            Assert.IsNotNull(currentStub);
+            Assert.IsFalse(earlyStub.Text.SequenceEqual(currentStub.Text),
+                "Early P4 revisions require a different stub binary.");
+        }
 
         [TestMethod]
         public void StubImage_TryLoad_UnknownChip_ReturnsNull()

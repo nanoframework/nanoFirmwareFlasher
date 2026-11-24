@@ -15,12 +15,13 @@
     as embedded JSON resources.
 
 .PARAMETER RequestedVersion
-    Version tag to download (e.g. "v0.2.0"). Defaults to latest release.
+    Version tag to download. Defaults to the bundled version, v2.0.0.
+    Pass an empty string to download the latest release.
 #>
 
 [CmdletBinding()]
 param (
-    [Parameter(HelpMessage = "Stub version to download")][string]$RequestedVersion,
+    [Parameter(HelpMessage = "Stub version to download")][string]$RequestedVersion = "v2.0.0",
     [Parameter(HelpMessage = "Number of download attempts per asset")][ValidateRange(1, 10)][int]$RetryCount = 3,
     [Parameter(HelpMessage = "Initial delay between retries in seconds")][ValidateRange(1, 30)][int]$RetryDelaySeconds = 2
 )
@@ -36,8 +37,10 @@ $chipTypes = @(
     "esp32c6",
     "esp32c61",
     "esp32h2",
+    "esp32h21",
     "esp32h4",
     "esp32p4",
+    "esp32p4-rev1",
     "esp32s2",
     "esp32s3",
     "esp32s31"
@@ -110,7 +113,8 @@ foreach ($chip in $chipTypes) {
     $assetName = "$chip.json"
     $url = "https://github.com/$repoOwner/$repoName/releases/download/$version/$assetName"
     # Our embedded resources are named: stub_esp32.json, stub_esp32c3.json, etc.
-    $outputFile = Join-Path $stubDir "stub_$chip.json"
+    $resourceChip = if ($chip -eq "esp32p4-rev1") { "esp32p4_rev0_1_2" } else { $chip }
+    $outputFile = Join-Path $stubDir "stub_$resourceChip.json"
     $tempFile = "$outputFile.$PID.tmp"
     
     "  Downloading $assetName..." | Write-Host -ForegroundColor Gray -NoNewline
