@@ -13,6 +13,7 @@
 
     The downloaded stubs are placed in nanoFirmwareFlasher.Library/Esp32Serial/StubImages/
     as embedded JSON resources.
+    Releases missing any required image are rejected before existing files are replaced.
 
 .PARAMETER RequestedVersion
     Version tag to download. Defaults to the bundled version, v2.0.0.
@@ -80,28 +81,34 @@ function Invoke-DownloadWithRetry {
     throw $lastError
 }
 
-# Create output directory
-if (-not (Test-Path $stubDir)) {
-    New-Item -ItemType Directory -Path $stubDir -Force | Out-Null
-}
-
-# Get version
+# Resolve the release and check its assets before replacing any local images.
 if ([string]::IsNullOrEmpty($RequestedVersion)) {
-    "Getting latest release from $repoOwner/$repoName..." | Write-Host -ForegroundColor White -NoNewline
-    
-    try {
-        $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
-        $version = $releases.tag_name
-    }
-    catch {
-        "Failed to get latest release. Please specify a version with -RequestedVersion." | Write-Host -ForegroundColor Red
-        exit 1
-    }
-    
-    " $version" | Write-Host -ForegroundColor White
+    $releaseUrl = "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
 }
 else {
-    $version = $RequestedVersion
+    $releaseTag = [Uri]::EscapeDataString($RequestedVersion)
+    $releaseUrl = "https://api.github.com/repos/$repoOwner/$repoName/releases/tags/$releaseTag"
+}
+
+try {
+    $release = Invoke-RestMethod -Uri $releaseUrl -ErrorAction Stop
+}
+catch {
+    "Failed to get stub release metadata: $($_.Exception.Message)" | Write-Host -ForegroundColor Red
+    exit 1
+}
+
+$version = $release.tag_name
+$missingAssets = @($chipTypes | ForEach-Object { "$_.json" } | Where-Object { $_ -notin $release.assets.name })
+
+if ($missingAssets.Count -gt 0) {
+    "Release $version is missing required stub asset(s): $($missingAssets -join ', ')" | Write-Host -ForegroundColor Red
+    "No local stub images were changed. Select a release containing all required images." | Write-Host -ForegroundColor Yellow
+    exit 1
+}
+
+if (-not (Test-Path $stubDir)) {
+    New-Item -ItemType Directory -Path $stubDir -Force | Out-Null
 }
 
 "Downloading stub images for version $version..." | Write-Host -ForegroundColor White
