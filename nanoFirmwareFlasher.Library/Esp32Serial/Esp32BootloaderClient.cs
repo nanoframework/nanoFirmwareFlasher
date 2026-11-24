@@ -818,6 +818,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             return 26;
         }
 
+        internal static bool RequiresEsp32P4FlashPowerOn(int revision, uint downloadModeEfuse)
+        {
+            return revision >= 301
+                && !(revision == 302 && (downloadModeEfuse & Esp32P4EfuseDownloadModeXpdOnMask) != 0);
+        }
+
         private void PrepareEsp32P4ForFlashOperations()
         {
             if (_p4FlashPrepared)
@@ -838,15 +844,9 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             int revision = GetEsp32P4Revision();
 
-            if (revision == 302
-                && (ReadRegister(Esp32P4EfuseRdRepeatData1Reg) & Esp32P4EfuseDownloadModeXpdOnMask) != 0)
-            {
-                WriteRegister(Esp32P4PmuDateReg, 0);
-                _p4FlashPrepared = true;
-                return;
-            }
+            uint downloadModeEfuse = revision == 302 ? ReadRegister(Esp32P4EfuseRdRepeatData1Reg) : 0;
 
-            if (revision == 301 || revision == 302)
+            if (RequiresEsp32P4FlashPowerOn(revision, downloadModeEfuse))
             {
                 WriteRegister(Esp32P4LpSystemRegAnaXpdPadGroupReg, 1);
                 Thread.Sleep(10);
@@ -861,6 +861,10 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
                 WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) | 0x80u);
                 WriteRegister(Esp32P4PmuExtLdoP0_0P1AReg, ReadRegister(Esp32P4PmuExtLdoP0_0P1AReg) & ~Esp32P4Pmu0P1AForceTiehSel0);
                 Thread.Sleep(2);
+            }
+            else if (revision == 302)
+            {
+                WriteRegister(Esp32P4PmuDateReg, 0);
             }
 
             _p4FlashPrepared = true;
