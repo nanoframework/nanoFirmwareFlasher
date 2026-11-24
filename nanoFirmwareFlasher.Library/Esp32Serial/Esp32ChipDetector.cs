@@ -273,9 +273,18 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
             };
         }
 
+        internal static string DecodeEsp32RomCrystalFrequency(uint rtcCalibration, uint efuseWord4)
+        {
+            uint calibrationValue = (rtcCalibration >> 7) & 0x01FFFFFF;
+            uint clock8MFrequency = efuseWord4 & 0xFF;
+            double frequencyHz = (double)calibrationValue * 15625 * clock8MFrequency / 40;
+            return frequencyHz > 33_000_000 ? "40MHz" : "26MHz";
+        }
+
         /// <summary>
-        /// Read the crystal frequency. Returns "40MHz" or "26MHz".
-        /// Estimated from UART clock divisor and current baud rate, matching esptool.py behavior.
+        /// Read the crystal frequency.
+        /// Uses ROM calibration on ESP32 with a running stub; otherwise estimates from
+        /// the UART clock divisor and current baud rate unless the chip has a fixed crystal.
         /// </summary>
         internal string ReadCrystalFrequency()
         {
@@ -303,6 +312,12 @@ namespace nanoFramework.Tools.FirmwareFlasher.Esp32Serial
 
             if (_config.ChipType == "esp32")
             {
+                if (_client.IsStubRunning)
+                {
+                    // Stub clock boosting decouples the UART divider from the crystal.
+                    return DecodeEsp32RomCrystalFrequency(_client.ReadRegister(0x3FF5F06C), ReadEfuse(4));
+                }
+
                 uartClkDivAddr = 0x3FF40014;
             }
             else if (_config.ChipType == "esp32e22")

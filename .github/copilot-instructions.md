@@ -161,7 +161,7 @@ The `lib/` directory contains pre-built third-party tool executables that are co
 
 When adding or changing external tool include paths, **also update `nugetcontent.targets`** (noted in a warning comment in `nanoFirmwareFlasher.Library.csproj`).
 
-ESP32 stub images (JSON) are embedded as resources in `Esp32Serial/StubImages/`. Update them by running `update-stubs.ps1`.
+ESP32 stub images (JSON) are embedded as resources in `Esp32Serial/StubImages/`. Run `.\update-stubs.ps1` to download the pinned esp-flasher-stub v2.0.0 release, or use `-RequestedVersion` to select another version. The updater includes the H21 image and maps `esp32p4-rev1.json` to `stub_esp32p4_rev0_1_2.json` for P4 revisions below 3. Only the base stub is uploaded; NAND, SPI and SDIO plugins are not loaded. Original ESP32 crystal reporting uses ROM calibration while the stub is running because newer stubs boost the UART clock.
 
 ---
 
