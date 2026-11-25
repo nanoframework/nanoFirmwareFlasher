@@ -40,7 +40,7 @@ namespace nanoFramework.Tools.FirmwareFlasher.DeploymentHelpers
             {
                 serialDebugClient.AddDevice(serialPort);
 
-                device = serialDebugClient.NanoFrameworkDevices[0];
+                device = serialDebugClient.NanoFrameworkDevices.First();
             }
             catch (Exception)
             {

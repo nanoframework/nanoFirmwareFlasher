@@ -301,15 +301,15 @@ namespace nanoFirmwareFlasher.Tests
         #region CheckNullPemTermination Tests
 
         [TestMethod]
-        public void CheckNullPemTermination_PemWithoutNull_IsHandled()
+        public void CheckNullPemTermination_PemWithoutNull_AddsTerminator()
         {
             var manager = CreateManager(MinimalConfig);
             byte[] cert = Encoding.ASCII.GetBytes("-----BEGIN CERTIFICATE-----\nDATA\n-----END CERTIFICATE-----");
 
-            // CheckNullPemTermination modifies via Array.Resize — but since byte[] is a reference type
-            // passed by value, the resize creates a new array. The method has a bug: it resizes the local
-            // reference but doesn't return it. Let's just verify it doesn't throw.
-            manager.CheckNullPemTermination(cert);
+            byte[] terminated = manager.CheckNullPemTermination(cert);
+
+            Assert.AreEqual(cert.Length + 1, terminated.Length);
+            Assert.AreEqual(0, terminated[terminated.Length - 1]);
         }
 
         [TestMethod]
@@ -322,9 +322,9 @@ namespace nanoFirmwareFlasher.Tests
             certWithNull[certWithNull.Length - 1] = 0;
 
             int originalLength = certWithNull.Length;
-            manager.CheckNullPemTermination(certWithNull);
+            byte[] terminated = manager.CheckNullPemTermination(certWithNull);
             // Array should not grow since it already has null terminator
-            Assert.AreEqual(originalLength, certWithNull.Length);
+            Assert.AreEqual(originalLength, terminated.Length);
         }
 
         [TestMethod]
@@ -333,8 +333,8 @@ namespace nanoFirmwareFlasher.Tests
             var manager = CreateManager(MinimalConfig);
             byte[] binaryCert = new byte[] { 0x30, 0x82, 0x01, 0x22 }; // DER format
             int originalLength = binaryCert.Length;
-            manager.CheckNullPemTermination(binaryCert);
-            Assert.AreEqual(originalLength, binaryCert.Length);
+            byte[] result = manager.CheckNullPemTermination(binaryCert);
+            Assert.AreEqual(originalLength, result.Length);
         }
 
         #endregion
