@@ -108,6 +108,7 @@ List of verbs:
 | --- | --- |
 | [`flash`](#flash) | Flash firmware (from the online repository, a firmware archive, or local HEX/BIN files) onto a target device. |
 | [`deploy`](#deploy) | Deploy a managed application image, or a file/network deployment package, to a device already running nanoFramework. |
+| [`backup` / `restore`](#backup-and-restore--esp32) | Save or restore ESP32 partitions or the entire flash, without downloading firmware. |
 | [`list`](#list) | List targets, connected nanoFramework devices, COM ports, or connected programming interfaces. |
 | [`details`](#details) | Read details from a connected device. |
 | [`identify`](#identify) | Show which firmware target `nanoff` would use for a device, without flashing or deploying anything. |
@@ -120,6 +121,7 @@ Jump to a verb's examples, grouped by device type:
 
 - `flash`: [ESP32](#flash--esp32) | [STM32](#flash--stm32) | [TI CC13x2](#flash--ti-cc13x2) | [Silabs Giant Gecko](#flash--silabs-giant-gecko) | [Raspberry Pi Pico](#flash--raspberry-pi-pico) | [Generic nanoDevice](#flash--generic-nanodevice-plain-connection) | [MCUboot (SMP)](#flash--mcuboot-smp)
 - `deploy`: [ESP32](#deploy--esp32) | [STM32](#deploy--stm32) | [Silabs Giant Gecko](#deploy--silabs-giant-gecko) | [Raspberry Pi Pico](#deploy--raspberry-pi-pico) | [Generic nanoDevice](#deploy--generic-nanodevice-plain-connection) | [MCUboot (SMP)](#deploy--mcuboot-smp) | [File deployment](#deploy--file-deployment) | [Network deployment](#deploy--network-deployment)
+- [`backup` / `restore` — ESP32](#backup-and-restore--esp32)
 - [`list`](#list)
 - `details`: [ESP32](#details--esp32) | [Raspberry Pi Pico](#details--raspberry-pi-pico) | [Generic nanoDevice](#details--generic-nanodevice)
 - [`identify`](#identify)
@@ -131,11 +133,45 @@ Jump to a verb's examples, grouped by device type:
 
 You will also need to know the COM port used by your device for most operations. Find [how to do this here](#finding-the-device-com-port-on-windows), or use `nanoff list ports` — see [Finding the device COM port using nanoff](#finding-the-device-com-port-using-nanoff).
 
+## `backup` and `restore` — ESP32
+
+These standalone commands are **ESP32-only** and operate directly on the connected device. They require `serialport` and a backup directory `path`, but no `target`, firmware package, or download. `platform` is optional and defaults to `esp32`; other platforms are rejected. `baud` defaults to `1500000`. A running stub loader is required for backups and partition reads.
+
+Back up selected partitions, then restore them (or just a subset):
+
+```console
+nanoff backup platform esp32 serialport COM31 path backup-dir partition config clr deployment
+nanoff restore platform esp32 serialport COM31 path backup-dir
+nanoff restore serialport COM31 path backup-dir partition config
+```
+
+`partition` takes space-separated selectors or actual partition labels, including custom labels. For a label matching a CLI keyword, use equals syntax, for example `--partition=path`. It defaults to `all` and cannot be empty. `all` must be used alone: backup saves every table-listed partition; restore restores every entry included in the manifest, not partitions omitted from that backup.
+
+```console
+nanoff backup serialport COM31 path backup-all
+nanoff restore serialport COM31 path backup-all partition all
+```
+
+The directory contains `manifest.json` and one binary per selected partition. Existing backup directory contents are never overwritten, and incomplete reads leave no completion manifest. Partition backups do **not** include the bootloader, partition table, or gaps outside the table-listed partitions. To capture the entire flash, including those regions, use `wholeflash`:
+
+```console
+nanoff backup serialport COM31 path backup-full wholeflash
+nanoff restore serialport COM31 path backup-full wholeflash
+```
+
+`wholeflash` and `partition` are mutually exclusive. Restoring a whole-flash backup requires explicitly supplying `wholeflash`; an omitted selector or `partition all` does not authorize a whole-flash write.
+
+Restore uses temporary validated snapshots: the manifest, all selected files' lengths and SHA-256 checksums, and all selected layouts are validated **before a single write operation**. Data is restored exactly byte-for-byte, with bootloader-header patching skipped. Partition restore requires the same chip type and matching installed partition labels, types, subtypes, addresses, sizes and flags; encrypted partitions are refused for selective restore. Whole-flash restore requires the same chip type, MAC/device identity and exact flash size.
+
+Protect these raw dumps: they can contain sensitive configuration, credentials and application data.
+
+These verbs do not change the existing `flash ... backup [path]` and `flash ... restore [path]` modifiers, or the nanoDevice wire-protocol behavior of existing bare-serialport commands.
+
 ## `flash`
 
 Flash firmware onto a target device — from the online repository (`target`/`platform` + `fwversion`/`preview`), from a local firmware archive (`fromarchive archivepath <path>`), or by flashing a local image directly (`image`/`address`, or `image hex` for Intel HEX files).
 
-Common keywords across all platforms: `target`, `platform`, `dfu`/`jtag`/`nativeswd` (STM32 only, force a specific interface — omit all three for auto-detect), `deviceid` (DFU/JTAG/SWD probe, or J-Link probe id for EFM32), `fwversion`, `preview`, `masserase`, `verify`, `reset`, `nofitcheck`, `serialport`, `image` (a local CLR/firmware file to use instead of downloading — see each platform's examples), `fromarchive`/`archivepath`.
+Common keywords across all platforms: `target`, `platform`, `dfu`/`jtag`/`nativeswd` (STM32 only, force a specific interface — omit all three for auto-detect), `deviceid` (DFU/JTAG/SWD probe, or J-Link probe id for EFM32), `fwversion`, `preview`, `masserase`, `verify`, `reset`, `nofitcheck`, `serialport`, `image` (a local CLR/firmware file — see each platform's examples), `fromarchive`/`archivepath`.
 
 There are multiple ESP32 images available, some are built specifically for a target. Please check out the [list](https://github.com/nanoframework/nf-interpreter#firmware-for-reference-boards).
 
@@ -180,20 +216,23 @@ nanoff flash target ESP32_PSRAM_REV0 serialport /dev/ttyUSB0
 
 #### Update the firmware of an ESP32-S2 with a local CLR file
 
-To update the firmware of an ESP32-S2 target connected to COM31 with a local CLR file (for example from a build).
-This file has to be a binary file with a valid CLR from a build. No other checks or validations are performed on the file content.
+To update only the CLR of an ESP32-S2 connected to COM31 with a local CLR binary (for example from a build). `target` is not required: the installed partition table provides the CLR partition's address and capacity, and no firmware package is downloaded.
 
 ```console
-nanoff flash target ESP32_S2 serialport COM31 image "C:\nf-interpreter\build\nanoCLR.bin"
+nanoff flash platform esp32 serialport COM31 image "C:\nf-interpreter\build\nanoCLR.bin"
 ```
 
 On Linux/macOS:
 
 ```console
-nanoff flash target ESP32_S2 serialport /dev/ttyUSB0 image ~/nf-interpreter/build/nanoCLR.bin
+nanoff flash platform esp32 serialport /dev/ttyUSB0 image ~/nf-interpreter/build/nanoCLR.bin
 ```
 
-You can adjust the name of the core image you want to use. Refer to the previous section to get the full list.
+This changes the previous local-image behavior: only the installed factory application (CLR) partition is written. The bootloader, partition table, configuration and managed application deployment are left untouched. The binary's ESP image header, chip ID, segment lengths, checksum and optional SHA-256 digest are validated, and the image must fit the partition and detected flash. These checks do not guarantee board-specific compatibility; use a CLR built for your board.
+
+A running stub loader and a valid, unencrypted factory application partition are required. On an unprovisioned device, or if the stub is unavailable, flash a complete firmware package first by omitting `image`. Devices using MCUboot must use the separate `mcuboot` flow.
+
+Local CLR flashing accepts a single `.bin` image and cannot be combined with `hex`, `address`, `masserase`, `preview`, `fwversion`, `fromarchive`, `archivepath`, `partitiontablesize` or `restore`. `backup [path]` can still save the entire existing flash before the CLR-only update. To replace the complete firmware, bootloader or partition layout, omit `image` and select the appropriate `target` or `platform`.
 
 #### Update firmware and deploy an application afterward (ESP32)
 
@@ -201,7 +240,7 @@ Updating the firmware and deploying a managed application used to be combinable 
 
 ```console
 nanoff flash target ESP32_PSRAM_REV0 serialport COM31
-nanoff deploy target ESP32_PSRAM_REV0 serialport COM31 image "c:\esp32-backups\my_awesome_app.bin" address 0x1B000
+nanoff deploy platform esp32 serialport COM31 image "c:\esp32-backups\my_awesome_app.bin"
 ```
 
 #### Back up the entire flash before flashing (ESP32)
@@ -222,7 +261,7 @@ Omitting `backup` entirely means no whole-flash backup is taken — this is the 
 
 #### Keep a copy of the configuration partition backup (ESP32)
 
-The configuration partition is **always** automatically backed up before flashing and restored afterward — there is no way (nor need) to turn this off. Add `restore <path>` if you also want to keep a persistent copy of that backup:
+During firmware-package flashing (without `image`), the configuration partition is automatically backed up and restored. The installed binary partition map supplies the source; the incoming firmware's binary partition map supplies the destination. Configuration may relocate only when its type, subtype, size and flags are identical. Encrypted configuration is refused, and incompatible layouts fail before flashing. `masserase` explicitly skips configuration preservation. Add `restore <path>` if you also want to keep a persistent copy of that backup. Local CLR-only flashing leaves configuration untouched and does not use this option.
 
 ```console
 nanoff flash target ESP32_PSRAM_REV0 serialport COM31 restore ./backups/config.bin
@@ -457,25 +496,27 @@ Deploy an application image, or a file/network deployment package, to a device t
 
 ### `deploy` — ESP32
 
-To deploy a managed application to an ESP32_PSRAM_REV0 target connected to COM31.
+To deploy a managed application to an ESP32 connected to COM31. The device's partition table supplies the managed-code deployment address and capacity; no `target` or firmware package download is required.
 
 >Note: The binary file with the deployment image can be found on the Release or Debug folder of a Visual Studio project after a successful build. This file contains everything that's required to deploy a managed application to a target (meaning application executable and all referenced libraries and assemblies).
 
 ```console
-nanoff deploy target ESP32_PSRAM_REV0 serialport COM12 image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin"
+nanoff deploy platform esp32 serialport COM31 image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin"
 ```
 
 On Linux/macOS:
 
 ```console
-nanoff deploy target ESP32_PSRAM_REV0 serialport /dev/ttyUSB0 image ~/nf-Samples/samples/Blinky/Blinky/bin/Debug/Blinky.bin
+nanoff deploy platform esp32 serialport /dev/ttyUSB0 image ~/nf-Samples/samples/Blinky/Blinky/bin/Debug/Blinky.bin
 ```
 
-Optionally, `address` can be added to override the default deployment partition address (hexadecimal format):
+The image must fit the deployment partition. A running stub loader is needed to read the partition table; invalid or missing partition metadata fails deployment rather than falling back to a fixed address. Optionally, `address` can explicitly override partition-table detection, including when a stub is unavailable. Use the actual deployment address for your device (hexadecimal format):
 
 ```console
-nanoff deploy target ESP32_PSRAM_REV0 serialport COM31 image "c:\esp32-backups\my_awesome_app.bin" address 0x1B000
+nanoff deploy platform esp32 serialport COM31 image "c:\esp32-backups\my_awesome_app.bin" address <deployment-partition-address>
 ```
+
+Keep `platform esp32` when using direct ESP32 flashing. Omitting both `target` and `platform` with a serial port selects the nanoDevice wire protocol instead, which is unchanged.
 
 ### `deploy` — STM32
 

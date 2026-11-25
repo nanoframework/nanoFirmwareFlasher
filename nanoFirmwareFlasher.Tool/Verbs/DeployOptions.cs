@@ -44,7 +44,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
         [Option(
             "address",
             Required = false,
-            HelpText = "Address where to flash the deployment image. Hexadecimal format (e.g. 0x08040000). Required for STM32 targets; optional for ESP32/RP2040/RP2350 targets, which fall back to the firmware's default deployment partition address.")]
+            HelpText = "Address where to flash the deployment image. Hexadecimal format (e.g. 0x08040000). Required for STM32; optional for ESP32, which reads the device's partition table, and RP2040/RP2350, which use their default deployment address.")]
         public IList<string> Address { get; set; }
 
         [Option(

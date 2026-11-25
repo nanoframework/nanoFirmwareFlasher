@@ -138,13 +138,13 @@ nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31
 ### 使用本地CLR文件更新ESP32-S2的固件  
 
 使用本地CLR文件(例如来自一个构建文件)更新连接到COM31的ESP32-S2设备的固件。  
-这个文件必须是一个二进制文件，且必须是有效且经过构建的CLR。 对文件内容不执行其他检查或验证。  
+只更新设备现有的 CLR 分区，不下载固件包，也不需要指定目标名称。分区表提供地址和容量；工具会验证 ESP 镜像头、芯片 ID、数据段、校验和及可选的 SHA-256 摘要。
 
 ```shell
-nanoff --update --target ESP32_S2 --serialport COM31 --clrfile "C:\nf-interpreter\build\nanoCLR.bin" 
+nanoff flash platform esp32 serialport COM31 image "C:\nf-interpreter\build\nanoCLR.bin"
 ```
 
-您可以调整要使用的核心固件的名称。 请参阅前一节以获得完整的列表。  
+引导加载程序、分区表、配置及托管应用程序分区保持不变。此操作需要运行中的 stub loader 和有效的未加密 factory 应用程序分区；镜像必须为适用于该开发板的 `.bin` 文件并能放入 CLR 分区。不能同时使用 `hex`、`address`、`masserase`、`preview`、`fwversion`、`fromarchive`、`archivepath`、`partitiontablesize` 或 `restore`。可用 `backup` 在更新前备份整个 Flash。首次刷写或需要更新完整固件时，请省略 `image`；使用 MCUboot 的设备应走 `mcuboot` 流程。
 
 ### 显示所连接的ESP32设备的详细信息
 
@@ -163,25 +163,48 @@ nanoff --platform esp32 --serialport COM31 --devicedetails
 >Note: 在成功构建之后，可以在Visual Studio项目的Release或Debug文件夹中找到包含部署映像的二进制文件。 此文件包含将托管应用程序部署到设备所需的所有内容(即应用程序可执行文件和所有引用的库和程序集)。  
 
 ```shell
-nanoff --target ESP32_PSRAM_REV0 --serialport COM12 --deploy --image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin"
+nanoff deploy platform esp32 serialport COM31 image "E:\GitHub\nf-Samples\samples\Blinky\Blinky\bin\Debug\Blinky.bin"
 ```
 
 ### 更新ESP32设备和托管应用程序的固件  
 
-要在连接到COM31的ESP32设备机上部署应用程序，您必须指定托管应用程序的路径。 您也可以提供一个地址，该地址将覆盖默认的部署地址。  
+直接部署会读取设备分区表中的部署地址和容量，不需要目标名称或固件包。读取分区表需要运行中的 stub loader。可用 `address` 指定设备实际的部署地址以跳过自动检测。保留 `platform esp32`；仅指定串口而不指定平台或目标名称会选择 wire protocol。完整固件更新和应用程序部署现在使用两个命令：
 本示例使用的是在构建应用程序时可以找到的二进制格式文件。 注意，因为只有应用程序可以运行，所以在构建库时，不会自动创建bin文件，这只针对应用程序。  
 
 ```shell
-nanoff --target ESP32_PSRAM_REV0 --update --serialport COM31 --deploy --image "c:\eps32-backups\my_awesome_app.bin" --address 0x1B000
+nanoff flash target ESP32_PSRAM_REV0 serialport COM31
+nanoff deploy platform esp32 serialport COM31 image "c:\esp32-backups\my_awesome_app.bin"
 ```
 
-### 跳过备份配置分区
+### 固件更新时保留配置
 
-在更新连接到 COM31 的 ESP32 目标的固件时跳过备份配置分区。
+完整固件更新会从设备当前的二进制分区表读取配置分区，先备份，再按新固件包的二进制分区表恢复。只有类型、子类型、容量和标志一致且未加密的配置分区才能自动保留；地址可以改变。不兼容的布局会在刷写前报错。`masserase` 明确跳过配置保留；本地 CLR 更新不会修改配置。
+
+原有的 `flash ... backup [路径]` 仍在刷写前保存整个 Flash；`flash ... restore <路径>` 仍表示额外保留配置备份文件，并不是从该文件恢复设备。
+
+### 按分区备份和恢复 ESP32
+
+独立的 `backup` 和 `restore` 命令不需要 `target` 或固件包，默认平台为 ESP32。备份目录包含 `manifest.json` 和每个所选分区的完整二进制文件。清单记录芯片、分区标签、类型、地址、容量、标志及 SHA-256。目标目录必须为空或不存在，已有备份不会被覆盖。读取失败时不会生成完成清单。
 
 ```shell
-nanoff --update --target ESP32_PSRAM_REV0 --serialport COM31 --nobackupconfig
+nanoff backup platform esp32 serialport COM31 path C:\backups\settings partition config
+nanoff backup platform esp32 serialport COM31 path C:\backups\app partition clr deployment
+nanoff backup platform esp32 serialport COM31 path C:\backups\partitions
+nanoff restore platform esp32 serialport COM31 path C:\backups\partitions partition config
 ```
+
+`partition` 支持实际分区标签，以及 `clr`、`deploy`/`deployment` 别名。不指定时默认为全部分区；恢复时表示备份中保存的全部分区。`all` 仅包含分区表中的分区，不包含引导加载程序和分区表本身。备份和分区表读取需要运行中的 stub loader。
+
+恢复会先验证所有所选文件的大小和 SHA-256，以及当前设备的芯片和分区布局，再开始写入。分区标签、类型、子类型、地址、容量和标志必须匹配；不支持单独恢复加密分区。工具使用验证后的临时快照逐字节恢复，不修改镜像头。
+
+需要连同引导加载程序和分区表一起备份时，明确使用 `wholeflash`。恢复完整 Flash 也必须明确提供此关键字，且设备 MAC、芯片类型和 Flash 容量必须与备份一致：
+
+```shell
+nanoff backup serialport COM31 path C:\backups\device wholeflash
+nanoff restore serialport COM31 path C:\backups\device wholeflash
+```
+
+`wholeflash` 不能与 `partition` 同时使用。备份可能包含网络凭据、证书等敏感配置，请妥善保护备份目录。
 
 ## STM32用法示例
 

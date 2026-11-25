@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 using nanoFramework.Tools.FirmwareFlasher.Esp32Serial;
 
 namespace nanoFramework.Tools.FirmwareFlasher
@@ -489,8 +488,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 // if mass erase wasn't requested or skip backup config partitition
                 if (!massErase && !noBackupConfig)
                 {
-                    int configPartitionAddress = 0;
-                    int configPartitionSize = 0;
+                    if (firmware.FlashPartitions == null
+                        || !firmware.FlashPartitions.TryGetValue(Esp32PartitionTable.Address, out string incomingTablePath))
+                    {
+                        throw new EspToolExecutionException("The firmware package has no partition table for validating configuration preservation.");
+                    }
+
+                    (Esp32Partition Source, Esp32Partition Destination)? configPlan = Esp32PartitionTable.GetConfigRestorePlan(
+                        espTool.ReadPartitionTable(),
+                        File.ReadAllBytes(incomingTablePath),
+                        esp32Device.FlashSize,
+                        !string.IsNullOrEmpty(configBackupPath));
+
                     isTemporaryConfigBackup = string.IsNullOrEmpty(configBackupPath);
                     configPartitionBackup = isTemporaryConfigBackup
                         ? Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
@@ -514,8 +523,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
                     }
 
-                    // check if the update file includes a partition table
-                    if (File.Exists(Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv")))
+                    if (configPlan.HasValue)
                     {
                         if (verbosity >= VerbosityLevel.Normal)
                         {
@@ -525,32 +533,11 @@ namespace nanoFramework.Tools.FirmwareFlasher
                             OutputWriter.Write($"Backup configuration...");
                         }
 
-                        // can't do this without a partition table
-                        // compose path to partition file
-                        string partitionCsvFile = Path.Combine(firmware.LocationPath, $"partitions_nanoclr_{Esp32DeviceInfo.GetFlashSizeAsString(esp32Device.FlashSize).ToLowerInvariant()}.csv");
-
-                        string partitionDetails = File.ReadAllText(partitionCsvFile);
-
-                        // grab details for the config partition
-                        string pattern = @"config,.*?(0x[0-9A-Fa-f]+),.*?(0x[0-9A-Fa-f]+),";
-                        Regex regex = new Regex(pattern);
-                        Match match = regex.Match(partitionDetails);
-
-                        bool addressParsed = match.Success && int.TryParse(match.Groups[1].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionAddress);
-                        bool sizeParsed = match.Success && int.TryParse(match.Groups[2].Value.Substring(2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out configPartitionSize);
-
-                        if (!addressParsed || !sizeParsed)
-                        {
-                            // can't safely back up (or later flash) an unknown region: bail out
-                            // rather than risk reading/writing at address 0 with size 0
-                            return ExitCodes.E4006;
-                        }
-
                         // backup config partition
                         ExitCodes backupResult = espTool.BackupConfigPartition(
                             configPartitionBackup,
-                            configPartitionAddress,
-                            configPartitionSize);
+                            configPlan.Value.Source.Address,
+                            configPlan.Value.Source.Size);
 
                         if (backupResult != ExitCodes.OK)
                         {
@@ -585,7 +572,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         }
 
                         // only make the backup available to WriteFlash once it has been read successfully
-                        firmware.FlashPartitions.Add(configPartitionAddress, configPartitionBackup);
+                        firmware.FlashPartitions.Add(configPlan.Value.Destination.Address, configPartitionBackup);
                     }
                 }
 
@@ -713,6 +700,78 @@ namespace nanoFramework.Tools.FirmwareFlasher
         }
 
         /// <summary>
+        /// Update only the CLR partition using the installed partition table and a local image.
+        /// </summary>
+        /// <param name="espTool">Connected ESP32 tool.</param>
+        /// <param name="esp32Device">Details of the connected device.</param>
+        /// <param name="clrFile">Path to the local ESP32 CLR binary.</param>
+        /// <param name="verbosity">Verbosity of progress messages.</param>
+        /// <returns>The operation result.</returns>
+        public static ExitCodes UpdateClr(
+            EspTool espTool,
+            Esp32DeviceInfo esp32Device,
+            string clrFile,
+            VerbosityLevel verbosity)
+        {
+            ExitCodes result = UpdateClr(
+                esp32Device,
+                clrFile,
+                verbosity,
+                espTool.ReadPartitionTable,
+                partitions => espTool.WriteFlash(partitions));
+
+            if (result == ExitCodes.OK && espTool.CouldntResetTarget && verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Yellow;
+                OutputWriter.WriteLine("The connected device is in download mode. Please reset the chip manually to run nanoCLR.");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+            }
+
+            return result;
+        }
+
+        internal static ExitCodes UpdateClr(
+            Esp32DeviceInfo esp32Device,
+            string clrFile,
+            VerbosityLevel verbosity,
+            Func<byte[]> readPartitionTable,
+            Func<Dictionary<int, string>, ExitCodes> writeFlash)
+        {
+            if (!File.Exists(clrFile))
+            {
+                return ExitCodes.E9011;
+            }
+
+            if (!string.Equals(Path.GetExtension(clrFile), ".bin", StringComparison.OrdinalIgnoreCase))
+            {
+                return ExitCodes.E9012;
+            }
+
+            string imagePath = Path.GetFullPath(clrFile);
+            int address = Esp32PartitionTable.GetClrAddress(
+                readPartitionTable(),
+                new FileInfo(imagePath).Length,
+                esp32Device.FlashSize);
+            Esp32FlashController.ValidateApplicationImage(File.ReadAllBytes(imagePath), esp32Device.ChipType);
+
+            if (verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+                OutputWriter.Write($"Flashing CLR partition at 0x{address:X}...");
+            }
+
+            ExitCodes result = writeFlash(new Dictionary<int, string> { { address, imagePath } });
+            if (result == ExitCodes.OK && verbosity >= VerbosityLevel.Normal)
+            {
+                OutputWriter.ForegroundColor = ConsoleColor.Green;
+                OutputWriter.WriteLine("OK");
+                OutputWriter.ForegroundColor = ConsoleColor.White;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Deploy application on a ESP32 device.
         /// </summary>
         /// <param name="espTool"><see cref="EspTool"/> to use when performing update.</param>
@@ -753,14 +812,12 @@ namespace nanoFramework.Tools.FirmwareFlasher
                 OutputWriter.WriteLine("");
             }
 
-            Esp32Firmware firmware = new Esp32Firmware(
-                targetName,
-                null,
-                false,
-                partitionTableSize)
+            Dictionary<int, string> flashPartitions = new Dictionary<int, string>();
+
+            if (string.IsNullOrEmpty(applicationPath))
             {
-                Verbosity = verbosity
-            };
+                return ExitCodes.E9008;
+            }
 
             // include application file?
             if (!string.IsNullOrEmpty(applicationPath))
@@ -780,14 +837,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         return addressResult;
                     }
 
-                    // check for empty flash partitions
-                    if (firmware.FlashPartitions is null)
-                    {
-                        firmware.FlashPartitions = [];
-                    }
-
                     // add DEPLOYMENT partition with the address provided in the command OR the address from the partition table
-                    firmware.FlashPartitions.Add(
+                    flashPartitions.Add(
                             address,
                             applicationBinary
                     );
@@ -806,7 +857,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             }
 
             // write to flash
-            ExitCodes operationResult = espTool.WriteFlash(firmware.FlashPartitions);
+            ExitCodes operationResult = espTool.WriteFlash(flashPartitions);
 
             if (operationResult == ExitCodes.OK)
             {

@@ -90,6 +90,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
                         .AddPreOptionsLine("")
                         .AddPreOptionsLine("  nanoff flash target ESP_WROVER_KIT")
                         .AddPreOptionsLine("  nanoff flash platform esp32 serialport COM7")
+                        .AddPreOptionsLine("  nanoff backup serialport COM31 path backup-dir partition config clr deployment")
+                        .AddPreOptionsLine("  nanoff restore serialport COM31 path backup-dir")
                         .AddPreOptionsLine("  nanoff list targets platform stm32")
                         .AddPreOptionsLine("  nanoff details platform rpi_pico serialport COM11")
                         .AddPreOptionsLine("");
@@ -213,6 +215,18 @@ namespace nanoFramework.Tools.FirmwareFlasher
         /// </summary>
         private static readonly IReadOnlyDictionary<Type, string[]> s_verbExamples = new Dictionary<Type, string[]>
         {
+            [typeof(BackupOptions)] = new[]
+            {
+                "nanoff backup platform esp32 serialport COM31 path backup-dir partition config clr deployment",
+                "nanoff backup serialport COM31 path backup-all",
+                "nanoff backup serialport COM31 path backup-full wholeflash",
+            },
+            [typeof(RestoreOptions)] = new[]
+            {
+                "nanoff restore platform esp32 serialport COM31 path backup-dir partition config",
+                "nanoff restore serialport COM31 path backup-all",
+                "nanoff restore serialport COM31 path backup-full wholeflash",
+            },
             [typeof(FlashOptions)] = new[]
             {
                 "nanoff flash target ESP_WROVER_KIT serialport COM31",
@@ -316,7 +330,7 @@ namespace nanoFramework.Tools.FirmwareFlasher
             string[] normalizedArgs = VerbTokenizer.Normalize(args);
 
             var verbParserResult = new Parser(config => config.HelpWriter = null)
-                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions, KeysOptions, PackOptions>(normalizedArgs);
+                .ParseArguments<FlashOptions, DeployOptions, ListOptions, DetailsOptions, IdentifyOptions, DriversOptions, CacheOptions, KeysOptions, PackOptions, BackupOptions, RestoreOptions>(normalizedArgs);
 
             if (verbParserResult is Parsed<object> parsed)
             {
@@ -324,6 +338,10 @@ namespace nanoFramework.Tools.FirmwareFlasher
 
                 switch (parsed.Value)
                 {
+                    case Esp32BackupOptionsBase backupOptions:
+                        await RunEsp32BackupAsync(backupOptions);
+                        break;
+
                     case FlashOptions flashOptions:
                         await RunFlashAsync(flashOptions);
                         break;
@@ -427,6 +445,41 @@ namespace nanoFramework.Tools.FirmwareFlasher
         private static Task RunIdentifyAsync(IdentifyOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions());
 
         private static Task RunCacheAsync(CacheOptions o) => RunVerbOptionsAsync(o, x => x.ToLegacyOptions(), CacheOptions.Validate);
+
+        private static async Task RunEsp32BackupAsync(Esp32BackupOptionsBase o)
+        {
+            try
+            {
+                _verbosityLevel = o.GetVerbosityLevel();
+            }
+            catch (ArgumentException)
+            {
+                _exitCode = ExitCodes.E9000;
+                _verbosityLevel = VerbosityLevel.Normal;
+                return;
+            }
+
+            string validationError = Esp32BackupOptionsBase.Validate(o);
+            if (validationError != null)
+            {
+                _exitCode = ExitCodes.E9000;
+                _extraMessage = validationError;
+                return;
+            }
+
+            OutputWriter.ForegroundColor = ConsoleColor.White;
+            OutputWriter.WriteLine(_headerInfo);
+            OutputWriter.WriteLine(_copyrightInfo);
+            OutputWriter.WriteLine();
+            CommandTelemetry.SetPlatform(SupportedPlatform.esp32);
+
+            await RunManagerAsync(
+                new Esp32BackupManager(o, _verbosityLevel),
+                ExitCodes.E4000,
+                (typeof(EspToolExecutionException), ExitCodes.E4000, true),
+                (typeof(ReadEsp32FlashException), ExitCodes.E4004, true),
+                (typeof(WriteEsp32FlashException), ExitCodes.E4003, true));
+        }
 
         /// <summary>
         /// The <c>drivers</c> verb is handled directly rather than through the legacy

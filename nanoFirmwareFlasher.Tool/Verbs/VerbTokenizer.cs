@@ -25,6 +25,8 @@ namespace nanoFramework.Tools.FirmwareFlasher
         public static readonly IReadOnlyDictionary<string, Type> KnownVerbs = new Dictionary<string, Type>(StringComparer.Ordinal)
         {
             ["flash"] = typeof(FlashOptions),
+            ["backup"] = typeof(BackupOptions),
+            ["restore"] = typeof(RestoreOptions),
             ["deploy"] = typeof(DeployOptions),
             ["list"] = typeof(ListOptions),
             ["details"] = typeof(DetailsOptions),

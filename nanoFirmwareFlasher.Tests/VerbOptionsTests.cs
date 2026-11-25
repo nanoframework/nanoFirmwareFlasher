@@ -265,6 +265,110 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void FlashOptions_Validate_Esp32ImageWithPlatform_NoTargetOrAddressNeeded()
+        {
+            var options = new FlashOptions
+            {
+                Platform = SupportedPlatform.esp32,
+                SerialPort = "COM7",
+                Image = new[] { "nanoCLR.bin" }
+            };
+
+            Assert.IsNull(FlashOptions.Validate(options));
+        }
+
+        [TestMethod]
+        [DataRow("ESP32_CAM_REV3")]
+        [DataRow("M5STACK")]
+        [DataRow("FEATHERS2")]
+        public void FlashOptions_Validate_LocalEsp32Image_RejectsMassEraseWithInferredPlatform(string target)
+        {
+            var options = new FlashOptions { TargetName = target, Image = new[] { "nanoCLR.bin" }, MassErase = true };
+
+            StringAssert.Contains(FlashOptions.Validate(options), "masserase");
+        }
+
+        [TestMethod]
+        [DataRow("hex")]
+        [DataRow("address")]
+        [DataRow("masserase")]
+        [DataRow("preview")]
+        [DataRow("fwversion")]
+        [DataRow("fromarchive")]
+        [DataRow("archivepath")]
+        [DataRow("partitiontablesize")]
+        [DataRow("restore")]
+        public void FlashOptions_Validate_LocalEsp32Image_RejectsIncompatibleKeywords(string keyword)
+        {
+            FlashOptions options = (FlashOptions)Parse(
+                new[] { "flash", "--platform", "esp32", "--image", "nanoCLR.bin" }
+                    .Concat(keyword switch
+                    {
+                        "address" => new[] { "--address", "0x10000" },
+                        "fwversion" => new[] { "--fwversion", "1.0.0" },
+                        "archivepath" => new[] { "--archivepath", "archive" },
+                        "partitiontablesize" => new[] { "--partitiontablesize", "4" },
+                        "restore" => new[] { "--restore", "config.bin" },
+                        _ => new[] { "--" + keyword }
+                    }).ToArray()).Value;
+
+            StringAssert.Contains(FlashOptions.Validate(options), keyword);
+        }
+
+        [TestMethod]
+        public void FlashOptions_Validate_LocalEsp32Image_RejectsMultipleImages()
+        {
+            var options = new FlashOptions
+            {
+                Platform = SupportedPlatform.esp32,
+                Image = new[] { "first.bin", "second.bin" }
+            };
+
+            StringAssert.Contains(FlashOptions.Validate(options), "single image");
+        }
+
+        [TestMethod]
+        public void FlashOptions_Validate_LocalEsp32Image_AllowsWholeFlashBackup()
+        {
+            var options = new FlashOptions
+            {
+                Platform = SupportedPlatform.esp32,
+                Image = new[] { "nanoCLR.bin" },
+                Backup = "flash.bin"
+            };
+
+            Assert.IsNull(FlashOptions.Validate(options));
+        }
+
+        [TestMethod]
+        public void FlashOptions_Validate_FullEsp32Firmware_AllowsPackageOptions()
+        {
+            var options = new FlashOptions
+            {
+                Platform = SupportedPlatform.esp32,
+                MassErase = true,
+                Preview = true,
+                FwVersion = "1.0.0",
+                FromFwArchive = true,
+                FwArchivePath = "archive",
+                Esp32PartitionTableSize = PartitionTableSize._4,
+                ConfigBackupPath = "config.bin"
+            };
+
+            Assert.IsNull(FlashOptions.Validate(options));
+        }
+
+        [TestMethod]
+        [DataRow(SupportedPlatform.stm32)]
+        [DataRow(SupportedPlatform.efm32)]
+        public void FlashOptions_Validate_RawImageWithoutAddress_StillRequiresAddress(SupportedPlatform platform)
+        {
+            var options = new FlashOptions { Platform = platform, Image = new[] { "raw.bin" } };
+
+            StringAssert.Contains(FlashOptions.Validate(options), "requires address");
+        }
+
+        [TestMethod]
         public void FlashOptions_Validate_ImageWithSerialPortOnly_NoAddressNeeded()
         {
             // Simulates a CLR override for a generic nanoDevice update: no address required.

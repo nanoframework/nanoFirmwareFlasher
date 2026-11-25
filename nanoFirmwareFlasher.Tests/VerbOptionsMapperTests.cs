@@ -158,6 +158,24 @@ namespace nanoFirmwareFlasher.Tests
         }
 
         [TestMethod]
+        public void Flash_Esp32LocalImageWithoutTarget_UsesEsp32InsteadOfWireProtocol()
+        {
+            var legacy = new FlashOptions
+            {
+                Platform = SupportedPlatform.esp32,
+                SerialPort = "COM7",
+                Image = new[] { "nanoCLR.bin" }
+            }.ToLegacyOptions();
+
+            Assert.AreEqual(SupportedPlatform.esp32, legacy.Platform);
+            Assert.IsFalse(legacy.NanoDevice);
+            Assert.IsTrue(legacy.Update);
+            Assert.IsNull(legacy.TargetName);
+            Assert.AreEqual("nanoCLR.bin", legacy.ClrFile);
+            Assert.AreEqual(0, legacy.FlashAddress.Count);
+        }
+
+        [TestMethod]
         public void Flash_NoTargetPlatformOrSerialPort_NanoDeviceIsFalse()
         {
             var legacy = new FlashOptions().ToLegacyOptions();
@@ -291,6 +309,24 @@ namespace nanoFirmwareFlasher.Tests
             var legacy = new DeployOptions { DeploymentImage = "app.bin", SerialPort = "COM7" }.ToLegacyOptions();
 
             Assert.IsTrue(legacy.NanoDevice);
+        }
+
+        [TestMethod]
+        public void Deploy_Esp32WithoutTarget_UsesPartitionAwareDeployment()
+        {
+            var legacy = new DeployOptions
+            {
+                Platform = SupportedPlatform.esp32,
+                SerialPort = "COM7",
+                DeploymentImage = "app.bin"
+            }.ToLegacyOptions();
+
+            Assert.AreEqual(SupportedPlatform.esp32, legacy.Platform);
+            Assert.IsFalse(legacy.NanoDevice);
+            Assert.IsTrue(legacy.Deploy);
+            Assert.IsFalse(legacy.Update);
+            Assert.IsNull(legacy.TargetName);
+            Assert.AreEqual(0, legacy.FlashAddress.Count);
         }
 
         [TestMethod]
